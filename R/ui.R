@@ -56,7 +56,8 @@ deUI <- function() {
     textOutput("text"),
     shinydashboard::dashboardSidebar(
         sidebarPanel(
-        actionButton("save_state", "Save State!"),
+        # To enable people to name their state save(bookmark)
+        #actionButton("save_state", "Save State!"),
           
         conditionalPanel(condition = "input.save_state",
             textInput("bookmark_special_name", "Name your save:", value = "", placeholder = "At Least 5 Characters"),
