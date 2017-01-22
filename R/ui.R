@@ -12,6 +12,10 @@
 #'
 library(shinydashboard)
 
+dbHeader <- shinydashboard::dashboardHeader(title = "DEBrowser")
+
+
+
 deUI <- function() {
     heatmapJScode <-
         "shinyjs.getNames = function(){
@@ -33,7 +37,7 @@ deUI <- function() {
     addResourcePath(prefix = "www", directoryPath =
         system.file("extdata", "www",
         package = "debrowser"))
-    shinyUI(fluidPage(
+    (fluidPage(
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(text = heatmapJScode, functions = c("getNames")),
     shinyjs::inlineCSS("
@@ -47,53 +51,65 @@ deUI <- function() {
         height: 100%;
         text-align: center;
         color: #EFEFEF;
-}"),
+    }"),
     # Loading message
     tags$div(h4("Loading DEBrowser"), id = "loading-debrowser",
         tags$img(src = "www/images/initial_loading.gif")),
-    uiOutput("logo"),
-    uiOutput("programtitle"),
-    textOutput("text"),
-    shinydashboard::dashboardSidebar(
-        sidebarPanel(
-        # To enable people to name their state save(bookmark)
-        #actionButton("save_state", "Save State!"),
-          
-        conditionalPanel(condition = "input.save_state",
-            textInput("bookmark_special_name", "Name your save:", value = "", placeholder = "At Least 5 Characters"),
-            actionButton("name_bookmark", "Submit!"),
-            textOutput("bookmark_length_error"),
-            br(), br(), br()
-    
-                           ),
-        uiOutput("loading"),
-        width = 2,
-        uiOutput("initialmenu"),
-        conditionalPanel(condition = "(output.dataready)",
-            uiOutput("leftMenu")),
-        conditionalPanel(condition = "(output.dataready)",
-            uiOutput("downloadSection")),
-        conditionalPanel(condition = "(output.dataready)",
-            uiOutput('cutoffSelection'))
+    #uiOutput("logo"),
+    #uiOutput("programtitle"),
+    #textOutput("text"),
+    includeCSS("../inst/extdata/www/shinydashboard_additional.css"),
+    #div("UMASS Medical", id = "university-name"),
+    shinydashboard::dashboardPage(
+        dbHeader,
+        shinydashboard::dashboardSidebar(
+            sidebarPanel(
+            # To enable people to name their state save(bookmark)
+            #actionButton("save_state", "Save State!"),
+              
+            conditionalPanel(condition = "input.save_state",
+                textInput("bookmark_special_name", "Name your save:", value = "", placeholder = "At Least 5 Characters"),
+                actionButton("name_bookmark", "Submit!"),
+                textOutput("bookmark_length_error"),
+                br(), br(), br()
+        
+                               ),
+            uiOutput("loading"),
+            width = 0,
+            
+            uiOutput("initialmenu"),
+            conditionalPanel(condition = "(output.dataready)",
+                uiOutput("leftMenu")),
+            conditionalPanel(condition = "(output.dataready)",
+                uiOutput("downloadSection")),
+            conditionalPanel(condition = "(output.dataready)",
+                uiOutput('cutoffSelection'))
+            )
+            
+        ),
+        shinydashboard::dashboardBody(
+            
+            mainPanel(
+                tags$head(
+                    tags$style(type = "text/css",
+                               "#methodtabs.nav-tabs {font-size: 14px} ")),
+                tabsetPanel(id = "methodtabs", type = "tabs",
+                            tabPanel(title = "Data Prep", value = "panel0", id="panel0",
+                                     uiOutput("preppanel")),
+                            tabPanel(title = "Main Plots", value = "panel1", id="panel1",
+                                     uiOutput("mainmsgs"),
+                                     conditionalPanel(condition = "input.demo ||
+                                                      output.dataready", uiOutput("mainpanel"))),
+                            tabPanel(title = "QC Plots", value = "panel2", id="panel2",
+                                     uiOutput("qcpanel")),
+                            tabPanel(title = "GO Term", value = "panel3", id="panel3",
+                                     uiOutput("gopanel")),
+                            tabPanel(title = "Tables", value = "panel4", id="panel4",
+                                     DT::dataTableOutput("tables")))
+                            )
+            
+                )
+            )
         )
-    ),
-    mainPanel(
-    tags$head(
-    tags$style(type = "text/css",
-                 "#methodtabs.nav-tabs {font-size: 14px} ")),
-    tabsetPanel(id = "methodtabs", type = "tabs",
-                tabPanel(title = "Data Prep", value = "panel0", id="panel0",
-                         uiOutput("preppanel")),
-                tabPanel(title = "Main Plots", value = "panel1", id="panel1",
-                         uiOutput("mainmsgs"),
-                         conditionalPanel(condition = "input.demo ||
-                             output.dataready", uiOutput("mainpanel"))),
-                tabPanel(title = "QC Plots", value = "panel2", id="panel2",
-                         uiOutput("qcpanel")),
-                tabPanel(title = "GO Term", value = "panel3", id="panel3",
-                         uiOutput("gopanel")),
-                tabPanel(title = "Tables", value = "panel4", id="panel4",
-                         DT::dataTableOutput("tables")))
-        ))
     )
 }

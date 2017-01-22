@@ -16,7 +16,7 @@ getDataPrepPanel <- function(flag = FALSE){
     a<- list(
         conditionalPanel(condition = "input.demo ||
             output.dataready",
-        wellPanel(
+        # wellPanel(
         uiOutput("sampleSelector"),
         actionButton("goDE", "Go to DE Analysis!"),
         actionButton("goQCplots", "Go to QC plots!"),
@@ -28,7 +28,9 @@ getDataPrepPanel <- function(flag = FALSE){
             actionButton("rm_btn", "Remove"),
             getHelpButton("method", "http://debrowser.readthedocs.io/en/develop/deseq/deseq.html")),
             actionButton("startDE", "Submit!"),
-           tags$style(type='text/css', "#startDE { margin-top: 10px;}")  ))),
+           tags$style(type='text/css', "#startDE { margin-top: 10px;}")  )
+        # )
+        ),
         conditionalPanel(condition = "!input.demo &&
             !output.fileUploaded",
             uiOutput("startup"))
@@ -232,22 +234,20 @@ logSliderJScode <- function(slidername = NULL){
 #'
 getCutOffSelection <- function(nc = 1){
     compselect <- getCompSelection(nc)
-    a <- list(
-    conditionalPanel( (condition <- "input.dataset!='most-varied' &&
-                       input.methodtabs!='panel0'"),
-        tags$head(tags$script(HTML(logSliderJScode("padj")))),
-
-        shinydashboard::menuItem("Filtre", icon = icon("database"),
-            sliderInput("padj", "padjaaaa value cut off",
-                min=0, max=10, value=6, sep = "",
-                animate = FALSE),
-            textInput("padjtxt", "or padj", value = "0.01" ),
-            sliderInput("foldChange", "Fold Change cut off",
-                1, 10, 2, step = 0.1),
-            textInput("foldChangetxt", "or foldChange", value = "2" )
-        ),
-        compselect
-    ) )
+    a <- list( 
+        conditionalPanel( (condition <- "input.dataset!='most-varied' &&
+                           input.methodtabs!='panel0'"),
+                          tags$head(tags$script(HTML(logSliderJScode("padj")))),
+                          h4("Filter"),
+                          sliderInput("padj", "padj value cut off",
+                                      min=0, max=10, value=6, sep = "", 
+                                      animate = FALSE),
+                          textInput("padjtxt", "or padj", value = "0.01" ),
+                          sliderInput("foldChange", "Fold Change cut off",
+                                      1, 10, 2, step = 0.1),
+                          textInput("foldChangetxt", "or foldChange", value = "2" ),
+                          compselect
+        ) )
 }
 
 #' getInitialMenu
@@ -380,13 +380,16 @@ getLogo <- function(){
 #' @export
 #'
 getStartupMsg <- function() {
-a <- list( column( 12, wellPanel(
+a <- list( column( 12, 
+                   #wellPanel(
 helpText("Please select a file or load the demo data!"),
 helpText( "For more information;" ),
 helpText(   a("Quick Start Guide",
 href = "http://debrowser.readthedocs.org",
 target = "_blank"),
-getHelpButton("method", "http://debrowser.readthedocs.org")) ) ))
+getHelpButton("method", "http://debrowser.readthedocs.org")) 
+#)
+))
 }
 
 #' getAfterLoadMsg
@@ -401,13 +404,16 @@ getHelpButton("method", "http://debrowser.readthedocs.org")) ) ))
 #' @export
 #'
 getAfterLoadMsg <- function() {
-a <- list( column( 12, wellPanel(
+a <- list( column( 12, 
+                   #wellPanel(
 helpText( "Please choose the appropriate conditions for DESeq analysis
             and press 'Run DESeq!' button in the left menu" ),
 helpText( "To be able to select conditions please click
             'Condition1' or 'Condition2' boxes.
             You can also use delete button to remove the
-            samples from the list."))))
+            samples from the list.")
+#)
+))
 }
 
 #' getStartPlotsMsg
@@ -423,10 +429,13 @@ helpText( "To be able to select conditions please click
 #'
 getStartPlotsMsg <- function() {
 a <- list( conditionalPanel(condition <- "!input.startPlots",
-    column( 12, wellPanel(
+    column( 12, 
+            #wellPanel(
     helpText( "Please choose the appropriate parameters and
             press submit button to draw the plots!" ),
-    getHelpButton("method", "http://debrowser.readthedocs.io/en/develop/quickstart/quickstart.html#the-main-plots")))))
+    getHelpButton("method", "http://debrowser.readthedocs.io/en/develop/quickstart/quickstart.html#the-main-plots")
+    #)
+    )))
 }
 
 #' getCondMsg
