@@ -70,165 +70,171 @@
 #' @import org.Hs.eg.db
 #' @import org.Mm.eg.db
 #' @import V8
+#' @import shinydashboard
 #' 
-library(shiny)
-library(shinydashboard)
 
 deServer <- function(input, output, session) {
 
-server_goDE <<- 0
-previous_url <<- ""
-get_state_id <- function(){
-query_string <- paste0("?", strsplit(previous_url, "?", fixed = TRUE)[[1]][2])
-query_list <- parseQueryString(query_string)
-return(query_list[["_state_id_"]])
-}
-
-delete_previous_bookmark <- function(previous_url){
-###############################################################
-# Removing the directory of previous state that is bookmarked #
-###############################################################
-query_string <- paste0("?", strsplit(previous_url, "?", fixed = TRUE)[[1]][2])
-query_list <- parseQueryString(query_string)
-state_id <- query_list[["_state_id_"]]
-cat(paste0("previous url: ", state_id, "\n"))
-
-  if(!is.null(state_id)){
-    cat(paste0("state id = = ", state_id))
-  # Get the state id from the query string
-  bookmark_dir <- "shiny_bookmarks/"
-
-
-  file_remove_unix_cmd <- paste0('dir="', bookmark_dir, state_id, '"
-if [ -d "$dir" ]
-then
-rm -R $dir ', '
-
-else
-echo "$dir not found or folder to be copied needs a different new name."
-fi')
-  cat( paste0( system( file_remove_unix_cmd ), "\n") )
-
-}
-
-}
-
-observe({
-# Trigger this observer every time an input changes
-reactiveValuesToList(input)
-session$doBookmark()
-})
-
-observeEvent(input$name_bookmark, {
-chosen_name <- input$bookmark_special_name
-if(nchar(chosen_name) < 5){
-  to_display <- "You must type in at least 5 characters."
-} else if(!grepl('^[A-Za-z0-9]+$', chosen_name)){
-    to_display <- "You can only use numbers and English letters."
-} else{
-  output$bookmark_length_error <- renderText({""})
-  result <- copy_to_new_directory(chosen_name)
-  if(result == 35){
-    to_display <- "Please pick a new unique name."
-  } else {
-    if (result == 42) {
-      to_display <- "Successfully saved."
-    } else {
-      to_display <- "Something went wrong with the save."
+    # To hide the panels from 1 to 4 and only show
+    togglePanels(0, c(0), session)
+    
+    ###############################################################
+    #     Helper to copy the bookmark to a user named directory   #
+    ###############################################################
+    get_state_id <- function(prev_url){
+        query_string <- paste0("?", strsplit(prev_url, "?",
+                                             fixed = TRUE)[[1]][2])
+        query_list <- parseQueryString(query_string)
+        return(query_list[["_state_id_"]])
     }
-  }
-}
-output$bookmark_length_error <- renderText({ to_display })
-})
 
-copy_to_new_directory <- function(new_state_id){
+    ###############################################################
+    # Removing the directory of previous state that is bookmarked #
+    ###############################################################
+    delete_previous_bookmark <- function(prev_url){
+        query_string <- paste0("?", strsplit(prev_url, "?",
+                                             fixed = TRUE)[[1]][2])
+        query_list <- parseQueryString(query_string)
+        state_id <- query_list[["_state_id_"]]
+        cat(paste0("previous url: ", state_id, "\n"))
+    
+        if(!is.null(state_id)){
+            cat(paste0("state id = = ", state_id))
+            # Get the state id from the query string
+            bookmark_dir <- "shiny_bookmarks/"
+        
+            file_remove_cmd <- paste0('dir="', bookmark_dir, state_id, '"
+                if [ -d "$dir" ]
+                then
+                    rm -R $dir ', '
+        
+                else
+                    echo "$dir not found or folder needs a new name."
+                fi')
+            cat( paste0( system( file_remove_cmd ), "\n") )
+        }
+    }
 
-#####################################################################
-# Copying the bookmarked folder into a new folder with new_state_id #
-#####################################################################
-# Get the state id from the query string
-bookmark_dir <- "shiny_bookmarks/"
-state_id <- get_state_id()
+    ###############################################################
+    #           Bookmark on every single user input               #
+    ###############################################################
+    observe({
+        # Trigger this observer every time an input changes
+        reactiveValuesToList(input)
+        session$doBookmark()
+    })
 
-check_if_unique_command <- paste0('
+    ###############################################################
+    #         To save user chosen name as bookmark id             #
+    ###############################################################
+    observeEvent(input$name_bookmark, {
+        chosen_name <- input$bookmark_special_name
+        if(nchar(chosen_name) < 5){
+            to_display <- "You must type in at least 5 characters."
+        } else if(!grepl('^[A-Za-z0-9]+$', chosen_name)){
+            to_display <- "You can only use numbers and English letters."
+        } else{
+            output$bookmark_length_error <- renderText({""})
+            result <- copy_to_new_directory(chosen_name)
+            if(result == 35){
+                to_display <- "Please pick a new unique name."
+            } else {
+                if (result == 42) {
+                    to_display <- "Successfully saved."
+                } else {
+                    to_display <- "Something went wrong with the save."
+                }
+            }
+        }
+        output$bookmark_length_error <- renderText({ to_display })
+    })
 
- dir="', bookmark_dir, new_state_id, '"
-if [ -d "$dir" ]
- then
-  exit 35
-fi
-
- ')
-
-# Now ready to copy the bookmark to a user chosen name
-file_copy_unix_cmd <- paste0('
-echo "YAMKMASKMASKMA"
-if [ -d "$dir" ] && [ "', state_id, '" != "', new_state_id, '"  ]
-echo "YAMKMASKMASKMA"
-then
-   mv $dir ', bookmark_dir, state_id , ' ', bookmark_dir , new_state_id, '
-   exit 42
-fi
-exit 1
-')
-
-is_unique <- system( check_if_unique_command )
-if(is_unique == 35){
-  cat(paste0("unique value: ", is_unique, "\n" ))
-  return(is_unique)
-} else {
-  to_return <- system( file_copy_unix_cmd )
-  cat(paste0("returned value: ", to_return, "\n" ))
-  return(to_return)
-}
-
-################################################################
-}
-
-
-# Save extra values in state$values when we bookmark...
-onBookmark(function(state) {
-cat("on bookmark", "\n")
-
-storeDataset <- function(){
-    state$values$data <- Dataset()
-}
-try(storeDataset())
-
-state$values$nc <- choicecounter$nc
-
-cat(paste0("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", " nc ", choicecounter$nc, "qc ", choicecounter$qc, "\n"))
-
-# Delete the previously bookmarked state
-# Note that onBookmark precedes onBookmarked
-delete_previous_bookmark(previous_url)
-
-})
+    #####################################################################
+    #     To copy the bookmarked folder into a user named directory     #
+    #####################################################################
+    copy_to_new_directory <- function(new_state_id){
+        # Get the state id from the query string
+        bookmark_dir <- "shiny_bookmarks/"
+        state_id <- get_state_id(url_with_query$url_str)
+        
+        check_if_unique_command <- paste0('
+        
+        dir="', bookmark_dir, new_state_id, '"
+        if [ -d "$dir" ]
+            then
+            exit 35
+        fi
+         ')
+        
+        # Now ready to copy the bookmark to a user chosen name
+        file_copy_unix_cmd <- paste0('
+        if [ -d "$dir" ] && [ "', state_id, '" != "', new_state_id, '"  ]
+        then
+            mv $dir ', bookmark_dir, state_id , ' ', bookmark_dir , 
+            new_state_id, '
+            exit 42
+        fi
+        exit 1
+        ')
+        
+        is_unique <- system( check_if_unique_command )
+        if(is_unique == 35){
+            cat(paste0("unique value: ", is_unique, "\n" ))
+            return(is_unique)
+        } else {
+            to_return <- system( file_copy_unix_cmd )
+            cat(paste0("returned value: ", to_return, "\n" ))
+            return(to_return)
+        }
+    }
 
 
-onBookmarked(function(url) {
-updateQueryString(url)
-previous_url <<- url
-cat(paste0("updating the url to: ", url, "\n"))
-})
+    # Save extra values in state$values when we bookmark...
+    onBookmark(function(state) {
+        cat("on bookmark", "\n")
+        cat(url_with_query$url_str, "\n")
+        
+        storeDataset <- function(){
+            state$values$data <- Dataset()
+        }
+        try(storeDataset())
+        
+        state$values$nc <- choicecounter$nc
+        
+        cat(paste0("+++++++++++++++++++++++++++++++++++++++++++++++++++++",
+                   " nc ", choicecounter$nc, "qc ", choicecounter$qc, "\n"))
+        
+        # Delete the previously bookmarked state
+        # Note that onBookmark precedes onBookmarked
+        
+        delete_previous_bookmark(url_with_query$url_str)
+    
+    })
 
 
-# Read values from state$values when we restore
-onRestore(function(state) {
-#updateQueryString(paste0(session$clientData$url_search, "&tab_num=tab2"))
-if(!is.null(state$values$data)){
-  cat("The file is uploaded, go to the next tab.", "\n")
-  buttonValues$gotoanalysis <- TRUE
-}
-  choicecounter$nc <- state$values$nc
-  server_goDE <<- choicecounter$nc
+    onBookmarked(function(url) {
+        updateQueryString(url)
+        url_with_query$url_str <- url
+        cat(paste0("updating the url to: ", url, "\n"))
+    })
 
-  cat(paste0("RESTORE++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", " nc ", choicecounter$nc, "qc ", choicecounter$qc, "\n"))
 
-dc <- prepDataContainer(state$values$data, choicecounter$nc,
-                        isolate(input))
-cat("Restoring", "\n")
-})
+    # Read values from state$values when we restore
+    onRestore(function(state) {
+        if(!is.null(state$values$data)){
+            cat("The file is uploaded, go to the next tab.", "\n")
+            buttonValues$gotoanalysis <- TRUE
+        }
+            choicecounter$nc <- state$values$nc
+            server_goDE$go <- choicecounter$nc
+        
+        cat(paste0("RESTORE++++++++++++++++++++++++++++++++++++++++++++++",
+                   " nc ", choicecounter$nc, "qc ", choicecounter$qc, "\n"))
+        
+        dc <- prepDataContainer(state$values$data, choicecounter$nc,
+                                isolate(input))
+        cat("Restoring", "\n")
+    })
 
 
 
@@ -302,6 +308,11 @@ cat("Restoring", "\n")
             else
                 condmsg$text
         })
+        
+        # Variables to help restore a session from bookmark
+        url_with_query <- reactiveValues(url_str = "")
+        server_goDE <- reactiveValues(go = 0)
+        
 
         buttonValues <- reactiveValues(goQCplots = FALSE, goDE = FALSE,
             startDE = FALSE, gotoanalysis = FALSE)
@@ -376,7 +387,8 @@ cat("Restoring", "\n")
                 selectInput("samples",
                 label = "Samples",
                 choices = samp, multiple = TRUE,
-                selected = samp)
+                selected = samp,
+                width = "100%")
             )
         })
         output$batchEffect <- renderUI({

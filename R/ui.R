@@ -10,11 +10,6 @@
 #'
 #' @export
 #'
-library(shinydashboard)
-
-dbHeader <- shinydashboard::dashboardHeader(title = "DEBrowser")
-
-
 
 deUI <- function() {
     heatmapJScode <-
@@ -55,15 +50,17 @@ deUI <- function() {
     # Loading message
     tags$div(h4("Loading DEBrowser"), id = "loading-debrowser",
         tags$img(src = "www/images/initial_loading.gif")),
+    tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "www/shinydashboard_additional.css")
+    ),
     #uiOutput("logo"),
     #uiOutput("programtitle"),
     #textOutput("text"),
-    includeCSS("../inst/extdata/www/shinydashboard_additional.css"),
     #div("UMASS Medical", id = "university-name"),
     shinydashboard::dashboardPage(
-        dbHeader,
+        shinydashboard::dashboardHeader(title = "DEBrowser"),
         shinydashboard::dashboardSidebar(
-            sidebarPanel(
+            #sidebarPanel(
             # To enable people to name their state save(bookmark)
             #actionButton("save_state", "Save State!"),
               
@@ -75,7 +72,7 @@ deUI <- function() {
         
                                ),
             uiOutput("loading"),
-            width = 0,
+            #width = 0,
             
             uiOutput("initialmenu"),
             conditionalPanel(condition = "(output.dataready)",
@@ -84,12 +81,13 @@ deUI <- function() {
                 uiOutput("downloadSection")),
             conditionalPanel(condition = "(output.dataready)",
                 uiOutput('cutoffSelection'))
-            )
+            #)
             
         ),
         shinydashboard::dashboardBody(
             
             mainPanel(
+                width = 10,
                 tags$head(
                     tags$style(type = "text/css",
                                "#methodtabs.nav-tabs {font-size: 14px} ")),
