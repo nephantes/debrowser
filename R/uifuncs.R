@@ -382,7 +382,7 @@ getLogo <- function(){
 #'
 getStartupMsg <- function() {
 a <- list( column( 12, 
-                   #wellPanel(
+                   #wellPanel( 
 helpText("Please select a file or load the demo data!"),
 helpText( "For more information;" ),
 helpText(   a("Quick Start Guide",

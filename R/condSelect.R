@@ -87,9 +87,10 @@ getConditionSelector<- function(num=0, choices = NULL, selected = NULL) {
         if (is.null(selected_meta)) selected_meta <- "No Selection"
         
         if (!is.null(selected_meta))
-            meta_choices_all <- get_conditions_given_selection(input, selected_meta)
+            meta_choices_all <- get_conditions_given_selection(input,
+                                                               selected_meta)
             if(typeof(meta_choices_all) == "character"){
-                meta_choices <- list("There must be exactly 2 groups in your meta column.")
+                meta_choices <- list("There must be exactly 2 groups.")
             } else{
                 meta1 <- meta_choices_all[[2 - (num %% 2)]]
                 meta_choices <- unlist(meta1, recursive=FALSE)
@@ -193,18 +194,20 @@ selectConditions<-function(Dataset = NULL,
             print(selected2)
             list(column(12, getMetaSelector(input = input, n = i),
                         
-                        # conditionalPanel((condition <- paste0("input.conditions_from_meta",i," == 'No Selection'")),
-                        #                  getConditionSelector((2 * i - 1),
-                        #                         allsamples, selected1),
-                        #     getConditionSelector((2 * i),
-                        #                         allsamples, selected2)),
+            #conditionalPanel((condition <- paste0("input.conditions_from_meta"
+            #,i," == 'No Selection'")),
+            #                  getConditionSelector((2 * i - 1),
+            #                         allsamples, selected1),
+            #     getConditionSelector((2 * i),
+            #                         allsamples, selected2)),
                         
-                        conditionalPanel((condition <- paste0("input.conditions_from_meta",i," != 'No Selection'")),
-                            getConditionSelectorFromMeta(input, i,
-                                (2 * i - 1), allsamples, selected1),
-                            getConditionSelectorFromMeta(input, i,
-                                (2 * i), allsamples, selected2)
-                            )
+            conditionalPanel((condition <- paste0("input.conditions_from_meta",
+                                                  i," != 'No Selection'")),
+                getConditionSelectorFromMeta(input, i,
+                    (2 * i - 1), allsamples, selected1),
+                getConditionSelectorFromMeta(input, i,
+                    (2 * i), allsamples, selected2)
+                )
                         ),
                  
                 column(12, 
@@ -230,9 +233,11 @@ selectConditions<-function(Dataset = NULL,
                 br(), column(10, selectInput(paste0("conditions_from_meta", 
                 n),
                 label = "Select Meta",
-                choices = as.list(c("No Selection", colnames(df)[2:col_count])),
+                choices = as.list(c("No Selection", 
+                                    colnames(df)[2:col_count])),
                 multiple = FALSE,
-                selected =  selectedInput("conditions_from_meta", n, "Selection 2", input))))
+                selected =  selectedInput("conditions_from_meta",
+                                          n, "Selection 2", input))))
         }		
         else {		
             br()		
