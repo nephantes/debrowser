@@ -12,11 +12,11 @@
     padding-left: 0;
 }
 
-.sidebar {
-    padding-right: 15px;
-    padding-left: 15px;
-    overflow:scroll;
+
+.content-wrapper {
+    min-height: 3500px !important; 
 }
+
 
 /*
 li {
@@ -48,3 +48,18 @@ li.active {
 .btn-file{
     margin: 0 0 0 0;
 }
+
+#loadmessage {
+    position: relative;
+}
+
+/*
+.treeview-menu{
+    display: none;
+}
+
+.menu-open{
+    display: block !important;
+
+}
+*/

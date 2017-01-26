@@ -86,7 +86,7 @@ getConditionSelector<- function(num=0, choices = NULL, selected = NULL) {
         selected_meta <- selectedInput("conditions_from_meta", index, NULL, input)
         if (is.null(selected_meta)) selected_meta <- "No Selection"
         
-        if (!is.null(selected_meta))
+        if (!is.null(selected_meta) & (!is.null(choices)))
             meta_choices_all <- get_conditions_given_selection(input,
                                                                selected_meta)
             if(typeof(meta_choices_all) == "character"){
@@ -192,6 +192,10 @@ selectConditions<-function(Dataset = NULL,
             print(selected1)
             cat("____________-", "n")
             print(selected2)
+            
+            #current_selection <- input[[paste0("conditions_from_meta",i)]]
+            #old_selection <- current_selection
+            
             list(column(12, getMetaSelector(input = input, n = i),
                         
             #conditionalPanel((condition <- paste0("input.conditions_from_meta"

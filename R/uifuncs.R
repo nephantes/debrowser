@@ -22,7 +22,7 @@ getDataPrepPanel <- function(flag = FALSE){
         actionButton("goQCplots", "Go to QC plots!"),
         actionButton("resetsamples", "Reset!"),
         #conditionalPanel(condition = paste0("(input.goDE) || (server_goDE.go > 0)"),
-        conditionalPanel(condition = paste0("(input.goDE)"),
+        conditionalPanel(condition = "(input.goDE) || (output.server_goDE > 0)",
             helpText( "Please add new comparisons for DE analysis!" ),
             uiOutput("conditionSelector"),
             column(12,actionButton("add_btn", "Add New Comparison"),
@@ -52,23 +52,30 @@ getDataPrepPanel <- function(flag = FALSE){
 #'
 getLeftMenu <- function(input = NULL) {
 if (is.null(input)) return(NULL)
-a <- list( conditionalPanel( (condition <- "input.methodtabs=='panel1'"),
-        wellPanel(radioButtons("mainplot", paste("Main Plots:", sep = ""),
-            c(Scatter = "scatter", VolcanoPlot = "volcano",
-            MAPlot = "maplot"))),
-                actionButton("startPlots", "Submit!")),
-        conditionalPanel( (condition <- "input.methodtabs=='panel2'"),
-            wellPanel(radioButtons("qcplot",
-                paste("QC Plots:", sep = ""),
-                c(PCA = "pca", All2All = "all2all", Heatmap = "heatmap", IQR = "IQR",
-                  Density = "Density"))),
-            getQCLeftMenu(input)),
-        conditionalPanel( (condition <- "input.methodtabs=='panel3'"),
-            wellPanel(radioButtons("goplot", paste("Go Plots:", sep = ""),
-                c(enrichGO = "enrichGO", enrichKEGG = "enrichKEGG",
-                Disease = "disease", compareClusters = "compare"))),
-                getGOLeftMenu()
-                ))
+    a <- list(conditionalPanel(condition <- paste0("input.methodtabs=='panel1'",
+                "|| input.methodtabs=='panel2' || input.methodtabs=='panel3'"),
+                                                   
+        shinydashboard::menuItem("Select Plot Type", icon = icon("star-o"),
+            conditionalPanel( (condition <- "input.methodtabs=='panel1'"),
+                wellPanel(radioButtons("mainplot", paste("Main Plots:", sep = ""),
+                    c(Scatter = "scatter", VolcanoPlot = "volcano",
+                    MAPlot = "maplot"))),
+                        actionButton("startPlots", "Submit!")),
+                conditionalPanel( (condition <- "input.methodtabs=='panel2'"),
+                    wellPanel(radioButtons("qcplot",
+                        paste("QC Plots:", sep = ""),
+                        c(PCA = "pca", All2All = "all2all", 
+                            Heatmap = "heatmap", IQR = "IQR",
+                            Density = "Density"))),
+                    getQCLeftMenu(input)),
+                conditionalPanel( (condition <- "input.methodtabs=='panel3'"),
+                    wellPanel(radioButtons("goplot", paste("Go Plots:", sep = ""),
+                        c(enrichGO = "enrichGO", enrichKEGG = "enrichKEGG",
+                        Disease = "disease", compareClusters = "compare"))),
+                        getGOLeftMenu()
+                )
+            ))
+        )
 }
 
 #' getGOLeftMenu
@@ -181,12 +188,14 @@ getQCLeftMenu <- function( input = NULL) {
                               "http://debrowser.readthedocs.io/en/develop/quickstart/quickstart.html#heat-maps")
             ),
         conditionalPanel( (condition <- "input.qcplot=='pca'"),
-            getPCselection(1, "x"),
-            getPCselection(2, "y"),
-            textInput("pctile", "Top %", value = "0.05" ),
-            getTextOnOff(),
-            getLegendSelect(),
-            getColorShapeSelection(input)
+            shinydashboard::menuItem("QC Parameters", icon = icon("star-o"),              
+                getPCselection(1, "x"),
+                getPCselection(2, "y"),
+                textInput("pctile", "Top %", value = "0.05" ),
+                getTextOnOff(),
+                getLegendSelect(),
+                getColorShapeSelection(input)
+            )
         ),
         downloadButton("downloadPlot", "Download Plot")))
 }
@@ -237,17 +246,19 @@ getCutOffSelection <- function(nc = 1){
     compselect <- getCompSelection(nc)
     a <- list( 
         conditionalPanel( (condition <- "input.dataset!='most-varied' &&
-                           input.methodtabs!='panel0'"),
-                          tags$head(tags$script(HTML(logSliderJScode("padj")))),
-                          h4("Filter"),
-                          sliderInput("padj", "padj value cut off",
-                                      min=0, max=10, value=6, sep = "", 
-                                      animate = FALSE),
-                          textInput("padjtxt", "or padj", value = "0.01" ),
-                          sliderInput("foldChange", "Fold Change cut off",
-                                      1, 10, 2, step = 0.1),
-                          textInput("foldChangetxt", "or foldChange", value = "2" ),
-                          compselect
+            input.methodtabs!='panel0'"),
+            shinydashboard::menuItem("Filter_MainPlots", icon = icon("star-o"),
+                tags$head(tags$script(HTML(logSliderJScode("padj")))),
+                h4("Filter"),
+                sliderInput("padj", "padj value cut off",
+                    min=0, max=10, value=6, sep = "", 
+                    animate = FALSE),
+                textInput("padjtxt", "or padj", value = "0.01" ),
+                sliderInput("foldChange", "Fold Change cut off",
+                    1, 10, 2, step = 0.1),
+                textInput("foldChangetxt", "or foldChange", value = "2" ),
+                compselect
+            )
         ) )
 }
 
@@ -346,8 +357,9 @@ getLoadingMsg <- function() {
             background-color: #FFFFFFF;
             z-index: 100;
             }")),
-        conditionalPanel(condition = "$('html').hasClass('shiny-busy')",
-            tags$div("Please wait! Loading...", id = "loadmessage",
+        conditionalPanel(condition = "$('html').hasClass('shiny-busy') & input.startDE",
+            #tags$div("Please wait! Loading...", id = "loadmessage",
+            tags$div("", id = "loadmessage",        
             tags$img(src = imgsrc
             ))))
 }

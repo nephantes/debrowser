@@ -29,9 +29,12 @@ deUI <- function() {
         //document.getElementById('genenames').innerHTML = out;
         Shiny.onInputChange('genenames', out);
     };"
-    addResourcePath(prefix = "www", directoryPath =
-        system.file("extdata", "www",
-        package = "debrowser"))
+    dbHeader <- shinydashboard::dashboardHeader(titleWidth = 350)
+    dbHeader$children[[2]]$children <-  tags$a(style='color: white;',
+        href = "/" , "DEBrowser")
+    
+    addResourcePath(prefix = "www", directoryPath = system.file("extdata", 
+        "www", package = "debrowser"))
     (fluidPage(
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(text = heatmapJScode, functions = c("getNames")),
@@ -58,8 +61,14 @@ deUI <- function() {
     #textOutput("text"),
     #div("UMASS Medical", id = "university-name"),
     shinydashboard::dashboardPage(
-        shinydashboard::dashboardHeader(title = "DEBrowser"),
+        # shinydashboard::dashboardHeader(
+            # title = "DEBrowser",
+            # titleWidth = 350
+            # ),
+        dbHeader,
         shinydashboard::dashboardSidebar(
+            width = 350,
+            
             #sidebarPanel(
             # To enable people to name their state save(bookmark)
             #actionButton("save_state", "Save State!"),
@@ -83,7 +92,7 @@ deUI <- function() {
             conditionalPanel(condition = "(output.dataready)",
                 uiOutput('cutoffSelection'))
             #)
-            
+
         ),
     shinydashboard::dashboardBody(
         

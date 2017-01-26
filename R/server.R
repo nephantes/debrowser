@@ -75,6 +75,11 @@
 
 deServer <- function(input, output, session) {
 
+    cdata <- session$clientData
+    output$get_url <- renderText({
+        cdata$url_port
+    })
+    
     # To hide the panels from 1 to 4 and only show
     togglePanels(0, c(0), session)
     
@@ -225,15 +230,14 @@ deServer <- function(input, output, session) {
             cat("The file is uploaded, go to the next tab.", "\n")
             buttonValues$gotoanalysis <- TRUE
         }
-            choicecounter$nc <- state$values$nc
-            server_goDE$go <- choicecounter$nc
+        choicecounter$nc <- state$values$nc
         
         cat(paste0("RESTORE++++++++++++++++++++++++++++++++++++++++++++++",
                    " nc ", choicecounter$nc, "qc ", choicecounter$qc, "\n"))
         
         dc <- prepDataContainer(state$values$data, choicecounter$nc,
                                 isolate(input))
-        cat("Restoring", "\n")
+        cat("Restoring ", "\n")
     })
 
 
@@ -311,8 +315,7 @@ deServer <- function(input, output, session) {
         
         # Variables to help restore a session from bookmark
         url_with_query <- reactiveValues(url_str = "")
-        server_goDE <- reactiveValues(go = 0)
-        
+
 
         buttonValues <- reactiveValues(goQCplots = FALSE, goDE = FALSE,
             startDE = FALSE, gotoanalysis = FALSE)
@@ -377,6 +380,10 @@ deServer <- function(input, output, session) {
             if (is.null(Dataset())) return(NULL)
                 getSamples(colnames(Dataset()), index = 2)
         })
+        output$server_goDE<- reactive({ 
+            cat("I return server_goDE +++==========++++\n")
+            return(choicecounter$nc) })
+        
         output$sampleSelector <- renderUI({
             if (is.null(samples())) return(NULL)
             if (is.null(input$samples))
@@ -491,9 +498,11 @@ deServer <- function(input, output, session) {
         output$columnSelForHeatmap <- renderUI({
             wellPanel(id = "tPanel",
                 style = "overflow-y:scroll; max-height: 200px",
-                checkboxGroupInput("col_list", "Select col to include:",
-                isolate(input$samples),
-                selected=isolate(input$samples))
+                shinydashboard::menuItem("Select Columns", icon = icon("star-o"),
+                    checkboxGroupInput("col_list", "Select col to include:",
+                    isolate(input$samples),
+                    selected=isolate(input$samples))
+                )
             )
         })
 
