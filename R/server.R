@@ -231,6 +231,9 @@ deServer <- function(input, output, session) {
             buttonValues$gotoanalysis <- TRUE
         }
         choicecounter$nc <- state$values$nc
+        if(choicecounter$nc > 0){
+            shinyjs::enable("startDE")
+        }
         
         cat(paste0("RESTORE++++++++++++++++++++++++++++++++++++++++++++++",
                    " nc ", choicecounter$nc, "qc ", choicecounter$qc, "\n"))
@@ -366,7 +369,8 @@ deServer <- function(input, output, session) {
                shinyjs::disable("startDE")
         })
         observeEvent(input$goDE, {
-            shinyjs::disable("startDE")
+            if (choicecounter$nc < 1)
+                shinyjs::disable("startDE")
             hideObj(c("goQCplots", "goDE"))
             showObj(c("add_btn","rm_btn","startDE", "fittype"))
         })
@@ -380,9 +384,10 @@ deServer <- function(input, output, session) {
             if (is.null(Dataset())) return(NULL)
                 getSamples(colnames(Dataset()), index = 2)
         })
-        output$server_goDE<- reactive({ 
-            cat("I return server_goDE +++==========++++\n")
-            return(choicecounter$nc) })
+        output$restore_DE <- reactive({
+            choicecounter$nc
+        })
+        outputOptions(output, 'restore_DE', suspendWhenHidden = FALSE)
         
         output$sampleSelector <- renderUI({
             if (is.null(samples())) return(NULL)

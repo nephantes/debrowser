@@ -33,7 +33,7 @@ deUI <- function() {
     dbHeader$children[[2]]$children <-  tags$a(style='color: white;',
         href = "/" , "DEBrowser")
     
-    addResourcePath(prefix = "www", directoryPath = system.file("extdata", 
+    addResourcePath(prefix = "www", directoryPath = system.file("extdata",
         "www", package = "debrowser"))
     (fluidPage(
     shinyjs::useShinyjs(),

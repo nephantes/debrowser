@@ -22,7 +22,7 @@ getDataPrepPanel <- function(flag = FALSE){
         actionButton("goQCplots", "Go to QC plots!"),
         actionButton("resetsamples", "Reset!"),
         #conditionalPanel(condition = paste0("(input.goDE) || (server_goDE.go > 0)"),
-        conditionalPanel(condition = "(input.goDE) || (output.server_goDE > 0)",
+        conditionalPanel(condition = "(input.goDE) || (output.restore_DE > 0)",
             helpText( "Please add new comparisons for DE analysis!" ),
             uiOutput("conditionSelector"),
             column(12,actionButton("add_btn", "Add New Comparison"),

@@ -63,3 +63,19 @@ li.active {
 
 }
 */
+
+.action-button {
+    color: black;
+}
+
+.btn-default {
+    color: black;
+}
+
+.fa-info {
+    color: white;
+}
+
+#downloadPlot {
+    color: black;
+}
