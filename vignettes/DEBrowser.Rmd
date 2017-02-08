@@ -22,7 +22,6 @@ suppressPackageStartupMessages({
     library(debrowser)
     library(RColorBrewer)
     library(annotate)
-    library(ReactomePA)
 })
 ```
 

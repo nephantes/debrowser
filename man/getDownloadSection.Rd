@@ -4,7 +4,7 @@
 \alias{getDownloadSection}
 \title{getDownloadSection}
 \usage{
-getDownloadSection(flag = FALSE, type = "main")
+getDownloadSection(flag = FALSE, choices = NULL)
 }
 \arguments{
 \item{flag, }{to show the download selection}
