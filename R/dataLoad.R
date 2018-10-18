@@ -60,6 +60,7 @@ debrowserdataload <- function(input = NULL, output = NULL, session = NULL, nextp
                 
             }
             ldata$meta <- metadatatable
+            jsondata <- jsondata[,sapply(jsondata, is.numeric)]
             ldata$count <- jsondata
         }
     })
@@ -73,7 +74,6 @@ debrowserdataload <- function(input = NULL, output = NULL, session = NULL, nextp
     observeEvent(input$demo2, {
         load(system.file("extdata", "demo", "demodata2.Rda",
                          package = "debrowser"))
-        
         ldata$count <- demodata
         ldata$meta <- metadatatable
     })
@@ -85,6 +85,7 @@ debrowserdataload <- function(input = NULL, output = NULL, session = NULL, nextp
                 read.delim(input$countdata$datapath, 
                 header=T, sep=input$countdataSep, 
             row.names=1, strip.white=TRUE ), TRUE))
+        counttable <- counttable[,sapply(counttable, is.numeric)]
         metadatatable <- c()
         if (!is.null(input$metadata$datapath)){
         metadatatable <- as.data.frame(

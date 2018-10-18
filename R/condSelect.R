@@ -20,7 +20,6 @@
 debrowsercondselect <- function(input = NULL, output = NULL, session = NULL, data = NULL, metadata = NULL) {
     if (is.null(data)) return(NULL)
     choicecounter <- reactiveVal(0)
-    
     output$conditionSelector <- renderUI({
         selectConditions(data, metadata, choicecounter(), input)
     })
@@ -31,7 +30,6 @@ debrowsercondselect <- function(input = NULL, output = NULL, session = NULL, dat
         if (choicecounter() > 0) 
             choicecounter(choicecounter() - 1)
     })
-
     list(cc = choicecounter)
 }
 
@@ -205,7 +203,7 @@ getConditionSelectorFromMeta <- function(metadata = NULL, input = NULL, index = 
 #' @export
 #'
 selectedInput <- function(id = NULL, num = 0, default = NULL, 
-                          input = NULL) {
+    input = NULL) {
     if (is.null(id)) return(NULL)
     m <- NULL
     if (is.null(input[[paste0(id, num)]]))

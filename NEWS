@@ -1,4 +1,10 @@
 ***********************************
+Version 1.8.6 Release
+*********************************
+- The columns that have strings removed while loading
+
+
+***********************************
 Version 1.8.4 Release
 *********************************
 - Calculated padj and foldchange columns added to all detected genes result
