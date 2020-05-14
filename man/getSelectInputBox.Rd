@@ -4,8 +4,14 @@
 \alias{getSelectInputBox}
 \title{getSelectInputBox}
 \usage{
-getSelectInputBox(id = NULL, name = NULL, num = 0, choices = NULL,
-  selected = NULL, cw = 2)
+getSelectInputBox(
+  id = NULL,
+  name = NULL,
+  num = 0,
+  choices = NULL,
+  selected = NULL,
+  cw = 2
+)
 }
 \arguments{
 \item{id, }{input id}

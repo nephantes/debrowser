@@ -4,8 +4,16 @@
 \alias{actionButtonDE}
 \title{Buttons including Action Buttons and Event Buttons}
 \usage{
-actionButtonDE(inputId, label, styleclass = "", size = "",
-  block = FALSE, icon = NULL, css.class = "", ...)
+actionButtonDE(
+  inputId,
+  label,
+  styleclass = "",
+  size = "",
+  block = FALSE,
+  icon = NULL,
+  css.class = "",
+  ...
+)
 }
 \arguments{
 \item{inputId}{Specifies the input slot that will be used to access the

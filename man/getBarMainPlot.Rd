@@ -4,8 +4,14 @@
 \alias{getBarMainPlot}
 \title{getBarMainPlot}
 \usage{
-getBarMainPlot(data = NULL, cols = NULL, conds = NULL, key = NULL,
-  title = "", input = NULL)
+getBarMainPlot(
+  data = NULL,
+  cols = NULL,
+  conds = NULL,
+  key = NULL,
+  title = "",
+  input = NULL
+)
 }
 \arguments{
 \item{data, }{count or normalized data}

@@ -183,6 +183,11 @@ runDESeq2 <- function(data = NULL, columns = NULL, conds = NULL, params = NULL) 
     testType <- if (!is.null(params[4])) params[4]
     rowsum.filter <-  if (!is.null(params[5])) as.integer(params[5])
     
+    if(length(columns)<3){
+        showNotification("You cannot use DESeq2 if you don't have multiple samples per condition", type = "error")
+        return(NULL)
+    }
+    
     data <- data[, columns]
 
     data[, columns] <- apply(data[, columns], 2,
@@ -255,7 +260,10 @@ runEdgeR<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
     data <- data[, columns]
     data[, columns] <- apply(data[, columns], 2,
         function(x) as.integer(x))
-    dispersion <- as.numeric(dispersion)
+
+    if (!is.na(dispersion) && !(dispersion %in% c("common", "trended", "tagwise", "auto")))
+        dispersion <- as.numeric(dispersion)
+
     conds <- factor(conds)
     filtd <- data
     if (is.numeric(rowsum.filter) && !is.na(rowsum.filter))
@@ -268,17 +276,24 @@ runEdgeR<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
     cnum = summary(conds)[levels(conds)[1]]
     tnum = summary(conds)[levels(conds)[2]]
     des <- c(rep(1, cnum),rep(2, tnum))
+    if(cnum == 1 && tnum == 1 && 
+         (dispersion %in% c("common", "trended", "tagwise", "auto") ||
+            dispersion == 0)){
+        showNotification("You cannot use this dispersion with common, trended, tagwise, 
+            auto, when there are 1 replicates for each condition. 
+            Please use a numeric value if that's the case.", type = "error")
+        return(NULL)
+    }
     design <- model.matrix(~des)
+    d <- edgeR::estimateDisp(d, design)
     if (testType == "exactTest"){
         if (dispersion == 0){
-            d <- edgeR::estimateDisp(d, design)
             de.com <- edgeR::exactTest(d)
         }else{
             de.com <- edgeR::exactTest(d, dispersion=dispersion)
         }
     }else if (testType == "glmLRT"){
         if (dispersion == 0){
-            d <- edgeR::estimateDisp(d, design)
             fit <- edgeR::glmFit(d, design)
         }else{
             fit <- edgeR::glmFit(d, design, dispersion=dispersion)
@@ -288,7 +303,7 @@ runEdgeR<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
 
     options(digits=4)
 
-    padj<- p.adjust(de.com$table$PValue, method="bonferroni")
+    padj<- p.adjust(de.com$table$PValue, method="BH")
     res <-data.frame(cbind(de.com$table$logFC/log(2),de.com$table$PValue, padj))
     colnames(res) <- c("log2FoldChange", "pvalue", "padj")
     rownames(res) <- rownames(filtd)
@@ -398,7 +413,7 @@ prepGroup <- function(conds = NULL, cols = NULL) {
 #'     x <- addDataCols()
 #'
 addDataCols <- function(data = NULL, de_res = NULL, cols = NULL, conds = NULL) {
-    if (is.null(data) || is.null(de_res)) return (NULL)
+    if (is.null(data) || (nrow(de_res) == 0 && ncol(de_res) == 0)) return (NULL)
     norm_data <- data[, cols]
     
     coldata <- prepGroup(conds, cols)

@@ -4,8 +4,15 @@
 \alias{debrowserbarmainplot}
 \title{debrowserbarmainplot}
 \usage{
-debrowserbarmainplot(input, output, session, data = NULL, cols = NULL,
-  conds = NULL, key = NULL)
+debrowserbarmainplot(
+  input,
+  output,
+  session,
+  data = NULL,
+  cols = NULL,
+  conds = NULL,
+  key = NULL
+)
 }
 \arguments{
 \item{input, }{input variables}

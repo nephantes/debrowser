@@ -4,8 +4,14 @@
 \alias{getBoxMainPlot}
 \title{getBoxMainPlot}
 \usage{
-getBoxMainPlot(data = NULL, cols = NULL, conds = NULL, key = NULL,
-  title = "", input = NULL)
+getBoxMainPlot(
+  data = NULL,
+  cols = NULL,
+  conds = NULL,
+  key = NULL,
+  title = "",
+  input = NULL
+)
 }
 \arguments{
 \item{data, }{count or normalized data}
