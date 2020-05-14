@@ -3,7 +3,6 @@ Type: Package
 Title: Interactive Differential Expresion Analysis Browser
 Version: 1.17.1
 Date: 2020-05-13
->>>>>>> RELEASE_3_11
 Author: Alper Kucukural <alper.kucukural@umassmed.edu>,
         Onur Yukselen <onur.yukselen@umassmed.edu>,
         Manuel Garber <manuel.garber@umassmed.edu>
