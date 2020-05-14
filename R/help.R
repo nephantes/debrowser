@@ -71,7 +71,7 @@ p(strong("CPM:"), "First, counts per million (CPM) is calculated as the raw coun
     defined number of samples is less than defined CPM threshold."),
 withMathJax(),
 p("The expression cutoff value is determined according to the library size 
-    and normalization factors with formula $$\\text{CPM} = \\frac{\\text{raw counts}}{\\text{library size} * \\text{normalization factors} * 10^{-6}}$$ 
+    and normalization factors with formula $$\\text{CPM} = \\frac{\\text{raw counts}}{\\text{library size} * \\text{normalization factors}} * 10^{-6}$$ 
     For example, if the cutoff CPM value is 10,
     the library size and normalization factors are estimated approximately equal to \\(\\ 3 \\text{ x} 10 ^ 6\\) and 1 for at least 4 samples, 
     then 10 CPM expression cutoff corresponds to about 30 read counts. 
