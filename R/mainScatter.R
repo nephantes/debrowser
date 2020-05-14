@@ -37,7 +37,7 @@ debrowsermainplot <- function(input = NULL, output = NULL, session = NULL, data 
             y <- paste0('log10 Norm. Mean(Read Counts) in cond2')
         }else if  (input$mainplot == "volcano"){
             x <- "log2FC"
-            y <- "log10padj"
+            y <- "-log10padj"
         }else {
             x <- "A"
             y <- "M"

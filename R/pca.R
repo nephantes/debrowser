@@ -36,6 +36,7 @@ getPCAPlotUI <- function(id) {
 debrowserpcaplot <- function(input = NULL, output = NULL, session = NULL, pcadata = NULL, metadata = NULL) {
     if(is.null(pcadata)) return(NULL)
     qcplots <-  reactive({ 
+        if(is.null(pcadata)) return(NULL)
         sc <- getShapeColor(input)
         plot_pca(pcadata, input$pcselx, input$pcsely,
             metadata = metadata, color = sc$color,
@@ -115,7 +116,7 @@ pcaPlotControlsUI <- function(id  = "pca") {
 #'
 run_pca <- function(x=NULL, retx = TRUE,
     center = TRUE, scale = TRUE) {
-    if ( is.null(x) || ncol(x) < 2) return (NULL)
+    if ( is.null(x) || ncol(x) < 2 || nrow(x) < 1) return (NULL)
     x <- subset(x, apply(x, 1, var, na.rm = TRUE) >  0)
     pca <- prcomp(t(x), retx = retx,
          center = center, scale. = scale)
@@ -158,7 +159,7 @@ run_pca <- function(x=NULL, retx = TRUE,
 plot_pca <- function(dat = NULL, pcx = 1, pcy = 2,
     metadata = NULL, color = NULL, shape = NULL,
     size = NULL, textonoff = "Off", legendSelect = "samples", input = NULL) {
-    if ( is.null(dat) || ncol(dat) < 2) return(NULL)
+    if ( is.null(dat) || is.null(ncol(dat)) || ncol(dat) < 2 || nrow(dat)<1) return(NULL)
 
     pca_data <- run_pca(dat)
     p_data <- prepPCADat(pca_data, metadata, input, pcx, pcy)

@@ -4,8 +4,15 @@
 \alias{debrowserboxmainplot}
 \title{debrowserboxmainplot}
 \usage{
-debrowserboxmainplot(input = NULL, output = NULL, session = NULL,
-  data = NULL, cols = NULL, conds = NULL, key = NULL)
+debrowserboxmainplot(
+  input = NULL,
+  output = NULL,
+  session = NULL,
+  data = NULL,
+  cols = NULL,
+  conds = NULL,
+  key = NULL
+)
 }
 \arguments{
 \item{input, }{input variables}

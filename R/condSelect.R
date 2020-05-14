@@ -477,9 +477,11 @@ prepDataContainer <- function(data = NULL, counter=NULL,
         withProgress(message = 'Running DE Algorithms', detail = inputconds$demethod_params[i], value = 0, {
             initd <- callModule(debrowserdeanalysis, paste0("DEResults",i), data = data, 
                   columns = cols, conds = conds, params = params)
-            if (nrow(initd$dat()) > 1){
+            if (!is.null(initd$dat()) && nrow(initd$dat()) > 1){
                 inputconds$dclist[[i]] <- list(conds = conds, cols = cols, init_data=initd$dat(), 
                     demethod_params = inputconds$demethod_params[i])
+            }else{
+                return(NULL)
             }
             incProgress(1/counter)
         })

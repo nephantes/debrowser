@@ -4,8 +4,7 @@
 \alias{getEnrichKEGG}
 \title{getEnrichKEGG}
 \usage{
-getEnrichKEGG(genelist = NULL, pvalueCutoff = 0.01,
-  org = "org.Hs.eg.db")
+getEnrichKEGG(genelist = NULL, pvalueCutoff = 0.01, org = "org.Hs.eg.db")
 }
 \arguments{
 \item{genelist, }{gene list}

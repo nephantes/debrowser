@@ -4,8 +4,15 @@
 \alias{debrowserdeanalysis}
 \title{debrowserdeanalysis}
 \usage{
-debrowserdeanalysis(input = NULL, output = NULL, session = NULL,
-  data = NULL, columns = NULL, conds = NULL, params = NULL)
+debrowserdeanalysis(
+  input = NULL,
+  output = NULL,
+  session = NULL,
+  data = NULL,
+  columns = NULL,
+  conds = NULL,
+  params = NULL
+)
 }
 \arguments{
 \item{input, }{input variables}
