@@ -45,7 +45,6 @@ Imports:
     SummarizedExperiment,
     stringi,
     reshape2,
-    d3heatmap,
     org.Hs.eg.db,
     org.Mm.eg.db,
     limma,
