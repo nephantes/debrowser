@@ -32,7 +32,6 @@
 #'             showNotification updateSelectInput
 #' @importFrom shinyjs show hide enable disable useShinyjs extendShinyjs
 #'             js inlineCSS onclick
-#' @importFrom d3heatmap d3heatmap renderD3heatmap d3heatmapOutput
 #' @importFrom DT datatable dataTableOutput renderDataTable formatStyle
 #'             styleInterval formatRound
 #' @importFrom ggplot2 aes aes_string geom_bar geom_point ggplot
