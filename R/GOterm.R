@@ -10,30 +10,22 @@
 #' symobol to ENTREZ ID conversion
 #' @param genes, gene list
 #' @param org, orgranism for gene symbol entrez ID conversion
+#' @param fromType, from Type
+#' @param toType, to Type 
 #' @return ENTREZ ID list
 #'
 #' @examples
 #'     x <- getGeneList(c('OCLN', 'ABCC2'))
 #'
-getGeneList <- function(genes = NULL, org = "org.Hs.eg.db") {
+getGeneList <- function(genes = NULL, org = "org.Hs.eg.db", 
+    fromType= "SYMBOL", toType = c("ENTREZID")) {
     # Get the entrez gene identifiers that are mapped to a gene symbol
     if (!installpack(org)) return(NULL)
-    allkeys <- AnnotationDbi::keys(eval(parse(text = org)), 
-        keytype="SYMBOL")
-    existinggenes <- unique(as.vector(unlist(lapply(toupper(genes), 
-        function(x){ allkeys[x == toupper(allkeys)] }))))
-    if (length(existinggenes) < 1){
-        txt <- paste0("Please check the gene names! DEBrowser only accepts gene symbols. Ex:", 
-                      paste(head(allkeys), sep=","))
-        print(txt)
-        showNotification(txt)
-        return(NULL)
-    }
-        
-    mapped_genes <- mapIds(eval(parse(text = org)), keys = existinggenes, 
-        column="ENTREZID", keytype="SYMBOL",
-        multiVals = "first")
-    genelist <- unique(as.vector(unlist(mapped_genes)))
+
+    mapped_genes <- bitr(genes, fromType = fromType,
+         toType = toType,
+         OrgDb = org)
+    genelist <- unique(as.vector(unlist(mapped_genes[toType])))
     genelist
 }
 
@@ -166,6 +158,50 @@ getEnrichKEGG <- function(genelist = NULL, pvalueCutoff = 0.01,
     if (!is.null(nrow(res$enrich_p@result)) )
         res$table <- res$enrich_p@result[,c("ID", "Description", 
             "GeneRatio", "pvalue", "p.adjust", "qvalue")]
+    return(res)
+}
+
+#' getGSEA
+#'
+#' Gathers the Enriched KEGG analysis data to be used within the
+#' GO Term plots.
+#'
+#' @note \code{getGSEA}
+#' @param org, the organism used
+#' @param dataset, dataset
+#' @param pvalueCutoff, the p value cutoff
+#' @return GSEA
+#' @examples
+#'     x <- getGSEA()
+#' @export
+#'
+getGSEA <- function(dataset=NULL, pvalueCutoff = 0.01,
+                    org = "org.Hs.eg.db") {
+    if (is.null(dataset)) return(NULL)
+    
+    genelist <- getGeneList(rownames(dataset), org, 
+        fromType = "SYMBOL",toType = "ENTREZID")
+    symbol <- getGeneList(genelist, org, 
+        fromType = "ENTREZID",toType = "SYMBOL")
+    data <- dataset[symbol, c("ID","log2FoldChange")]
+    rownames(data) <- genelist
+    newdata <- data[order(-data$log2FoldChange),] 
+    newdata1 <- newdata$log2FoldChange
+    names(newdata1) <- rownames(newdata)
+    
+    res <- c()
+    OrgDb <- org
+    if (is(OrgDb, "character")) {
+        require(OrgDb, character.only = TRUE)
+        OrgDb <- eval(parse(text = OrgDb))
+    }
+    res$enrich_p <- gseGO(geneList=newdata1, ont="All", OrgDb = OrgDb, verbose=F,
+        pvalueCutoff=pvalueCutoff)
+    
+    res$table <- NULL
+    if (!is.null(nrow(res$enrich_p@result)) )
+        res$table <- res$enrich_p@result[,c("ID", "Description", 
+           "setSize", "enrichmentScore", "pvalue", "p.adjust", "qvalues")]
     return(res)
 }
 

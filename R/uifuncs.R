@@ -26,7 +26,7 @@ if (is.null(input)) return(NULL)
         shinydashboard::menuItem(" Plot Type", startExpanded = TRUE,
             wellPanel(radioButtons("goplot", paste("Go Plots:", sep = ""),
                 c(enrichGO = "enrichGO", enrichKEGG = "enrichKEGG",
-                Disease = "disease", compareClusters = "compare")))),
+                Disease = "disease", compareClusters = "compare", GSEA = "GSEA")))),
                 getGOLeftMenu()
                 ),
         conditionalPanel( (condition <- "input.methodtabs=='panel4'"),

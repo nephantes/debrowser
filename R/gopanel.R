@@ -35,6 +35,7 @@ getGoPanel <- function(){
 #' based on user selection.
 #'
 #' @param dataset, the dataset used
+#' @param GSEARes, GSEA results
 #' @param input, input params
 #' @note \code{getGOPlots}
 #' @return the panel for go plots;
@@ -43,7 +44,7 @@ getGoPanel <- function(){
 #'     x<- getGOPlots()
 #' @export
 #' 
-getGOPlots <- function(dataset = NULL, input = NULL){
+getGOPlots <- function(dataset = NULL, GSEARes = NULL, input = NULL){
     if (is.null(dataset)) return(NULL)
     goplots <- NULL
     org <- input$organism
@@ -77,8 +78,19 @@ getGOPlots <- function(dataset = NULL, input = NULL){
         if (input$goextplot == "Dotplot")
             goplots$p <- dotplot(res$enrich_p, showCategory=30)
     }
+    else if (input$goplot == "GSEA") {
+        res <- GSEARes
+        res$p <-  gseaplot(res$enrich_p, by = "all", 
+            title = res$enrich_p$Description[1], geneSetID = 1)
+        goplots <- res
+        
+        if (input$goextplot == "Dotplot")
+            goplots$p <- dotplot(res$enrich_p, showCategory=10, split=".sign") + facet_grid(.~.sign)
+    }
     return(goplots)
 }
+
+
 
 #' getOrganismBox
 #'

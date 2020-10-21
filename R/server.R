@@ -69,7 +69,7 @@
 #' @importFrom annotate geneSymbols
 #' @importFrom reshape2 melt
 #' @importFrom Harman harman reconstructData
-#' @importFrom clusterProfiler compareCluster enrichKEGG enrichGO
+#' @importFrom clusterProfiler compareCluster enrichKEGG enrichGO gseGO bitr
 #' @importFrom DESeq2 DESeq DESeqDataSetFromMatrix results estimateSizeFactors
 #'             counts
 #' @importFrom edgeR calcNormFactors equalizeLibSizes DGEList glmLRT
@@ -409,15 +409,33 @@ deServer <- function(input, output, session) {
             if (input$startGO){
                 withProgress(message = 'GO Started', detail = "interactive", value = 0, {
                     dat <- datForTables()
-                    getGOPlots(dat[[1]][, isolate(cols())], input)
+                    getGOPlots(dat[[1]], isolate(getGSEARes()), input)
                 })
             }
         })
+        
+        getGSEARes <- reactive({
+            if (input$goplot == "GSEA"){
+                dat <- datForTables()
+                gopval <- as.numeric(input$gopvalue)
+                getGSEA(dat[[1]], pvalueCutoff = gopval, 
+                        org=input$organism)
+            }
+        })
+        
         observeEvent(input$startGO, {
             inputGOstart()
         })
+
         output$GOPlots1 <- renderPlot({
             if (!is.null(inputGOstart()$p) && input$startGO){
+                if (input$goplot == "GSEA" && !is.null(input$gotable_rows_selected)){
+                    pid <- input$gotable_rows_selected
+                    p <- gseaplot(inputGOstart()$enrich_p, by = "all", 
+                    title = inputGOstart()$enrich_p$Description[pid[1]], 
+                    geneSetID = pid[1])
+                    return(p)
+                }
                 return(inputGOstart()$p)
             }
         })
@@ -441,12 +459,16 @@ deServer <- function(input, output, session) {
         }, deleteFile = TRUE)
 
         getGOCatGenes <- reactive({
-            print(input$gotable_rows_selected)
             if(is.null(input$gotable_rows_selected)) return (NULL)
             org <- input$organism
             dat <- tabledat()
             i <- input$gotable_rows_selected
-            genedata <- getEntrezTable(inputGOstart()$enrich_p$geneID[i],
+            if (input$goplot == "GSEA"){
+                genes <- inputGOstart()$enrich_p$core_enrichment[i]
+            } else{
+                genes <- inputGOstart()$enrich_p$geneID[i]
+            }
+            genedata <- getEntrezTable(genes,
                 dat[[1]], org)
             dat[[1]] <- genedata
             dat
