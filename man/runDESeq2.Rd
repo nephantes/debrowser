@@ -28,8 +28,14 @@ testType: either "Wald" or "LRT", which will then use either
     Wald significance tests (defined by nbinomWaldTest), or the 
     likelihood ratio test on the difference in deviance between a 
     full and reduced model formula (defined by nbinomLRT)
-rowsum.filter: regions/genes/isoforms with total count 
-     (across all samples) below this value will be filtered out}
+shrinkage: Adds shrunken log2 fold changes (LFC) and SE to a results 
+    table from DESeq run without LFC shrinkage. For consistency with 
+    results, the column name lfcSE is used here although what is 
+    returned is a posterior SD. Three shrinkage estimators for 
+    LFC are available via type (see the vignette for more details 
+    on the estimators). The apeglm publication demonstrates that 
+    'apeglm' and 'ashr' outperform the original 'normal' shrinkage 
+    estimator.}
 }
 \value{
 deseq2 results

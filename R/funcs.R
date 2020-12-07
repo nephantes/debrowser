@@ -108,12 +108,12 @@ getVariationData <- function(inputdata = NULL,
     # Pick out the gene with this ID
     vardata <- inputdata[key, ]
     bardata <- as.data.frame(cbind(key, cols,
-                                   t(vardata[, cols]), as.character(conds)) )
+        t(vardata[, cols]), as.character(conds)) )
     colnames(bardata) <- c("genename", "libs", "count", "conds")
     bardata$count <- as.numeric(as.character(bardata$count))
     bardata$conds <- factor(bardata$conds)
     data <- rbind(bardata[bardata$conds == levels(bardata$conds)[1], ],
-                  bardata[bardata$conds == levels(bardata$conds)[2], ])
+        bardata[bardata$conds == levels(bardata$conds)[2], ])
     data$conds  <- factor(data$conds, levels = unique(data$conds))
     data
 }

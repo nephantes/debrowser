@@ -4,7 +4,12 @@
 \alias{getGSEA}
 \title{getGSEA}
 \usage{
-getGSEA(dataset = NULL, pvalueCutoff = 0.01, org = "org.Hs.eg.db")
+getGSEA(
+  dataset = NULL,
+  pvalueCutoff = 0.01,
+  org = "org.Hs.eg.db",
+  sortfield = "log2FoldChange"
+)
 }
 \arguments{
 \item{dataset, }{dataset}
@@ -12,6 +17,8 @@ getGSEA(dataset = NULL, pvalueCutoff = 0.01, org = "org.Hs.eg.db")
 \item{pvalueCutoff, }{the p value cutoff}
 
 \item{org, }{the organism used}
+
+\item{sortfield, }{sort field for GSEA}
 }
 \value{
 GSEA

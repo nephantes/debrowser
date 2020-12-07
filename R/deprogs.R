@@ -164,8 +164,14 @@ runDE <- function(data = NULL, columns = NULL, conds = NULL, params = NULL) {
 #'     Wald significance tests (defined by nbinomWaldTest), or the 
 #'     likelihood ratio test on the difference in deviance between a 
 #'     full and reduced model formula (defined by nbinomLRT)
-#' rowsum.filter: regions/genes/isoforms with total count 
-#'      (across all samples) below this value will be filtered out
+#' shrinkage: Adds shrunken log2 fold changes (LFC) and SE to a results 
+#'     table from DESeq run without LFC shrinkage. For consistency with 
+#'     results, the column name lfcSE is used here although what is 
+#'     returned is a posterior SD. Three shrinkage estimators for 
+#'     LFC are available via type (see the vignette for more details 
+#'     on the estimators). The apeglm publication demonstrates that 
+#'     'apeglm' and 'ashr' outperform the original 'normal' shrinkage 
+#'     estimator.
 #' @return deseq2 results
 #'
 #' @export
@@ -181,8 +187,8 @@ runDESeq2 <- function(data = NULL, columns = NULL, conds = NULL, params = NULL) 
     fitType <- if (!is.null(params[2])) params[2]
     betaPrior <-  if (!is.null(params[3])) params[3]
     testType <- if (!is.null(params[4])) params[4]
-    rowsum.filter <-  if (!is.null(params[5])) as.integer(params[5])
-    
+    shrinkage <-  if (!is.null(params[5])) params[5]
+
     if(length(columns)<3){
         showNotification("You cannot use DESeq2 if you don't have multiple samples per condition", type = "error")
         return(NULL)
@@ -196,8 +202,6 @@ runDESeq2 <- function(data = NULL, columns = NULL, conds = NULL, params = NULL) 
     coldata <- prepGroup(conds, columns)
     # Filtering non expressed genes
     filtd <- data
-    if (is.numeric(rowsum.filter) && !is.na(rowsum.filter))
-        filtd <- subset(data, rowSums(data) > rowsum.filter)
     
     # DESeq data structure is going to be prepared
     dds <- DESeqDataSetFromMatrix(countData = as.matrix(filtd),
@@ -207,8 +211,14 @@ runDESeq2 <- function(data = NULL, columns = NULL, conds = NULL, params = NULL) 
         dds <- DESeq(dds, fitType = fitType, betaPrior = as.logical(betaPrior), test=testType, reduced= ~ 1)
     else
         dds <- DESeq(dds, fitType = fitType, betaPrior = as.logical(betaPrior), test=testType)
-
+        
     res <- results(dds)
+    if (shrinkage != "None"){
+        res <- lfcShrink(dds, coef=2, res=res, type = shrinkage)
+        stat <- dds@rowRanges@elementMetadata[paste0(testType, "Statistic")]
+        res <- cbind(res, stat)
+        colnames(res)[colnames(res) == paste0(testType, "Statistic")] <- "stat"
+    }
     return(res)
 }
 
@@ -239,8 +249,6 @@ runDESeq2 <- function(data = NULL, columns = NULL, conds = NULL, params = NULL) 
 #'     glmLRT: Fit a negative binomial generalized log-linear model to the read 
 #'     counts for each gene. Conduct genewise statistical tests for a given 
 #'     coefficient or coefficient contrast.
-#' rowsum.filter: regions/genes/isoforms with total count 
-#'      (across all samples) below this value will be filtered out
 #' @return edgeR results
 #'
 #' @export
@@ -255,7 +263,6 @@ runEdgeR<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
     normfact <- if (!is.null(params[2])) params[2]
     dispersion <- if (!is.null(params[3])) params[3]
     testType <- if (!is.null(params[4])) params[4]
-    rowsum.filter <-  if (!is.null(params[5])) as.integer(params[5])
 
     data <- data[, columns]
     data[, columns] <- apply(data[, columns], 2,
@@ -266,8 +273,6 @@ runEdgeR<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
 
     conds <- factor(conds)
     filtd <- data
-    if (is.numeric(rowsum.filter) && !is.na(rowsum.filter))
-        filtd <- subset(data, rowSums(data) > rowsum.filter)
     
     d<- edgeR::DGEList(counts = filtd, group = conds)
     d <- edgeR::calcNormFactors(d, method = normfact)
@@ -291,7 +296,10 @@ runEdgeR<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
             de.com <- edgeR::exactTest(d)
         }else{
             de.com <- edgeR::exactTest(d, dispersion=dispersion)
+            
         }
+        de.com$table<-topTags(de.com, n = nrow(de.com$table))$table
+        colnames(de.com$table)[colnames(de.com$table) == "FDR"] <- "stat"
     }else if (testType == "glmLRT"){
         if (dispersion == 0){
             fit <- edgeR::glmFit(d, design)
@@ -299,13 +307,14 @@ runEdgeR<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
             fit <- edgeR::glmFit(d, design, dispersion=dispersion)
         }   
         de.com <- edgeR::glmLRT(fit,coef=2)
+        colnames(de.com$table)[colnames(de.com$table) == "LR"] <- "stat"
     }
 
     options(digits=4)
 
     padj<- p.adjust(de.com$table$PValue, method="BH")
-    res <-data.frame(cbind(de.com$table$logFC/log(2),de.com$table$PValue, padj))
-    colnames(res) <- c("log2FoldChange", "pvalue", "padj")
+    res <-data.frame(cbind(de.com$table$logFC/log(2),de.com$table$PValue, padj, de.com$table$stat))
+    colnames(res) <- c("log2FoldChange", "pvalue", "padj", "stat")
     rownames(res) <- rownames(filtd)
     return(res)
 }
@@ -327,8 +336,6 @@ runEdgeR<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
 #'     for robust regression
 #' normBet: Normalizes expression intensities so that the 
 #'     intensities or log-ratios have similar distributions across a set of arrays.
-#' rowsum.filter: regions/genes/isoforms with total count 
-#'     (across all samples) below this value will be filtered out
 #' @return Limma results
 #'
 #' @export
@@ -343,7 +350,6 @@ runLimma<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
     normfact = if (!is.null(params[2])) params[2]
     fitType = if (!is.null(params[3])) params[3]
     normBet = if (!is.null(params[4])) params[4]
-    rowsum.filter <-  if (!is.null(params[5])) as.integer(params[5])
 
     data <- data[, columns]
     data[, columns] <- apply(data[, columns], 2,
@@ -353,8 +359,6 @@ runLimma<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
     cnum = summary(conds)[levels(conds)[1]]
     tnum = summary(conds)[levels(conds)[2]]
     filtd <- data
-    if (is.numeric(rowsum.filter) && !is.na(rowsum.filter))
-        filtd <- as.matrix(subset(data, rowSums(data) > rowsum.filter))
     
     des <- factor(c(rep(levels(conds)[1], cnum),rep(levels(conds)[2], tnum)))
     names(filtd) <- des
@@ -371,9 +375,9 @@ runLimma<- function(data = NULL, columns = NULL, conds = NULL, params = NULL){
     
     options(digits=4)
     tab <- topTable(fit,coef=2, number=dim(fit)[1],genelist=fit$genes$NAME)
-    res <-data.frame(cbind(tab$logFC, tab$P.Value, tab$adj.P.Val))
+    res <-data.frame(cbind(tab$logFC, tab$P.Value, tab$adj.P.Val, tab$t))
     
-    colnames(res) <- c("log2FoldChange", "pvalue", "padj")
+    colnames(res) <- c("log2FoldChange", "pvalue", "padj", "stat")
     rownames(res) <- rownames(tab)
     return(res)
 }
@@ -425,12 +429,12 @@ addDataCols <- function(data = NULL, de_res = NULL, cols = NULL, conds = NULL) {
                log10(unlist(mean_cond_second) + 1),
                log10(unlist(mean_cond_first) + 1),
                de_res[rownames(de_res),
-                      c("padj", "log2FoldChange", "pvalue")], 
+                      c("padj", "log2FoldChange", "pvalue", "stat")], 
                2 ^ de_res[rownames(de_res),
                           "log2FoldChange"],
                -1 * log10(de_res[rownames(de_res), "padj"]))
     colnames(m) <- c("ID", cols, "x", "y",
-                     "padj", "log2FoldChange", "pvalue",
+                     "padj", "log2FoldChange", "pvalue", "stat",
                      "foldChange", "log10padj")
     m <- as.data.frame(m)
     m$padj[is.na(m[paste0("padj")])] <- 1

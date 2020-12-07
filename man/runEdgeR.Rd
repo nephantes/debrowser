@@ -31,9 +31,7 @@ testType: exactTest or glmLRT. exactTest: Computes p-values for differential
     proportion of the whole are assumed to follow a binomial distribution. 
     glmLRT: Fit a negative binomial generalized log-linear model to the read 
     counts for each gene. Conduct genewise statistical tests for a given 
-    coefficient or coefficient contrast.
-rowsum.filter: regions/genes/isoforms with total count 
-     (across all samples) below this value will be filtered out}
+    coefficient or coefficient contrast.}
 }
 \value{
 edgeR results
