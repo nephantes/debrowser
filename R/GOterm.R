@@ -170,24 +170,25 @@ getEnrichKEGG <- function(genelist = NULL, pvalueCutoff = 0.01,
 #' @param org, the organism used
 #' @param dataset, dataset
 #' @param pvalueCutoff, the p value cutoff
+#' @param sortfield, sort field for GSEA
 #' @return GSEA
 #' @examples
 #'     x <- getGSEA()
 #' @export
 #'
 getGSEA <- function(dataset=NULL, pvalueCutoff = 0.01,
-                    org = "org.Hs.eg.db") {
+                    org = "org.Hs.eg.db", sortfield = "log2FoldChange") {
     if (is.null(dataset)) return(NULL)
     
     genelist <- getGeneList(rownames(dataset), org, 
         fromType = "SYMBOL",toType = "ENTREZID")
     symbol <- getGeneList(genelist, org, 
         fromType = "ENTREZID",toType = "SYMBOL")
-    data <- dataset[symbol, c("ID","log2FoldChange")]
+    data <- dataset[symbol, c("ID", sortfield)]
     rownames(data) <- genelist
-    newdata <- data[order(-data$log2FoldChange),] 
-    newdata1 <- newdata$log2FoldChange
-    names(newdata1) <- rownames(newdata)
+    newdata <- data[order(-data[,sortfield]),] 
+    newdatatmp <- newdata[,sortfield]
+    names(newdatatmp) <- rownames(newdata)
     
     res <- c()
     OrgDb <- org
@@ -195,13 +196,14 @@ getGSEA <- function(dataset=NULL, pvalueCutoff = 0.01,
         require(OrgDb, character.only = TRUE)
         OrgDb <- eval(parse(text = OrgDb))
     }
-    res$enrich_p <- gseGO(geneList=newdata1, ont="All", OrgDb = OrgDb, verbose=F,
+    res$enrich_p <- gseGO(geneList=newdatatmp, ont="All", OrgDb = OrgDb, verbose=F,
         pvalueCutoff=pvalueCutoff)
     
     res$table <- NULL
-    if (!is.null(nrow(res$enrich_p@result)) )
+    if (nrow(res$enrich_p@result)>0 )
         res$table <- res$enrich_p@result[,c("ID", "Description", 
            "setSize", "enrichmentScore", "pvalue", "p.adjust", "qvalues")]
+
     return(res)
 }
 

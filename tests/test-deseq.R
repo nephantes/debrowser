@@ -8,9 +8,9 @@ columns <- c("exper_rep1", "exper_rep2", "exper_rep3",
 conds <- factor( c("Control", "Control", "Control",
     "Treat", "Treat", "Treat") )
 data <- data.frame(demodata[, columns])
-params <-
-        #Run DESeq2 with the following parameters
-        c("DESeq2", "parametric", F, "Wald") 
+
+#Run DESeq2 with the following parameters
+params <- c("DESeq2", "parametric", F, "Wald", "None") 
 non_expressed_cutoff <- 10
 data <- subset(data, rowSums(data) > 10)
 test_that("Able to run DESeq2", {

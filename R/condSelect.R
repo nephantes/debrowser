@@ -84,7 +84,10 @@ getMethodDetails <- function(num = 0, input = NULL) {
                     FALSE, input),2),
                 getSelectInputBox("testType", "Test Type", num, 
                     c("LRT", "Wald"),  
-                    selectedInput("testType", num, "LRT", input))),
+                    selectedInput("testType", num, "LRT", input)),
+                getSelectInputBox("shrinkage", "Shrinkage", num, 
+                    c("None", "apeglm", "ashr", "normal"),
+                    selectedInput("shrinkage", num, "None", input))),
             conditionalPanel(
                 (condition <- paste0("input.demethod",num," == 'EdgeR'")),
                 getSelectInputBox("edgeR_normfact", "Normalization", num, 
@@ -448,7 +451,8 @@ prepDataContainer <- function(data = NULL, counter=NULL,
                 isolate(input[[paste0("demethod",cnt)]]),
                 isolate(input[[paste0("fitType",cnt)]]),
                 isolate(input[[paste0("betaPrior",cnt)]]),
-                isolate(input[[paste0("testType",cnt)]]), sep=",")
+                isolate(input[[paste0("testType",cnt)]]),
+                isolate(input[[paste0("shrinkage",cnt)]]), sep=",")
         }
         else if (isolate(input[[paste0("demethod",cnt)]]) == "EdgeR"){
             inputconds$demethod_params[cnt]<- paste(

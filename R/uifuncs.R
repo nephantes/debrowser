@@ -82,13 +82,17 @@ getGOLeftMenu <- function() {
             selectInput("ontology", "Choose an ontology:",
                 choices =  c( "CC", "MF", "BP"))
             ),
-            conditionalPanel( ( condition <- "input.goplot!='compare'"),
+            conditionalPanel( ( condition <- "input.goplot!='compare' && input.goplot!='GSEA'"),
                 selectInput("goextplot", "Plot Type:",
                 choices =  c("Summary", "Dotplot"))
             ),
             conditionalPanel( ( condition <- "input.goplot=='compare'"),
                 selectInput("gofunc", "Plot Function:",
                 choices =  c( "enrichGO", "enrichDO", "enrichKEGG"))
+            ),
+            conditionalPanel( ( condition <- "input.goplot=='GSEA'"),
+                selectInput("sortfield", "Sort field:",
+                choices =  c( "stat", "log2FoldChange"))
             ),
             downloadButton("downloadGOPlot", "Download Plots"))
     )
@@ -662,7 +666,8 @@ removeExtraCols <- function(dat = NULL){
                names(dat)[grep("^y$", names(dat))],
                names(dat)[grep("^M$", names(dat))],
                names(dat)[grep("^A$", names(dat))],
-               names(dat)[grep("^ID$", names(dat))]
+               names(dat)[grep("^ID$", names(dat))],
+               names(dat)[grep("^stat$", names(dat))]
     )
     dat <- dat[, !(names(dat) %in% rcols)]
 }

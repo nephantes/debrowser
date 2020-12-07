@@ -71,9 +71,9 @@
 #' @importFrom Harman harman reconstructData
 #' @importFrom clusterProfiler compareCluster enrichKEGG enrichGO gseGO bitr
 #' @importFrom DESeq2 DESeq DESeqDataSetFromMatrix results estimateSizeFactors
-#'             counts
+#'             counts lfcShrink
 #' @importFrom edgeR calcNormFactors equalizeLibSizes DGEList glmLRT
-#'             exactTest estimateCommonDisp glmFit
+#'             exactTest estimateCommonDisp glmFit topTags
 #' @importFrom shinydashboard dashboardHeader dropdownMenu messageItem
 #'             dashboardPage dashboardSidebar sidebarMenu dashboardBody
 #'             updateTabItems menuItem tabItems tabItem menuSubItem
@@ -86,6 +86,8 @@
 #' @import colourpicker
 #' @import RColorBrewer
 #' @import heatmaply
+#' @import apeglm
+#' @import ashr
 
 deServer <- function(input, output, session) {
     options(warn = -1)
@@ -419,7 +421,7 @@ deServer <- function(input, output, session) {
                 dat <- datForTables()
                 gopval <- as.numeric(input$gopvalue)
                 getGSEA(dat[[1]], pvalueCutoff = gopval, 
-                        org=input$organism)
+                    org=input$organism, sortfield = input$sortfield)
             }
         })
         

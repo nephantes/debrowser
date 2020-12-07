@@ -58,7 +58,9 @@ Imports:
     plotly,
     heatmaply,
     Harman,
-    pathview
+    pathview,
+    apeglm,
+    ashr
 RoxygenNote: 7.1.1
 Encoding: UTF-8
 Suggests: testthat,

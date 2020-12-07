@@ -80,12 +80,18 @@ getGOPlots <- function(dataset = NULL, GSEARes = NULL, input = NULL){
     }
     else if (input$goplot == "GSEA") {
         res <- GSEARes
-        res$p <-  gseaplot(res$enrich_p, by = "all", 
-            title = res$enrich_p$Description[1], geneSetID = 1)
-        goplots <- res
-        
-        if (input$goextplot == "Dotplot")
-            goplots$p <- dotplot(res$enrich_p, showCategory=10, split=".sign") + facet_grid(.~.sign)
+        if (nrow(res$enrich_p@result)>0) {
+            res$p <-  gseaplot(res$enrich_p, by = "all", 
+                title = res$enrich_p$Description[1], geneSetID = 1)
+            goplots <- res
+            
+            if (input$goextplot == "Dotplot")
+                goplots$p <- dotplot(res$enrich_p, showCategory=10, 
+                    split=".sign") + facet_grid(.~.sign)
+        } else {
+            showNotification("no term enriched under specific pvalueCutoff...", 
+                type = "error")
+        }
     }
     return(goplots)
 }
