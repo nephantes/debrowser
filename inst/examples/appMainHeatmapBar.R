@@ -3,6 +3,7 @@ library(plotly)
 library(heatmaply)
 library(gplots)
 library(DESeq2)
+source("../../R/mainScatter.R")
 
 header <- dashboardHeader(
     title = "DEBrowser Main Plots"
