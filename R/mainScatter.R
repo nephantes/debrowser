@@ -320,7 +320,7 @@ generateTestData <- function(dat = NULL) {
     data <- dat$data
     params <-
         #Run DESeq2 with the following parameters
-        c("DESeq2", "parametric", F, "Wald")
+        c("DESeq2", "parametric", F, "Wald", "None")
     non_expressed_cutoff <- 10
     data <- subset(data, rowSums(data) > 10)
     deseqrun <- runDE(data, columns, conds, params)
