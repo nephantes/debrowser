@@ -25,7 +25,9 @@ getGeneList <- function(genes = NULL, org = "org.Hs.eg.db",
     mapped_genes <- bitr(genes, fromType = fromType,
          toType = toType,
          OrgDb = org)
-    genelist <- unique(as.vector(unlist(mapped_genes[toType])))
+    #genelist <- unique(as.vector(unlist(mapped_genes[toType])))
+    genelist <- data.frame(mapped_genes)
+    colnames(genelist) <- c(fromType, toType)
     genelist
 }
 
@@ -181,11 +183,12 @@ getGSEA <- function(dataset=NULL, pvalueCutoff = 0.01,
     if (is.null(dataset)) return(NULL)
     
     genelist <- getGeneList(rownames(dataset), org, 
-        fromType = "SYMBOL",toType = "ENTREZID")
-    symbol <- getGeneList(genelist, org, 
-        fromType = "ENTREZID",toType = "SYMBOL")
-    data <- dataset[symbol, c("ID", sortfield)]
-    rownames(data) <- genelist
+        fromType = "SYMBOL",toType = c("ENTREZID"))
+    #symbol <- getGeneList(genelist, org, 
+    #    fromType = "ENTREZID",toType = c("SYMBOL") )
+    dataset[is.na(dataset[,sortfield]),sortfield] <- 0 
+    data <- dataset[genelist$SYMBOL, c("ID", sortfield)]
+    rownames(data) <- genelist$ENTREZID
     newdata <- data[order(-data[,sortfield]),] 
     newdatatmp <- newdata[,sortfield]
     names(newdatatmp) <- rownames(newdata)

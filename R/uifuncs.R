@@ -82,7 +82,7 @@ getGOLeftMenu <- function() {
             selectInput("ontology", "Choose an ontology:",
                 choices =  c( "CC", "MF", "BP"))
             ),
-            conditionalPanel( ( condition <- "input.goplot!='compare' && input.goplot!='GSEA'"),
+            conditionalPanel( ( condition <- "input.goplot!='compare'"),
                 selectInput("goextplot", "Plot Type:",
                 choices =  c("Summary", "Dotplot"))
             ),

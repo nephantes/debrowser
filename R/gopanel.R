@@ -51,6 +51,7 @@ getGOPlots <- function(dataset = NULL, GSEARes = NULL, input = NULL){
     if (input$goplot == "disease")
         org <- "org.Hs.eg.db"
     genelist <- getGeneList(rownames(dataset), org)
+    genelist <- genelist$ENTREZID
     gopval <- as.numeric(input$gopvalue)
     if (input$goplot == "enrichGO"){
         res <- getEnrichGO(genelist, ont = input$ontology,
