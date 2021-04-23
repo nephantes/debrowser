@@ -5,7 +5,7 @@ output: BiocStyle::html_document
 fig_caption: true
 vignette: >
     %\VignetteIndexEntry{DEBrowser Vignette}
-    %\VignetteEngine{knitr::knitr}
+    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
 
