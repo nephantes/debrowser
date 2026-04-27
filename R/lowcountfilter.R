@@ -23,20 +23,13 @@ debrowserlowcountfilter <- function(input = NULL, output = NULL, session = NULL,
     if (is.null(ldata$count)) {
       return(NULL)
     }
-    filtd <- ldata$count
-    filtd[, colnames(filtd)] <- apply(filtd[, colnames(filtd)], 2, function(x) as.integer(x))
-
-    if (input$lcfmethod == "Max") {
-      filtd <- subset(filtd, apply(filtd, 1, max, na.rm = TRUE) >= as.numeric(input$maxCutoff))
-    } else if (input$lcfmethod == "Mean") {
-      filtd <- subset(filtd, rowMeans(filtd, na.rm = TRUE) >= as.numeric(input$meanCutoff))
-    } else if (input$lcfmethod == "CPM") {
-      cpmcount <- edgeR::cpm(filtd)
-      filtd <- subset(filtd, rowSums(cpmcount > as.numeric(input$CPMCutoff),
-        na.rm = TRUE
-      ) >= as.numeric(input$numSample))
-    }
-    fdata$count <- filtd
+    fdata$count <- switch(input$lcfmethod,
+      "Max"  = filter_low_counts(ldata$count, "max", input$maxCutoff),
+      "Mean" = filter_low_counts(ldata$count, "mean", input$meanCutoff),
+      "CPM"  = filter_low_counts(ldata$count, "cpm", input$CPMCutoff,
+        min_samples = input$numSample
+      )
+    )
     fdata$meta <- ldata$meta
   })
 
