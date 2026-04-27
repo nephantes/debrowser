@@ -84,6 +84,43 @@ test_that("merge_comparisons() returns NULL for empty input", {
   expect_null(merge_comparisons(NULL, 0L, params = list()))
 })
 
+test_that("get_table_data() returns (data, padj_col, fold_col) tuple", {
+  init <- data.frame(
+    ID = c("g1", "g2"),
+    foldChange = c(3, 0.5),
+    padj = c(0.001, 0.5),
+    Legend = c("Up", "NS"),
+    row.names = c("g1", "g2")
+  )
+
+  res <- get_table_data(
+    init_data = init,
+    filt_data = init,
+    selected = NULL,
+    get_most_varied_data = NULL,
+    merged_comp = NULL,
+    params = list(dataset = "alldetected", geneset_area = "")
+  )
+  expect_length(res, 3L)
+  expect_equal(res[[2]], "padj")
+  expect_equal(res[[3]], "foldChange")
+  expect_equal(nrow(res[[1]]), 2L)
+
+  res_up <- get_table_data(
+    init_data = init,
+    filt_data = init,
+    selected = NULL,
+    get_most_varied_data = NULL,
+    merged_comp = NULL,
+    params = list(dataset = "up", geneset_area = "")
+  )
+  expect_equal(nrow(res_up[[1]]), 1L)
+})
+
+test_that("get_table_data() returns NULL with no init_data", {
+  expect_null(get_table_data(NULL))
+})
+
 test_that("apply_merged_filters() labels rows Sig where any comparison crosses cutoffs", {
   fake_dc <- list(
     list(

@@ -233,3 +233,57 @@ apply_merged_filters <- function(dc, nc, params = list()) {
   }
   merged
 }
+
+#' Build the (data, padj_colname, fold_colname) tuple for the Tables tab.
+#'
+#' Pure version of `getDataForTables()`.
+#'
+#' @param init_data Initial DE result.
+#' @param filt_data Filtered DE result; defaults to `init_data` if NULL.
+#' @param selected Genes the user lasso-selected (used when
+#'   `dataset == "selected"`).
+#' @param get_most_varied_data Most-varied subset (used when
+#'   `dataset == "most-varied"`).
+#' @param merged_comp Merged comparisons table.
+#' @param explained_data Unused; preserved for legacy signature parity.
+#' @param params Named list with `dataset`, `geneset_area`.
+#' @return list(data, padj_colname, fold_colname).
+#' @export
+get_table_data <- function(init_data = NULL, filt_data = NULL,
+                           selected = NULL, get_most_varied_data = NULL,
+                           merged_comp = NULL, explained_data = NULL,
+                           params = list()) {
+  if (is.null(init_data)) {
+    return(NULL)
+  }
+  if (is.null(filt_data)) filt_data <- init_data
+  pastr <- "padj"
+  fcstr <- "foldChange"
+  ds <- params$dataset
+  dat <- switch(ds,
+    "alldetected"  = search_geneset(filt_data, params),
+    "up+down"      = search_geneset(getUpDown(filt_data), params),
+    "up"           = search_geneset(getUp(filt_data), params),
+    "down"         = search_geneset(getDown(filt_data), params),
+    "selected"     = search_geneset(selected, params),
+    "most-varied"  = {
+      d <- if (!is.null(filt_data)) {
+        filt_data[rownames(get_most_varied_data), ]
+      } else {
+        init_data[rownames(get_most_varied_data), ]
+      }
+      search_geneset(d, params)
+    },
+    "comparisons"  = {
+      if (is.null(merged_comp)) {
+        return(NULL)
+      }
+      fcstr <- colnames(merged_comp)[grepl("foldChange", colnames(merged_comp))]
+      pastr <- colnames(merged_comp)[grepl("padj", colnames(merged_comp))]
+      search_geneset(merged_comp, params)
+    },
+    "searched"     = search_geneset(init_data, params),
+    NULL
+  )
+  list(dat, pastr, fcstr)
+}
