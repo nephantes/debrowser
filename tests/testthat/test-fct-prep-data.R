@@ -79,3 +79,27 @@ test_that("select_dataset() routes by dataset name", {
 test_that("search_geneset() returns NULL when input is NULL", {
   expect_null(search_geneset(NULL, params = list(geneset_area = "BRCA1")))
 })
+
+test_that("merge_comparisons() returns NULL for empty input", {
+  expect_null(merge_comparisons(NULL, 0L, params = list()))
+})
+
+test_that("apply_merged_filters() labels rows Sig where any comparison crosses cutoffs", {
+  fake_dc <- list(
+    list(
+      cols = c("s1", "s2"),
+      cond_names = c("A", "B"),
+      init_data = data.frame(
+        foldChange = c(3, 0.1, 1.0),
+        padj       = c(0.001, 0.001, 0.5),
+        s1 = c(10, 20, 30), s2 = c(11, 22, 33),
+        row.names = c("g1", "g2", "g3")
+      )
+    )
+  )
+  out <- apply_merged_filters(fake_dc, 1L,
+    params = list(padj_cutoff = 0.05, fold_cutoff = 2, norm_method = "none")
+  )
+  expect_true("Legend" %in% colnames(out))
+  expect_equal(out$Legend, c("Sig", "Sig", "NS"))
+})

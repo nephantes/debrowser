@@ -153,3 +153,83 @@ search_geneset <- function(dat, params = list()) {
   }
   getGeneSetData(dat, c(params$geneset_area))
 }
+
+#' Merge per-comparison DE results into one wide table.
+#'
+#' Pure version of `getMergedComparison()`. The legacy version reads
+#' `input$norm_method`; this takes the same value off `params`.
+#'
+#' @param dc List of per-comparison containers (each has `init_data`, `cols`,
+#'   `cond_names`).
+#' @param nc Number of comparisons.
+#' @param params Named list with `norm_method`.
+#' @return Merged data.frame (samples + per-comparison foldChange/padj cols).
+#' @export
+merge_comparisons <- function(dc, nc, params = list()) {
+  if (is.null(dc)) {
+    return(NULL)
+  }
+  mergeresults <- c()
+  mergedata <- c()
+  allsamples <- c()
+  for (ni in seq(1, nc)) {
+    tmp <- dc[[ni]]$init_data[, c("foldChange", "padj")]
+    samples <- dc[[ni]]$cols
+    cond_names <- dc[[ni]]$cond_names
+    tt <- paste0(cond_names[1], ".vs.", cond_names[2])
+    fctt <- paste0("foldChange.", tt)
+    patt <- paste0("padj.", tt)
+    colnames(tmp) <- c(fctt, patt)
+    if (ni == 1L) {
+      allsamples <- samples
+      mergeresults <- tmp
+      mergedata <- dc[[ni]]$init_data[, samples]
+    } else {
+      mergeresults[, fctt] <- character(nrow(tmp))
+      mergeresults[, patt] <- character(nrow(tmp))
+      mergeresults[rownames(tmp), c(fctt, patt)] <- tmp[, c(fctt, patt)]
+      mergeresults[is.na(mergeresults[, fctt]), fctt] <- 1
+      mergeresults[is.na(mergeresults[, patt]), patt] <- 1
+      remaining <- dc[[ni]]$cols[!(samples %in% colnames(mergedata))]
+      allsamples <- unique(c(allsamples, remaining))
+      mergedata <- cbind(mergedata, dc[[ni]]$init_data[, remaining])
+      colnames(mergedata) <- allsamples
+    }
+  }
+  mergedata[, allsamples] <- normalize_counts(
+    mergedata[, allsamples],
+    method = params$norm_method
+  )
+  cbind(mergedata, mergeresults)
+}
+
+#' Apply Up/Down cutoffs across a merged-comparisons table.
+#'
+#' Pure version of `applyFiltersToMergedComparison()`.
+#'
+#' @inheritParams merge_comparisons
+#' @return Merged data.frame with a `Legend` column (`"Sig"` / `"NS"`).
+#' @export
+apply_merged_filters <- function(dc, nc, params = list()) {
+  if (is.null(dc)) {
+    return(NULL)
+  }
+  merged <- merge_comparisons(dc, nc, params)
+  padj_cutoff <- as.numeric(params$padj_cutoff)
+  fold_cutoff <- as.numeric(params$fold_cutoff)
+  if (is.null(merged$Legend)) {
+    merged$Legend <- "NS"
+  }
+  for (ni in seq(1, nc)) {
+    cond_names <- dc[[ni]]$cond_names
+    tt <- paste0(cond_names[1], ".vs.", cond_names[2])
+    fctt <- paste0("foldChange.", tt)
+    patt <- paste0("padj.", tt)
+    up <- as.numeric(merged[, fctt]) >= fold_cutoff &
+      as.numeric(merged[, patt]) <= padj_cutoff
+    down <- as.numeric(merged[, fctt]) <= 1 / fold_cutoff &
+      as.numeric(merged[, patt]) <= padj_cutoff
+    merged$Legend[which(up | down)] <- "Sig"
+  }
+  merged
+}
