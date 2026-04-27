@@ -1,0 +1,27 @@
+name: BiocCheck
+
+on:
+  push:
+    branches: [devel, modernize]
+  pull_request:
+    branches: [devel]
+
+jobs:
+  bioc-check:
+    runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker:RELEASE_3_18
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install package deps
+        run: |
+          BiocManager::install(ask = FALSE, update = FALSE)
+          install.packages("BiocCheck")
+        shell: Rscript {0}
+
+      - name: Run BiocCheck
+        run: |
+          BiocCheck::BiocCheck(".", `quit-with-status` = TRUE,
+                               `no-check-formatting` = FALSE)
+        shell: Rscript {0}
