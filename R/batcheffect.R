@@ -258,47 +258,24 @@ batchMethod <- function(id) {
 #'
 #' @examples
 #' x <- correctCombat()
-correctCombat <- function(input = NULL, idata = NULL, metadata = NULL, method = NULL) {
+correctCombat <- function(input = NULL, idata = NULL, metadata = NULL,
+                          method = NULL) {
   if (is.null(idata)) {
     return(NULL)
   }
-
   if (input$batch == "None") {
     showNotification("Please select the batch field to use Combat!", type = "error")
     return(NULL)
   }
-
-  batch <- metadata[, input$batch]
-
-  columns <- colnames(idata)
-  datacor <- data.frame(idata[, columns])
-  datacor[, columns] <- apply(
-    datacor[, columns], 2,
-    function(x) as.integer(x) + runif(1, 0, 0.01)
-  )
-
-  if (input$treatment != "None") {
-    treatment <- metadata[, input$treatment]
-    meta <- data.frame(cbind(columns, treatment, batch))
-    modcombat <- model.matrix(~ as.factor(treatment), data = meta)
-    if (method == "Combat") {
-      combat_res <- sva::ComBat(dat = as.matrix(datacor), mod = modcombat, batch = batch)
-    } else {
-      combat_res <- sva::ComBat_seq(counts = as.matrix(datacor), covar_mod = modcombat, batch = batch)
-    }
+  treatment_col <- if (!is.null(input$treatment) && input$treatment != "None") {
+    input$treatment
   } else {
-    if (method == "Combat") {
-      combat_res <- sva::ComBat(dat = as.matrix(datacor), batch = batch)
-    } else {
-      combat_res <- sva::ComBat_seq(counts = as.matrix(datacor), batch = batch)
-    }
+    NULL
   }
-
-  a <- cbind(idata[rownames(combat_res), 2], combat_res)
-  a[, columns] <- apply(a[, columns], 2, function(x) ifelse(x < 0, 0, x))
-  a[, columns] <- apply(a[, columns], 2, function(x) as.integer(x))
-  colnames(a[, 1]) <- colnames(idata[, 1])
-  a[, columns]
+  apply_batch_correction(idata, metadata,
+    method = method,
+    batch_col = input$batch, treatment_col = treatment_col
+  )
 }
 
 #' Correct Batch Effect using Harman
@@ -317,16 +294,14 @@ correctHarman <- function(input = NULL, idata = NULL, metadata = NULL) {
     return(NULL)
   }
   if (input$treatment == "None" || input$batch == "None") {
-    showNotification("Please select the batch and treatment fields to use Harman!", type = "error")
+    showNotification(
+      "Please select the batch and treatment fields to use Harman!",
+      type = "error"
+    )
     return(NULL)
   }
-
-  batch.info <- data.frame(metadata[, c(input$treatment, input$batch)])
-  rownames(batch.info) <- rownames(metadata)
-  colnames(batch.info) <- c("treatment", "batch")
-
-  harman.res <- harman(idata, expt = batch.info$treatment, batch = batch.info$batch, limit = 0.95)
-  harman.corrected <- reconstructData(harman.res)
-  harman.corrected[harman.corrected < 0] <- 0
-  harman.corrected
+  apply_batch_correction(idata, metadata,
+    method = "Harman",
+    batch_col = input$batch, treatment_col = input$treatment
+  )
 }

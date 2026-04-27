@@ -32,3 +32,105 @@ normalize_counts <- function(counts, method = "TMM") {
     edgeR::DGEList(m, norm.factors = norm_factors)
   )$pseudo.counts
 }
+
+#' Apply batch-effect correction.
+#'
+#' Pure function — no Shiny dependency. Accepts batch / treatment column
+#' names directly instead of pulling from a reactive `input` object.
+#'
+#' @param counts Numeric matrix (genes x samples).
+#' @param metadata data.frame; first column is sample id.
+#' @param method One of "none", "Combat", "CombatSeq", "Harman".
+#' @param batch_col Name of the batch column in `metadata`.
+#' @param treatment_col Name of the treatment column in `metadata`. May be
+#'   NULL or "None" — only required for Harman.
+#' @return Corrected count matrix.
+#' @export
+apply_batch_correction <- function(counts, metadata, method = "none",
+                                   batch_col = NULL, treatment_col = NULL) {
+  de_assert_count_matrix(counts)
+  if (method == "none") {
+    return(counts)
+  }
+
+  if (is.null(batch_col) || !batch_col %in% colnames(metadata)) {
+    de_error(
+      paste0("metadata has no column '", batch_col, "'"),
+      class = "missing_batch_col"
+    )
+  }
+
+  switch(method,
+    "Combat"    = combat_correct(counts, metadata, batch_col, treatment_col, seq = FALSE),
+    "CombatSeq" = combat_correct(counts, metadata, batch_col, treatment_col, seq = TRUE),
+    "Harman"    = harman_correct(counts, metadata, batch_col, treatment_col),
+    de_error(
+      paste0("Unknown batch correction method: ", method),
+      class = "unknown_batch_method"
+    )
+  )
+}
+
+#' @keywords internal
+combat_correct <- function(counts, metadata, batch_col, treatment_col,
+                           seq = FALSE) {
+  batch <- metadata[, batch_col]
+  columns <- colnames(counts)
+  datacor <- data.frame(counts[, columns])
+  datacor[, columns] <- apply(
+    datacor[, columns], 2,
+    function(x) as.integer(x) + runif(1, 0, 0.01)
+  )
+
+  has_treatment <- !is.null(treatment_col) && treatment_col != "None" &&
+    treatment_col %in% colnames(metadata)
+
+  if (has_treatment) {
+    treatment <- metadata[, treatment_col]
+    meta <- data.frame(cbind(columns, treatment, batch))
+    modcombat <- model.matrix(~ as.factor(treatment), data = meta)
+    res <- if (seq) {
+      sva::ComBat_seq(
+        counts = as.matrix(datacor),
+        covar_mod = modcombat, batch = batch
+      )
+    } else {
+      sva::ComBat(
+        dat = as.matrix(datacor),
+        mod = modcombat, batch = batch
+      )
+    }
+  } else {
+    res <- if (seq) {
+      sva::ComBat_seq(counts = as.matrix(datacor), batch = batch)
+    } else {
+      sva::ComBat(dat = as.matrix(datacor), batch = batch)
+    }
+  }
+
+  out <- res
+  out[out < 0] <- 0
+  out[, columns] <- apply(out[, columns], 2, as.integer)
+  out
+}
+
+#' @keywords internal
+harman_correct <- function(counts, metadata, batch_col, treatment_col) {
+  if (is.null(treatment_col) || treatment_col == "None") {
+    de_error(
+      "Harman requires a treatment column",
+      class = "missing_treatment_col"
+    )
+  }
+  batch_info <- data.frame(metadata[, c(treatment_col, batch_col)])
+  rownames(batch_info) <- rownames(metadata)
+  colnames(batch_info) <- c("treatment", "batch")
+
+  res <- Harman::harman(counts,
+    expt = batch_info$treatment,
+    batch = batch_info$batch, limit = 0.95
+  )
+  out <- Harman::reconstructData(res)
+  out[out < 0] <- 0
+  out
+}
