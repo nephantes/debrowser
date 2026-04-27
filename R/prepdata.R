@@ -204,53 +204,19 @@ getUpDown <- function(filt_data = NULL) {
 #' @examples
 #' x <- getDataForTables()
 #'
-getDataForTables <- function(
-  input = NULL, init_data = NULL,
-  filt_data = NULL, selected = NULL,
-  getMostVaried = NULL, mergedComp = NULL,
-  explainedData = NULL
-) {
-  if (is.null(init_data)) {
-    return(NULL)
-  }
-  if (is.null(filt_data)) filt_data <- init_data
-  pastr <- "padj"
-  fcstr <- "foldChange"
-  dat <- NULL
-  if (input$dataset == "alldetected") {
-    dat <- getSearchData(filt_data, input)
-  } else if (input$dataset == "up+down") {
-    if (!is.null(filt_data)) {
-      dat <- getSearchData(getUpDown(filt_data), input)
-    }
-  } else if (input$dataset == "up") {
-    if (!is.null(filt_data)) {
-      dat <- getSearchData(getUp(filt_data), input)
-    }
-  } else if (input$dataset == "down") {
-    if (!is.null(filt_data)) {
-      dat <- getSearchData(getDown(filt_data), input)
-    }
-  } else if (input$dataset == "selected") {
-    dat <- getSearchData(selected, input)
-  } else if (input$dataset == "most-varied") {
-    if (!is.null(filt_data)) {
-      d <- filt_data[rownames(getMostVaried), ]
-    } else {
-      d <- init_data[rownames(getMostVaried), ]
-    }
-    dat <- getSearchData(d, input)
-  } else if (input$dataset == "comparisons") {
-    if (is.null(mergedComp)) {
-      return(NULL)
-    }
-    fcstr <- colnames(mergedComp)[grepl("foldChange", colnames(mergedComp))]
-    pastr <- colnames(mergedComp)[grepl("padj", colnames(mergedComp))]
-    dat <- getSearchData(mergedComp, input)
-  } else if (input$dataset == "searched") {
-    dat <- getSearchData(init_data, input)
-  }
-  list(dat, pastr, fcstr)
+getDataForTables <- function(input = NULL, init_data = NULL,
+                             filt_data = NULL, selected = NULL,
+                             getMostVaried = NULL, mergedComp = NULL,
+                             explainedData = NULL) {
+  get_table_data(
+    init_data            = init_data,
+    filt_data            = filt_data,
+    selected             = selected,
+    get_most_varied_data = getMostVaried,
+    merged_comp          = mergedComp,
+    explained_data       = explainedData,
+    params               = filter_params_from_input(input)
+  )
 }
 
 
@@ -268,41 +234,7 @@ getDataForTables <- function(
 #' x <- getMergedComparison()
 #'
 getMergedComparison <- function(dc = NULL, nc = NULL, input = NULL) {
-  if (is.null(dc)) {
-    return(NULL)
-  }
-  mergeresults <- c()
-  mergedata <- c()
-  allsamples <- c()
-  for (ni in seq(1:nc)) {
-    tmp <- dc[[ni]]$init_data[, c("foldChange", "padj")]
-
-    samples <- dc[[ni]]$cols
-    cond_names <- dc[[ni]]$cond_names
-    tt <- paste0(cond_names[1], ".vs.", cond_names[2])
-    # tt <- paste0("C", (2*ni-1),".vs.C",(2*ni))
-    fctt <- paste0("foldChange.", tt)
-    patt <- paste0("padj.", tt)
-    colnames(tmp) <- c(fctt, patt)
-    if (ni == 1) {
-      allsamples <- samples
-      mergeresults <- tmp
-      mergedata <- dc[[ni]]$init_data[, samples]
-    } else {
-      mergeresults[, fctt] <- character(nrow(tmp))
-      mergeresults[, patt] <- character(nrow(tmp))
-      mergeresults[rownames(tmp), c(fctt, patt)] <- tmp[, c(fctt, patt)]
-      mergeresults[rownames(tmp), patt] <- tmp[, patt]
-      mergeresults[is.na(mergeresults[, fctt]), fctt] <- 1
-      mergeresults[is.na(mergeresults[, patt]), patt] <- 1
-      remaining_samples <- dc[[ni]]$cols[!(samples %in% colnames(mergedata))]
-      allsamples <- unique(c(allsamples, remaining_samples))
-      mergedata <- cbind(mergedata, dc[[ni]]$init_data[, remaining_samples])
-      colnames(mergedata) <- allsamples
-    }
-  }
-  mergedata[, allsamples] <- getNormalizedMatrix(mergedata[, allsamples], input$norm_method)
-  cbind(mergedata, mergeresults)
+  merge_comparisons(dc, nc, filter_params_from_input(input))
 }
 
 #' applyFiltersToMergedComparison
@@ -319,32 +251,9 @@ getMergedComparison <- function(dc = NULL, nc = NULL, input = NULL) {
 #' @examples
 #' x <- applyFiltersToMergedComparison()
 #'
-applyFiltersToMergedComparison <- function(
-  dc = NULL,
-  nc = NULL, input = NULL
-) {
-  if (is.null(dc)) {
-    return(NULL)
-  }
-  merged <- getMergedComparison(dc, nc, input)
-  padj_cutoff <- as.numeric(input$padj)
-  foldChange_cutoff <- as.numeric(input$foldChange)
-  if (is.null(merged$Legend)) {
-    merged$Legend <- character(nrow(merged))
-    merged$Legend <- "NS"
-  }
-  for (ni in seq(1:nc)) {
-    cond_names <- dc[[ni]]$cond_names
-    tt <- paste0(cond_names[1], ".vs.", cond_names[2])
-    # tt <- paste0("C", (2*ni-1),".vs.C",(2*ni))
-    merged[which(as.numeric(merged[, c(paste0("foldChange.", tt))]) >=
-      foldChange_cutoff & as.numeric(merged[, c(paste0("padj.", tt))]) <=
-      padj_cutoff), "Legend"] <- "Sig"
-    merged[which(as.numeric(merged[, c(paste0("foldChange.", tt))]) <=
-      1 / foldChange_cutoff & as.numeric(merged[, c(paste0("padj.", tt))]) <=
-      padj_cutoff), "Legend"] <- "Sig"
-  }
-  merged
+applyFiltersToMergedComparison <- function(dc = NULL, nc = NULL,
+                                           input = NULL) {
+  apply_merged_filters(dc, nc, filter_params_from_input(input))
 }
 
 #' removeCols
