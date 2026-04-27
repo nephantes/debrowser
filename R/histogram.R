@@ -31,10 +31,11 @@ getHistogramUI <- function(id) {
 #' @examples
 #' x <- debrowserhistogram()
 #'
-debrowserhistogram <- function(input = NULL, output = NULL, session = NULL, data = NULL) {
+debrowserhistogram <- function(id, data = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
+  moduleServer(id, function(input, output, session) {
   output$histogram <- renderPlotly({
     h <- hist(log10(rowSums(data)), breaks = as.numeric(input$breaks), plot = FALSE)
 
@@ -65,6 +66,7 @@ debrowserhistogram <- function(input = NULL, output = NULL, session = NULL, data
         width = input$width, height = input$height
       )
     )
+  })
   })
 }
 

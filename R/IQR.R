@@ -13,21 +13,23 @@
 #' @examples
 #' x <- debrowserIQRplot()
 #'
-debrowserIQRplot <- function(input = NULL, output = NULL, session = NULL, data = NULL) {
+debrowserIQRplot <- function(id, data = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
-  output$IQR <- renderPlotly({
-    getIQRPlot(data, input)
-  })
-  output$IQRUI <- renderUI({
-    shinydashboard::box(
-      collapsible = TRUE, title = session$ns("plot"), status = "primary",
-      solidHeader = TRUE, width = NULL,
-      draggable = TRUE, plotlyOutput(session$ns("IQR"),
-        width = input$width, height = input$height
+  moduleServer(id, function(input, output, session) {
+    output$IQR <- renderPlotly({
+      getIQRPlot(data, input)
+    })
+    output$IQRUI <- renderUI({
+      shinydashboard::box(
+        collapsible = TRUE, title = session$ns("plot"), status = "primary",
+        solidHeader = TRUE, width = NULL,
+        draggable = TRUE, plotlyOutput(session$ns("IQR"),
+          width = input$width, height = input$height
+        )
       )
-    )
+    })
   })
 }
 

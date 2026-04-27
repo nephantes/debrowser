@@ -17,22 +17,24 @@
 #' @examples
 #' x <- debrowserbarmainplot()
 #'
-debrowserbarmainplot <- function(input, output, session, data = NULL,
-                                 cols = NULL, conds = NULL, cond_names = NULL, key = NULL) {
+debrowserbarmainplot <- function(id, data = NULL, cols = NULL, conds = NULL,
+                                 cond_names = NULL, key = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
-  output$BarMainUI <- renderUI({
-    shinydashboard::box(
-      collapsible = TRUE, title = session$ns("plot"), status = "primary",
-      solidHeader = TRUE, width = NULL,
-      draggable = TRUE, plotlyOutput(session$ns("BarMain"),
-        height = input$height, width = input$width
+  moduleServer(id, function(input, output, session) {
+    output$BarMainUI <- renderUI({
+      shinydashboard::box(
+        collapsible = TRUE, title = session$ns("plot"), status = "primary",
+        solidHeader = TRUE, width = NULL,
+        draggable = TRUE, plotlyOutput(session$ns("BarMain"),
+          height = input$height, width = input$width
+        )
       )
-    )
-  })
-  output$BarMain <- renderPlotly({
-    getBarMainPlot(data, cols, conds, cond_names, key, title = "", input = input)
+    })
+    output$BarMain <- renderPlotly({
+      getBarMainPlot(data, cols, conds, cond_names, key, title = "", input = input)
+    })
   })
 }
 

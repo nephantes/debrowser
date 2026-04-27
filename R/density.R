@@ -31,21 +31,23 @@ getDensityPlotUI <- function(id) {
 #' @examples
 #' x <- debrowserdensityplot()
 #'
-debrowserdensityplot <- function(input = NULL, output = NULL, session = NULL, data = NULL) {
+debrowserdensityplot <- function(id, data = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
-  output$Density <- renderPlotly({
-    getDensityPlot(data, input)
-  })
-  output$DensityUI <- renderUI({
-    shinydashboard::box(
-      collapsible = TRUE, title = session$ns("plot"), status = "primary",
-      solidHeader = TRUE, width = NULL,
-      draggable = TRUE, plotlyOutput(session$ns("Density"),
-        width = input$width, height = input$height
+  moduleServer(id, function(input, output, session) {
+    output$Density <- renderPlotly({
+      getDensityPlot(data, input)
+    })
+    output$DensityUI <- renderUI({
+      shinydashboard::box(
+        collapsible = TRUE, title = session$ns("plot"), status = "primary",
+        solidHeader = TRUE, width = NULL,
+        draggable = TRUE, plotlyOutput(session$ns("Density"),
+          width = input$width, height = input$height
+        )
       )
-    )
+    })
   })
 }
 

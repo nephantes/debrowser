@@ -14,10 +14,8 @@
 #' @examples
 #' x <- debrowserdataload()
 #'
-debrowserdataload <- function(input = NULL, output = NULL, session = NULL, nextpagebutton = NULL) {
-  if (is.null(input)) {
-    return(NULL)
-  }
+debrowserdataload <- function(id, nextpagebutton = NULL) {
+  moduleServer(id, function(input, output, session) {
   ldata <- reactiveValues(count = NULL, meta = NULL)
   loadeddata <- reactive({
     ret <- NULL
@@ -184,6 +182,7 @@ debrowserdataload <- function(input = NULL, output = NULL, session = NULL, nextp
     getSampleDetails(output, "uploadSummary", "sampleDetails", loadeddata())
   })
   list(load = loadeddata)
+  })
 }
 
 #' dataLoadUI

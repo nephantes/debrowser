@@ -33,10 +33,11 @@ getPCAPlotUI <- function(id) {
 #' @examples
 #' x <- debrowserpcaplot()
 #'
-debrowserpcaplot <- function(input = NULL, output = NULL, session = NULL, pcadata = NULL, metadata = NULL) {
+debrowserpcaplot <- function(id, pcadata = NULL, metadata = NULL) {
   if (is.null(pcadata)) {
     return(NULL)
   }
+  moduleServer(id, function(input, output, session) {
   qcplots <- reactive({
     if (is.null(pcadata)) {
       return(NULL)
@@ -83,6 +84,7 @@ debrowserpcaplot <- function(input = NULL, output = NULL, session = NULL, pcadat
   })
   output$colorShapeSelect <- renderUI({
     getColorShapeSelection(metadata, input, session)
+  })
   })
 }
 

@@ -35,23 +35,25 @@ getBoxMainPlotUI <- function(id) {
 #' @examples
 #' x <- debrowserboxmainplot()
 #'
-debrowserboxmainplot <- function(input = NULL, output = NULL, session = NULL, data = NULL,
-                                 cols = NULL, conds = NULL, cond_names = NULL, key = NULL) {
+debrowserboxmainplot <- function(id, data = NULL, cols = NULL, conds = NULL,
+                                 cond_names = NULL, key = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
-  output$BoxMain <- renderPlotly({
-    getBoxMainPlot(data, cols, conds, cond_names, key, title = "", input)
-  })
+  moduleServer(id, function(input, output, session) {
+    output$BoxMain <- renderPlotly({
+      getBoxMainPlot(data, cols, conds, cond_names, key, title = "", input)
+    })
 
-  output$BoxMainUI <- renderUI({
-    shinydashboard::box(
-      collapsible = TRUE, title = session$ns("plot"), status = "primary",
-      solidHeader = TRUE, width = NULL,
-      draggable = TRUE, plotlyOutput(session$ns("BoxMain"),
-        height = input$height, width = input$width
+    output$BoxMainUI <- renderUI({
+      shinydashboard::box(
+        collapsible = TRUE, title = session$ns("plot"), status = "primary",
+        solidHeader = TRUE, width = NULL,
+        draggable = TRUE, plotlyOutput(session$ns("BoxMain"),
+          height = input$height, width = input$width
+        )
       )
-    )
+    })
   })
 }
 

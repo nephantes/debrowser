@@ -14,22 +14,23 @@
 #' @examples
 #' x <- debrowserall2all()
 #'
-debrowserall2all <- function(input, output, session, data = NULL,
-                             cex = 2) {
+debrowserall2all <- function(id, data = NULL, cex = 2) {
   if (is.null(data)) {
     return(NULL)
   }
-  output$all2allplot <- renderPlot({
-    all2all(data, cex)
-  })
-  output$all2allUI <- renderUI({
-    shinydashboard::box(
-      collapsible = TRUE, title = "All2all plot", status = "primary",
-      solidHeader = TRUE, width = NULL,
-      draggable = TRUE, plotOutput(session$ns("all2allplot"),
-        width = input$width, height = input$height
+  moduleServer(id, function(input, output, session) {
+    output$all2allplot <- renderPlot({
+      all2all(data, cex)
+    })
+    output$all2allUI <- renderUI({
+      shinydashboard::box(
+        collapsible = TRUE, title = "All2all plot", status = "primary",
+        solidHeader = TRUE, width = NULL,
+        draggable = TRUE, plotOutput(session$ns("all2allplot"),
+          width = input$width, height = input$height
+        )
       )
-    )
+    })
   })
 }
 

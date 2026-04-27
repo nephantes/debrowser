@@ -16,11 +16,11 @@
 #' @examples
 #' x <- debrowsermainplot()
 #'
-debrowsermainplot <- function(input = NULL, output = NULL, session = NULL, data = NULL, cond_names = NULL) {
+debrowsermainplot <- function(id, data = NULL, cond_names = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
-
+  moduleServer(id, function(input, output, session) {
   plotdata <- reactive({
     plotData(data, input)
   })
@@ -113,6 +113,7 @@ debrowsermainplot <- function(input = NULL, output = NULL, session = NULL, data 
   })
 
   list(shg = (selectedPoint), shgClicked = (selectedPoint), selGenes = (getSelected))
+  })
 }
 
 #' getMainPlotUI
