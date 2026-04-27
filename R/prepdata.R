@@ -13,79 +13,9 @@
 #' @examples
 #' x <- applyFilters()
 #'
-applyFilters <- function(
-  filt_data = NULL, cols = NULL, conds = NULL,
-  input = NULL
-) {
-  if (is.null(input$padj) || is.null(input$foldChange) ||
-    is.null(filt_data)) {
-    return(NULL)
-  }
-  compselect <- 1
-  if (!is.null(input$compselect)) {
-    compselect <- as.integer(input$compselect)
-  }
-  x <- paste0("Cond", 2 * compselect - 1)
-  y <- paste0("Cond", 2 * compselect)
-  norm_data <- getNormalizedMatrix(
-    filt_data[, cols],
-    input$norm_method
-  )
-  g <- data.frame(cbind(cols, conds))
-  if (length(as.vector(g[g$conds == x, "cols"])) > 1) {
-    filt_data$x <- log10(rowMeans(norm_data[
-      ,
-      as.vector(g[g$conds == x, "cols"])
-    ]) + 0.1)
-  } else {
-    filt_data$x <- log10(norm_data[
-      ,
-      as.vector(g[g$conds == x, "cols"])
-    ] + 0.1)
-  }
-  if (length(as.vector(g[g$conds == y, "cols"])) > 1) {
-    filt_data$y <- log10(rowMeans(norm_data[
-      ,
-      as.vector(g[g$conds == y, "cols"])
-    ]) + 0.1)
-  } else {
-    filt_data$y <- log10(norm_data[
-      ,
-      as.vector(g[g$conds == y, "cols"])
-    ] + 0.1)
-  }
-  filt_data[, cols] <- norm_data
-
-  padj_cutoff <- as.numeric(input$padj)
-  foldChange_cutoff <- as.numeric(input$foldChange)
-  m <- filt_data
-  # Add column which says whether a gene significant or not
-  m$Legend <- character(nrow(m))
-  m$Size <- character(nrow(m))
-  m[, "Size"] <- "40"
-  m$Legend <- "NS"
-  if (input$dataset == "up" || input$dataset == "up+down" || input$dataset == "selected") {
-    m$Legend[m$foldChange >= foldChange_cutoff &
-      m$padj <= padj_cutoff] <- "Up"
-  }
-  if (input$dataset == "down" || input$dataset == "up+down" || input$dataset == "selected") {
-    m$Legend[m$foldChange <= (1 / foldChange_cutoff) &
-      m$padj <= padj_cutoff] <- "Down"
-  }
-  if (input$dataset == "most-varied" && !is.null(cols)) {
-    most_varied <- getMostVariedList(m, cols, input)
-    m[rownames(most_varied), c("Legend")] <- "MV"
-  }
-  if (!is.null(input$genesetarea) && input$genesetarea != "" &&
-    input$methodtabs == "panel1") {
-    genelist <- getGeneSetData(m, c(input$genesetarea))
-    m[rownames(genelist), "Legend"] <- "GS"
-    m[rownames(genelist), "Size"] <- "100"
-    tmp <- m["Legend" == "GS", ]
-    tmp1 <- m["Legend" != "GS", ]
-    m <- rbind(tmp1, tmp)
-  }
-  m
+applyFilters <- function(filt_data = NULL, cols = NULL, conds = NULL,
+                         input = NULL) {
+  apply_de_filters(filt_data, cols, conds, filter_params_from_input(input))
 }
 #' getSelectedDatasetInput
 #'
@@ -102,33 +32,17 @@ applyFilters <- function(
 #' @examples
 #' x <- getSelectedDatasetInput()
 #'
-getSelectedDatasetInput <- function(
-  rdata = NULL, getSelected = NULL,
-  getMostVaried = NULL, mergedComparison = NULL,
-  input = NULL
-) {
-  if (is.null(rdata)) {
-    return(NULL)
-  }
-  m <- rdata
-  if (input$dataset == "up") {
-    m <- getUp(rdata)
-  } else if (input$dataset == "down") {
-    m <- getDown(rdata)
-  } else if (input$dataset == "up+down") {
-    m <- getUpDown(rdata)
-  } else if (input$dataset == "alldetected") {
-    m <- rdata
-  } else if (input$dataset == "selected" && !is.null(input$selectedplot)) {
-    m <- getSelected
-  } else if (input$dataset == "most-varied") {
-    m <- rdata[rownames(getMostVaried), ]
-  } else if (input$dataset == "comparisons") {
-    m <- mergedComparison
-  } else if (input$dataset == "searched") {
-    m <- getSearchData(rdata, input)
-  }
-  m
+getSelectedDatasetInput <- function(rdata = NULL, getSelected = NULL,
+                                    getMostVaried = NULL,
+                                    mergedComparison = NULL,
+                                    input = NULL) {
+  select_dataset(
+    rdata,
+    get_selected         = getSelected,
+    get_most_varied_data = getMostVaried,
+    merged_comparison    = mergedComparison,
+    params               = filter_params_from_input(input)
+  )
 }
 
 
@@ -147,21 +61,7 @@ getSelectedDatasetInput <- function(
 #' x <- getMostVariedList()
 #'
 getMostVariedList <- function(datavar = NULL, cols = NULL, input = NULL) {
-  if (is.null(datavar)) {
-    return(NULL)
-  }
-  topn <- as.integer(as.numeric(input$topn))
-  filtvar <- datavar[rowSums(datavar[, cols]) >
-    as.integer(as.numeric(input$mincount)), ]
-  cv <- cbind(apply(filtvar, 1, function(x) {
-    (sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE))
-  }), 1)
-  colnames(cv) <- c("coeff", "a")
-  cvsort <- cv[order(cv[, 1], decreasing = TRUE), ]
-  topindex <- nrow(cvsort)
-  if (topindex > topn) topindex <- topn
-  cvsort_top <- head(cvsort, topindex)
-  selected_var <- data.frame(datavar[rownames(cvsort_top), ])
+  get_most_varied(datavar, cols, filter_params_from_input(input))
 }
 
 
@@ -178,13 +78,7 @@ getMostVariedList <- function(datavar = NULL, cols = NULL, input = NULL) {
 #' x <- getSearchData()
 #'
 getSearchData <- function(dat = NULL, input = NULL) {
-  if (is.null(dat)) {
-    return(NULL)
-  }
-  if (input$genesetarea != "") {
-    dat <- getGeneSetData(dat, c(input$genesetarea))
-  }
-  dat
+  search_geneset(dat, filter_params_from_input(input))
 }
 
 #' getGeneSetData
