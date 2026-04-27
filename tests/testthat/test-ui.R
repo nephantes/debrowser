@@ -1,8 +1,4 @@
-require(shiny)
-library(debrowser)
-library(testthat)
-
-test_that("able to create panel UI", {
+test_that("panel-builder helpers return shiny tags without error", {
   expect_silent(QCPanel <- getQCPanel())
   expect_true(exists("QCPanel"))
   expect_equal(QCPanel[[1]][[1]], "div")

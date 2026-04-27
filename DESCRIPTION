@@ -63,9 +63,11 @@ Imports:
     ashr
 RoxygenNote: 7.3.3
 Encoding: UTF-8
-Suggests: testthat,
+Suggests: testthat (>= 3.2.0),
     rmarkdown,
-    knitr
+    knitr,
+    digest
+Config/testthat/edition: 3
 VignetteBuilder: knitr, rmarkdown
 URL: https://github.com/UMMS-Biocore/debrowser
 BugReports: https://github.com/UMMS-Biocore/debrowser/issues/new
