@@ -2,7 +2,7 @@ Package: debrowser
 Type: Package
 Title: Interactive Differential Expresion Analysis Browser
 Version: 1.31.2
-Date: 2020-12-07
+Date: 2026-04-27
 Author: Alper Kucukural <alper.kucukural@umassmed.edu>,
         Onur Yukselen <onur.yukselen@umassmed.edu>,
         Manuel Garber <manuel.garber@umassmed.edu>
@@ -17,7 +17,7 @@ Description: Bioinformatics platform containing interactive plots and tables
     made on site and the results are shown in various plots such as scatter,
     bar, box, volcano, ma plots and Heatmaps.
 Depends:
-    R (>= 3.5.0),
+    R (>= 4.2.0),
 License: GPL-3 + file LICENSE
 LazyData: true
 Imports:
@@ -61,7 +61,7 @@ Imports:
     pathview,
     apeglm,
     ashr
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 Suggests: testthat,
     rmarkdown,
