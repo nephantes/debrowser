@@ -200,71 +200,28 @@ runDE <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL, pa
 #' @examples
 #' x <- runDESeq2()
 #'
-runDESeq2 <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL, params = NULL) {
+runDESeq2 <- function(data = NULL, metadata = NULL, columns = NULL,
+                      conds = NULL, params = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
   if (length(params) < 3) {
     params <- strsplit(params, ",")[[1]]
   }
-  covariates <- if (!is.null(params[2])) params[2]
-  covariates <- strsplit(covariates, split = "\\|")[[1]]
-  fitType <- if (!is.null(params[3])) params[3]
-  betaPrior <- if (!is.null(params[4])) params[4]
-  testType <- if (!is.null(params[5])) params[5]
-  shrinkage <- if (!is.null(params[6])) params[6]
-
-  if (length(columns) < 3) {
-    showNotification("You cannot use DESeq2 if you don't have multiple samples per condition", type = "error")
-    return(NULL)
-  }
-
-  data <- data[, columns]
-
-  data[, columns] <- apply(
-    data[, columns], 2,
-    function(x) as.integer(x)
+  pure_params <- list(
+    covariates = if (!is.null(params[2])) params[2] else "NoCovariate",
+    fit_type   = if (!is.null(params[3])) params[3] else "parametric",
+    beta_prior = if (!is.null(params[4])) as.logical(params[4]) else FALSE,
+    test_type  = if (!is.null(params[5])) params[5] else "Wald",
+    shrinkage  = if (!is.null(params[6])) params[6] else "None"
   )
-
-  coldata <- prepGroup(conds, columns, metadata, covariates)
-  # Filtering non expressed genes
-  filtd <- data
-
-  # DESeq data structure is going to be prepared
-  if (covariates != "NoCovariate") {
-    dds_formula <- as.formula(paste0("~ group", paste0(" + covariate", 1:length(covariates))))
-    dds <- DESeqDataSetFromMatrix(
-      countData = as.matrix(filtd),
-      colData = coldata, design = dds_formula
-    )
-  } else {
-    dds <- DESeqDataSetFromMatrix(
-      countData = as.matrix(filtd),
-      colData = coldata, design = ~group
-    )
-  }
-  # Running DESeq
-  if (testType == "LRT") {
-    dds <- DESeq(dds, fitType = fitType, betaPrior = as.logical(betaPrior), test = testType, reduced = ~1)
-  } else {
-    dds <- DESeq(dds, fitType = fitType, betaPrior = as.logical(betaPrior), test = testType)
-  }
-
-  coef_names <- colnames(coef(dds))
-  group_name <- coef_names[grepl("group", coef_names)][1]
-  res <- results(dds, name = group_name)
-  if (shrinkage != "None") {
-    res <- lfcShrink(dds, coef = 2, res = res, type = shrinkage)
-    if (testType == "Wald") {
-      colname <- names(dds@rowRanges@elementMetadata)[grepl(paste0(testType, "Statistic_group"), names(dds@rowRanges@elementMetadata))]
-    } else {
-      colname <- paste0(testType, "Statistic")
+  tryCatch(
+    run_deseq2(data, metadata, columns, conds, pure_params),
+    too_few_columns = function(e) {
+      showNotification(conditionMessage(e), type = "error")
+      NULL
     }
-    stat <- dds@rowRanges@elementMetadata[colname]
-    res <- cbind(res, stat)
-    colnames(res)[colnames(res) == colname] <- "stat"
-  }
-  return(res)
+  )
 }
 
 #' runEdgeR
@@ -302,90 +259,27 @@ runDESeq2 <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL
 #' @examples
 #' x <- runEdgeR()
 #'
-runEdgeR <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL, params = NULL) {
+runEdgeR <- function(data = NULL, metadata = NULL, columns = NULL,
+                     conds = NULL, params = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
   if (length(params) < 3) {
     params <- strsplit(params, ",")[[1]]
   }
-  covariates <- if (!is.null(params[2])) params[2]
-  covariates <- strsplit(covariates, split = "\\|")[[1]]
-  normfact <- if (!is.null(params[3])) params[3]
-  dispersion <- if (!is.null(params[4])) params[4]
-  testType <- if (!is.null(params[5])) params[5]
-
-  data <- data[, columns]
-  data[, columns] <- apply(
-    data[, columns], 2,
-    function(x) as.integer(x)
+  pure_params <- list(
+    covariates = if (!is.null(params[2])) params[2] else "NoCovariate",
+    norm_fact  = if (!is.null(params[3])) params[3] else "TMM",
+    dispersion = if (!is.null(params[4])) params[4] else "0",
+    test_type  = if (!is.null(params[5])) params[5] else "exactTest"
   )
-
-  if (!is.na(dispersion) && !(dispersion %in% c("common", "trended", "tagwise", "auto"))) {
-    dispersion <- as.numeric(dispersion)
-  }
-
-  conds <- factor(conds)
-  filtd <- data
-
-  d <- edgeR::DGEList(counts = filtd, group = conds)
-  d <- edgeR::calcNormFactors(d, method = normfact)
-  # If dispersion is 0, it will estimate the dispersions.
-  de.com <- c()
-  cnum <- summary(conds)[levels(conds)[1]]
-  tnum <- summary(conds)[levels(conds)[2]]
-  des <- c(rep(1, cnum), rep(2, tnum))
-  if (cnum == 1 && tnum == 1 &&
-    (dispersion %in% c("common", "trended", "tagwise", "auto") ||
-      dispersion == 0)) {
-    showNotification("You cannot use this dispersion with common, trended, tagwise,
-            auto, when there are 1 replicates for each condition.
-            Please use a numeric value if that's the case.", type = "error")
-    return(NULL)
-  }
-
-  if (covariates != "NoCovariate") {
-    des_formula <- as.formula(paste0("~ des", paste0(" + covariate", 1:length(covariates))))
-    model.matrix_data <- data.frame(des = des)
-    sample_column_ind <- which(apply(metadata, 2, function(x) sum(x %in% columns) == length(columns)))
-    sample_column <- colnames(metadata)[sample_column_ind]
-    cov_metadata <- metadata[match(columns, metadata[, sample_column]), covariates, drop = FALSE]
-    for (i in 1:length(covariates)) {
-      cur_covariate <- cov_metadata[, i]
-      cur_covariate <- factor(cur_covariate)
-      model.matrix_data[[paste0("covariate", i)]] <- cur_covariate
+  tryCatch(
+    run_edger(data, metadata, columns, conds, pure_params),
+    bad_dispersion = function(e) {
+      showNotification(conditionMessage(e), type = "error")
+      NULL
     }
-    design <- model.matrix(des_formula, data = model.matrix_data)
-  } else {
-    design <- model.matrix(~des)
-  }
-
-  d <- edgeR::estimateDisp(d, design)
-  if (testType == "exactTest") {
-    if (dispersion == 0) {
-      de.com <- edgeR::exactTest(d)
-    } else {
-      de.com <- edgeR::exactTest(d, dispersion = dispersion)
-    }
-    de.com$table <- topTags(de.com, n = nrow(de.com$table))$table
-    colnames(de.com$table)[colnames(de.com$table) == "FDR"] <- "stat"
-  } else if (testType == "glmLRT") {
-    if (dispersion == 0) {
-      fit <- edgeR::glmFit(d, design)
-    } else {
-      fit <- edgeR::glmFit(d, design, dispersion = dispersion)
-    }
-    de.com <- edgeR::glmLRT(fit, coef = 2)
-    colnames(de.com$table)[colnames(de.com$table) == "LR"] <- "stat"
-  }
-
-  options(digits = 4)
-
-  padj <- p.adjust(de.com$table$PValue, method = "BH")
-  res <- data.frame(cbind(de.com$table$logFC / log(2), de.com$table$PValue, padj, de.com$table$stat))
-  colnames(res) <- c("log2FoldChange", "pvalue", "padj", "stat")
-  rownames(res) <- rownames(filtd)
-  return(res)
+  )
 }
 
 #' runLimma
@@ -413,63 +307,21 @@ runEdgeR <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL,
 #' @examples
 #' x <- runLimma()
 #'
-runLimma <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL, params = NULL) {
+runLimma <- function(data = NULL, metadata = NULL, columns = NULL,
+                     conds = NULL, params = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
   if (length(params) < 3) {
     params <- strsplit(params, ",")[[1]]
   }
-  covariates <- if (!is.null(params[2])) params[2]
-  covariates <- strsplit(covariates, split = "\\|")[[1]]
-  normfact <- if (!is.null(params[3])) params[3]
-  fitType <- if (!is.null(params[4])) params[4]
-  normBet <- if (!is.null(params[5])) params[5]
-
-  data <- data[, columns]
-  data[, columns] <- apply(
-    data[, columns], 2,
-    function(x) as.integer(x)
+  pure_params <- list(
+    covariates = if (!is.null(params[2])) params[2] else "NoCovariate",
+    norm_fact  = if (!is.null(params[3])) params[3] else "TMM",
+    fit_type   = if (!is.null(params[4])) params[4] else "ls",
+    norm_bet   = if (!is.null(params[5])) params[5] else "none"
   )
-  conds <- factor(conds)
-
-  cnum <- summary(conds)[levels(conds)[1]]
-  tnum <- summary(conds)[levels(conds)[2]]
-  filtd <- data
-
-  des <- factor(c(rep(levels(conds)[1], cnum), rep(levels(conds)[2], tnum)))
-  names(filtd) <- des
-
-  if (covariates != "NoCovariate") {
-    design <- cbind(Grp1 = 1, Grp2vs1 = des)
-    sample_column_ind <- which(apply(metadata, 2, function(x) sum(x %in% columns) == length(columns)))
-    sample_column <- colnames(metadata)[sample_column_ind]
-    cov_metadata <- metadata[match(columns, metadata[, sample_column]), covariates, drop = FALSE]
-    for (i in 1:length(covariates)) {
-      cur_covariate <- cov_metadata[, i]
-      cur_covariate <- factor(cur_covariate)
-      design <- cbind(design, cur_covariate)
-      colnames(design)[length(colnames(design))] <- paste0("covariate", i)
-    }
-  } else {
-    design <- cbind(Grp1 = 1, Grp2vs1 = des)
-  }
-
-  dge <- DGEList(counts = filtd, group = des)
-  dge <- calcNormFactors(dge, method = normfact, samples = columns)
-
-  v <- voom(dge, design = design, normalize.method = normBet, plot = FALSE)
-
-  fit <- lmFit(v, design = design)
-  fit <- eBayes(fit)
-
-  options(digits = 4)
-  tab <- topTable(fit, coef = 2, number = dim(fit)[1], genelist = fit$genes$NAME)
-  res <- data.frame(cbind(tab$logFC, tab$P.Value, tab$adj.P.Val, tab$t))
-
-  colnames(res) <- c("log2FoldChange", "pvalue", "padj", "stat")
-  rownames(res) <- rownames(tab)
-  return(res)
+  run_limma(data, metadata, columns, conds, pure_params)
 }
 
 #' prepGroup
