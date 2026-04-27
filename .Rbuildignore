@@ -1,2 +1,13 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^docs$
+^\.github$
+^\.lintr$
+^\.aidrift$
+^\.claude$
+^viafoundry_errors\.log$
+^README\.md$
+^codecov\.yml$
+^\.styler_cache$
+^renv\.lock$
+^renv$
