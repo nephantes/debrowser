@@ -6,3 +6,6 @@ manifest.json
 .positai
 vignettes/*.html
 vignettes/*_files/
+.env
+.env.*
+!.env.example
