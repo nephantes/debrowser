@@ -43,3 +43,30 @@ de_assert_count_matrix <- function(x) {
   }
   invisible(x)
 }
+
+#' Translate a Shiny `input` reactive into a structured filter-params list.
+#'
+#' All A3b pure functions accept a named list of filter parameters. This
+#' helper bridges Shiny modules to those functions in a single place so the
+#' field-name mapping is documented and centralised.
+#'
+#' @param input A Shiny input reactive (or a plain list with the same
+#'   fields).
+#' @return Named list with components: padj_cutoff, fold_cutoff, dataset,
+#'   compselect, norm_method, geneset_area, method_tab, min_count, top_n,
+#'   selected_plot.
+#' @export
+filter_params_from_input <- function(input) {
+  list(
+    padj_cutoff   = input$padj,
+    fold_cutoff   = input$foldChange,
+    dataset       = input$dataset,
+    compselect    = input$compselect,
+    norm_method   = input$norm_method,
+    geneset_area  = input$genesetarea,
+    method_tab    = input$methodtabs,
+    min_count     = input$mincount,
+    top_n         = input$topn,
+    selected_plot = input$selectedplot
+  )
+}

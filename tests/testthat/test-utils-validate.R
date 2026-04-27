@@ -20,3 +20,26 @@ test_that("de_assert_count_matrix() rejects non-numeric, NA-filled, or empty mat
   expect_error(de_assert_count_matrix(matrix(numeric(0), 0, 0)), class = "empty_matrix")
   expect_silent(de_assert_count_matrix(matrix(1:6, 2, 3)))
 })
+
+test_that("filter_params_from_input() reads the documented input fields", {
+  input <- list(
+    padj         = "0.05",
+    foldChange   = "2",
+    dataset      = "up+down",
+    compselect   = "1",
+    norm_method  = "TMM",
+    genesetarea  = "BRCA1",
+    methodtabs   = "panel1",
+    mincount     = "10",
+    topn         = "500",
+    selectedplot = NULL
+  )
+  p <- filter_params_from_input(input)
+  expect_equal(p$padj_cutoff, "0.05")
+  expect_equal(p$fold_cutoff, "2")
+  expect_equal(p$dataset, "up+down")
+  expect_equal(p$norm_method, "TMM")
+  expect_equal(p$geneset_area, "BRCA1")
+  expect_equal(p$top_n, "500")
+  expect_null(p$selected_plot)
+})
