@@ -45,3 +45,37 @@ test_that("apply_de_filters() labels Up/Down/NS for the demo DE result", {
 test_that("apply_de_filters() returns NULL for missing data", {
   expect_null(apply_de_filters(NULL, NULL, NULL, params = list()))
 })
+
+test_that("select_dataset() routes by dataset name", {
+  rdata <- data.frame(
+    ID     = c("a", "b", "c", "d"),
+    Legend = c("Up", "Down", "Up", "NS"),
+    stringsAsFactors = FALSE
+  )
+  rownames(rdata) <- rdata$ID
+
+  expect_equal(
+    nrow(select_dataset(rdata, params = list(dataset = "up"))),
+    2L
+  )
+  expect_equal(
+    nrow(select_dataset(rdata, params = list(dataset = "down"))),
+    1L
+  )
+  expect_equal(
+    nrow(select_dataset(rdata, params = list(dataset = "alldetected"))),
+    4L
+  )
+  expect_equal(
+    rownames(select_dataset(
+      rdata,
+      get_selected = rdata[1:2, ],
+      params = list(dataset = "selected", selected_plot = "anything")
+    )),
+    c("a", "b")
+  )
+})
+
+test_that("search_geneset() returns NULL when input is NULL", {
+  expect_null(search_geneset(NULL, params = list(geneset_area = "BRCA1")))
+})

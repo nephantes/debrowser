@@ -105,3 +105,51 @@ get_most_varied <- function(datavar, cols, params = list()) {
   topindex <- min(nrow(cvsort), topn)
   data.frame(datavar[rownames(head(cvsort, topindex)), ])
 }
+
+#' Pick a subset of `rdata` based on the `dataset` filter param.
+#'
+#' @param rdata Filtered data.frame (typically the output of
+#'   [apply_de_filters()]).
+#' @param get_selected Optional; the user's lasso/click selection.
+#' @param get_most_varied_data Optional; the most-varied subset to use when
+#'   `dataset == "most-varied"`.
+#' @param merged_comparison Optional; merged comparisons table.
+#' @param params Named list with `dataset` and (optionally) `selected_plot`,
+#'   `geneset_area`.
+#' @return Subset data.frame.
+#' @export
+select_dataset <- function(rdata, get_selected = NULL,
+                           get_most_varied_data = NULL,
+                           merged_comparison = NULL, params = list()) {
+  if (is.null(rdata)) {
+    return(NULL)
+  }
+  ds <- params$dataset
+  switch(ds,
+    "up"           = getUp(rdata),
+    "down"         = getDown(rdata),
+    "up+down"      = getUpDown(rdata),
+    "alldetected"  = rdata,
+    "selected"     = if (!is.null(params$selected_plot)) get_selected else rdata,
+    "most-varied"  = rdata[rownames(get_most_varied_data), ],
+    "comparisons"  = merged_comparison,
+    "searched"     = search_geneset(rdata, params),
+    rdata
+  )
+}
+
+#' Search a data.frame's `ID` column for a gene-set list.
+#'
+#' @param dat data.frame with an `ID` column (or first column treated as ID).
+#' @param params Named list with `geneset_area` (string of search terms).
+#' @return Filtered data.frame; or `dat` unchanged if `geneset_area` is empty.
+#' @export
+search_geneset <- function(dat, params = list()) {
+  if (is.null(dat)) {
+    return(NULL)
+  }
+  if (is.null(params$geneset_area) || params$geneset_area == "") {
+    return(dat)
+  }
+  getGeneSetData(dat, c(params$geneset_area))
+}
