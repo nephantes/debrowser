@@ -48,6 +48,23 @@ For releases prior to 1.31, see the legacy `NEWS` file.
 * `debrowserlowcountfilter` module's filter observer shrinks from ~20
   lines to 9 by delegating to `filter_low_counts()`.
 
+### Phase A3b — pure data-prep functions
+
+* Added `R/fct_prep_data.R` with `apply_de_filters()`, `get_most_varied()`,
+  `select_dataset()`, `search_geneset()`, `merge_comparisons()`,
+  `apply_merged_filters()`, `get_table_data()` — pure functions that take
+  a structured filter-params list.
+* Added `filter_params_from_input()` in `utils_validate.R` to centralise
+  the Shiny-input → pure-fn-params field-name mapping (e.g. `input$padj`
+  → `params$padj_cutoff`, `input$genesetarea` → `params$geneset_area`).
+* Legacy `applyFilters()`, `getMostVariedList()`, `getSelectedDatasetInput()`,
+  `getSearchData()`, `getMergedComparison()`, `applyFiltersToMergedComparison()`,
+  `getDataForTables()` are now thin shims that delegate to
+  `R/fct_prep_data.R`. Public signatures unchanged.
+* New golden snapshot locks the (Up=551, Down=864, NS=13941) row-count
+  distribution on the demo DE result with default cutoffs (padj 0.05,
+  fold 2) — catches regressions in cutoff logic or normalization.
+
 ### User-visible
 
 * Raised `startDEBrowser()` upload limit from 30 MB to 90 MB.
