@@ -26,8 +26,9 @@ Modernize DEBrowser into a maintainable, fast, biologist-friendly Shiny package 
 ```
 debrowser/
 ├── R/
-│   ├── run_app.R              # startDEBrowser(), startHeatmap() — back-compat shims
-│   ├── app_ui.R               # bslib-themed page + nav
+│   ├── run_app.R              # startDEBrowser(focus=); startHeatmap() = deprecated alias
+│   ├── app_ui.R               # bslib page + 3-stage progress nav (Data/Analyze/Explore)
+│   ├── mod_shell.R            # stage gating, view-mode toggle (Simple/Advanced), help offcanvas
 │   ├── app_server.R           # top-level server, wires modules
 │   ├── mod_data_load.R        # was dataLoad.R
 │   ├── mod_lowcount_filter.R  # was lowcountfilter.R
@@ -141,9 +142,64 @@ Move rarely-used to `Suggests` and gate with `requireNamespace()`:
 - *Refactor breaks DE math subtly* → mitigated by A2 golden snapshots
 - *Bioc release cadence collides with mid-refactor* → land A1 + A2 as standalone PRs first, then A3/A4 incrementally so the package is always shippable
 
+## Current UX evaluation (added 2026-04-27)
+
+Critical findings from reading the current code path. These motivate Phase B's specific design choices below.
+
+### Upload screen — overwhelms before doing anything
+
+- Two equally-weighted boxes ("Count Data File" + "Metadata File") side by side, each with its own separator radio (Comma/Semicolon/Tab) — biologists must know file formats *before* uploading. Default `\t` while accept list includes `.csv` — mismatch produces cryptic R error.
+- Three primary-styled buttons after upload (Upload / Load Demo Vernia / Load Demo Donnard) — no visual hierarchy.
+- `stop("Please upload the count file")` (`R/dataLoad.R:158`) — bare R `stop()`.
+- Stray `print(dim(ldata$count))` in JSON load path (`R/dataLoad.R:99`) — debug noise in production.
+- Column names silently mangled by `gsub("\\s+|\\.|\\-", "_", ...)` — `My Sample 1` becomes `My_Sample_1` with no notice.
+
+### Condition selector — power-user nightmare
+
+- "Condition 1 (Numerator)" / "Condition 2 (Denominator)" — biologists think Treatment vs Control, not numerator/denominator.
+- DE method dropdown immediately exposes fitType, betaPrior, testType, shrinkage, normalization, dispersion, etc. — **8–10 dropdowns visible at once** with no guidance.
+- Covariate selector always shown, even when there's no batch column.
+- `showNotification(..., type="error")` fires during reactive rebuilds (`R/condSelect.R:352, 369, 392, 399, 407`) → red toasts pop during normal interactions, auto-dismiss in 5s.
+- Three overlapping code paths (`getConditionSelector`, `getConditionSelectorFromMeta`, `selectConditions`) with dead branches like `if (length(grps) == -1)` (`R/condSelect.R:205`).
+- "Add New Comparison" / "Remove" / "Start DE" all visible at once.
+
+### Cutoffs — wrong widget, inconsistent defaults
+
+- `textInput` for `padj` and `foldChange` (`R/deprogs.R:85-86`) — user can type "abc" and silently get NA. Should be `numericInput` with min/max/step.
+- Defaults inconsistent: cutOffSelectionUI says padj `0.01` / fold `2`, community standard is 0.05/1.
+
+### Information architecture — guide and workflow share sidebar
+
+- Quick Start Guide subtabs live in the *same sidebar* as workflow steps — confuses "where to work" with "where to read docs".
+- Top-level "Data Prep" / "Discover" — no visual indication "Discover" is locked until DE runs.
+- Typos in nav: `Anaylsis`, `Assesment` (`R/ui.R:55, 53`).
+
+### Two separate apps for related tasks
+
+- `startDEBrowser()` and `startHeatmap()` are completely separate UIs — no discoverability between them.
+
+### Visual & micro-UX
+
+- Default `shinydashboard` dark-blue chrome looks dated.
+- Loading screen: black background + animated GIF spinner.
+- CSS hammer: `.content-wrapper { min-height: 3500px !important; }` — huge empty scroll area on small datasets.
+- Errors only as auto-dismissing toasts; no persistent error log.
+- Reactive rebuild storms on every keystroke (no `bindEvent` discipline).
+
 ## Phase B — UX refresh for bench biologists
 
 **Goal:** biologist with a count matrix and zero R experience gets from "I have data" to "here are my up/down genes" in under 5 minutes, no docs. ~20% of total effort.
+
+### Top-level UX changes (drives B1–B6)
+
+1. **Single unified app** — fold separate `startHeatmap()` UI into main app as heatmap tab. `startHeatmap()` becomes deprecated alias for `startDEBrowser(focus = "heatmap")`.
+2. **Three-stage shell with visible gating:** `1. Data → 2. Analyze → 3. Explore`. Stages locked until prereqs met; click completed stages to return.
+3. **"Treatment vs Control"** language replaces "Numerator/Denominator". Caption: *"log2 fold change = Treatment ÷ Control"*.
+4. **Inline validation, not toasts:** errors render as helper text next to offending field. Toasts only for top-level events ("DE run finished").
+5. **Persistent error log panel** behind a corner "View errors" button so users can re-read.
+6. **Defaults harmonization:** community standard **padj 0.05, |log2FC| ≥ 1**, applied consistently in code/docs/report.
+7. **Workflow guide moved out of sidebar:** Quick Start lives in top-bar Help menu with `bslib::offcanvas` slide-out.
+8. **Sample-name normalization visible:** show before/after table when names get mangled.
 
 ### B1 — `bslib` theme + chrome swap
 
@@ -151,47 +207,71 @@ Move rarely-used to `Suggests` and gate with `requireNamespace()`:
 - Calm modern palette, accessible contrast, single accent color, larger typography
 - Use `bs_themer()` during dev; freeze final theme
 
-### B2 — "Quick Start" wizard (default landing)
+### B2 — Three-stage shell + Quick Start wizard
 
-3-step front door:
-1. **Upload** — drag-and-drop counts + metadata, or "Try demo data" button. Auto-detect separator. 5-row inline preview.
-2. **Pick conditions** — clean "Group A vs Group B" picker reading metadata columns. Sensible auto-grouping.
-3. **Run & view** — one button, runs DESeq2 with sane defaults, jumps to volcano with up/down highlighted and downloadable table.
+Replace the current "Data Prep / Discover" two-tab shell with a **3-stage progress nav** at the top of the page:
 
-Existing tabs (Filter / BatchEffect / DEAnalysis / QC / GO) remain accessible as **"Advanced" panels**.
+```
+●━━━━━━━━━━━━━━━○━━━━━━━━━━━━━━━○
+1. Data         2. Analyze       3. Explore
+[upload+filter] [conds+DE run]   [plots+tables+heatmap+GO]
+```
 
-Wizard preference persists per-browser (cookie); "Skip wizard" lands directly on classic tabbed view.
+- Each stage is a `bslib::nav_panel`. Stages 2/3 disabled (greyed) until prereqs met. Completed stages get a green checkmark.
+- Default landing: **Stage 1**, with a wizard-style flow:
+  1. **Upload counts** — single drop zone (no separator radio up front). Auto-detect separator: try `\t`, `,`, `;` in order, pick the one yielding ≥3 numeric columns. Show first-5-row inline preview. Separator chooser only appears if autodetect fails.
+  2. **Optional metadata** — secondary drop zone underneath, smaller. If skipped, auto-generate single-batch metadata.
+  3. **Try demo data** — single secondary button, not equally weighted with upload.
+- **Stage 2**: shows comparison builder with **"Treatment vs Control"** language (not Numerator/Denominator). Caption *"log2 fold change = Treatment ÷ Control"*. Method picker shows only "Method: DESeq2 ▼"; everything else collapses behind "Advanced" accordion (closed by default).
+- **Stage 3**: lands on volcano plot with top 10 genes labeled. Sub-nav for Main Plots / QC / Tables / GO / Heatmap.
 
-### B3 — Sensible defaults (hide the dials)
+Existing power-user views (separate Filter, BatchEffect, full DEAnalysis with all knobs) remain accessible from a "View Mode" toggle in the top bar: **Simple** (default, gated 3-stage) ↔ **Advanced** (current tabbed view, all knobs visible). Choice persists per-browser cookie.
 
-Auto-applied with one-click "Advanced" expander to override:
+### B3 — Sensible defaults + cutoff widget redesign
+
+Auto-applied defaults with one-click "Advanced" expander to override:
 
 | Setting | Default |
 |---|---|
-| Method | DESeq2 + LRT (already project default per NEWS 1.10.1) |
+| Method | DESeq2 + LRT (project default per NEWS 1.10.1) |
 | Low-count filter | rowSums ≥ 10 |
-| padj cutoff | 0.05 |
-| \|log2FC\| cutoff | 1 |
+| padj cutoff | **0.05** (was 0.01 — community standard) |
+| \|log2FC\| cutoff | **1** (was 2 — community standard) |
 | LFC shrinkage | apeglm when applicable |
-| Batch correction | off; prompt if metadata has `batch` column |
+| Batch correction | off; **auto-prompt if metadata has a column matching `^batch$` (case-insensitive)** |
+| Covariate selector | hidden unless metadata has ≥2 non-sample columns |
 
-### B4 — Friendly errors
+**Cutoff widget redesign:** replace `textInput` with `numericInput` (min/max/step). Add **preset buttons** above:
 
-Replace `stop()` and silent failures with `validate(need(...))` + human messages:
+- `[ Sensitive: padj 0.10 ]` `[ Default: padj 0.05 ]` `[ Strict: padj 0.01 ]`
 
-- `R/dataLoad.R:158` `stop("Please upload the count file")` → "👋 Upload a count matrix to get started. Don't have one? Click 'Try demo data'."
-- Decimal counts detected → "Your file looks like it contains normalized values, not raw counts. DEBrowser needs raw integer counts."
-- Metadata mismatch → "3 samples in your count file aren't in your metadata: `sample_X`, `sample_Y`, `sample_Z`."
+Clicking a preset fills both numeric inputs. Manual edits clear the preset highlight.
 
-All errors logged structured in one place so we can later add a "Report this issue" link with context.
+### B4 — Inline validation + persistent error log
+
+**Inline, not toasts:** errors render as `bslib::tooltip` or red helper text directly under the offending field. Toasts only for cross-cutting events ("DE run finished", "Cache cleared").
+
+Concrete replacements:
+- `R/dataLoad.R:158` `stop("Please upload the count file")` → empty-state in dropzone: *"👋 Drop a count matrix here to get started. Don't have one? Try demo data."*
+- Decimal counts detected → inline under upload preview: *"This file contains decimals. DEBrowser needs raw integer counts (e.g. from HTSeq, RSEM, featureCounts)."*
+- Metadata mismatch → inline under metadata dropzone, with sample list: *"3 samples in your count file aren't in your metadata: `sample_X`, `sample_Y`, `sample_Z`. Fix the metadata or rename samples."*
+- Sample-name mangling (`gsub("\\s+|\\.|\\-", "_", ...)`) → modal showing before→after table; user confirms or cancels.
+- Wrong separator → autodetect first; only if all 3 fail, show separator radio with helpful caption.
+- All `showNotification(..., type="error")` calls in `R/condSelect.R` (lines 352, 369, 392, 399, 407) → debounce + render inline next to the comparison row that produced them.
+
+**Persistent error log:** new `utils_validate.R::log_user_event(level, msg, context)` writes to a `reactiveVal` log. Top-bar shows a small badge with error count. Clicking opens a `bslib::offcanvas` panel with full history (timestamp + message + which input). Survives page navigation within the session.
+
+Removed: stray `print(dim(ldata$count))` (`R/dataLoad.R:99`).
 
 ### B5 — Onboarding & empty states
 
-- Replace loading GIF with `bslib` spinner + version + status text
-- Empty plot panels show "Run DE analysis to see results" instead of blank space
-- Inline help tooltips (`bslib::tooltip`) on every parameter — one sentence each, no jargon
-- "Demo data" button promoted to primary CTA on landing
-- Fix typos in tab labels (`Anaylsis` → `Analysis`, `Assesment` → `Assessment` — both in `R/ui.R`)
+- Replace loading GIF with `bslib` spinner + version + status text. Drop the black-background full-screen overlay.
+- Drop the `.content-wrapper { min-height: 3500px !important; }` CSS hack — `bslib` cards size to content.
+- Empty plot panels show contextual message: *"Run a DE analysis to see your volcano plot"* with a button that jumps back to Stage 2.
+- Inline help tooltips (`bslib::tooltip`) on every parameter — one sentence each, plain language.
+- Fix typos in nav: `Anaylsis` → `Analysis`, `Assesment` → `Assessment` (`R/ui.R:55, 53`).
+- Quick Start Guide moves from sidebar into top-bar Help menu (`bslib::offcanvas` slide-out from the right). Workflow nav stays clean.
+- First-time visitor: subtle 3-step tour overlay (`introjs`-style), dismissable forever via cookie.
 
 ### B6 — Plot UX polish
 
@@ -312,13 +392,13 @@ Effort in **abstract units** (divide by your actual velocity):
 | A4 | 12 | All `mod_*.R` modules; old big files deleted |
 | A5 | 2 | Imports trimmed; `Suggests` gates working |
 | **A subtotal** | **28** | **Foundation done — package always shippable** |
-| B1 | 3 | New theme live |
-| B2 | 5 | 3-step quick start works on demo |
-| B3 | 1 | Knobs hidden; advanced expander |
-| B4 | 2 | All `stop()` replaced |
-| B5 | 2 | Tooltips, typos, empty states |
-| B6 | 2 | Color-safe; download UX |
-| **B subtotal** | **15** | **Bench-biologist UX live** |
+| B1 | 3 | bslib theme + chrome live; min-height hack gone |
+| B2 | 7 | 3-stage shell with gating; auto-detect upload; Simple/Advanced toggle; heatmap unified into main app |
+| B3 | 2 | Defaults harmonized (0.05/1); preset buttons; numeric inputs |
+| B4 | 3 | Inline validation; persistent error log; toasts removed from condSelect |
+| B5 | 2 | Tooltips, typos, empty states, help offcanvas |
+| B6 | 2 | Color-safe palettes; download UX |
+| **B subtotal** | **19** | **Bench-biologist UX live** |
 | C1 | 3 | DE doesn't block UI |
 | C2 | 2 | Repeat runs instant |
 | C3 | 4 | ComplexHeatmap; downsampling |
@@ -332,7 +412,7 @@ Effort in **abstract units** (divide by your actual velocity):
 | D4 | 1 | Docs site live |
 | D5 | 1 | Tagged & submitted |
 | **D subtotal** | **10** | **Reproducible & deployable** |
-| **TOTAL** | **66** | |
+| **TOTAL** | **70** | |
 
 ## Branching strategy
 
