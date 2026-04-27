@@ -14,10 +14,11 @@
 #' @examples
 #' x <- debrowserbatcheffect()
 #'
-debrowserbatcheffect <- function(input, output, session, ldata = NULL) {
+debrowserbatcheffect <- function(id, ldata = NULL) {
   if (is.null(ldata)) {
     return(NULL)
   }
+  moduleServer(id, function(input, output, session) {
   batchdata <- reactiveValues(count = NULL, meta = NULL)
   observeEvent(input$submitBatchEffect, {
     if (is.null(ldata$count)) {
@@ -67,20 +68,21 @@ debrowserbatcheffect <- function(input, output, session, ldata = NULL) {
     getSampleDetails(output, "uploadSummary", "sampleDetails", ldata)
     getSampleDetails(output, "filteredSummary", "filteredDetails", batcheffectdata())
     getTableDetails(output, session, "beforebatchtable", ldata$count, modal = TRUE)
-    callModule(debrowserpcaplot, "beforeCorrectionPCA", ldata$count, ldata$meta)
-    callModule(debrowserIQRplot, "beforeCorrectionIQR", ldata$count)
-    callModule(debrowserdensityplot, "beforeCorrectionDensity", ldata$count)
+    debrowserpcaplot("beforeCorrectionPCA", ldata$count, ldata$meta)
+    debrowserIQRplot("beforeCorrectionIQR", ldata$count)
+    debrowserdensityplot("beforeCorrectionDensity", ldata$count)
     if (!is.null(batcheffectdata()$count) && nrow(batcheffectdata()$count) > 2) {
       withProgress(message = "Drawing the plot", detail = "Preparing!", value = NULL, {
         getTableDetails(output, session, "afterbatchtable", batcheffectdata()$count, modal = TRUE)
-        callModule(debrowserpcaplot, "afterCorrectionPCA", batcheffectdata()$count, batcheffectdata()$meta)
-        callModule(debrowserIQRplot, "afterCorrectionIQR", batcheffectdata()$count)
-        callModule(debrowserdensityplot, "afterCorrectionDensity", batcheffectdata()$count)
+        debrowserpcaplot("afterCorrectionPCA", batcheffectdata()$count, batcheffectdata()$meta)
+        debrowserIQRplot("afterCorrectionIQR", batcheffectdata()$count)
+        debrowserdensityplot("afterCorrectionDensity", batcheffectdata()$count)
       })
     }
   })
 
   list(BatchEffect = batcheffectdata)
+  })
 }
 
 

@@ -14,10 +14,11 @@
 #' @export
 #'
 #'
-debrowserheatmap <- function(input, output, session, expdata = NULL) {
+debrowserheatmap <- function(id, expdata = NULL) {
   if (is.null(expdata)) {
     return(NULL)
   }
+  moduleServer(id, function(input, output, session) {
   output$heatmap <- renderPlotly({
     shinyjs::onevent("mousemove", "heatmap", js$getHoverName(session$ns("hoveredgenename")))
     shinyjs::onevent("click", "heatmap", js$getHoverName(session$ns("hoveredgenenameclick")))
@@ -93,6 +94,7 @@ debrowserheatmap <- function(input, output, session, expdata = NULL) {
   })
 
   list(shg = (shg), shgClicked = (shgClicked), selGenes = (hselGenes), getSelected = (orderData))
+  })
 }
 #' getPlotArea
 #'
@@ -775,7 +777,7 @@ heatmapServer <- function(input, output, session) {
   selected <- reactiveVal()
   expdata <- reactiveVal()
   observe({
-    updata(callModule(debrowserdataload, "load", "Submit"))
+    updata(debrowserdataload("load", "Submit"))
   })
   observe({
     if (!is.null(updata()$load()$count)) {
@@ -797,7 +799,7 @@ heatmapServer <- function(input, output, session) {
   observe({
     if (!is.null(expdata())) {
       withProgress(message = "Creating plot", style = "notification", value = 0.1, {
-        selected(callModule(debrowserheatmap, "heatmap", expdata()))
+        selected(debrowserheatmap("heatmap", expdata()))
       })
     }
   })

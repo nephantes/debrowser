@@ -14,10 +14,11 @@
 #' @examples
 #' x <- debrowserlowcountfilter()
 #'
-debrowserlowcountfilter <- function(input = NULL, output = NULL, session = NULL, ldata = NULL) {
+debrowserlowcountfilter <- function(id, ldata = NULL) {
   if (is.null(ldata)) {
     return(NULL)
   }
+  moduleServer(id, function(input, output, session) {
   fdata <- reactiveValues(count = NULL, meta = NULL)
   observeEvent(input$submitLCF, {
     if (is.null(ldata$count)) {
@@ -58,15 +59,16 @@ debrowserlowcountfilter <- function(input = NULL, output = NULL, session = NULL,
     getSampleDetails(output, "uploadSummary", "sampleDetails", ldata)
     getSampleDetails(output, "filteredSummary", "filteredDetails", filtereddata())
     getTableDetails(output, session, "loadedtable", data = ldata$count, modal = TRUE)
-    callModule(debrowserhistogram, "beforeFiltering", ldata$count)
+    debrowserhistogram("beforeFiltering", ldata$count)
 
     if (!is.null(filtereddata()$count) && nrow(filtereddata()$count) > 2) {
       getTableDetails(output, session, "filteredtable", data = filtereddata()$count, modal = TRUE)
-      callModule(debrowserhistogram, "afterFiltering", filtereddata()$count)
+      debrowserhistogram("afterFiltering", filtereddata()$count)
     }
   })
 
   list(filter = filtereddata)
+  })
 }
 
 #' dataLCFUI
