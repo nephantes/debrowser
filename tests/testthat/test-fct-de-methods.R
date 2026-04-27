@@ -60,6 +60,36 @@ test_that("run_edger() with structured params matches the legacy edgeR golden ha
   expect_snapshot_value(stable_hash(res), style = "json2")
 })
 
+test_that("run_de() dispatches by method name and matches per-method results", {
+  skip_on_cran()
+
+  demo <- load_demo()
+  data <- demo$counts[, demo_columns]
+  data <- data[rowSums(data) > 10, ]
+
+  set.seed(1L)
+  via_dispatch <- run_de(
+    "DESeq2", data, demo$meta, demo_columns, demo_conds,
+    params = list(covariates = "NoCovariate")
+  )
+  set.seed(1L)
+  direct <- run_deseq2(
+    data, demo$meta, demo_columns, demo_conds,
+    params = list(covariates = "NoCovariate")
+  )
+  expect_equal(
+    stable_hash(as.data.frame(via_dispatch)),
+    stable_hash(as.data.frame(direct))
+  )
+})
+
+test_that("run_de() rejects unknown methods", {
+  expect_error(
+    run_de("NotAMethod", matrix(1:6, 2, 3)),
+    class = "unknown_de_method"
+  )
+})
+
 test_that("run_limma() with structured params matches the legacy limma golden hash", {
   skip_on_cran()
   skip_if_not_installed("limma")

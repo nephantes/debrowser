@@ -252,3 +252,22 @@ run_limma <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
   rownames(res) <- rownames(tab)
   res
 }
+
+#' Dispatch a DE run by method name.
+#'
+#' @param method One of "DESeq2", "EdgeR", "Limma".
+#' @inheritParams run_deseq2
+#' @return Method-specific result object.
+#' @export
+run_de <- function(method, counts, metadata = NULL, columns = NULL,
+                   conds = NULL, params = list()) {
+  switch(method,
+    "DESeq2" = run_deseq2(counts, metadata, columns, conds, params),
+    "EdgeR"  = run_edger(counts, metadata, columns, conds, params),
+    "Limma"  = run_limma(counts, metadata, columns, conds, params),
+    de_error(
+      paste0("Unknown DE method: ", method),
+      class = "unknown_de_method"
+    )
+  )
+}
