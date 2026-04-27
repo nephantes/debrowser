@@ -34,3 +34,53 @@ test_that("run_deseq2() raises de_error when fewer than 3 columns supplied", {
     class = "too_few_columns"
   )
 })
+
+test_that("run_edger() with structured params matches the legacy edgeR golden hash", {
+  skip_on_cran()
+  skip_if_not_installed("edgeR")
+
+  demo <- load_demo()
+  data <- demo$counts[, demo_columns]
+  data <- data[rowSums(data) > 10, ]
+
+  set.seed(1L)
+  res <- as.data.frame(run_edger(
+    counts   = data,
+    metadata = demo$meta,
+    columns  = demo_columns,
+    conds    = demo_conds,
+    params   = list(
+      covariates = "NoCovariate",
+      norm_fact  = "TMM",
+      dispersion = "0",
+      test_type  = "exactTest"
+    )
+  ))
+  res <- res[order(rownames(res)), c("log2FoldChange", "pvalue", "padj"), drop = FALSE]
+  expect_snapshot_value(stable_hash(res), style = "json2")
+})
+
+test_that("run_limma() with structured params matches the legacy limma golden hash", {
+  skip_on_cran()
+  skip_if_not_installed("limma")
+
+  demo <- load_demo()
+  data <- demo$counts[, demo_columns]
+  data <- data[rowSums(data) > 10, ]
+
+  set.seed(1L)
+  res <- as.data.frame(run_limma(
+    counts   = data,
+    metadata = demo$meta,
+    columns  = demo_columns,
+    conds    = demo_conds,
+    params   = list(
+      covariates = "NoCovariate",
+      norm_fact  = "TMM",
+      fit_type   = "ls",
+      norm_bet   = "none"
+    )
+  ))
+  res <- res[order(rownames(res)), c("log2FoldChange", "pvalue", "padj"), drop = FALSE]
+  expect_snapshot_value(stable_hash(res), style = "json2")
+})

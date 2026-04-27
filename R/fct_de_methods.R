@@ -91,3 +91,164 @@ run_deseq2 <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
   }
   res
 }
+
+#' Run edgeR on a count matrix.
+#'
+#' @inheritParams run_deseq2
+#' @param params Named list with components: covariates, norm_fact
+#'   ("TMM"/"RLE"/"upperquartile"/"none"), dispersion (numeric or character
+#'   "common"/"trended"/"tagwise"/"auto"), test_type ("exactTest"/"glmLRT").
+#' @return data.frame with columns log2FoldChange, pvalue, padj, stat.
+#' @export
+run_edger <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
+                      params = list()) {
+  de_assert_count_matrix(counts)
+  defaults <- list(
+    covariates = "NoCovariate",
+    norm_fact  = "TMM",
+    dispersion = "0",
+    test_type  = "exactTest"
+  )
+  params <- modifyList(defaults, params)
+
+  data <- counts[, columns]
+  data[, columns] <- apply(data[, columns], 2, as.integer)
+  covariates <- strsplit(params$covariates, split = "\\|")[[1]]
+
+  dispersion <- params$dispersion
+  if (!is.na(dispersion) &&
+    !(dispersion %in% c("common", "trended", "tagwise", "auto"))) {
+    dispersion <- as.numeric(dispersion)
+  }
+
+  conds <- factor(conds)
+  filtd <- data
+  d <- edgeR::DGEList(counts = filtd, group = conds)
+  d <- edgeR::calcNormFactors(d, method = params$norm_fact)
+
+  cnum <- summary(conds)[levels(conds)[1]]
+  tnum <- summary(conds)[levels(conds)[2]]
+  des <- c(rep(1, cnum), rep(2, tnum))
+  if (cnum == 1 && tnum == 1 &&
+    (dispersion %in% c("common", "trended", "tagwise", "auto") ||
+      identical(dispersion, 0))) {
+    de_error(
+      paste(
+        "edgeR cannot use 'common'/'trended'/'tagwise'/'auto' dispersion",
+        "or 0 with 1 replicate per condition.",
+        "Provide a numeric dispersion."
+      ),
+      class = "bad_dispersion"
+    )
+  }
+
+  if (!identical(covariates, "NoCovariate")) {
+    des_formula <- as.formula(
+      paste0("~ des", paste0(" + covariate", seq_along(covariates), collapse = ""))
+    )
+    model_data <- data.frame(des = des)
+    sample_col_ind <- which(apply(metadata, 2, function(x) sum(x %in% columns) == length(columns)))
+    sample_col <- colnames(metadata)[sample_col_ind]
+    cov_metadata <- metadata[match(columns, metadata[, sample_col]), covariates, drop = FALSE]
+    for (i in seq_along(covariates)) {
+      model_data[[paste0("covariate", i)]] <- factor(cov_metadata[, i])
+    }
+    design <- model.matrix(des_formula, data = model_data)
+  } else {
+    design <- model.matrix(~des)
+  }
+
+  d <- edgeR::estimateDisp(d, design)
+  if (params$test_type == "exactTest") {
+    de_com <- if (identical(dispersion, 0)) {
+      edgeR::exactTest(d)
+    } else {
+      edgeR::exactTest(d, dispersion = dispersion)
+    }
+    de_com$table <- edgeR::topTags(de_com, n = nrow(de_com$table))$table
+    colnames(de_com$table)[colnames(de_com$table) == "FDR"] <- "stat"
+  } else {
+    fit <- if (identical(dispersion, 0)) {
+      edgeR::glmFit(d, design)
+    } else {
+      edgeR::glmFit(d, design, dispersion = dispersion)
+    }
+    de_com <- edgeR::glmLRT(fit, coef = 2)
+    colnames(de_com$table)[colnames(de_com$table) == "LR"] <- "stat"
+  }
+
+  options(digits = 4)
+  padj <- p.adjust(de_com$table$PValue, method = "BH")
+  res <- data.frame(
+    log2FoldChange = de_com$table$logFC / log(2),
+    pvalue         = de_com$table$PValue,
+    padj           = padj,
+    stat           = de_com$table$stat
+  )
+  rownames(res) <- rownames(filtd)
+  res
+}
+
+#' Run limma-voom on a count matrix.
+#'
+#' @inheritParams run_deseq2
+#' @param params Named list: covariates, norm_fact, fit_type ("ls"/"robust"),
+#'   norm_bet ("none"/"scale"/"quantile"/...).
+#' @return data.frame with columns log2FoldChange, pvalue, padj, stat.
+#' @export
+run_limma <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
+                      params = list()) {
+  de_assert_count_matrix(counts)
+  defaults <- list(
+    covariates = "NoCovariate",
+    norm_fact  = "TMM",
+    fit_type   = "ls",
+    norm_bet   = "none"
+  )
+  params <- modifyList(defaults, params)
+
+  data <- counts[, columns]
+  data[, columns] <- apply(data[, columns], 2, as.integer)
+  conds <- factor(conds)
+  covariates <- strsplit(params$covariates, split = "\\|")[[1]]
+
+  cnum <- summary(conds)[levels(conds)[1]]
+  tnum <- summary(conds)[levels(conds)[2]]
+  filtd <- data
+  des <- factor(c(rep(levels(conds)[1], cnum), rep(levels(conds)[2], tnum)))
+
+  # Note: legacy code did `names(filtd) <- des` which produced the
+  # "Repeated column names found in count matrix" warning. We intentionally
+  # do NOT do that here — the names are unused downstream and removing the
+  # rename does not change result values (verified by snapshot equality).
+
+  if (!identical(covariates, "NoCovariate")) {
+    design <- cbind(Grp1 = 1, Grp2vs1 = des)
+    sample_col_ind <- which(apply(metadata, 2, function(x) sum(x %in% columns) == length(columns)))
+    sample_col <- colnames(metadata)[sample_col_ind]
+    cov_metadata <- metadata[match(columns, metadata[, sample_col]), covariates, drop = FALSE]
+    for (i in seq_along(covariates)) {
+      design <- cbind(design, factor(cov_metadata[, i]))
+      colnames(design)[length(colnames(design))] <- paste0("covariate", i)
+    }
+  } else {
+    design <- cbind(Grp1 = 1, Grp2vs1 = des)
+  }
+
+  dge <- edgeR::DGEList(counts = filtd, group = des)
+  dge <- edgeR::calcNormFactors(dge, method = params$norm_fact, samples = columns)
+  v <- limma::voom(dge, design = design, normalize.method = params$norm_bet, plot = FALSE)
+  fit <- limma::lmFit(v, design = design)
+  fit <- limma::eBayes(fit)
+
+  options(digits = 4)
+  tab <- limma::topTable(fit, coef = 2, number = dim(fit)[1], genelist = fit$genes$NAME)
+  res <- data.frame(
+    log2FoldChange = tab$logFC,
+    pvalue         = tab$P.Value,
+    padj           = tab$adj.P.Val,
+    stat           = tab$t
+  )
+  rownames(res) <- rownames(tab)
+  res
+}
