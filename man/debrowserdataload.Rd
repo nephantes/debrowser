@@ -29,6 +29,6 @@ panel
 Module to load count data and metadata
 }
 \examples{
-    x <- debrowserdataload()
+x <- debrowserdataload()
 
 }

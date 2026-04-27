@@ -19,5 +19,5 @@ get pallete
 \code{palUI}
 }
 \examples{
-    x <- palUI("heatmap")
+x <- palUI("heatmap")
 }

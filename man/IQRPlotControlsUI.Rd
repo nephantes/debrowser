@@ -19,5 +19,5 @@ Generates the controls in the left menu for an IQR plot#'
 \code{IQRPlotControlsUI}
 }
 \examples{
-    x <- IQRPlotControlsUI("IQR")
+x <- IQRPlotControlsUI("IQR")
 }

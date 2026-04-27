@@ -19,6 +19,6 @@ Returns if there is a problem in the count data.
 \code{checkCountData}
 }
 \examples{
-    x <- checkCountData()
+x <- checkCountData()
 
 }

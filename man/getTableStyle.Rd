@@ -31,5 +31,5 @@ within the DEBrowser.
 \code{getTableStyle}
 }
 \examples{
-    x <- getTableStyle()
+x <- getTableStyle()
 }

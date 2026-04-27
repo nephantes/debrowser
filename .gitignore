@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 manifest.json
+.positai
+vignettes/*.html
+vignettes/*_files/

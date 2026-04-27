@@ -13,5 +13,5 @@ hideObj(btns = NULL)
 Hides a shiny object.
 }
 \examples{
-    x <- hideObj()
+x <- hideObj()
 }

@@ -24,6 +24,8 @@ Generates a text area input to be used for gene selection within
 the DEBrowser.
 }
 \examples{
-    x <- textareaInput("genesetarea", "Gene Set",
-        "Fgf21", rows = 5, cols = 35)
+x <- textareaInput("genesetarea", "Gene Set",
+  "Fgf21",
+  rows = 5, cols = 35
+)
 }

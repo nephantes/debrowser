@@ -19,7 +19,7 @@ select batch effect method
 \code{batchMethod}
 }
 \examples{
-   
-    x <- batchMethod("batch")
+
+x <- batchMethod("batch")
 
 }

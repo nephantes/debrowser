@@ -23,7 +23,7 @@ File upload module
 \code{fileUploadBox}
 }
 \examples{
-   
-    x <- fileUploadBox("meta", "metadata", "Metadata")
+
+x <- fileUploadBox("meta", "metadata", "Metadata")
 
 }

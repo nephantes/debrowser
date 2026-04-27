@@ -21,6 +21,6 @@ Returns if there is a problem in the count data.
 \code{checkMetaData}
 }
 \examples{
-    x <- checkMetaData()
+x <- checkMetaData()
 
 }

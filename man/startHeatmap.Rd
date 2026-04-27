@@ -16,6 +16,6 @@ Starts the DEBrowser heatmap
 \code{startHeatmap}
 }
 \examples{
-    startHeatmap()
+startHeatmap()
 
 }

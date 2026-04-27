@@ -13,5 +13,5 @@ getHideLegendOnOff(id = "pca")
 hide legend
 }
 \examples{
-    x <- getHideLegendOnOff("pca")
+x <- getHideLegendOnOff("pca")
 }

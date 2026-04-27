@@ -30,6 +30,6 @@ getConditionSelectorFromMeta(
 Selects user input conditions to run in DESeq from metadata
 }
 \examples{
-    x <- getConditionSelectorFromMeta()
+x <- getConditionSelectorFromMeta()
 
 }

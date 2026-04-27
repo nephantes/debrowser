@@ -19,5 +19,5 @@ Generates the controls in the left menu for a Box main plot
 \code{BoxMainPlotControlsUI}
 }
 \examples{
-    x <- BoxMainPlotControlsUI("box")
+x <- BoxMainPlotControlsUI("box")
 }

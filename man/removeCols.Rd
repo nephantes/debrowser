@@ -18,6 +18,6 @@ data
 remove unnecessary columns
 }
 \examples{
-    x <- removeCols()
+x <- removeCols()
 
 }

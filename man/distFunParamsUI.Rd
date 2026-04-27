@@ -16,5 +16,5 @@ get distance metric parameters
 \code{distFunParamsUI}
 }
 \examples{
-    x <- distFunParamsUI()
+x <- distFunParamsUI()
 }

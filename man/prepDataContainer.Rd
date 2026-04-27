@@ -22,6 +22,6 @@ data
 Prepares the data container that stores values used within DESeq.
 }
 \examples{
-    x <- prepDataContainer()
+x <- prepDataContainer()
 
 }

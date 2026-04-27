@@ -33,6 +33,6 @@ getBarMainPlot(
 Makes Density plots
 }
 \examples{
-    getBarMainPlot()
+getBarMainPlot()
 
 }

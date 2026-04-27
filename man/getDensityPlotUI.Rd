@@ -19,6 +19,6 @@ Density plot UI.
 \code{getDensityPlotUI}
 }
 \examples{
-    x <- getDensityPlotUI("density")
+x <- getDensityPlotUI("density")
 
 }

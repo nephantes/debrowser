@@ -18,6 +18,6 @@ Creates a more detailed plot using the PCA results from
 the selected dataset.
 }
 \examples{
-    x <- drawPCAExplained()
+x <- drawPCAExplained()
 
 }

@@ -39,6 +39,6 @@ DE panel
 Module to perform and visualize DE results.
 }
 \examples{
-    x <- debrowserdeanalysis()
+x <- debrowserdeanalysis()
 
 }

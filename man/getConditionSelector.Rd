@@ -17,6 +17,6 @@ getConditionSelector(num = NULL, choices = NULL, selected = NULL)
 Selects user input conditions to run in DESeq.
 }
 \examples{
-    x <- getConditionSelector()
+x <- getConditionSelector()
 
 }

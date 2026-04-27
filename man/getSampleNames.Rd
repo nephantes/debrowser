@@ -15,9 +15,9 @@ getSampleNames(cnames = NULL, part = 1)
 sample names.
 }
 \description{
-Prepares initial samples to fill condition boxes.  
+Prepares initial samples to fill condition boxes.
 it reads the sample names from the data and splits into two.
 }
 \examples{
-    x<-getSampleNames()
+x <- getSampleNames()
 }

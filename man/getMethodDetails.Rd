@@ -15,6 +15,6 @@ getMethodDetails(num = NULL, input = NULL)
 get the detail boxes after DE method selected
 }
 \examples{
-    x <- getMethodDetails()
+x <- getMethodDetails()
 
 }

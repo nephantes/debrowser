@@ -18,6 +18,6 @@ data
 search the geneset in the tables and return it
 }
 \examples{
-    x <- getSearchData()
+x <- getSearchData()
 
 }

@@ -19,6 +19,6 @@ Histogram plots UI.
 \code{getHistogramUI}
 }
 \examples{
-    x <- getHistogramUI("histogram")
+x <- getHistogramUI("histogram")
 
 }

@@ -20,5 +20,5 @@ meta select box
 Return the sample selection box using meta data table
 }
 \examples{
-    x<-getMetaSelector()
+x <- getMetaSelector()
 }

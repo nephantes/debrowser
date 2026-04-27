@@ -33,6 +33,6 @@ Gathers the gene list to use for GOTerm analysis.
 symobol to ENTREZ ID conversion
 }
 \examples{
-    x <- getGeneList(c('OCLN', 'ABCC2'))
+x <- getGeneList(c("OCLN", "ABCC2"))
 
 }

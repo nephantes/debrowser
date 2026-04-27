@@ -23,6 +23,6 @@ Heatmap module to create interactive heatmaps and get selected list from
 a heatmap
 }
 \examples{
-    x <- debrowserheatmap()
+x <- debrowserheatmap()
 
 }

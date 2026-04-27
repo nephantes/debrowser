@@ -33,6 +33,6 @@ getSelectInputBox(
 Selects user input conditions to run in DESeq.
 }
 \examples{
-    x <- getSelectInputBox()
+x <- getSelectInputBox()
 
 }

@@ -18,6 +18,6 @@ dataLCFUI
 Creates a panel to filter low count genes and regions
 }
 \examples{
-    x <- dataLCFUI("lcf")
+x <- dataLCFUI("lcf")
 
 }

@@ -24,11 +24,11 @@ to be analyzed. These columns has to match with the given data.}
 \item{conds, }{experimental conditions. The order has to match
 with the column order}
 
-\item{params, }{normfact: Calculate normalization factors to scale the raw 
+\item{params, }{normfact: Calculate normalization factors to scale the raw
     library sizes. Values can be "TMM","RLE","upperquartile","none".
-fitType, fitting method; "ls" for least squares or "robust" 
+fitType, fitting method; "ls" for least squares or "robust"
     for robust regression
-normBet: Normalizes expression intensities so that the 
+normBet: Normalizes expression intensities so that the
     intensities or log-ratios have similar distributions across a set of arrays.}
 }
 \value{
@@ -39,6 +39,6 @@ Run Limma algorithm on the selected conditions.  Output is
 to be used for the interactive display.
 }
 \examples{
-    x <- runLimma()
+x <- runLimma()
 
 }

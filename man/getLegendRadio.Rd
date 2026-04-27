@@ -19,7 +19,7 @@ Radio buttons for the types in the legend
 \code{getLegendRadio}
 }
 \examples{
-   
-    x <- getLegendRadio("deprog")
+
+x <- getLegendRadio("deprog")
 
 }

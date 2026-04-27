@@ -19,6 +19,6 @@ Gathers the conditional panel for QC plots
 \code{getQCSection}
 }
 \examples{
-    x <- getQCPanel()
+x <- getQCPanel()
 
 }

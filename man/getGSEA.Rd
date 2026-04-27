@@ -31,5 +31,5 @@ GO Term plots.
 \code{getGSEA}
 }
 \examples{
-    x <- getGSEA()
+x <- getGSEA()
 }

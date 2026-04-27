@@ -36,10 +36,10 @@ debrowserbarmainplot(
 density plot
 }
 \description{
-Module for a bar plot that can be used in data prep, main plots 
+Module for a bar plot that can be used in data prep, main plots
 low count removal modules or any desired module
 }
 \examples{
-    x <- debrowserbarmainplot()
+x <- debrowserbarmainplot()
 
 }

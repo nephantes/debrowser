@@ -21,5 +21,5 @@ Generates the fill and shape selection boxes for PCA plots.
 metadata file has to be loaded in this case
 }
 \examples{
-    x <- getColorShapeSelection()
+x <- getColorShapeSelection()
 }

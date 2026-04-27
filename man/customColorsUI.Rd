@@ -19,5 +19,5 @@ get Custom Color controls
 \code{getColRng}
 }
 \examples{
-    x <- customColorsUI("heatmap")
+x <- customColorsUI("heatmap")
 }

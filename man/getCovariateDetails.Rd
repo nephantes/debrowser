@@ -17,6 +17,6 @@ getCovariateDetails(num = NULL, input = NULL, metadata = NULL)
 get the covariate detail box after DE method selected
 }
 \examples{
-    x <- getCovariateDetails()
+x <- getCovariateDetails()
 
 }

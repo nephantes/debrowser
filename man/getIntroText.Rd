@@ -15,6 +15,6 @@ getIntroText
 Intro text
 }
 \examples{
-    x<- getIntroText()
+x <- getIntroText()
 
 }

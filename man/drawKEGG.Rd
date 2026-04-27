@@ -23,5 +23,5 @@ draw KEGG patwhay with expression values
 \code{drawKEGG}
 }
 \examples{
-    x <- drawKEGG()
+x <- drawKEGG()
 }

@@ -18,5 +18,5 @@ meta select box
 Return the two set of conditions given the selection of meta select box
 }
 \examples{
-    x<-get_conditions_given_selection()
+x <- get_conditions_given_selection()
 }

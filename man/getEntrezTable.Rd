@@ -26,6 +26,6 @@ Gathers the entrezIds of the genes in given list and their data
 symobol to ENTREZ ID conversion
 }
 \examples{
-    x <- getEntrezTable()
+x <- getEntrezTable()
 
 }

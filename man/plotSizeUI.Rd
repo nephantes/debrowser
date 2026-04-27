@@ -23,5 +23,5 @@ Size module for plotly plots
 \code{plotSizeUI}
 }
 \examples{
-    x <- plotSizeUI("heatmap")
+x <- plotSizeUI("heatmap")
 }

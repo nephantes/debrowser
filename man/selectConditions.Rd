@@ -34,6 +34,6 @@ used in DESeq.
 \code{selectConditions}
 }
 \examples{
-    x<- selectConditions()
+x <- selectConditions()
 
 }

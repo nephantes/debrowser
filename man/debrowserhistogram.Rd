@@ -19,10 +19,10 @@ debrowserhistogram(input = NULL, output = NULL, session = NULL, data = NULL)
 histogram
 }
 \description{
-Module for a histogram that can be used in data prep and 
+Module for a histogram that can be used in data prep and
 low count removal modules
 }
 \examples{
-    x <- debrowserhistogram()
+x <- debrowserhistogram()
 
 }

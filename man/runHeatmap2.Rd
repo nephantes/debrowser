@@ -20,6 +20,6 @@ heatmap.2
 Creates a heatmap based on the user selected parameters within shiny
 }
 \examples{
-    x <- runHeatmap2()
+x <- runHeatmap2()
 
 }

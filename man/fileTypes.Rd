@@ -16,6 +16,6 @@ Returns fileTypes that are going to be used in creating fileUpload UI
 \code{fileTypes}
 }
 \examples{
-    x <- fileTypes()
+x <- fileTypes()
 
 }

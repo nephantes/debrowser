@@ -19,7 +19,7 @@ Select box to select normalization method prior to batch effect correction
 \code{normalizationMethods}
 }
 \examples{
-   
-    x <- normalizationMethods("batch")
+
+x <- normalizationMethods("batch")
 
 }

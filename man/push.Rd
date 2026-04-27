@@ -18,6 +18,6 @@ combined list
 Push an object to the list.
 }
 \examples{
-    mylist <- list()
-    newlist <- push ( 1, mylist )
+mylist <- list()
+newlist <- push(1, mylist)
 }

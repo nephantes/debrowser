@@ -16,6 +16,6 @@ load packages
 \code{loadpack}
 }
 \examples{
-    x <- loadpack()
+x <- loadpack()
 
 }

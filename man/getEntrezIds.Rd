@@ -24,6 +24,6 @@ Gathers the gene list to use for GOTerm analysis.
 symobol to ENTREZ ID conversion
 }
 \examples{
-    x <- getEntrezIds()
+x <- getEntrezIds()
 
 }

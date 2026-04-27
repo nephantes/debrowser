@@ -16,6 +16,6 @@ Creates a shinyUI to be able to run DEBrowser interactively.
 \code{deUI}
 }
 \examples{
-    x<-deUI()
+x <- deUI()
 
 }

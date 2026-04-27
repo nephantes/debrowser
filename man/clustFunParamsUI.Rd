@@ -16,5 +16,5 @@ get cluster function parameter control
 \code{clustFunParamsUI}
 }
 \examples{
-    x <- clustFunParamsUI()
+x <- clustFunParamsUI()
 }

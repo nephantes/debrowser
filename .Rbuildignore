@@ -11,3 +11,4 @@
 ^\.styler_cache$
 ^renv\.lock$
 ^renv$
+^\.positai$

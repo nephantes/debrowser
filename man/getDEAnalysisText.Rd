@@ -15,6 +15,6 @@ getDEAnalysisText
 DEAnalysis text
 }
 \examples{
-    x<- getDEAnalysisText()
+x <- getDEAnalysisText()
 
 }

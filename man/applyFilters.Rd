@@ -23,6 +23,6 @@ Applies filters based on user selected parameters to be
 displayed within the DEBrowser.
 }
 \examples{
-    x <- applyFilters()
+x <- applyFilters()
 
 }

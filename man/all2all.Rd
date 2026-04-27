@@ -18,6 +18,6 @@ all2all scatter plots
 Prepares all2all scatter plots for given datasets.
 }
 \examples{
-    plot<-all2all(mtcars)
+plot <- all2all(mtcars)
 
 }

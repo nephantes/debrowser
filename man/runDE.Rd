@@ -34,6 +34,6 @@ Run DE algorithms on the selected parameters.  Output is
 to be used for the interactive display.
 }
 \examples{
-    x <- runDE()
+x <- runDE()
 
 }

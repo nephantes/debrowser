@@ -17,6 +17,6 @@ getDensityPlot(data = NULL, input = NULL, title = "")
 Makes Density plots
 }
 \examples{
-    getDensityPlot()
+getDensityPlot()
 
 }

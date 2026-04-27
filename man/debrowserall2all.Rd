@@ -21,10 +21,10 @@ debrowserall2all(input, output, session, data = NULL, cex = 2)
 all2all plot
 }
 \description{
-Module for a bar plot that can be used in data prep, main plots 
+Module for a bar plot that can be used in data prep, main plots
 low count removal modules or any desired module
 }
 \examples{
-    x <- debrowserall2all()
+x <- debrowserall2all()
 
 }

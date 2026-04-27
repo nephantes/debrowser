@@ -24,25 +24,25 @@ to be analyzed. These columns has to match with the given data.}
 \item{conds, }{experimental conditions. The order has to match
 with the column order}
 
-\item{params, }{fitType: either "parametric", "local", or "mean" for the type 
-    of fitting of dispersions to the mean intensity. 
+\item{params, }{fitType: either "parametric", "local", or "mean" for the type
+    of fitting of dispersions to the mean intensity.
     See estimateDispersions for description.
  betaPrior: whether or not to put a zero-mean normal prior
-    on the non-intercept coefficients See nbinomWaldTest for 
-    description of the calculation of the beta prior. By default, 
-    the beta prior is used only for the Wald test, but can also be 
+    on the non-intercept coefficients See nbinomWaldTest for
+    description of the calculation of the beta prior. By default,
+    the beta prior is used only for the Wald test, but can also be
     specified for the likelihood ratio test.
-testType: either "Wald" or "LRT", which will then use either 
-    Wald significance tests (defined by nbinomWaldTest), or the 
-    likelihood ratio test on the difference in deviance between a 
+testType: either "Wald" or "LRT", which will then use either
+    Wald significance tests (defined by nbinomWaldTest), or the
+    likelihood ratio test on the difference in deviance between a
     full and reduced model formula (defined by nbinomLRT)
-shrinkage: Adds shrunken log2 fold changes (LFC) and SE to a results 
-    table from DESeq run without LFC shrinkage. For consistency with 
-    results, the column name lfcSE is used here although what is 
-    returned is a posterior SD. Three shrinkage estimators for 
-    LFC are available via type (see the vignette for more details 
-    on the estimators). The apeglm publication demonstrates that 
-    'apeglm' and 'ashr' outperform the original 'normal' shrinkage 
+shrinkage: Adds shrunken log2 fold changes (LFC) and SE to a results
+    table from DESeq run without LFC shrinkage. For consistency with
+    results, the column name lfcSE is used here although what is
+    returned is a posterior SD. Three shrinkage estimators for
+    LFC are available via type (see the vignette for more details
+    on the estimators). The apeglm publication demonstrates that
+    'apeglm' and 'ashr' outperform the original 'normal' shrinkage
     estimator.}
 }
 \value{
@@ -53,6 +53,6 @@ Run DESeq2 algorithm on the selected conditions.  Output is
 to be used for the interactive display.
 }
 \examples{
-    x <- runDESeq2()
+x <- runDESeq2()
 
 }

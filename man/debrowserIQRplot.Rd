@@ -19,10 +19,10 @@ debrowserIQRplot(input = NULL, output = NULL, session = NULL, data = NULL)
 IQR
 }
 \description{
-Module for an IQR plot that can be used in data prep and 
+Module for an IQR plot that can be used in data prep and
 low count removal modules
 }
 \examples{
-    x <- debrowserIQRplot()
+x <- debrowserIQRplot()
 
 }

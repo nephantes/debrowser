@@ -15,6 +15,6 @@ getTabUpdateJS
 prepmenu tab and discovery menu tab updates
 }
 \examples{
-    x<- getTabUpdateJS()
+x <- getTabUpdateJS()
 
 }

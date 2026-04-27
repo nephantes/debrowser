@@ -17,6 +17,6 @@ display.
 \code{installpack}
 }
 \examples{
-    x <- installpack()
+x <- installpack()
 
 }

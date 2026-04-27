@@ -27,5 +27,5 @@ Margins module for plotly plots
 \code{plotMarginsUI}
 }
 \examples{
-    x <- plotMarginsUI("heatmap")
+x <- plotMarginsUI("heatmap")
 }

@@ -19,5 +19,5 @@ Generates colors according to the data
 \code{getLegendColors}
 }
 \examples{
-    x <- getLegendColors(c("up", "down", "GS", "NS"))
+x <- getLegendColors(c("up", "down", "GS", "NS"))
 }

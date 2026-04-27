@@ -16,5 +16,5 @@ Generates and displays the logo to be shown within DEBrowser.
 \code{getLogo}
 }
 \examples{
-    x <- getLogo()
+x <- getLogo()
 }

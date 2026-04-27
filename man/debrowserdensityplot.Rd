@@ -19,10 +19,10 @@ debrowserdensityplot(input = NULL, output = NULL, session = NULL, data = NULL)
 density plot
 }
 \description{
-Module for a density plot that can be used in data prep and 
+Module for a density plot that can be used in data prep and
 low count removal modules
 }
 \examples{
-    x <- debrowserdensityplot()
+x <- debrowserdensityplot()
 
 }

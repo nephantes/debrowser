@@ -13,6 +13,6 @@ JS Code
 heatmap JS code for selection functionality
 }
 \examples{
-    x <- getJSLine()
+x <- getJSLine()
 
 }

@@ -19,5 +19,5 @@ Generates the order of the overlapping points
 \code{getLevelOrder}
 }
 \examples{
-    x <- getLevelOrder(c("up", "down", "GS", "NS"))
+x <- getLevelOrder(c("up", "down", "GS", "NS"))
 }

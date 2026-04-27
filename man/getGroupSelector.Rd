@@ -24,5 +24,5 @@ getGroupSelector
 Return the groups
 }
 \examples{
-    x<-getGroupSelector()
+x <- getGroupSelector()
 }

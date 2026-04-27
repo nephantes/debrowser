@@ -30,10 +30,10 @@ panel
 }
 \description{
 Condition selection
-This is not a module. Module construction didn't used here, just use it 
+This is not a module. Module construction didn't used here, just use it
 as functions not in a module.
 }
 \examples{
-    x <- debrowsercondselect()
+x <- debrowsercondselect()
 
 }

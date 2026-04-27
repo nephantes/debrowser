@@ -19,5 +19,5 @@ DEBrowser.
 \code{getCompSelection}
 }
 \examples{
-    x <- getCompSelection(name="comp", count = 2)
+x <- getCompSelection(name = "comp", count = 2)
 }

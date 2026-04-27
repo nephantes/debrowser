@@ -16,5 +16,5 @@ round value
 Plot PCA results.
 }
 \examples{
-    x<-round_vals(5.1323223)
+x <- round_vals(5.1323223)
 }

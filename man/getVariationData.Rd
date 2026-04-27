@@ -22,6 +22,6 @@ plotdata
 Adds an id to the data frame being used.
 }
 \examples{
-    x <- getVariationData()
+x <- getVariationData()
 
 }

@@ -28,5 +28,5 @@ or coloring the groups in the plots.
 \code{selectGroupInfo}
 }
 \examples{
-    x <- selectGroupInfo()
+x <- selectGroupInfo()
 }

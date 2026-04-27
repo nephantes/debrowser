@@ -29,6 +29,6 @@ panel
 Module to filter low count genes/regions
 }
 \examples{
-    x <- debrowserlowcountfilter()
+x <- debrowserlowcountfilter()
 
 }

@@ -36,10 +36,10 @@ debrowserboxmainplot(
 density plot
 }
 \description{
-Module for a box plot that can be used in DEanalysis main part and 
+Module for a box plot that can be used in DEanalysis main part and
 used heatmaps
 }
 \examples{
-    x <- debrowserboxmainplot()
+x <- debrowserboxmainplot()
 
 }

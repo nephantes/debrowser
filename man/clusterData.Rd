@@ -20,6 +20,6 @@ GO Term plots.
 \code{clusterData}
 }
 \examples{
-    mycluster <- clusterData()
+mycluster <- clusterData()
 
 }

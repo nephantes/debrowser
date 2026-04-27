@@ -13,5 +13,5 @@ showObj(btns = NULL)
 Displays a shiny object.
 }
 \examples{
-    x <- showObj()
+x <- showObj()
 }

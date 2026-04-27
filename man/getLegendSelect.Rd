@@ -16,5 +16,5 @@ select legend
 \code{getLegendSelect}
 }
 \examples{
-    x <- getLegendSelect("pca")
+x <- getLegendSelect("pca")
 }

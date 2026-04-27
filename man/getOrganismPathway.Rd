@@ -19,6 +19,6 @@ getOrganismPathway
 \code{getOrganismPathway}
 }
 \examples{
-    x <- getOrganismPathway()
+x <- getOrganismPathway()
 
 }

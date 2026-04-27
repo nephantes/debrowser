@@ -22,6 +22,6 @@ data
 add aditional data columns to de results
 }
 \examples{
-    x <- addDataCols()
+x <- addDataCols()
 
 }

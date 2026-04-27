@@ -20,6 +20,6 @@ This function adds a "Legend" column with "Up", "Down" or
 "NS" values for visualization.
 }
 \examples{
-    x <- applyFiltersNew()
+x <- applyFiltersNew()
 
 }

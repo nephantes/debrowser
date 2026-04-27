@@ -17,6 +17,6 @@ getIQRPlot(data = NULL, input = NULL, title = "")
 Makes IQR boxplot plot
 }
 \examples{
-    getIQRPlot()
+getIQRPlot()
 
 }

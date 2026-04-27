@@ -23,6 +23,6 @@ Creates a shinyUI to be able to run DEBrowser interactively.
 \code{heatmapUI}
 }
 \examples{
-    x<-heatmapUI()
+x <- heatmapUI()
 
 }

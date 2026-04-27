@@ -33,6 +33,6 @@ getBoxMainPlot(
 Makes Density plots
 }
 \examples{
-    getBoxMainPlot()
+getBoxMainPlot()
 
 }

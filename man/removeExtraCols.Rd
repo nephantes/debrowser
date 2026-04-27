@@ -13,7 +13,6 @@ removeExtraCols(dat = NULL)
 remove extra columns for QC plots
 }
 \examples{
-    removeExtraCols()
-
+removeExtraCols()
 
 }

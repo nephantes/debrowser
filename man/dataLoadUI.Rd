@@ -16,6 +16,6 @@ panel
 Creates a panel to upload the data
 }
 \examples{
-    x <- dataLoadUI("load")
+x <- dataLoadUI("load")
 
 }

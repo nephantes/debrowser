@@ -21,5 +21,5 @@ DEBrowser.
 \code{togglePanels}
 }
 \examples{
-    x <- togglePanels()
+x <- togglePanels()
 }

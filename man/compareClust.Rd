@@ -37,6 +37,6 @@ plots.
 \code{compareClust}
 }
 \examples{
-    x <- compareClust()
-  
+x <- compareClust()
+
 }

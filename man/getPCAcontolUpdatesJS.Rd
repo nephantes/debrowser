@@ -3,7 +3,7 @@
 \name{getPCAcontolUpdatesJS}
 \alias{getPCAcontolUpdatesJS}
 \title{getPCAcontolUpdatesJS
-in the prep menu we have two PCA plots to show how batch effect correction worked. 
+in the prep menu we have two PCA plots to show how batch effect correction worked.
 One set of PCA input controls updates two PCA plots with this JS.}
 \usage{
 getPCAcontolUpdatesJS()
@@ -13,10 +13,10 @@ the JS for tab updates
 }
 \description{
 getPCAcontolUpdatesJS
-in the prep menu we have two PCA plots to show how batch effect correction worked. 
+in the prep menu we have two PCA plots to show how batch effect correction worked.
 One set of PCA input controls updates two PCA plots with this JS.
 }
 \examples{
-    x<- getTabUpdateJS()
+x <- getTabUpdateJS()
 
 }

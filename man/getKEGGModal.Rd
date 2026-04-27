@@ -22,8 +22,8 @@ getKEGGModal
 prepares a helpbutton for to go to a specific site in the documentation
 }
 \examples{
-    x<- getKEGGModal()
+x <- getKEGGModal()
 
-    x<- getKEGGModal()
+x <- getKEGGModal()
 
 }

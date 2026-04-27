@@ -17,7 +17,6 @@ getSelectedCols(data = NULL, datasetInput = NULL, input = NULL)
 gets selected columns
 }
 \examples{
-    getSelectedCols()
-
+getSelectedCols()
 
 }

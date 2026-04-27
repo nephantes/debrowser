@@ -19,5 +19,5 @@ Generates the controls in the left menu for an all2all plot
 \code{all2allControlsUI}
 }
 \examples{
-    x <- all2allControlsUI("bar")
+x <- all2allControlsUI("bar")
 }

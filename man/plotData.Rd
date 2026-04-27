@@ -21,5 +21,5 @@ prepare plot data for mainplots
 \code{plotData}
 }
 \examples{
-    x <- plotData()
+x <- plotData()
 }

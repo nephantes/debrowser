@@ -18,6 +18,6 @@ getDEResultsUI
 Creates a panel to visualize DE results
 }
 \examples{
-    x <- getDEResultsUI("batcheffect")
+x <- getDEResultsUI("batcheffect")
 
 }

@@ -31,6 +31,6 @@ GO Term plots.
 \code{getEnrichGO}
 }
 \examples{
-    x <- getEnrichGO()
+x <- getEnrichGO()
 
 }

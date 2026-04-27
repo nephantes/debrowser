@@ -24,6 +24,6 @@ panel
 Module to correct batch effect
 }
 \examples{
-    x <- debrowserbatcheffect()
+x <- debrowserbatcheffect()
 
 }

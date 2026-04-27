@@ -25,5 +25,5 @@ prepares pca data with metadata. If metadata doesn't exists
 it puts all the sampels into a signlge group; "Conds".
 }
 \examples{
-    x <- prepPCADat()
+x <- prepPCADat()
 }

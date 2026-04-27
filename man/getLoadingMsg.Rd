@@ -20,5 +20,5 @@ within the DEBrowser.
 \code{getLoadingMsg}
 }
 \examples{
-    x <- getLoadingMsg()
+x <- getLoadingMsg()
 }

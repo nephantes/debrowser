@@ -19,6 +19,6 @@ all2all plots UI.
 \code{getAll2AllPlotUI}
 }
 \examples{
-    x <- getAll2AllPlotUI("bar")
+x <- getAll2AllPlotUI("bar")
 
 }

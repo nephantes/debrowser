@@ -20,5 +20,5 @@ data
 Batch effect correction
 }
 \examples{
-    x<-correctHarman ()
+x <- correctHarman()
 }

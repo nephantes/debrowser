@@ -19,6 +19,6 @@ selectedInput(id = NULL, num = 0, default = NULL, input = NULL)
 Selects user input conditions to run in DESeq.
 }
 \examples{
-    x <- selectedInput()
+x <- selectedInput()
 
 }

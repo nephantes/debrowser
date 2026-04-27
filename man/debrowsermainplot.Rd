@@ -29,10 +29,10 @@ main plot
 panel
 }
 \description{
-Module for a scatter, volcano and ma plots that are going to be used 
+Module for a scatter, volcano and ma plots that are going to be used
 as a mainplot in debrowser
 }
 \examples{
-    x <- debrowsermainplot()
+x <- debrowsermainplot()
 
 }
