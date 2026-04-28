@@ -811,7 +811,7 @@ heatmapServer <- function(input, output, session) {
   })
 
   observeEvent(input$Submit, {
-    updateTabItems(session, "DEBrowserHeatmap", "Heatmap")
+    bslib::nav_select("DEBrowserHeatmap", "Heatmap", session = session)
   })
   observe({
     if (!is.null(expdata())) {
@@ -863,34 +863,35 @@ heatmapServer <- function(input, output, session) {
 #'
 
 heatmapUI <- function(input, output, session) {
-  header <- dashboardHeader(
-    title = "DEBrowser Heatmap"
-  )
-  sidebar <- dashboardSidebar(
-    getJSLine(),
-    sidebarMenu(
-      id = "DEBrowserHeatmap",
-      menuItem("Upload", tabName = "Upload"),
-      menuItem("Heatmap", tabName = "Heatmap"),
-      menuItem("Options",
-        tabName = "Heatmap",
-        checkboxInput("mostvaried", "Most Varied Set", value = FALSE),
-        conditionalPanel(
-          (condition <- "input.mostvaried"),
-          textInput("topn", "top-n", value = "500"),
-          textInput("mincount", "total min count", value = "10")
+  bslib::page_navbar(
+    id = "DEBrowserHeatmap",
+    title = "DEBrowser Heatmap",
+    theme = de_theme(),
+    bg = "#0f172a",
+    inverse = TRUE,
+    header = tagList(
+      shinyjs::useShinyjs(),
+      getJSLine()
+    ),
+    bslib::nav_panel(
+      title = "Upload", value = "Upload",
+      dataLoadUI("load")
+    ),
+    bslib::nav_panel(
+      title = "Heatmap", value = "Heatmap",
+      bslib::layout_sidebar(
+        sidebar = bslib::sidebar(
+          width = 300, open = "open",
+          checkboxInput("mostvaried", "Most Varied Set", value = FALSE),
+          conditionalPanel(
+            condition = "input.mostvaried",
+            textInput("topn", "top-n", value = "500"),
+            textInput("mincount", "total min count", value = "10")
+          ),
+          plotSizeMarginsUI("heatmap"),
+          heatmapControlsUI("heatmap")
         ),
-        plotSizeMarginsUI("heatmap"),
-        heatmapControlsUI("heatmap")
-      )
-    )
-  )
-
-  body <- dashboardBody(
-    tabItems(
-      tabItem(tabName = "Upload", dataLoadUI("load")),
-      tabItem(
-        tabName = "Heatmap", getHeatmapUI("heatmap"),
+        getHeatmapUI("heatmap"),
         column(
           4,
           verbatimTextOutput("heatmap_hover"),
@@ -901,6 +902,4 @@ heatmapUI <- function(input, output, session) {
       )
     )
   )
-
-  dashboardPage(header, sidebar, body, skin = "blue")
 }
