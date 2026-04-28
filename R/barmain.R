@@ -69,9 +69,12 @@ getBarMainPlotUI <- function(id) {
 #'
 barMainPlotControlsUI <- function(id) {
   ns <- NS(id)
-  shinydashboard::menuItem(
-    paste0(id, " - Options"),
-    textInput(ns("genename"), "Gene/Region Name", value = "Foxa3")
+  bslib::accordion(
+    open = FALSE,
+    bslib::accordion_panel(
+      paste0(id, " - Options"),
+      textInput(ns("genename"), "Gene/Region Name", value = "Foxa3")
+    )
   )
 }
 
