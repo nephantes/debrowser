@@ -1,0 +1,47 @@
+#university-name {
+    text-align: left;
+}
+
+.a{
+    margin: 12px 12px 12px 12px;
+}
+
+.removebm{
+    margin: 12px 27px 12px 27px !important;
+    display: inline-block;
+}
+
+.bm_id{
+    margin: 12px 27px 12px 27px !important;
+    display: inline-block;
+    width: 150px !important;
+    min-width: 150px !important;
+}
+
+#past_named_bookmarks{
+    margin: 27px 27px 0 27px !important;
+}
+
+#refresh{
+    margin: 15px;
+}
+
+
+#bookmark_saved_output {
+    color: green;
+}
+
+#initialmenu {
+    padding: 15px 15px 0 15px;
+}
+
+
+#demo {
+    margin: 12px 12px 12px 12px;
+}
+
+#loadmessage {
+    position: relative;
+    background: rgb(25, 31, 38);
+}
+
