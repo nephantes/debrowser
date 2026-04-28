@@ -120,6 +120,11 @@ deServer <- function(input, output, session) {
       # B1: progressive wizard step reveal — replaces the JS in
       # getTabUpdateJS that used .sidebar-menu :nth-child selectors.
       # Initial state: only Quick Start + Upload are visible.
+      # Note: these reveal-observers run alongside the data-flow
+      # observers in the outer observe({...}) below — same trigger
+      # ids (Filter, Batch, goDE, ...), different concerns. Each
+      # button click fires both: this block reveals the next step,
+      # the outer block advances state and `nav_select`s into it.
       bslib::nav_hide("DataPrep", "Filter")
       bslib::nav_hide("DataPrep", "BatchEffect")
       bslib::nav_hide("DataPrep", "CondSelect")

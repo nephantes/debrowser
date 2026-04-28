@@ -3,16 +3,24 @@
 \name{getTabUpdateJS}
 \alias{getTabUpdateJS}
 \title{getTabUpdateJS
-prepmenu tab and discovery menu tab updates}
+Wizard reveal kept-as-no-op tag for export compatibility. The
+progressive reveal logic moved to server-side observers in B1
+(see R/server.R near input$Filter / input$Batch / input$goDE /
+input$goDEFromFilter / input$startDE / input[["cs-startDE"]]).}
 \usage{
 getTabUpdateJS()
 }
 \value{
-the JS for tab updates
+an empty `<script>` tag (kept as-is so the existing
+  `header = tagList(..., getTabUpdateJS())` slot in deUI() still
+  produces a valid tag and downstream callers still work)
 }
 \description{
 getTabUpdateJS
-prepmenu tab and discovery menu tab updates
+Wizard reveal kept-as-no-op tag for export compatibility. The
+progressive reveal logic moved to server-side observers in B1
+(see R/server.R near input$Filter / input$Batch / input$goDE /
+input$goDEFromFilter / input$startDE / input[["cs-startDE"]]).
 }
 \examples{
 x <- getTabUpdateJS()
