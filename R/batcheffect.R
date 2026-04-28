@@ -101,32 +101,27 @@ batchEffectUI <- function(id) {
 
   list(
     fluidRow(
-      shinydashboard::box(
-        title = "Batch Effect Correction and Normalization",
-        solidHeader = TRUE, status = "info", width = 12,
-        fluidRow(
-          column(
-            5, div(
+      bslib::card(
+        bslib::card_header("Batch Effect Correction and Normalization"),
+        bslib::layout_columns(
+          col_widths = c(5, 2, 5),
+          tagList(
+            div(
               style = "overflow: scroll",
               tableOutput(ns("uploadSummary")),
               DT::dataTableOutput(ns("sampleDetails"))
             ),
             uiOutput(ns("beforebatchtable"))
           ),
-          column(
-            2,
-            shinydashboard::box(
-              title = "Options",
-              solidHeader = TRUE, status = "info",
-              width = 12,
-              normalizationMethods(id),
-              batchMethod(id),
-              uiOutput(ns("batchfields")),
-              actionButtonDE(ns("submitBatchEffect"), label = "Submit", styleclass = "primary")
-            )
+          de_card(
+            title = "Options",
+            normalizationMethods(id),
+            batchMethod(id),
+            uiOutput(ns("batchfields")),
+            actionButtonDE(ns("submitBatchEffect"), label = "Submit", styleclass = "primary")
           ),
-          column(
-            5, div(
+          tagList(
+            div(
               style = "overflow: scroll",
               tableOutput(ns("filteredSummary")),
               DT::dataTableOutput(ns("filteredDetails"))
@@ -140,9 +135,8 @@ batchEffectUI <- function(id) {
           actionButtonDE("goQCplots", "Go to QC plots", styleclass = "primary")
         )
       ),
-      shinydashboard::box(
-        title = "Plots",
-        solidHeader = TRUE, status = "info", width = 12,
+      bslib::card(
+        bslib::card_header("Plots"),
         fluidRow(
           column(1, div()),
           tabsetPanel(
@@ -155,9 +149,8 @@ batchEffectUI <- function(id) {
               ),
               column(
                 2,
-                shinydashboard::box(
+                de_card(
                   title = "PCA Controls",
-                  solidHeader = T, status = "info", width = 12,
                   tabsetPanel(
                     id = ns("pcacontrols"),
                     tabPanel(
