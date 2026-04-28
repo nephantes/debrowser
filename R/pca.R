@@ -54,18 +54,16 @@ debrowserpcaplot <- function(id, pcadata = NULL, metadata = NULL) {
     list(fluidRow(
       column(
         12,
-        shinydashboard::box(
-          collapsible = TRUE, title = "PCA Plot", status = "primary",
-          solidHeader = TRUE, width = NULL,
+        de_card(
+          title = "PCA Plot",
           div(style = "overflow-x: scroll"),
-          draggable = TRUE, plotlyOutput(session$ns("pca1"),
+          plotlyOutput(session$ns("pca1"),
             height = input$height, width = input$width, inline = FALSE
           )
         ),
-        shinydashboard::box(
-          collapsible = TRUE, title = "Loadings", status = "primary",
-          solidHeader = TRUE, width = NULL,
-          draggable = TRUE, plotlyOutput(session$ns("pca2"),
+        de_card(
+          title = "Loadings",
+          plotlyOutput(session$ns("pca2"),
             height = input$height, width = input$width, inline = FALSE
           )
         )
