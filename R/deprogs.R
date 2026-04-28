@@ -58,9 +58,8 @@ getDEResultsUI <- function(id) {
   ns <- NS(id)
   list(
     fluidRow(
-      shinydashboard::box(
+      de_card(
         title = "DE Results",
-        solidHeader = T, status = "info", width = 12,
         fluidRow(
           column(
             12,
