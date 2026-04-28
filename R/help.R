@@ -48,7 +48,7 @@ using the example table at below "),
     p(
       "After sucessfull upload, you should see the summary of your data in the 'Upload Summary' section.
   To move the filtering section please click",
-      actionButton("FilterBut", label = "Filter", styleclass = "primary"), "button in the upload page."
+      actionButton("FilterBut_intro", label = "Filter", styleclass = "primary"), "button in the upload page."
     ),
     p("If you are ready to use DEBrowser, please click 'Upload' menu on the left to start using DEBrowser")
   )
@@ -88,7 +88,7 @@ getDataAssesmentText <- function() {
     and will be removed for batch effect correction and DE analysis."),
     p(
       "To be able to filter out the low expression counts please press",
-      actionButton("FilterBut", label = "Filter", styleclass = "primary"), "button in data filtering page."
+      actionButton("FilterBut_assess", label = "Filter", styleclass = "primary"), "button in data filtering page."
     ),
     h4("2.2 Quality control(QC)"),
     p("After filtering low count features, you may continue your analysis with Batch Effect
@@ -102,9 +102,9 @@ getDataAssesmentText <- function() {
     ),
     p(
       "If user wants to skip batch effect assesment and correction step, they can either click",
-      actionButton("goDEFromFilterBut", "Go to DE Analysis", styleclass = "primary"),
+      actionButton("goDEFromFilterBut_assess", "Go to DE Analysis", styleclass = "primary"),
       " button to perform DE Analysis or ",
-      actionButton("goQCplotsFromFilterBut", "Go to QC plots", styleclass = "primary"),
+      actionButton("goQCplotsFromFilterBut_assess", "Go to QC plots", styleclass = "primary"),
       " button for QC plots to draw PCA, all2all scatter, heatmaps, IQR and density plots."
     )
   )
@@ -150,9 +150,9 @@ getDataPreparationText <- function() {
     ),
     p(
       "After batch effect correction, user can click ",
-      actionButton("goDEFromFilterBut", "Go to DE Analysis", styleclass = "primary"),
+      actionButton("goDEFromFilterBut_prep", "Go to DE Analysis", styleclass = "primary"),
       " button to perform DE Analysis or ",
-      actionButton("goQCplotsFromFilterBut", "Go to QC plots", styleclass = "primary"),
+      actionButton("goQCplotsFromFilterBut_prep", "Go to QC plots", styleclass = "primary"),
       " button for QC plots to draw PCA, all2all scatter, heatmaps, IQR and density plots."
     )
   )
