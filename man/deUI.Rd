@@ -7,10 +7,12 @@
 deUI()
 }
 \value{
-the panel for main plots;
+the page tagList for DEBrowser
 }
 \description{
 Creates a shinyUI to be able to run DEBrowser interactively.
+B1 shell: bslib::page_navbar with 5 nav panels (Data Prep / Main Plots /
+QC Plots / GO Term / Tables), Slate + OK-blue theme, light/dark toggle.
 }
 \note{
 \code{deUI}
