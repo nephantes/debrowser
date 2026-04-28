@@ -16,33 +16,33 @@
 #' @examples
 #' x <- debrowserdeanalysis()
 #'
-debrowserdeanalysis <- function(
-  input = NULL, output = NULL, session = NULL,
-  data = NULL, metadata = NULL, columns = NULL, conds = NULL, params = NULL
-) {
+debrowserdeanalysis <- function(id, data = NULL, metadata = NULL,
+                                columns = NULL, conds = NULL, params = NULL) {
   if (is.null(data)) {
     return(NULL)
   }
-  deres <- reactive({
-    runDE(data, metadata, columns, conds, params)
-  })
-  prepDat <- reactive({
-    applyFiltersNew(addDataCols(data, deres(), columns, conds), input)
-  })
-  observe({
-    if (!is.null(input$legendradio)) {
-      if (input$legendradio == "All") {
-        dat <- prepDat()
+  moduleServer(id, function(input, output, session) {
+    deres <- reactive({
+      runDE(data, metadata, columns, conds, params)
+    })
+    prepDat <- reactive({
+      applyFiltersNew(addDataCols(data, deres(), columns, conds), input)
+    })
+    observe({
+      if (!is.null(input$legendradio)) {
+        if (input$legendradio == "All") {
+          dat <- prepDat()
+        } else {
+          dat <- prepDat()[prepDat()$Legend == input$legendradio, ]
+        }
       } else {
-        dat <- prepDat()[prepDat()$Legend == input$legendradio, ]
+        dat <- NULL
       }
-    } else {
-      dat <- NULL
-    }
-    dat2 <- removeCols(c("ID", "x", "y", "Legend", "Size"), dat)
-    getTableDetails(output, session, "DEResults", dat2, modal = FALSE)
+      dat2 <- removeCols(c("ID", "x", "y", "Legend", "Size"), dat)
+      getTableDetails(output, session, "DEResults", dat2, modal = FALSE)
+    })
+    list(dat = prepDat)
   })
-  list(dat = prepDat)
 }
 #' getDEResultsUI
 #' Creates a panel to visualize DE results

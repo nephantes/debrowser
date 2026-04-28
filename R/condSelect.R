@@ -766,7 +766,7 @@ prepDataContainer <- function(data = NULL, counter = NULL,
     )
     params <- unlist(strsplit(inputconds$demethod_params[i], ","))
     withProgress(message = "Running DE Algorithms", detail = inputconds$demethod_params[i], value = 0, {
-      initd <- callModule(debrowserdeanalysis, paste0("DEResults", i),
+      initd <- debrowserdeanalysis(paste0("DEResults", i),
         data = data, metadata = meta,
         columns = cols, conds = conds, params = params
       )
