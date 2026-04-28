@@ -30,7 +30,7 @@
 #'             verbatimTextOutput imageOutput renderTable incProgress
 #'             a h3 strong h2 withMathJax updateCheckboxInput
 #'             showNotification updateSelectInput moduleServer
-#'             showModal modalDialog modalButton
+#'             showModal modalDialog modalButton tagList req
 #' @importFrom shinyjs show hide enable disable useShinyjs extendShinyjs
 #'             js inlineCSS onclick
 #' @importFrom DT datatable dataTableOutput renderDataTable formatStyle
@@ -71,9 +71,6 @@
 #'             counts lfcShrink
 #' @importFrom edgeR calcNormFactors equalizeLibSizes DGEList glmLRT
 #'             exactTest estimateCommonDisp glmFit topTags
-#' @importFrom shinydashboard dashboardHeader dropdownMenu messageItem
-#'             dashboardPage dashboardSidebar sidebarMenu dashboardBody
-#'             menuItem tabItems tabItem menuSubItem
 #' @importFrom limma lmFit voom eBayes topTable
 #' @importFrom sva ComBat
 #' @importFrom RCurl getURL

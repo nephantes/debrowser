@@ -24,7 +24,6 @@ Imports:
     shiny,
     jsonlite,
     shinyjs,
-    shinydashboard,
     shinyBS,
     gplots,
     DT,
