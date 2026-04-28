@@ -1,8 +1,10 @@
+/* B1: candidate for removal — start */
 html, body
 {
   margin: 0 !important;
   padding: 0 !important;
 }
+/* B1: candidate for removal — end */
 
 #university-name {
     text-align: left;
@@ -37,20 +39,26 @@ html, body
     color: green;
 }
 
+/* B1: candidate for removal — start */
 .well {
     background-color: transparent;
     border: 0;
 }
+/* B1: candidate for removal — end */
 
+/* B1: candidate for removal — start */
 .container-fluid {
     padding-right: 0;
     padding-left: 0;
 }
+/* B1: candidate for removal — end */
 
 
+/* B1: candidate for removal — start */
 .content-wrapper {
-    min-height: 3500px !important; 
+    min-height: 3500px !important;
 }
+/* B1: candidate for removal — end */
 
 
 /*
@@ -63,10 +71,12 @@ li.active {
 }
 */
 
+/* B1: candidate for removal — start */
 .content-wrapper, .right-side{
     display:block;
     overflow:auto;
 }
+/* B1: candidate for removal — end */
 
 
 #initialmenu {
@@ -78,13 +88,17 @@ li.active {
     margin: 12px 12px 12px 12px;
 }
 
+/* B1: candidate for removal — start */
 .btn {
     margin: 12px 12px 12px 12px;
 }
+/* B1: candidate for removal — end */
 
+/* B1: candidate for removal — start */
 .btn-file{
     margin: 0 0 0 0;
 }
+/* B1: candidate for removal — end */
 
 #loadmessage {
     position: relative;
@@ -102,34 +116,48 @@ li.active {
 }
 */
 
+/* B1: candidate for removal — start */
 .action-button {
     color: black;
 }
+/* B1: candidate for removal — end */
 
+/* B1: candidate for removal — start */
 .btn-default {
     color: black;
 }
+/* B1: candidate for removal — end */
 
+/* B1: candidate for removal — start */
 .fa-info {
     color: white;
 }
+/* B1: candidate for removal — end */
 
+/* B1: candidate for removal — start */
 #downloadPlot {
     color: black;
     background-color: #c0c0c0 !important;
 }
+/* B1: candidate for removal — end */
 
+/* B1: candidate for removal — start */
 #downloadData {
     color: black;
 }
+/* B1: candidate for removal — end */
 
+/* B1: candidate for removal — start */
 #downloadGOPlot {
     color: black;
 }
+/* B1: candidate for removal — end */
 
+/* B1: candidate for removal — start */
 .main-header{
     z-index: 999998;
 }
+/* B1: candidate for removal — end */
 
 /*
 .ggvis-dropdown-toggle {
