@@ -111,9 +111,8 @@ condSelectUI <- function(id = NULL) {
     paste0("output['", ns("condReady"), "'] > 0")
   }
   list(
-    shinydashboard::box(
+    de_card(
       title = "Comparison Selection",
-      solidHeader = TRUE, status = "info", width = NULL, height = NULL, collapsible = TRUE,
       fluidRow(
         uiOutput(ns("conditionSelector")),
         column(
