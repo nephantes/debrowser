@@ -33,7 +33,6 @@ Imports:
     annotate,
     AnnotationDbi,
     DESeq2,
-    DOSE,
     igraph,
     grDevices,
     graphics,
@@ -46,28 +45,29 @@ Imports:
     stringi,
     reshape2,
     org.Hs.eg.db,
-    org.Mm.eg.db,
     limma,
     edgeR,
     clusterProfiler,
     methods,
     sva,
     RCurl,
-    enrichplot,
     colourpicker,
     plotly,
-    heatmaply,
-    Harman,
-    pathview,
-    apeglm,
-    ashr
+    heatmaply
 RoxygenNote: 7.3.3
 Encoding: UTF-8
 Suggests: testthat (>= 3.2.0),
     rmarkdown,
     knitr,
     digest,
-    shinytest2
+    shinytest2,
+    Harman,
+    pathview,
+    org.Mm.eg.db,
+    apeglm,
+    ashr,
+    enrichplot,
+    DOSE
 Config/testthat/edition: 3
 VignetteBuilder: knitr, rmarkdown
 URL: https://github.com/UMMS-Biocore/debrowser

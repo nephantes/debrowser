@@ -72,7 +72,8 @@ getGOPlots <- function(dataset = NULL, GSEARes = NULL, input = NULL) {
     )
     goplots <- res
     if (input$goextplot == "Dotplot") {
-      goplots$p <- dotplot(res$enrich_p, showCategory = 30)
+      require_pkg("enrichplot", feature = "GO/KEGG dotplot")
+      goplots$p <- enrichplot::dotplot(res$enrich_p, showCategory = 30)
     }
   } else if (input$goplot == "enrichKEGG") {
     res <- getEnrichKEGG(genelist,
@@ -81,7 +82,8 @@ getGOPlots <- function(dataset = NULL, GSEARes = NULL, input = NULL) {
     )
     goplots <- res
     if (input$goextplot == "Dotplot") {
-      goplots$p <- dotplot(res$enrich_p, showCategory = 30)
+      require_pkg("enrichplot", feature = "GO/KEGG dotplot")
+      goplots$p <- enrichplot::dotplot(res$enrich_p, showCategory = 30)
     }
   } else if (input$goplot == "compare") {
     cl <- clusterData(dataset)
@@ -94,19 +96,21 @@ getGOPlots <- function(dataset = NULL, GSEARes = NULL, input = NULL) {
     res <- getEnrichDO(genelist, pvalueCutoff = gopval)
     goplots <- res
     if (input$goextplot == "Dotplot") {
-      goplots$p <- dotplot(res$enrich_p, showCategory = 30)
+      require_pkg("enrichplot", feature = "GO/KEGG dotplot")
+      goplots$p <- enrichplot::dotplot(res$enrich_p, showCategory = 30)
     }
   } else if (input$goplot == "GSEA") {
     res <- GSEARes
     if (nrow(res$enrich_p@result) > 0) {
-      res$p <- gseaplot(res$enrich_p,
+      require_pkg("enrichplot", feature = "GSEA plot")
+      res$p <- enrichplot::gseaplot(res$enrich_p,
         by = "all",
         title = res$enrich_p$Description[1], geneSetID = 1
       )
       goplots <- res
 
       if (input$goextplot == "Dotplot") {
-        goplots$p <- dotplot(res$enrich_p,
+        goplots$p <- enrichplot::dotplot(res$enrich_p,
           showCategory = 10,
           split = ".sign"
         ) + facet_grid(. ~ .sign)

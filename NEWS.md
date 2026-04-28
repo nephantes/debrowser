@@ -85,6 +85,28 @@ For releases prior to 1.31, see the legacy `NEWS` file.
 * `condSelect.R` is deliberately left untouched — full rewrite folded
   into Phase B2 alongside the three-stage-shell wizard redesign.
 
+### Phase A5 — slim dependencies
+
+* Moved seven rarely-used packages from `Imports:` to `Suggests:` so a
+  fresh install pulls a smaller dependency graph: `Harman`, `pathview`,
+  `org.Mm.eg.db`, `apeglm`, `ashr`, `enrichplot`, `DOSE`.
+* Added `require_pkg(pkg, feature)` helper in `R/utils_validate.R`
+  that raises a `debrowser_error` of class `missing_suggested_pkg`
+  with the install command when a Suggested package is needed but
+  unavailable.
+* Gated every direct call site:
+  - `Harman::harman()` / `Harman::reconstructData()` — `harman_correct()`
+  - `DESeq2::lfcShrink(type="apeglm"/"ashr")` — `run_deseq2()`
+  - `enrichplot::dotplot()` / `enrichplot::gseaplot()` — `gopanel.R`,
+    `GOterm.R::compareClust`, `server.R` GSEA render path
+  - `DOSE::enrichDO()` — `getEnrichDO()` (the `compareCluster(fun = "enrichDO")`
+    branch in `compareClust()` keeps its existing in-place `requireNamespace`
+    gate)
+  - `pathview::pathview()` — already gated in `drawKEGG()`; now namespaced
+* Stripped the corresponding `@import` / `@importFrom` lines from
+  `R/server.R` and `R/GOterm.R`; NAMESPACE no longer pulls these
+  packages at load time.
+
 ### User-visible
 
 * Raised `startDEBrowser()` upload limit from 30 MB to 90 MB.

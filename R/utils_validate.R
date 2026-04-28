@@ -21,6 +21,33 @@ de_error <- function(message, class = character(), ...) {
   stop(cond)
 }
 
+#' Require a Suggested package, with a friendly error if missing.
+#'
+#' Used to gate features that depend on packages declared in
+#' `Suggests:` rather than `Imports:`. Raises a `de_error()` with class
+#' `"missing_suggested_pkg"` that names the package and the feature that
+#' needs it, plus the install command.
+#'
+#' @param pkg Package name (single string).
+#' @param feature Short human description of the feature that requires it
+#'   (e.g. `"Harman batch correction"`).
+#' @return `TRUE` invisibly if available; otherwise raises.
+#' @export
+require_pkg <- function(pkg, feature = pkg) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    de_error(
+      sprintf(
+        "%s requires the '%s' package. Install with: BiocManager::install('%s')",
+        feature, pkg, pkg
+      ),
+      class = "missing_suggested_pkg",
+      pkg = pkg,
+      feature = feature
+    )
+  }
+  invisible(TRUE)
+}
+
 #' Validate that x is a non-empty numeric count matrix.
 #'
 #' Raises `de_error()` with one of: `"null_input"`, `"empty_matrix"`,

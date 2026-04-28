@@ -52,9 +52,6 @@
 #' @importFrom utils read.csv read.table write.table update.packages
 #'             download.file read.delim data install.packages
 #'             packageDescription installed.packages modifyList
-#' @importFrom DOSE enrichDO
-#' @importFrom enrichplot gseaplot dotplot
-#' @importMethodsFrom DOSE summary
 #' @importMethodsFrom AnnotationDbi as.data.frame as.list colnames
 #'             exists sample subset head mappedkeys ncol nrow subset
 #'             keys mapIds select
@@ -69,7 +66,6 @@
 #' @importFrom stringi stri_rand_strings
 #' @importFrom annotate geneSymbols
 #' @importFrom reshape2 melt
-#' @importFrom Harman harman reconstructData
 #' @importFrom clusterProfiler compareCluster enrichKEGG enrichGO gseGO bitr
 #' @importFrom DESeq2 DESeq DESeqDataSetFromMatrix results estimateSizeFactors
 #'             counts lfcShrink
@@ -82,13 +78,10 @@
 #' @importFrom sva ComBat
 #' @importFrom RCurl getURL
 #' @import org.Hs.eg.db
-#' @import org.Mm.eg.db
 #' @import shinyBS
 #' @import colourpicker
 #' @import RColorBrewer
 #' @import heatmaply
-#' @import apeglm
-#' @import ashr
 
 deServer <- function(input, output, session) {
   options(warn = -1)
@@ -480,6 +473,7 @@ deServer <- function(input, output, session) {
       output$GOPlots1 <- renderPlot({
         if (!is.null(inputGOstart()$p) && input$startGO) {
           if (input$goplot == "GSEA" && !is.null(input$gotable_rows_selected)) {
+            require_pkg("enrichplot", feature = "GSEA plot")
             pid <- input$gotable_rows_selected
             p <- enrichplot::gseaplot(inputGOstart()$enrich_p,
               by = "all",

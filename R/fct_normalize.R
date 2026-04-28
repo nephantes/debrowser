@@ -122,6 +122,7 @@ harman_correct <- function(counts, metadata, batch_col, treatment_col) {
       class = "missing_treatment_col"
     )
   }
+  require_pkg("Harman", feature = "Harman batch correction")
   batch_info <- data.frame(metadata[, c(treatment_col, batch_col)])
   rownames(batch_info) <- rownames(metadata)
   colnames(batch_info) <- c("treatment", "batch")

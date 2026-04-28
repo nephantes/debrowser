@@ -411,7 +411,8 @@ compareClust <- function(
         )
       ]
     }
-    res$p <- dotplot(xx, title = title)
+    require_pkg("enrichplot", feature = "GO/KEGG dotplot")
+    res$p <- enrichplot::dotplot(xx, title = title)
   })
   res
 }
@@ -432,8 +433,9 @@ getEnrichDO <- function(genelist = NULL, pvalueCutoff = 0.01) {
   if (is.null(genelist)) {
     return(NULL)
   }
+  require_pkg("DOSE", feature = "Disease Ontology enrichment")
   res <- c()
-  res$enrich_p <- enrichDO(
+  res$enrich_p <- DOSE::enrichDO(
     gene = genelist, ont = "DO",
     pvalueCutoff = pvalueCutoff
   )
@@ -460,7 +462,6 @@ getEnrichDO <- function(genelist = NULL, pvalueCutoff = 0.01) {
 #' @return enriched DO
 #' @examples
 #' x <- drawKEGG()
-#' @importFrom pathview pathview
 #' @export
 #'
 drawKEGG <- function(input = NULL, dat = NULL, pid = NULL) {
@@ -473,7 +474,7 @@ drawKEGG <- function(input = NULL, dat = NULL, pid = NULL) {
       genedata <- getEntrezIds(dat[[1]], org)
       foldChangeData <- data.frame(genedata$log2FoldChange)
       rownames(foldChangeData) <- rownames(genedata)
-      pathview(
+      pathview::pathview(
         gene.data = foldChangeData,
         pathway.id = pid,
         species = substr(pid, 0, 3),

@@ -74,6 +74,11 @@ run_deseq2 <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
   res <- DESeq2::results(dds, name = group_name)
 
   if (params$shrinkage != "None") {
+    if (params$shrinkage %in% c("apeglm", "ashr")) {
+      require_pkg(params$shrinkage,
+        feature = sprintf("LFC shrinkage (type='%s')", params$shrinkage)
+      )
+    }
     res <- DESeq2::lfcShrink(dds, coef = 2, res = res, type = params$shrinkage)
     if (params$test_type == "Wald") {
       colname <- names(dds@rowRanges@elementMetadata)[
