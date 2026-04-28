@@ -4,6 +4,7 @@
 .Ruserdata
 manifest.json
 .positai
+.superpowers/
 vignettes/*.html
 vignettes/*_files/
 .env
