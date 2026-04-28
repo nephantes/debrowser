@@ -20,39 +20,48 @@ getLeftMenu <- function(input = NULL) {
     ),
     conditionalPanel(
       (condition <- "input.methodtabs=='panel2'"),
-      shinydashboard::menuItem(" Plot Type",
-        startExpanded = TRUE,
-        wellPanel(radioButtons(
-          "qcplot",
-          paste("QC Plots:", sep = ""),
-          c(
-            PCA = "pca", All2All = "all2all", Heatmap = "heatmap", IQR = "IQR",
-            Density = "Density"
-          )
-        ))
+      bslib::accordion(
+        open = TRUE,
+        bslib::accordion_panel(
+          " Plot Type",
+          wellPanel(radioButtons(
+            "qcplot",
+            paste("QC Plots:", sep = ""),
+            c(
+              PCA = "pca", All2All = "all2all", Heatmap = "heatmap", IQR = "IQR",
+              Density = "Density"
+            )
+          ))
+        )
       ),
       getQCLeftMenu(input)
     ),
     conditionalPanel(
       (condition <- "input.methodtabs=='panel3'"),
       actionButton("startGO", "Submit"),
-      shinydashboard::menuItem(" Plot Type",
-        startExpanded = TRUE,
-        wellPanel(radioButtons(
-          "goplot", paste("Go Plots:", sep = ""),
-          c(
-            enrichGO = "enrichGO", enrichKEGG = "enrichKEGG",
-            Disease = "disease", compareClusters = "compare", GSEA = "GSEA"
-          )
-        ))
+      bslib::accordion(
+        open = TRUE,
+        bslib::accordion_panel(
+          " Plot Type",
+          wellPanel(radioButtons(
+            "goplot", paste("Go Plots:", sep = ""),
+            c(
+              enrichGO = "enrichGO", enrichKEGG = "enrichKEGG",
+              Disease = "disease", compareClusters = "compare", GSEA = "GSEA"
+            )
+          ))
+        )
       ),
       getGOLeftMenu()
     ),
     conditionalPanel(
       (condition <- "input.methodtabs=='panel4'"),
-      shinydashboard::menuItem(" Select Columns",
-        startExpanded = TRUE,
-        uiOutput("getColumnsForTables")
+      bslib::accordion(
+        open = TRUE,
+        bslib::accordion_panel(
+          " Select Columns",
+          uiOutput("getColumnsForTables")
+        )
       )
     )
   )
@@ -71,10 +80,13 @@ getLeftMenu <- function(input = NULL) {
 getMainPlotsLeftMenu <- function() {
   mainPlotsLeftMenu <- list(
     plotSizeMarginsUI("main", w = 600, h = 400),
-    shinydashboard::menuItem("Heatmap Options",
-      startExpanded = FALSE,
-      heatmapControlsUI("heatmap"),
-      plotSizeMarginsUI("heatmap", w = 550, h = 400)
+    bslib::accordion(
+      open = FALSE,
+      bslib::accordion_panel(
+        "Heatmap Options",
+        heatmapControlsUI("heatmap"),
+        plotSizeMarginsUI("heatmap", w = 550, h = 400)
+      )
     ),
     plotSizeMarginsUI("barmain", w = 550, h = 400, t = 90),
     plotSizeMarginsUI("boxmain", w = 550, h = 400, t = 90)
@@ -94,42 +106,45 @@ getMainPlotsLeftMenu <- function() {
 #'
 getGOLeftMenu <- function() {
   list(
-    shinydashboard::menuItem(" Go Term Options",
-      startExpanded = TRUE,
-      textInput("gopvalue", "p.adjust", value = "0.01"),
-      getOrganismBox(),
-      actionButton("GeneTableButton", "DE Genes"),
-      conditionalPanel(
-        (condition <- "input.goplot=='enrichKEGG'"),
-        actionButton("KeggPathway", "KeggPathway")
-      ),
-      conditionalPanel(
-        (condition <- "(input.goplot=='enrichGO' ||
-            (input.goplot=='compare' && input.gofunc!='enrichDO' &&
-            input.gofunc!='enrichKEGG'))"),
-        selectInput("ontology", "Choose an ontology:",
-          choices = c("CC", "MF", "BP")
-        )
-      ),
-      conditionalPanel(
-        (condition <- "input.goplot!='compare'"),
-        selectInput("goextplot", "Plot Type:",
-          choices = c("Summary", "Dotplot")
-        )
-      ),
-      conditionalPanel(
-        (condition <- "input.goplot=='compare'"),
-        selectInput("gofunc", "Plot Function:",
-          choices = c("enrichGO", "enrichDO", "enrichKEGG")
-        )
-      ),
-      conditionalPanel(
-        (condition <- "input.goplot=='GSEA'"),
-        selectInput("sortfield", "Sort field:",
-          choices = c("stat", "log2FoldChange")
-        )
-      ),
-      downloadButton("downloadGOPlot", "Download Plots")
+    bslib::accordion(
+      open = TRUE,
+      bslib::accordion_panel(
+        " Go Term Options",
+        textInput("gopvalue", "p.adjust", value = "0.01"),
+        getOrganismBox(),
+        actionButton("GeneTableButton", "DE Genes"),
+        conditionalPanel(
+          (condition <- "input.goplot=='enrichKEGG'"),
+          actionButton("KeggPathway", "KeggPathway")
+        ),
+        conditionalPanel(
+          (condition <- "(input.goplot=='enrichGO' ||
+              (input.goplot=='compare' && input.gofunc!='enrichDO' &&
+              input.gofunc!='enrichKEGG'))"),
+          selectInput("ontology", "Choose an ontology:",
+            choices = c("CC", "MF", "BP")
+          )
+        ),
+        conditionalPanel(
+          (condition <- "input.goplot!='compare'"),
+          selectInput("goextplot", "Plot Type:",
+            choices = c("Summary", "Dotplot")
+          )
+        ),
+        conditionalPanel(
+          (condition <- "input.goplot=='compare'"),
+          selectInput("gofunc", "Plot Function:",
+            choices = c("enrichGO", "enrichDO", "enrichKEGG")
+          )
+        ),
+        conditionalPanel(
+          (condition <- "input.goplot=='GSEA'"),
+          selectInput("sortfield", "Sort field:",
+            choices = c("stat", "log2FoldChange")
+          )
+        ),
+        downloadButton("downloadGOPlot", "Download Plots")
+      )
     )
   )
 }
@@ -151,43 +166,52 @@ getQCLeftMenu <- function(input = NULL) {
     return(NULL)
   }
   list(
-    shinydashboard::menuItem(" Select Columns",
-      startExpanded = TRUE,
-      uiOutput("columnSelForQC")
+    bslib::accordion(
+      open = TRUE,
+      bslib::accordion_panel(
+        " Select Columns",
+        uiOutput("columnSelForQC")
+      )
     ),
-    shinydashboard::menuItem(" QC Options",
-      startExpanded = FALSE,
-      conditionalPanel(
-        (condition <- "input.qcplot=='heatmap'"),
-        plotSizeMarginsUI("heatmapQC"),
-        heatmapControlsUI("heatmapQC")
-      ),
-      conditionalPanel(
-        condition <- "(input.qcplot=='all2all')",
-        plotSizeMarginsUI("all2all"),
-        all2allControlsUI("all2all")
-      ),
-      conditionalPanel(
-        condition <- "(input.qcplot=='Density')",
-        plotSizeMarginsUI("density"),
-        plotSizeMarginsUI("normdensity")
-      ),
-      conditionalPanel(
-        condition <- "(input.qcplot=='IQR')",
-        plotSizeMarginsUI("IQR"),
-        plotSizeMarginsUI("normIQR")
-      ),
-      getHelpButton(
-        "method",
-        "http://debrowser.readthedocs.io/en/master/heatmap/heatmap.html"
-      ),
-      conditionalPanel(
-        (condition <- "input.qcplot=='pca'"),
-        shinydashboard::menuItem(
-          "PCA Options",
-          pcaPlotControlsUI("qcpca")
+    bslib::accordion(
+      open = FALSE,
+      bslib::accordion_panel(
+        " QC Options",
+        conditionalPanel(
+          (condition <- "input.qcplot=='heatmap'"),
+          plotSizeMarginsUI("heatmapQC"),
+          heatmapControlsUI("heatmapQC")
         ),
-        plotSizeMarginsUI("qcpca", w = 600, h = 400, t = 0, b = 0, l = 0, r = 0)
+        conditionalPanel(
+          condition <- "(input.qcplot=='all2all')",
+          plotSizeMarginsUI("all2all"),
+          all2allControlsUI("all2all")
+        ),
+        conditionalPanel(
+          condition <- "(input.qcplot=='Density')",
+          plotSizeMarginsUI("density"),
+          plotSizeMarginsUI("normdensity")
+        ),
+        conditionalPanel(
+          condition <- "(input.qcplot=='IQR')",
+          plotSizeMarginsUI("IQR"),
+          plotSizeMarginsUI("normIQR")
+        ),
+        getHelpButton(
+          "method",
+          "http://debrowser.readthedocs.io/en/master/heatmap/heatmap.html"
+        ),
+        conditionalPanel(
+          (condition <- "input.qcplot=='pca'"),
+          bslib::accordion(
+            open = FALSE,
+            bslib::accordion_panel(
+              "PCA Options",
+              pcaPlotControlsUI("qcpca")
+            )
+          ),
+          plotSizeMarginsUI("qcpca", w = 600, h = 400, t = 0, b = 0, l = 0, r = 0)
+        )
       )
     )
   )
@@ -209,12 +233,15 @@ getCutOffSelection <- function(nc = 1) {
   list(conditionalPanel(
     (condition <- "input.dataset!='most-varied' &&
         input.methodtabs!='panel0'"),
-    shinydashboard::menuItem(
-      " Filter",
-      # h4("Filter"),
-      textInput("padj", "padj", value = "0.01"),
-      textInput("foldChange", "foldChange", value = "2"),
-      compselect
+    bslib::accordion(
+      open = FALSE,
+      bslib::accordion_panel(
+        " Filter",
+        # h4("Filter"),
+        textInput("padj", "padj", value = "0.01"),
+        textInput("foldChange", "foldChange", value = "2"),
+        compselect
+      )
     )
   ))
 }
@@ -692,33 +719,36 @@ getKEGGModal <- function() {
 getDownloadSection <- function(choices = NULL) {
   list(conditionalPanel(
     (condition <- "input.methodtabs!='panel0'"),
-    shinydashboard::menuItem(
-      " Data Options",
-      selectInput("dataset", "Choose a dataset:",
-        choices = choices
-      ),
-      conditionalPanel(
-        (condition <- "input.dataset=='selected'"),
-        selectInput("selectedplot", "The plot used in selection:",
-          choices = c("Main Plot", "Main Heatmap", "QC Heatmap")
-        )
-      ),
-      selectInput("norm_method", "Normalization Method:",
-        c("none", "MRN", "TMM", "RLE", "upperquartile"),
-        selected = "MRN"
-      ),
-      downloadButton("downloadData", "Download Data"),
-      conditionalPanel(
-        condition = "input.dataset=='most-varied'",
-        textInput("topn", "top-n", value = "500"),
-        textInput("mincount", "total min count", value = "10")
-      ),
-      textareaInput("genesetarea", "Search",
-        "",
-        rows = 5, cols = 35
-      ),
-      helpText("Regular expressions can be used\n
-        Ex: ^Al => Al.., Al$ => ...al")
+    bslib::accordion(
+      open = FALSE,
+      bslib::accordion_panel(
+        " Data Options",
+        selectInput("dataset", "Choose a dataset:",
+          choices = choices
+        ),
+        conditionalPanel(
+          (condition <- "input.dataset=='selected'"),
+          selectInput("selectedplot", "The plot used in selection:",
+            choices = c("Main Plot", "Main Heatmap", "QC Heatmap")
+          )
+        ),
+        selectInput("norm_method", "Normalization Method:",
+          c("none", "MRN", "TMM", "RLE", "upperquartile"),
+          selected = "MRN"
+        ),
+        downloadButton("downloadData", "Download Data"),
+        conditionalPanel(
+          condition = "input.dataset=='most-varied'",
+          textInput("topn", "top-n", value = "500"),
+          textInput("mincount", "total min count", value = "10")
+        ),
+        textareaInput("genesetarea", "Search",
+          "",
+          rows = 5, cols = 35
+        ),
+        helpText("Regular expressions can be used\n
+          Ex: ^Al => Al.., Al$ => ...al")
+      )
     )
   ))
 }
