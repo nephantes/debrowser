@@ -53,7 +53,8 @@ Imports:
     RCurl,
     colourpicker,
     plotly,
-    heatmaply
+    heatmaply,
+    bslib (>= 0.7.0)
 RoxygenNote: 7.3.3
 Encoding: UTF-8
 Suggests: testthat (>= 3.2.0),
