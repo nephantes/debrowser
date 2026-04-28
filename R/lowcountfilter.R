@@ -85,31 +85,26 @@ dataLCFUI <- function(id) {
   ns <- NS(id)
   list(
     fluidRow(
-      shinydashboard::box(
-        title = "Low Count Filtering",
-        solidHeader = TRUE, status = "info", width = 12,
-        fluidRow(
-          column(
-            5, div(
+      bslib::card(
+        bslib::card_header("Low Count Filtering"),
+        bslib::layout_columns(
+          col_widths = c(5, 2, 5),
+          tagList(
+            div(
               style = "overflow: scroll",
               tableOutput(ns("uploadSummary")),
               DT::dataTableOutput(ns("sampleDetails"))
             ),
             uiOutput(ns("loadedtable"))
           ),
-          column(
-            2,
-            shinydashboard::box(
-              title = "Filtering Methods",
-              solidHeader = TRUE, status = "info",
-              width = 12,
-              lcfMetRadio(id),
-              uiOutput(ns("cutoffLCFMet")),
-              actionButtonDE(ns("submitLCF"), label = "Filter", styleclass = "primary")
-            )
+          de_card(
+            title = "Filtering Methods",
+            lcfMetRadio(id),
+            uiOutput(ns("cutoffLCFMet")),
+            actionButtonDE(ns("submitLCF"), label = "Filter", styleclass = "primary")
           ),
-          column(
-            5, div(
+          tagList(
+            div(
               style = "overflow: scroll",
               tableOutput(ns("filteredSummary")),
               DT::dataTableOutput(ns("filteredDetails"))
@@ -127,9 +122,8 @@ dataLCFUI <- function(id) {
           )
         )
       ),
-      shinydashboard::box(
+      de_card(
         title = "Histograms",
-        solidHeader = TRUE, status = "info", width = 12,
         fluidRow(
           column(
             6, histogramControlsUI(ns("beforeFiltering")),
