@@ -56,9 +56,11 @@ debrowserpcaplot <- function(id, pcadata = NULL, metadata = NULL) {
         12,
         de_card(
           title = "PCA Plot",
-          div(style = "overflow-x: scroll"),
-          plotlyOutput(session$ns("pca1"),
-            height = input$height, width = input$width, inline = FALSE
+          div(
+            style = "overflow-x: scroll",
+            plotlyOutput(session$ns("pca1"),
+              height = input$height, width = input$width, inline = FALSE
+            )
           )
         ),
         de_card(

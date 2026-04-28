@@ -220,8 +220,8 @@ dataLoadUI <- function(id) {
       )
     )), br(),
     fluidRow(
-      de_card(
-        title = "Upload Summary",
+      bslib::card(
+        bslib::card_header("Upload Summary"),
         fluidRow(
           column(
             12,

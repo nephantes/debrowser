@@ -58,8 +58,8 @@ getDEResultsUI <- function(id) {
   ns <- NS(id)
   list(
     fluidRow(
-      de_card(
-        title = "DE Results",
+      bslib::card(
+        bslib::card_header("DE Results"),
         fluidRow(
           column(
             12,

@@ -122,8 +122,8 @@ dataLCFUI <- function(id) {
           )
         )
       ),
-      de_card(
-        title = "Histograms",
+      bslib::card(
+        bslib::card_header("Histograms"),
         fluidRow(
           column(
             6, histogramControlsUI(ns("beforeFiltering")),
