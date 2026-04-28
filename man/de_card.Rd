@@ -4,7 +4,7 @@
 \alias{de_card}
 \title{de_card}
 \usage{
-de_card(title, ..., download_id = NULL, full_screen = TRUE)
+de_card(title, ..., download_id = NULL, full_screen = FALSE)
 }
 \arguments{
 \item{title}{character — card title shown in the header}

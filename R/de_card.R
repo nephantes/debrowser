@@ -14,7 +14,7 @@
 #' @examples
 #' x <- de_card("Heatmap", plotOutput("heat"))
 #' @export
-de_card <- function(title, ..., download_id = NULL, full_screen = TRUE) {
+de_card <- function(title, ..., download_id = NULL, full_screen = FALSE) {
   header <- if (is.null(download_id)) {
     bslib::card_header(title)
   } else {
