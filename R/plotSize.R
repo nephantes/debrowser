@@ -16,11 +16,14 @@
 #' @export
 #'
 plotSizeMarginsUI <- function(id, w = 800, h = 640, t = 20, b = 100, l = 100, r = 20) {
-  shinydashboard::menuItem(
-    paste0(id, " - Size & Margins"),
-    plotSizeUI(id, w, h),
-    plotMarginsUI(id, t, b, l, r),
-    plotTypeUI(id)
+  bslib::accordion(
+    open = FALSE,
+    bslib::accordion_panel(
+      paste0(id, " - Size & Margins"),
+      plotSizeUI(id, w, h),
+      plotMarginsUI(id, t, b, l, r),
+      plotTypeUI(id)
+    )
   )
 }
 
