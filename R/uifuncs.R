@@ -523,22 +523,16 @@ togglePanels <- function(num = NULL, nums = NULL, session = NULL) {
     return(NULL)
   }
   for (i in 0:4) {
+    target <- paste0("panel", i)
     if (i %in% nums) {
-      shinyjs::show(
-        selector =
-          paste0("#methodtabs li a[data-value=panel", i, "]")
-      )
+      bslib::nav_show("methodtabs", target = target, session = session)
     } else {
-      shinyjs::hide(
-        selector =
-          paste0("#methodtabs li a[data-value=panel", i, "]")
-      )
+      bslib::nav_hide("methodtabs", target = target, session = session)
     }
   }
   if (num) {
-    updateTabsetPanel(session, "methodtabs",
-      selected = paste0("panel", num)
-    )
+    bslib::nav_select("methodtabs", selected = paste0("panel", num),
+                      session = session)
   }
 }
 
