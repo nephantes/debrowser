@@ -4,24 +4,18 @@
 \alias{debrowserpcaplot}
 \title{debrowserpcaplot}
 \usage{
-debrowserpcaplot(
-  input = NULL,
-  output = NULL,
-  session = NULL,
-  pcadata = NULL,
-  metadata = NULL
-)
+debrowserpcaplot(id, pcadata = NULL, metadata = NULL)
 }
 \arguments{
+\item{pcadata, }{a matrix that includes expression values}
+
+\item{metadata, }{metadata to color the plots}
+
 \item{input, }{input variables}
 
 \item{output, }{output objects}
 
 \item{session, }{session}
-
-\item{pcadata, }{a matrix that includes expression values}
-
-\item{metadata, }{metadata to color the plots}
 }
 \value{
 main plot

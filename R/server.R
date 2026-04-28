@@ -24,7 +24,7 @@
 #'             h4 img icon updateTabsetPanel updateTextInput  validate
 #'             wellPanel checkboxInput br p checkboxGroupInput onRestore
 #'             reactiveValuesToList renderText onBookmark onBookmarked
-#'             updateQueryString callModule enableBookmarking htmlOutput
+#'             updateQueryString enableBookmarking htmlOutput
 #'             onRestored NS reactiveVal withProgress tableOutput
 #'             selectizeInput fluidRow div renderPrint renderImage
 #'             verbatimTextOutput imageOutput renderTable incProgress
@@ -124,19 +124,19 @@ deServer <- function(input, output, session) {
       })
 
       observe({
-        updata(callModule(debrowserdataload, "load", "Filter"))
+        updata(debrowserdataload("load", "Filter"))
         updateTabItems(session, "DataPrep", "Upload")
 
         observeEvent(input$Filter, {
           if (!is.null(updata()$load())) {
             updateTabItems(session, "DataPrep", "Filter")
-            filtd(callModule(debrowserlowcountfilter, "lcf", updata()$load()))
+            filtd(debrowserlowcountfilter("lcf", updata()$load()))
           }
         })
         observeEvent(input$Batch, {
           if (!is.null(filtd()$filter())) {
             updateTabItems(session, "DataPrep", "BatchEffect")
-            batch(callModule(debrowserbatcheffect, "batcheffect", filtd()$filter()))
+            batch(debrowserbatcheffect("batcheffect", filtd()$filter()))
           }
         })
 
@@ -335,17 +335,17 @@ deServer <- function(input, output, session) {
         }
         if (!is.null(input$qcplot) && !is.null(normdat())) {
           if (input$qcplot == "all2all") {
-            callModule(debrowserall2all, "all2all", normdat(), input$cex)
+            debrowserall2all("all2all", normdat(), input$cex)
           } else if (input$qcplot == "pca") {
-            callModule(debrowserpcaplot, "qcpca", normdat(), batch()$BatchEffect()$meta)
+            debrowserpcaplot("qcpca", normdat(), batch()$BatchEffect()$meta)
           } else if (input$qcplot == "heatmap") {
-            selectedQCHeat(callModule(debrowserheatmap, "heatmapQC", normdat()))
+            selectedQCHeat(debrowserheatmap("heatmapQC", normdat()))
           } else if (input$qcplot == "IQR") {
-            callModule(debrowserIQRplot, "IQR", df_select())
-            callModule(debrowserIQRplot, "normIQR", normdat())
+            debrowserIQRplot("IQR", df_select())
+            debrowserIQRplot("normIQR", normdat())
           } else if (input$qcplot == "Density") {
-            callModule(debrowserdensityplot, "density", df_select())
-            callModule(debrowserdensityplot, "normdensity", normdat())
+            debrowserdensityplot("density", df_select())
+            debrowserdensityplot("normdensity", normdat())
           }
         }
       })
@@ -357,14 +357,14 @@ deServer <- function(input, output, session) {
             dc(), input,
             cols(), conds()
           ))
-          selectedMain(callModule(debrowsermainplot, "main", filt_data(), cond_names()))
+          selectedMain(debrowsermainplot("main", filt_data(), cond_names()))
         }
       })
       selectedHeat <- reactiveVal()
       observe({
         if (!is.null(selectedMain()) && !is.null(selectedMain()$selGenes())) {
           withProgress(message = "Creating plot", style = "notification", value = 0.1, {
-            selectedHeat(callModule(debrowserheatmap, "heatmap", filt_data()[selectedMain()$selGenes(), cols()]))
+            selectedHeat(debrowserheatmap("heatmap", filt_data()[selectedMain()$selGenes(), cols()]))
           })
         }
       })
@@ -390,12 +390,10 @@ deServer <- function(input, output, session) {
       observe({
         if (!is.null(selgenename()) && selgenename() != "") {
           withProgress(message = "Creating Bar/Box plots", style = "notification", value = 0.1, {
-            callModule(
-              debrowserbarmainplot, "barmain", filt_data(),
+            debrowserbarmainplot("barmain", filt_data(),
               cols(), conds(), cond_names(), selgenename()
             )
-            callModule(
-              debrowserboxmainplot, "boxmain", filt_data(),
+            debrowserboxmainplot("boxmain", filt_data(),
               cols(), conds(), cond_names(), selgenename()
             )
           })
