@@ -579,79 +579,12 @@ setBatch <- function(fd = NULL) {
 #'
 #' @export
 getTabUpdateJS <- function() {
-  tags$script(HTML("
-                      $(function() {
-                      $('#methodtabs').attr('selectedtab', '2')
-                      $($('#methodtabs >')[0]).attr('id', 'dataprepMethod')
-                      $($('#menutabs >')[0]).attr('id', 'dataprepMenu')
-                      for(var i=1;i<=5;i++){
-                      $($('#methodtabs >')[i]).attr('id', 'discoveryMethod')
-                      }
-                      $($('#menutabs >')[1]).attr('id', 'discoveryMenu')
-                      $(document).on('click', '#dataprepMethod', function () {
-                      if($('#dataprepMenu').attr('class')!='active'){
-                      $('#dataprepMenu').find('a').click()
-                      }
-                      });
-                      $(document).on('click', '#dataprepMenu', function () {
-                      if($('#dataprepMethod').attr('class')!='active'){
-                      $('#dataprepMethod').find('a').click()
-                      }
-                      });
-                      $(document).on('click', '#discoveryMethod', function () {
-                      $('#methodtabs').attr('selectedtab', $(this).index())
-                      if($('#discoveryMenu').attr('class')!='active'){
-                      $('#discoveryMenu').find('a').click()
-                      }
-                      });
-                      $('#discoveryMenu > ').css('display', 'none');
-                      $(document).on('click', '#goMain', function () {
-                      $('#discoveryMenu > ').css('display', 'block');
-                      });
-                      $(document).on('click', '#discoveryMenu', function () {
-                      $($('#methodtabs >')[ $('#methodtabs').attr('selectedtab')]).find('a').click()
-                      });
-                      //hide buttons on entrance
-                      $('.sidebar-menu > ').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(1)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(2)').css('display', 'inline');
-                      $(document).on('click', '#Filter', function () {
-                      $('.sidebar-menu > :nth-child(2)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(3)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(4)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(5)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'none');
-                      });
-                      $(document).on('click', '#Batch', function () {
-                      $('.sidebar-menu > :nth-child(4)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(5)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'none');
-                      });
-                      $(document).on('click', '#goDEFromFilter', function () {
-                      $('.sidebar-menu > :nth-child(5)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'none');
-                      });
-                      $(document).on('click', '#goDE', function () {
-                      $('.sidebar-menu > :nth-child(5)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'none');
-                      });
-                      // Phase A4ac migrated condSelect to a moduleServer, so
-                      // the Start DE button id is now namespaced as
-                      // cs-startDE. Listen for both ids during the
-                      // transition. Item 6 is the merged DE Analysis
-                      // menuItem (holds the cutoff + comparison controls
-                      // as children); the previous DEFilter wrapper at
-                      // index 7 is gone.
-                      $(document).on('click', '#startDE, #cs-startDE', function () {
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(2)').css('display', 'none');
-                      });
-                      })
-                      "))
+  # B1: progressive wizard step reveal moved to server-side observers
+  # in R/server.R (see observeEvent blocks for input$Filter, input$Batch,
+  # input$goDE, input$goDEFromFilter, input$startDE, input$`cs-startDE`).
+  # Function retained as a no-op for export-compat with downstream
+  # callers and for future JS hooks.
+  tags$script(HTML(""))
 }
 #' getPCAcontolUpdatesJS
 #' in the prep menu we have two PCA plots to show how batch effect correction worked.

@@ -117,6 +117,49 @@ deServer <- function(input, output, session) {
         cp
       })
 
+      # B1: progressive wizard step reveal — replaces the JS in
+      # getTabUpdateJS that used .sidebar-menu :nth-child selectors.
+      # Initial state: only Quick Start + Upload are visible.
+      bslib::nav_hide("DataPrep", "Filter")
+      bslib::nav_hide("DataPrep", "BatchEffect")
+      bslib::nav_hide("DataPrep", "CondSelect")
+      bslib::nav_hide("DataPrep", "DEAnalysis")
+
+      observeEvent(input$Filter, {
+        bslib::nav_show("DataPrep", "Filter")
+        bslib::nav_hide("DataPrep", "BatchEffect")
+        bslib::nav_hide("DataPrep", "CondSelect")
+        bslib::nav_hide("DataPrep", "DEAnalysis")
+      }, ignoreInit = TRUE)
+
+      observeEvent(input$Batch, {
+        bslib::nav_show("DataPrep", "BatchEffect")
+        bslib::nav_hide("DataPrep", "CondSelect")
+        bslib::nav_hide("DataPrep", "DEAnalysis")
+      }, ignoreInit = TRUE)
+
+      observeEvent(input$goDEFromFilter, {
+        bslib::nav_show("DataPrep", "CondSelect")
+        bslib::nav_hide("DataPrep", "DEAnalysis")
+      }, ignoreInit = TRUE)
+
+      observeEvent(input$goDE, {
+        bslib::nav_show("DataPrep", "CondSelect")
+        bslib::nav_hide("DataPrep", "DEAnalysis")
+      }, ignoreInit = TRUE)
+
+      # startDE / cs-startDE — both ids exist post-A4ac (cs- is the
+      # namespaced module id). Listen to both during the transition.
+      observeEvent(input$startDE, {
+        bslib::nav_show("DataPrep", "DEAnalysis")
+        bslib::nav_select("DataPrep", "DEAnalysis")
+      }, ignoreInit = TRUE)
+
+      observeEvent(input[["cs-startDE"]], {
+        bslib::nav_show("DataPrep", "DEAnalysis")
+        bslib::nav_select("DataPrep", "DEAnalysis")
+      }, ignoreInit = TRUE)
+
       observe({
         updata(debrowserdataload("load", "Filter"))
         bslib::nav_select("DataPrep", "Upload", session = session)
