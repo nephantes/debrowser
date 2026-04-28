@@ -63,9 +63,12 @@ debrowserdensityplot <- function(id, data = NULL) {
 #'
 densityPlotControlsUI <- function(id) {
   ns <- NS(id)
-  shinydashboard::menuItem(
-    paste0(id, " - Options"),
-    textInput(ns("breaks"), "Breaks", value = "100")
+  bslib::accordion(
+    open = FALSE,
+    bslib::accordion_panel(
+      paste0(id, " - Options"),
+      textInput(ns("breaks"), "Breaks", value = "100")
+    )
   )
 }
 
