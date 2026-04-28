@@ -57,10 +57,9 @@ debrowserheatmap <- function(id, expdata = NULL) {
     if (is.null(input$interactive)) {
       return(NULL)
     }
-    shinydashboard::box(
-      collapsible = TRUE, title = session$ns("Heatmap"), status = "primary",
-      solidHeader = TRUE, width = NULL,
-      draggable = TRUE, getPlotArea(input, session)
+    de_card(
+      title = session$ns("Heatmap"),
+      getPlotArea(input, session)
     )
   })
 
