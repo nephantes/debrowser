@@ -28,10 +28,9 @@ debrowsermainplot <- function(id, data = NULL, cond_names = NULL) {
     list(fluidRow(
       column(
         12,
-        shinydashboard::box(
-          collapsible = TRUE, title = "Main Plots", status = "primary",
-          solidHeader = TRUE, width = NULL,
-          draggable = TRUE, plotlyOutput(session$ns("main"),
+        de_card(
+          title = "Main Plots",
+          plotlyOutput(session$ns("main"),
             height = input$plotheight, width = input$plotwidth
           )
         )
