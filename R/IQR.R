@@ -22,10 +22,9 @@ debrowserIQRplot <- function(id, data = NULL) {
       getIQRPlot(data, input)
     })
     output$IQRUI <- renderUI({
-      shinydashboard::box(
-        collapsible = TRUE, title = session$ns("plot"), status = "primary",
-        solidHeader = TRUE, width = NULL,
-        draggable = TRUE, plotlyOutput(session$ns("IQR"),
+      de_card(
+        title = session$ns("plot"),
+        plotlyOutput(session$ns("IQR"),
           width = input$width, height = input$height
         )
       )
