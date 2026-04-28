@@ -64,11 +64,14 @@ getAll2AllPlotUI <- function(id) {
 #'
 all2allControlsUI <- function(id) {
   ns <- NS(id)
-  shinydashboard::menuItem(
-    paste0(id, " - Options"),
-    sliderInput("cex", "corr font size",
-      min = 0.1, max = 10,
-      step = 0.1, value = 2
+  bslib::accordion(
+    open = FALSE,
+    bslib::accordion_panel(
+      paste0(id, " - Options"),
+      sliderInput("cex", "corr font size",
+        min = 0.1, max = 10,
+        step = 0.1, value = 2
+      )
     )
   )
 }
