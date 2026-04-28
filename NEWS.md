@@ -65,6 +65,26 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   distribution on the demo DE result with default cutoffs (padj 0.05,
   fold 2) — catches regressions in cutoff logic or normalization.
 
+### Phase A4a + A4c — Shiny API modernization
+
+* Migrated all 13 modules from the deprecated `callModule()` API to
+  `moduleServer()` (Shiny 1.5+ idiom): `debrowserdataload`,
+  `debrowserlowcountfilter`, `debrowserbatcheffect`, `debrowserhistogram`,
+  `debrowserpcaplot`, `debrowserIQRplot`, `debrowserdensityplot`,
+  `debrowserall2all`, `debrowserheatmap`, `debrowsermainplot`,
+  `debrowserbarmainplot`, `debrowserboxmainplot`, `debrowserdeanalysis`.
+  Public function signatures changed from `(input, output, session, …)`
+  to `(id, …)` to match the modern Shiny convention.
+* Removed the `library("debrowser")` self-import inside `deUI()` —
+  was a no-op at best and a side-effect at worst.
+* Replaced the runtime `installpack()` / `loadpack()` package-loading
+  helpers with standard `requireNamespace(pkg, quietly = TRUE)` checks
+  in `R/GOterm.R`. Deleted `R/installpack.R` and its exported functions
+  (`installpack`, `loadpack`).
+* Dropped the unused `aes_string` import (deprecated in ggplot2 3.0).
+* `condSelect.R` is deliberately left untouched — full rewrite folded
+  into Phase B2 alongside the three-stage-shell wizard redesign.
+
 ### User-visible
 
 * Raised `startDEBrowser()` upload limit from 30 MB to 90 MB.
