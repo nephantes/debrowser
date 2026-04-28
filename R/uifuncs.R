@@ -477,29 +477,29 @@ getCondMsg <- function(dc = NULL, input = NULL, cols = NULL, conds = NULL) {
   )
   a <- list(conditionalPanel(
     condition <- "input.goMain",
-    shinydashboard::box(
-      collapsible = TRUE, title = "Plot Information", status = "primary",
-      solidHeader = TRUE, width = NULL,
-      draggable = TRUE,
-      style = "overflow-x:scroll",
-      HTML(
-        paste0(
-          "<b>DE Params:</b> ", params_str,
-          " - <b>Dataset:</b> ", input$dataset, " <b>Normalization:</b> ", input$norm_method,
-          " - ", heatmap_str,
-          "</br><b>", cond_names[1], ":</b> "
+    de_card(
+      title = "Plot Information",
+      tags$div(
+        style = "overflow-x:scroll",
+        HTML(
+          paste0(
+            "<b>DE Params:</b> ", params_str,
+            " - <b>Dataset:</b> ", input$dataset, " <b>Normalization:</b> ", input$norm_method,
+            " - ", heatmap_str,
+            "</br><b>", cond_names[1], ":</b> "
+          ),
+          paste(cnd[cnd$conds == unique(conds)[1], "cols"],
+            collapse = ","
+          ),
+          paste0(" vs. ", "<b>", cond_names[2], ":", "</b> "),
+          paste(cnd[cnd$conds == unique(conds)[2], "cols"],
+            collapse = ","
+          )
         ),
-        paste(cnd[cnd$conds == unique(conds)[1], "cols"],
-          collapse = ","
-        ),
-        paste0(" vs. ", "<b>", cond_names[2], ":", "</b> "),
-        paste(cnd[cnd$conds == unique(conds)[2], "cols"],
-          collapse = ","
+        getHelpButton(
+          "method",
+          "http://debrowser.readthedocs.io/en/master/quickstart/quickstart.html#the-main-plots-of-de-analysis"
         )
-      ),
-      getHelpButton(
-        "method",
-        "http://debrowser.readthedocs.io/en/master/quickstart/quickstart.html#the-main-plots-of-de-analysis"
       )
     )
   ))
