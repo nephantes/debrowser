@@ -284,23 +284,27 @@ plotData <- function(pdata = NULL, input = NULL) {
 mainPlotControlsUI <- function(id) {
   ns <- NS(id)
   list(
-    shinydashboard::menuItem(" Plot Type",
-      startExpanded = TRUE,
-      radioButtons(
-        ns("mainplot"), "Main Plots:",
-        c(
-          Scatter = "scatter", VolcanoPlot = "volcano",
-          MAPlot = "maplot"
+    bslib::accordion(
+      open = TRUE,
+      bslib::accordion_panel(" Plot Type",
+        radioButtons(
+          ns("mainplot"), "Main Plots:",
+          c(
+            Scatter = "scatter", VolcanoPlot = "volcano",
+            MAPlot = "maplot"
+          )
         )
       )
     ),
-    shinydashboard::menuItem("Main Options",
-      startExpanded = TRUE,
-      sliderInput(ns("backperc"), "Background Data(%):",
-        min = 10, max = 100, value = 10, sep = "", animate = FALSE
-      ),
-      uiOutput(ns("volcanoControlsUI")),
-      uiOutput(ns("mainPlotControlsUI"))
+    bslib::accordion(
+      open = TRUE,
+      bslib::accordion_panel("Main Options",
+        sliderInput(ns("backperc"), "Background Data(%):",
+          min = 10, max = 100, value = 10, sep = "", animate = FALSE
+        ),
+        uiOutput(ns("volcanoControlsUI")),
+        uiOutput(ns("mainPlotControlsUI"))
+      )
     )
   )
 }
