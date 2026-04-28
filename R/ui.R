@@ -21,7 +21,6 @@ deUI <- function() {
     "www",
     package = "debrowser"
   ))
-  library("debrowser")
   debrowser <- (fluidPage(
     shinyjs::useShinyjs(),
     shinyjs::inlineCSS("
