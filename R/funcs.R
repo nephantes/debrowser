@@ -246,6 +246,15 @@ getTableDetails <- function(output = NULL, session = NULL, tablename = NULL, dat
       )
     }
   })
+
+  # When `modal = TRUE`, the dataTableOutput lives inside a bsModal whose
+  # initial state is `display: none`. Shiny suspends hidden outputs by
+  # default, and Bootstrap modal show/hide is not visible to Shiny's
+  # default suspension tracking — so the renderDataTable above would
+  # never fire when the user opens the modal. Force it to keep computing.
+  if (!is.null(modal) && modal) {
+    outputOptions(output, tablenameUI, suspendWhenHidden = FALSE)
+  }
 }
 
 #' push
