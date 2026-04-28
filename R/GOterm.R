@@ -22,7 +22,11 @@ getGeneList <- function(
   fromType = "SYMBOL", toType = c("ENTREZID")
 ) {
   # Get the entrez gene identifiers that are mapped to a gene symbol
-  if (!installpack(org)) {
+  if (!requireNamespace(org, quietly = TRUE)) {
+    showNotification(
+      paste0("Please install ", org, " to use this function."),
+      type = "error"
+    )
     return(NULL)
   }
 
@@ -59,7 +63,11 @@ getEntrezTable <- function(genes = NULL, dat = NULL, org = "org.Hs.eg.db") {
   if (is.null(genes)) {
     return(NULL)
   }
-  if (!installpack(org)) {
+  if (!requireNamespace(org, quietly = TRUE)) {
+    showNotification(
+      paste0("Please install ", org, " to use this function."),
+      type = "error"
+    )
     return(NULL)
   }
   allkeys <- AnnotationDbi::keys(eval(parse(text = org)),
@@ -99,7 +107,11 @@ getEntrezIds <- function(genes = NULL, org = "org.Hs.eg.db") {
   if (is.null(genes)) {
     return(NULL)
   }
-  if (!installpack(org)) {
+  if (!requireNamespace(org, quietly = TRUE)) {
+    showNotification(
+      paste0("Please install ", org, " to use this function."),
+      type = "error"
+    )
     return(NULL)
   }
   allkeys <- AnnotationDbi::keys(eval(parse(text = org)),
@@ -143,7 +155,11 @@ getEnrichGO <- function(
   if (is.null(genelist)) {
     return(NULL)
   }
-  if (!installpack(org)) {
+  if (!requireNamespace(org, quietly = TRUE)) {
+    showNotification(
+      paste0("Please install ", org, " to use this function."),
+      type = "error"
+    )
     return(NULL)
   }
   res <- c()
@@ -339,7 +355,11 @@ compareClust <- function(
   if (is.null(dat)) {
     return(NULL)
   }
-  if (!installpack(org)) {
+  if (!requireNamespace(org, quietly = TRUE)) {
+    showNotification(
+      paste0("Please install ", org, " to use this function."),
+      type = "error"
+    )
     return(NULL)
   }
   res <- c()
@@ -363,7 +383,11 @@ compareClust <- function(
         pvalueCutoff = pvalueCutoff
       )
     } else if (fun == "enrichDO") {
-      if (!installpack("DOSE")) {
+      if (!requireNamespace("DOSE", quietly = TRUE)) {
+        showNotification(
+          "Please install DOSE to use this function.",
+          type = "error"
+        )
         return(NULL)
       }
       xx <- compareCluster(genecluster,
@@ -444,7 +468,7 @@ drawKEGG <- function(input = NULL, dat = NULL, pid = NULL) {
     return(NULL)
   }
   tryCatch({
-    if (installpack("pathview")) {
+    if (requireNamespace("pathview", quietly = TRUE)) {
       org <- input$organism
       genedata <- getEntrezIds(dat[[1]], org)
       foldChangeData <- data.frame(genedata$log2FoldChange)
