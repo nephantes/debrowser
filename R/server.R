@@ -34,7 +34,7 @@
 #'             js inlineCSS onclick
 #' @importFrom DT datatable dataTableOutput renderDataTable formatStyle
 #'             styleInterval formatRound
-#' @importFrom ggplot2 aes aes_string geom_bar geom_point ggplot
+#' @importFrom ggplot2 aes geom_bar geom_point ggplot
 #'             labs scale_x_discrete scale_y_discrete ylab
 #'             autoplot theme_minimal theme geom_density
 #'             geom_text element_blank margin
