@@ -137,36 +137,34 @@ deServer <- function(input, output, session) {
         observeEvent(input$goDEFromFilter, {
           if (is.null(batch())) batch(setBatch(filtd()))
           updateTabItems(session, "DataPrep", "CondSelect")
-          sel(debrowsercondselect(
-            input, output, session,
+          sel(debrowsercondselectServer(
+            "cs",
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
           choicecounter$nc <- sel()$cc()
         })
         observeEvent(input$goDE, {
           updateTabItems(session, "DataPrep", "CondSelect")
-          sel(debrowsercondselect(
-            input, output, session,
+          sel(debrowsercondselectServer(
+            "cs",
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
           choicecounter$nc <- sel()$cc()
         })
-        observeEvent(input$startDE, {
+        observeEvent(req(sel())$start_de(), {
           if (!is.null(batch()$BatchEffect()$count)) {
             togglePanels(0, c(0), session)
-            res <- prepDataContainer(batch()$BatchEffect()$count, sel()$cc(), input, batch()$BatchEffect()$meta)
-            if (is.null(res)) {
-              return(NULL)
-            }
-            dc(res)
-            updateTabItems(session, "DataPrep", "DEAnalysis")
-            buttonValues$startDE <- TRUE
-            buttonValues$goQCplots <- FALSE
-            hideObj(c(
-              "load-uploadFile", "load-demo",
-              "load-demo2", "goQCplots", "goQCplotsFromFilter"
-            ))
           }
+        })
+        observeEvent(req(sel())$dc(), {
+          dc(sel()$dc())
+          updateTabItems(session, "DataPrep", "DEAnalysis")
+          buttonValues$startDE <- TRUE
+          buttonValues$goQCplots <- FALSE
+          hideObj(c(
+            "load-uploadFile", "load-demo",
+            "load-demo2", "goQCplots", "goQCplotsFromFilter"
+          ))
         })
 
         observeEvent(input$goMain, {
@@ -257,17 +255,15 @@ deServer <- function(input, output, session) {
       observeEvent(input$resetsamples, {
         buttonValues$startDE <- FALSE
         showObj(c("goQCplots", "goDE"))
-        hideObj(c("add_btn", "rm_btn", "startDE"))
+        hideObj(c("cs-add_btn", "cs-rm_btn", "cs-startDE"))
         choicecounter$nc <- 0
       })
 
-      output$condReady <- reactive({
+      observe({
         if (!is.null(sel())) {
           choicecounter$nc <- sel()$cc()
         }
-        choicecounter$nc
       })
-      outputOptions(output, "condReady", suspendWhenHidden = FALSE)
       observeEvent(input$goQCplotsFromFilter, {
         if (is.null(batch())) batch(setBatch(filtd()))
         buttonValues$startDE <- FALSE

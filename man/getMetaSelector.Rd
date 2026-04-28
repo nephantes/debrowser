@@ -4,7 +4,7 @@
 \alias{getMetaSelector}
 \title{getMetaSelector}
 \usage{
-getMetaSelector(metadata = NULL, input = NULL, n = 0)
+getMetaSelector(metadata = NULL, input = NULL, n = 0, ns = identity)
 }
 \arguments{
 \item{metadata, }{meta data table}

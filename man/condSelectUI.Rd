@@ -3,16 +3,22 @@
 \name{condSelectUI}
 \alias{condSelectUI}
 \title{condSelectUI
-Creates a panel to select samples for each condition}
+Creates a panel to select samples for each condition.}
 \usage{
-condSelectUI()
+condSelectUI(id = NULL)
+}
+\arguments{
+\item{id, }{optional Shiny module namespace id. When `NULL` (default),
+ids are emitted bare for the legacy non-module call style. When set,
+every widget id is wrapped with `NS(id)` so the panel can live inside
+a `moduleServer()` boundary.}
 }
 \value{
 panel
 }
 \description{
 condSelectUI
-Creates a panel to select samples for each condition
+Creates a panel to select samples for each condition.
 }
 \examples{
 x <- condSelectUI()

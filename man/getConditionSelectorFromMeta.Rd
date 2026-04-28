@@ -10,7 +10,8 @@ getConditionSelectorFromMeta(
   index = 1,
   num = 0,
   choices = NULL,
-  selected = NULL
+  selected = NULL,
+  ns = identity
 )
 }
 \arguments{

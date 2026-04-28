@@ -5,7 +5,13 @@
 \title{getGroupSelector
 Return the groups}
 \usage{
-getGroupSelector(metadata = NULL, input = NULL, index = 1, num = 0)
+getGroupSelector(
+  metadata = NULL,
+  input = NULL,
+  index = 1,
+  num = 0,
+  ns = identity
+)
 }
 \arguments{
 \item{metadata, }{meta data table}

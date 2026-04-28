@@ -15,7 +15,7 @@ sidebar <- dashboardSidebar(  sidebarMenu(id="DataPrep",
 body <- dashboardBody(
   tabItems(
     tabItem(tabName="CondSelect",
-        condSelectUI()),
+        condSelectUI("cs")),
     tabItem(tabName="DEAnalysis",
     uiOutput("deresUI"),
     column(12,
@@ -31,17 +31,13 @@ server <- function(input, output, session) {
   # Filter out the rows that has maximum 10 reads in a sample
   filtd <-
         subset(demodata, apply(demodata, 1, max, na.rm = TRUE)  >=  10)
-    
-  sel <- debrowsercondselect(input, output, session, demodata, metadatatable)
+
+  sel <- debrowsercondselectServer("cs", filtd, metadatatable)
   dc <- reactiveVal()
-  observeEvent(input$startDE, {
+  observeEvent(sel$dc(), {
       updateTabItems(session, "DataPrep", "DEAnalysis")
-      dc(prepDataContainer(filtd, sel$cc(), input))
+      dc(sel$dc())
   })
-  output$condReady <- reactive({
-      sel$cc()
-  })
-  outputOptions(output, 'condReady', suspendWhenHidden = FALSE)
   
   output$compselectUI <- renderUI({
       if (!is.null(sel$cc())) return(NULL)

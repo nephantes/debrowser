@@ -134,7 +134,7 @@ deUI <- function() {
                   tabName = "CondSelect",
                   conditionalPanel(
                     (condition <- "input.goDE || input.goDEFromFilter"),
-                    debrowser::condSelectUI()
+                    debrowser::condSelectUI("cs")
                   )
                 ),
                 tabItem(

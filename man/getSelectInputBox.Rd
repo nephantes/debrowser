@@ -11,7 +11,8 @@ getSelectInputBox(
   choices = NULL,
   selected = NULL,
   cw = 2,
-  multiple = FALSE
+  multiple = FALSE,
+  ns = identity
 )
 }
 \arguments{

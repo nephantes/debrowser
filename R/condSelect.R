@@ -37,29 +37,98 @@ debrowsercondselect <- function(input = NULL, output = NULL, session = NULL, dat
   list(cc = choicecounter)
 }
 
-#' condSelectUI
-#' Creates a panel to select samples for each condition
+#' debrowsercondselectServer
 #'
+#' Shiny module server for the comparison-selection panel. Pair with
+#' `condSelectUI(id)`. Returns reactives the parent app can observe to drive
+#' the DE pipeline.
+#'
+#' @param id, module namespace id (must match the id passed to `condSelectUI()`)
+#' @param data, count data
+#' @param metadata, metadata
+#' @return a list with:
+#'   - `cc`: choice-counter reactive (number of comparison panels)
+#'   - `start_de`: reactive that fires when the user clicks "Start DE"
+#'   - `dc`: reactive holding the data container (`prepDataContainer` result)
+#'     once Start DE has been clicked and DE has finished — `NULL` until then
+#'   - `input`: the module's `input` reactivevalues, exposed so callers can
+#'     read the dynamically-named per-comparison widgets (`condition1`,
+#'     `demethod1`, …) without knowing the namespace prefix.
+#' @export
+#'
+#' @examples
+#' x <- debrowsercondselectServer
+#'
+debrowsercondselectServer <- function(id, data = NULL, metadata = NULL) {
+  if (is.null(data)) {
+    return(NULL)
+  }
+  moduleServer(id, function(input, output, session) {
+    choicecounter <- reactiveVal(0)
+    output$conditionSelector <- renderUI({
+      selectConditions(data, metadata, choicecounter(), session, input)
+    })
+
+    observeEvent(input$add_btn, {
+      choicecounter(choicecounter() + 1)
+    })
+    observeEvent(input$rm_btn, {
+      if (choicecounter() > 0) {
+        choicecounter(choicecounter() - 1)
+      }
+    })
+
+    output$condReady <- reactive(choicecounter())
+    outputOptions(output, "condReady", suspendWhenHidden = FALSE)
+
+    dc_val <- reactiveVal(NULL)
+    observeEvent(input$startDE, {
+      res <- prepDataContainer(data, choicecounter(), input, metadata)
+      if (!is.null(res)) dc_val(res)
+    })
+
+    list(
+      cc       = choicecounter,
+      start_de = reactive(input$startDE),
+      dc       = dc_val,
+      input    = input
+    )
+  })
+}
+
+#' condSelectUI
+#' Creates a panel to select samples for each condition.
+#'
+#' @param id, optional Shiny module namespace id. When `NULL` (default),
+#'   ids are emitted bare for the legacy non-module call style. When set,
+#'   every widget id is wrapped with `NS(id)` so the panel can live inside
+#'   a `moduleServer()` boundary.
 #' @return panel
 #' @examples
 #' x <- condSelectUI()
 #'
 #' @export
 #'
-condSelectUI <- function() {
+condSelectUI <- function(id = NULL) {
+  ns <- if (is.null(id)) identity else NS(id)
+  cond_ready_js <- if (is.null(id)) {
+    "output.condReady>0"
+  } else {
+    paste0("output['", ns("condReady"), "'] > 0")
+  }
   list(
     shinydashboard::box(
       title = "Comparison Selection",
       solidHeader = TRUE, status = "info", width = NULL, height = NULL, collapsible = TRUE,
       fluidRow(
-        uiOutput("conditionSelector"),
+        uiOutput(ns("conditionSelector")),
         column(
-          12, actionButtonDE("add_btn", "Add New Comparison", styleclass = "primary"),
-          actionButtonDE("rm_btn", "Remove", styleclass = "primary"),
+          12, actionButtonDE(ns("add_btn"), "Add New Comparison", styleclass = "primary"),
+          actionButtonDE(ns("rm_btn"), "Remove", styleclass = "primary"),
           getHelpButton("method", "http://debrowser.readthedocs.io/en/master/deseq/deseq.html"),
           conditionalPanel(
-            condition = ("output.condReady>0"),
-            actionButtonDE("startDE", "Start DE", styleclass = "primary")
+            condition = cond_ready_js,
+            actionButtonDE(ns("startDE"), "Start DE", styleclass = "primary")
           )
         )
       )
@@ -78,21 +147,24 @@ condSelectUI <- function() {
 #' @export
 #'
 #'
-getMethodDetails <- function(num = NULL, input = NULL) {
+getMethodDetails <- function(num = NULL, input = NULL, ns = identity) {
   if (is.null(num)) {
     return(NULL)
   }
   if (num > 0) {
+    demethod_js <- function(op) {
+      paste0("input['", ns(paste0("demethod", num)), "'] ", op)
+    }
     list(
       conditionalPanel(
-        (condition <- paste0("input.demethod", num, " == 'DESeq2'")),
+        (condition <- demethod_js("== 'DESeq2'")),
         getSelectInputBox(
           "fitType", "Fit Type", num,
           c("parametric", "local", "mean"),
           selectedInput(
             "testType", num, "parametric",
             input
-          ), 3
+          ), 3, ns = ns
         ),
         getSelectInputBox(
           "betaPrior", "betaPrior", num,
@@ -100,27 +172,29 @@ getMethodDetails <- function(num = NULL, input = NULL) {
           selectedInput(
             "betaPrior", num,
             FALSE, input
-          ), 2
+          ), 2, ns = ns
         ),
         getSelectInputBox(
           "testType", "Test Type", num,
           c("LRT", "Wald"),
-          selectedInput("testType", num, "LRT", input)
+          selectedInput("testType", num, "LRT", input),
+          ns = ns
         ),
         getSelectInputBox(
           "shrinkage", "Shrinkage", num,
           c("None", "apeglm", "ashr", "normal"),
-          selectedInput("shrinkage", num, "None", input)
+          selectedInput("shrinkage", num, "None", input),
+          ns = ns
         )
       ),
       conditionalPanel(
-        (condition <- paste0("input.demethod", num, " == 'EdgeR'")),
+        (condition <- demethod_js("== 'EdgeR'")),
         getSelectInputBox(
           "edgeR_normfact", "Normalization", num,
           c("TMM", "RLE", "upperquartile", "none"),
-          selectedInput("edgeR_normfact", num, "TMM", input), 3
+          selectedInput("edgeR_normfact", num, "TMM", input), 3, ns = ns
         ),
-        column(2, textInput(paste0("dispersion", num), "Dispersion",
+        column(2, textInput(ns(paste0("dispersion", num)), "Dispersion",
           value = isolate(selectedInput(
             "dispersion",
             num, "0", input
@@ -132,20 +206,22 @@ getMethodDetails <- function(num = NULL, input = NULL) {
           selectedInput(
             "edgeR_testType", num,
             "exactTest", input
-          )
+          ),
+          ns = ns
         )
       ),
       conditionalPanel(
-        (condition <- paste0("input.demethod", num, " ==  'Limma'")),
+        (condition <- demethod_js("==  'Limma'")),
         getSelectInputBox(
           "limma_normfact", "Normalization", num,
           c("TMM", "RLE", "upperquartile", "none"),
-          selectedInput("limma_normfact", num, "TMM", input), 3
+          selectedInput("limma_normfact", num, "TMM", input), 3, ns = ns
         ),
         getSelectInputBox(
           "limma_fitType", "Fit Type", num,
           c("ls", "robust"),
-          selectedInput("limma_fitType", num, "ls", input)
+          selectedInput("limma_fitType", num, "ls", input),
+          ns = ns
         ),
         getSelectInputBox(
           "normBetween", "Norm. Bet. Arrays", num,
@@ -153,7 +229,8 @@ getMethodDetails <- function(num = NULL, input = NULL) {
             "none", "scale", "quantile", "cyclicloess",
             "Aquantile", "Gquantile", "Rquantile", "Tquantile"
           ),
-          selectedInput("normBetween", num, "none", input)
+          selectedInput("normBetween", num, "none", input),
+          ns = ns
         )
       ),
       br()
@@ -174,7 +251,8 @@ getMethodDetails <- function(num = NULL, input = NULL) {
 #'
 #' @export
 #'
-getCovariateDetails <- function(num = NULL, input = NULL, metadata = NULL) {
+getCovariateDetails <- function(num = NULL, input = NULL, metadata = NULL,
+                                ns = identity) {
   if (is.null(num)) {
     return(NULL)
   }
@@ -183,7 +261,7 @@ getCovariateDetails <- function(num = NULL, input = NULL, metadata = NULL) {
     list(
       getSelectInputBox("covariate", "Covariate", num, choices,
         selected = selectedInput("covariate", num, NULL, input),
-        2, multiple = TRUE
+        2, multiple = TRUE, ns = ns
       )
     )
   }
@@ -201,12 +279,13 @@ getCovariateDetails <- function(num = NULL, input = NULL, metadata = NULL) {
 #'
 #' @export
 #'
-getConditionSelector <- function(num = NULL, choices = NULL, selected = NULL) {
+getConditionSelector <- function(num = NULL, choices = NULL, selected = NULL,
+                                 ns = identity) {
   if (is.null(num)) {
     return(NULL)
   }
   if (!is.null(choices)) {
-    list(column(3, selectInput(paste0("condition", num),
+    list(column(3, selectInput(ns(paste0("condition", num)),
       label = paste0("Condition ", num, ifelse(num %% 2 == 0, "(Numerator)", "(Denominator)")),
       choices = choices, multiple = TRUE,
       selected = selected
@@ -232,12 +311,12 @@ getConditionSelector <- function(num = NULL, choices = NULL, selected = NULL) {
 #'
 getConditionSelectorFromMeta <- function(
   metadata = NULL, input = NULL, index = 1, num = 0,
-  choices = NULL, selected = NULL
+  choices = NULL, selected = NULL, ns = identity
 ) {
   if (is.null(metadata)) {
     return(NULL)
   }
-  a <- list(column(6, selectInput(paste0("condition", num),
+  a <- list(column(6, selectInput(ns(paste0("condition", num)),
     label = paste0("Condition ", num, ifelse(num %% 2 == 0, "(Numerator)", "(Denominator)")),
     choices = choices, multiple = TRUE,
     selected = selected
@@ -284,7 +363,7 @@ getConditionSelectorFromMeta <- function(
         }
       }
 
-      a <- list(column(6, selectInput(paste0("condition", num),
+      a <- list(column(6, selectInput(ns(paste0("condition", num)),
         label = paste0("Condition ", num, ifelse(num %% 2 == 0, "(Numerator)", "(Denominator)")),
         choices = choices, multiple = TRUE,
         selected = selected
@@ -341,12 +420,12 @@ selectedInput <- function(
 #'
 getSelectInputBox <- function(id = NULL, name = NULL,
                               num = 0, choices = NULL, selected = NULL,
-                              cw = 2, multiple = FALSE) {
+                              cw = 2, multiple = FALSE, ns = identity) {
   if (is.null(id)) {
     return(NULL)
   }
   if (!is.null(choices)) {
-    list(column(cw, selectInput(paste0(id, num),
+    list(column(cw, selectInput(ns(paste0(id, num)),
       label = name,
       choices = choices, multiple = multiple,
       selected = selected
@@ -381,6 +460,7 @@ selectConditions <- function(Dataset = NULL,
   if (is.null(Dataset)) {
     return(NULL)
   }
+  ns <- if (!is.null(session)) session$ns else identity
 
   selectedSamples <- function(num) {
     if (is.null(input[[paste0("condition", num)]])) {
@@ -399,16 +479,16 @@ selectConditions <- function(Dataset = NULL,
       selected2 <- selectedSamples(2 * i)
       to_return <- list(
         column(
-          12, getMetaSelector(metadata = metadata, input = input, n = i),
-          isolate(getGroupSelector(metadata, input, i, (2 * i - 1))),
-          isolate(getGroupSelector(metadata, input, i, (2 * i))),
+          12, getMetaSelector(metadata = metadata, input = input, n = i, ns = ns),
+          isolate(getGroupSelector(metadata, input, i, (2 * i - 1), ns = ns)),
+          isolate(getGroupSelector(metadata, input, i, (2 * i), ns = ns)),
           getConditionSelectorFromMeta(
             metadata, input, i,
-            (2 * i - 1), allsamples, selected1
+            (2 * i - 1), allsamples, selected1, ns = ns
           ),
           getConditionSelectorFromMeta(
             metadata, input, i,
-            (2 * i), allsamples, selected2
+            (2 * i), allsamples, selected2, ns = ns
           )
         ),
         column(
@@ -417,13 +497,14 @@ selectConditions <- function(Dataset = NULL,
           getSelectInputBox(
             "demethod", "DE Method", i,
             c("DESeq2", "EdgeR", "Limma"),
-            selectedInput("demethod", i, "DESeq2", input)
+            selectedInput("demethod", i, "DESeq2", input),
+            ns = ns
           ),
-          getMethodDetails(i, input)
+          getMethodDetails(i, input, ns = ns)
         ),
         column(
           12,
-          getCovariateDetails(i, input, metadata = metadata)
+          getCovariateDetails(i, input, metadata = metadata, ns = ns)
         )
       )
 
@@ -535,7 +616,8 @@ selectConditions <- function(Dataset = NULL,
 #' x <- getGroupSelector()
 #' @export
 #'
-getGroupSelector <- function(metadata = NULL, input = NULL, index = 1, num = 0) {
+getGroupSelector <- function(metadata = NULL, input = NULL, index = 1, num = 0,
+                             ns = identity) {
   a <- NULL
   selected_meta <- selectedInput(
     "conditions_from_meta",
@@ -548,16 +630,20 @@ getGroupSelector <- function(metadata = NULL, input = NULL, index = 1, num = 0) 
   grps <- grps[grps != "NA"]
   grps <- grps[!is.na(grps)]
 
+  # Map global condition number {1,2,3,4,...} → per-comparison slot {1,2,1,2,...}
+  # so comparison 2's group3/group4 default to grps[1]/grps[2], not grps[3]/grps[4]
+  # (which are NA for a typical 2-level meta column and leave the box empty).
+  default_slot <- ((num - 1) %% 2) + 1
   sel <- NULL
   if (is.null(input[[paste0("group", num)]]) || input[[paste0("group", num)]] %in% grps) {
     sel <- selectedInput(
       "group",
-      num, grps[num], input
+      num, grps[default_slot], input
     )
   }
   if (length(grps) > 1) {
     grps_choices <- c("No Selection", grps)
-    a <- list(column(6, selectInput(paste0("group", num),
+    a <- list(column(6, selectInput(ns(paste0("group", num)),
       label = paste0("Group ", num),
       choices = grps_choices,
       selected = sel,
@@ -581,7 +667,8 @@ getGroupSelector <- function(metadata = NULL, input = NULL, index = 1, num = 0) 
 #' x <- getMetaSelector()
 #' @export
 #'
-getMetaSelector <- function(metadata = NULL, input = NULL, n = 0) {
+getMetaSelector <- function(metadata = NULL, input = NULL, n = 0,
+                            ns = identity) {
   if (!is.null(metadata)) {
     df <- metadata
     col_count <- length(colnames(df))
@@ -589,10 +676,10 @@ getMetaSelector <- function(metadata = NULL, input = NULL, n = 0) {
     list(
       HTML('<hr style="color: white; border:solid 1px white;">'),
       br(), column(10, selectInput(
-        paste0(
+        ns(paste0(
           "conditions_from_meta",
           n
-        ),
+        )),
         label = "Select Meta",
         choices = as.list(c(
           "No Selection",
