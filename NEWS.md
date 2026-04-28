@@ -107,6 +107,43 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   `R/server.R` and `R/GOterm.R`; NAMESPACE no longer pulls these
   packages at load time.
 
+### Phase B1 — bslib chrome + theme swap
+
+* Replaced `shinydashboard::dashboardPage` shell with `bslib::page_navbar`
+  and per-tab `bslib::layout_sidebar`. Top navbar now hosts five sections
+  (Data Prep / Main Plots / QC Plots / GO Term / Tables) plus a
+  light/dark toggle (`bslib::input_dark_mode`).
+* Theme: Slate (`#0f172a`) navbar + OK-blue (`#0369a1`) primary,
+  Bootstrap 5, Inter typography. New `de_theme()` helper.
+* Migrated all 22 `shinydashboard::box()` call sites to `bslib::card`
+  via a new `de_card()` helper (with optional download button in the
+  header). Wide layout containers use raw `bslib::card`; narrow widget
+  cards use `de_card`.
+* DE Filter (cutoff + comparison-selector controls) moved from the
+  sidebar into a card at the top of the DE Analysis wizard panel.
+* Migrated all 24 `shinydashboard::menuItem()` collapsible widget
+  containers to `bslib::accordion` + `bslib::accordion_panel` (in
+  R/IQR.R, R/barmain.R, R/all2all.R, R/density.R, R/boxmain.R,
+  R/plotSize.R, R/mainScatter.R, R/heatmap.R, R/uifuncs.R).
+* Replaced `getTabUpdateJS()`'s shinydashboard `.sidebar-menu` jQuery
+  with server-side `bslib::nav_show`/`nav_hide` observers in `deServer`.
+  Same trigger button ids, same behavior.
+* `togglePanels()` body rewritten to `bslib::nav_show`/`nav_hide`/
+  `nav_select`. Function signature unchanged — all callers untouched.
+* The standalone heatmap app (`startHeatmap()`) shell `heatmapUI()`
+  also migrated to `bslib::page_navbar` with the same Slate + OK-blue
+  theme; controls now live in the Heatmap tab's `layout_sidebar`.
+* `de_card()` defaults to `full_screen = FALSE` to avoid bslib's
+  expand-overlay interfering with htmlwidget click handlers.
+* CSS file `shinydashboard_additional.css` audited and renamed to
+  `debrowser.css`; shrunk from 145 to ~30 lines of app-specific
+  positioning rules.
+* Dropped `shinydashboard` from `Imports`. Added `bslib (>= 0.7.0)`.
+  Added explicit `@importFrom shiny tagList req` to compensate for
+  symbols previously pulled through shinydashboard's dependency chain.
+* Dark-mode plot theming (plotly/heatmaply/ggplot color flips) deferred
+  to Phase B6.
+
 ### User-visible
 
 * Raised `startDEBrowser()` upload limit from 30 MB to 90 MB.
