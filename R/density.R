@@ -40,10 +40,9 @@ debrowserdensityplot <- function(id, data = NULL) {
       getDensityPlot(data, input)
     })
     output$DensityUI <- renderUI({
-      shinydashboard::box(
-        collapsible = TRUE, title = session$ns("plot"), status = "primary",
-        solidHeader = TRUE, width = NULL,
-        draggable = TRUE, plotlyOutput(session$ns("Density"),
+      de_card(
+        title = session$ns("plot"),
+        plotlyOutput(session$ns("Density"),
           width = input$width, height = input$height
         )
       )
