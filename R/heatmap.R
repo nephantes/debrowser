@@ -2,14 +2,14 @@
 #'
 #' Heatmap module to create interactive heatmaps and get selected list from
 #' a heatmap
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param expdata, a matrix that includes expression values
 #' @return heatmapply plot
 #'
 #' @examples
-#' x <- debrowserheatmap()
+#' \dontrun{
+#' x <- debrowserheatmap("heatmap")
+#' }
 #'
 #' @export
 #'

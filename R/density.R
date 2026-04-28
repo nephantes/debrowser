@@ -21,15 +21,15 @@ getDensityPlotUI <- function(id) {
 #' Module for a density plot that can be used in data prep and
 #' low count removal modules
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
 #' @return density plot
 #' @export
 #'
 #' @examples
-#' x <- debrowserdensityplot()
+#' \dontrun{
+#' x <- debrowserdensityplot("density")
+#' }
 #'
 debrowserdensityplot <- function(id, data = NULL) {
   if (is.null(data)) {

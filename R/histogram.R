@@ -21,15 +21,15 @@ getHistogramUI <- function(id) {
 #' Module for a histogram that can be used in data prep and
 #' low count removal modules
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
 #' @return histogram
 #' @export
 #'
 #' @examples
-#' x <- debrowserhistogram()
+#' \dontrun{
+#' x <- debrowserhistogram("histogram")
+#' }
 #'
 debrowserhistogram <- function(id, data = NULL) {
   if (is.null(data)) {

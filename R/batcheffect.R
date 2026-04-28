@@ -2,9 +2,7 @@
 #'
 #' Module to correct batch effect
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param ldata, loaded data
 #' @return main plot
 #'
@@ -12,7 +10,9 @@
 #' @export
 #'
 #' @examples
-#' x <- debrowserbatcheffect()
+#' \dontrun{
+#' x <- debrowserbatcheffect("batch")
+#' }
 #'
 debrowserbatcheffect <- function(id, ldata = NULL) {
   if (is.null(ldata)) {

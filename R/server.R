@@ -29,7 +29,7 @@
 #'             selectizeInput fluidRow div renderPrint renderImage
 #'             verbatimTextOutput imageOutput renderTable incProgress
 #'             a h3 strong h2 withMathJax updateCheckboxInput
-#'             showNotification updateSelectInput
+#'             showNotification updateSelectInput moduleServer
 #' @importFrom shinyjs show hide enable disable useShinyjs extendShinyjs
 #'             js inlineCSS onclick
 #' @importFrom DT datatable dataTableOutput renderDataTable formatStyle
@@ -37,9 +37,9 @@
 #' @importFrom ggplot2 aes geom_bar geom_point ggplot
 #'             labs scale_x_discrete scale_y_discrete ylab
 #'             autoplot theme_minimal theme geom_density
-#'             geom_text element_blank margin
+#'             geom_text element_blank margin facet_grid
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_bars event_data
-#'             hide_legend %>% group_by ggplotly
+#'             hide_legend %>% group_by ggplotly config
 #' @importFrom gplots heatmap.2 redblue bluered
 #' @importFrom igraph layout.kamada.kawai
 #' @importFrom grDevices dev.off pdf colorRampPalette
@@ -50,7 +50,7 @@
 #'             density as.formula coef
 #' @importFrom utils read.csv read.table write.table update.packages
 #'             download.file read.delim data install.packages
-#'             packageDescription installed.packages
+#'             packageDescription installed.packages modifyList
 #' @importFrom DOSE enrichDO
 #' @importFrom enrichplot gseaplot dotplot
 #' @importMethodsFrom DOSE summary
@@ -64,7 +64,7 @@
 #' @importMethodsFrom S4Vectors eval grep grepl levels sapply t
 #' @importMethodsFrom SummarizedExperiment cbind order rbind
 #' @importFrom jsonlite fromJSON
-#' @importFrom methods new
+#' @importFrom methods new is
 #' @importFrom stringi stri_rand_strings
 #' @importFrom annotate geneSymbols
 #' @importFrom reshape2 melt

@@ -2,9 +2,7 @@
 #'
 #' Module to load count data and metadata
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param nextpagebutton, the name of the next page button after loading the data
 #' @return main plot
 #'
@@ -12,7 +10,9 @@
 #' @export
 #'
 #' @examples
-#' x <- debrowserdataload()
+#' \dontrun{
+#' x <- debrowserdataload("load")
+#' }
 #'
 debrowserdataload <- function(id, nextpagebutton = NULL) {
   moduleServer(id, function(input, output, session) {
@@ -113,19 +113,20 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     }
   })
   observeEvent(input$demo, {
+    demoEnv <- new.env()
     load(system.file("extdata", "demo", "demodata.Rda",
       package = "debrowser"
-    ))
-
-    ldata$count <- demodata
-    ldata$meta <- metadatatable
+    ), envir = demoEnv)
+    ldata$count <- demoEnv$demodata
+    ldata$meta <- demoEnv$metadatatable
   })
   observeEvent(input$demo2, {
+    demoEnv <- new.env()
     load(system.file("extdata", "demo", "demodata2.Rda",
       package = "debrowser"
-    ))
-    ldata$count <- demodata
-    ldata$meta <- metadatatable
+    ), envir = demoEnv)
+    ldata$count <- demoEnv$demodata
+    ldata$meta <- demoEnv$metadatatable
   })
 
   observeEvent(input$uploadFile, {
@@ -361,7 +362,7 @@ checkCountData <- function(input = NULL) {
       return(paste0("Error(Count file):", toString(err)))
     },
     warning = function(war) {
-      return(paste0("Warning(Count file):", toString(err)))
+      return(paste0("Warning(Count file):", toString(war)))
     }
   )
 }

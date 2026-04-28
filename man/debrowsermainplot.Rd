@@ -7,15 +7,11 @@
 debrowsermainplot(id, data = NULL, cond_names = NULL)
 }
 \arguments{
+\item{id, }{namespace id}
+
 \item{data, }{a matrix that includes expression values}
 
 \item{cond_names, }{condition names}
-
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
 }
 \value{
 main plot
@@ -27,6 +23,8 @@ Module for a scatter, volcano and ma plots that are going to be used
 as a mainplot in debrowser
 }
 \examples{
-x <- debrowsermainplot()
+\dontrun{
+x <- debrowsermainplot("main")
+}
 
 }

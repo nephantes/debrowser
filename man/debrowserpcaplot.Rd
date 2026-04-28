@@ -7,15 +7,11 @@
 debrowserpcaplot(id, pcadata = NULL, metadata = NULL)
 }
 \arguments{
+\item{id, }{namespace id}
+
 \item{pcadata, }{a matrix that includes expression values}
 
 \item{metadata, }{metadata to color the plots}
-
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
 }
 \value{
 main plot
@@ -27,6 +23,8 @@ Module for a pca plot with its loadings
 as a mainplot in debrowser
 }
 \examples{
-x <- debrowserpcaplot()
+\dontrun{
+x <- debrowserpcaplot("pca")
+}
 
 }

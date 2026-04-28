@@ -4,19 +4,10 @@
 \alias{debrowserlowcountfilter}
 \title{debrowserlowcountfilter}
 \usage{
-debrowserlowcountfilter(
-  input = NULL,
-  output = NULL,
-  session = NULL,
-  ldata = NULL
-)
+debrowserlowcountfilter(id, ldata = NULL)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{ldata, }{loaded data}
 }
@@ -29,6 +20,8 @@ panel
 Module to filter low count genes/regions
 }
 \examples{
-x <- debrowserlowcountfilter()
+\dontrun{
+x <- debrowserlowcountfilter("lcf")
+}
 
 }

@@ -21,9 +21,7 @@ getBoxMainPlotUI <- function(id) {
 #' Module for a box plot that can be used in DEanalysis main part and
 #' used heatmaps
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
 #' @param cols, columns
 #' @param conds, conditions
@@ -33,7 +31,9 @@ getBoxMainPlotUI <- function(id) {
 #' @export
 #'
 #' @examples
-#' x <- debrowserboxmainplot()
+#' \dontrun{
+#' x <- debrowserboxmainplot("box")
+#' }
 #'
 debrowserboxmainplot <- function(id, data = NULL, cols = NULL, conds = NULL,
                                  cond_names = NULL, key = NULL) {

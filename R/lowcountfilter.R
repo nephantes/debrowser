@@ -2,9 +2,7 @@
 #'
 #' Module to filter low count genes/regions
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param ldata, loaded data
 #' @return main plot
 #'
@@ -12,7 +10,9 @@
 #' @export
 #'
 #' @examples
-#' x <- debrowserlowcountfilter()
+#' \dontrun{
+#' x <- debrowserlowcountfilter("lcf")
+#' }
 #'
 debrowserlowcountfilter <- function(id, ldata = NULL) {
   if (is.null(ldata)) {

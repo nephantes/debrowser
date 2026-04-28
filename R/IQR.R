@@ -3,15 +3,15 @@
 #' Module for an IQR plot that can be used in data prep and
 #' low count removal modules
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
 #' @return IQR
 #' @export
 #'
 #' @examples
-#' x <- debrowserIQRplot()
+#' \dontrun{
+#' x <- debrowserIQRplot("iqr")
+#' }
 #'
 debrowserIQRplot <- function(id, data = NULL) {
   if (is.null(data)) {

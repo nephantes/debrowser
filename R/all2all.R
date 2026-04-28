@@ -3,16 +3,16 @@
 #' Module for a bar plot that can be used in data prep, main plots
 #' low count removal modules or any desired module
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
 #' @param cex, the size of the dots
 #' @return all2all plot
 #' @export
 #'
 #' @examples
-#' x <- debrowserall2all()
+#' \dontrun{
+#' x <- debrowserall2all("all2all")
+#' }
 #'
 debrowserall2all <- function(id, data = NULL, cex = 2) {
   if (is.null(data)) {

@@ -3,9 +3,7 @@
 #' Module for a scatter, volcano and ma plots that are going to be used
 #' as a mainplot in debrowser
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
 #' @param cond_names, condition names
 #' @return main plot
@@ -14,7 +12,9 @@
 #' @export
 #'
 #' @examples
-#' x <- debrowsermainplot()
+#' \dontrun{
+#' x <- debrowsermainplot("main")
+#' }
 #'
 debrowsermainplot <- function(id, data = NULL, cond_names = NULL) {
   if (is.null(data)) {
@@ -380,7 +380,7 @@ generateTestData <- function(dat = NULL) {
     c("DESeq2", "NoCovariate", "parametric", F, "Wald", "None")
   non_expressed_cutoff <- 10
   data <- subset(data, rowSums(data) > 10)
-  deseqrun <- runDE(data, metadata, columns, conds, params)
+  deseqrun <- runDE(data, dat$metadata, columns, conds, params)
 
   met <- as.data.frame(cbind(as.vector(conds), columns))
   colnames(met) <- c("conds", "columns")

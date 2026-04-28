@@ -4,14 +4,10 @@
 \alias{debrowserhistogram}
 \title{debrowserhistogram}
 \usage{
-debrowserhistogram(input = NULL, output = NULL, session = NULL, data = NULL)
+debrowserhistogram(id, data = NULL)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{data, }{a matrix that includes expression values}
 }
@@ -23,6 +19,8 @@ Module for a histogram that can be used in data prep and
 low count removal modules
 }
 \examples{
-x <- debrowserhistogram()
+\dontrun{
+x <- debrowserhistogram("histogram")
+}
 
 }

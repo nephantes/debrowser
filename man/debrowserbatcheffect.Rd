@@ -4,14 +4,10 @@
 \alias{debrowserbatcheffect}
 \title{debrowserbatcheffect}
 \usage{
-debrowserbatcheffect(input, output, session, ldata = NULL)
+debrowserbatcheffect(id, ldata = NULL)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{ldata, }{loaded data}
 }
@@ -24,6 +20,8 @@ panel
 Module to correct batch effect
 }
 \examples{
-x <- debrowserbatcheffect()
+\dontrun{
+x <- debrowserbatcheffect("batch")
+}
 
 }

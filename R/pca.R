@@ -20,9 +20,7 @@ getPCAPlotUI <- function(id) {
 #' Module for a pca plot with its loadings
 #' as a mainplot in debrowser
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param pcadata, a matrix that includes expression values
 #' @param metadata, metadata to color the plots
 #' @return main plot
@@ -31,7 +29,9 @@ getPCAPlotUI <- function(id) {
 #' @export
 #'
 #' @examples
-#' x <- debrowserpcaplot()
+#' \dontrun{
+#' x <- debrowserpcaplot("pca")
+#' }
 #'
 debrowserpcaplot <- function(id, pcadata = NULL, metadata = NULL) {
   if (is.null(pcadata)) {

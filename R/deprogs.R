@@ -2,9 +2,7 @@
 #'
 #' Module to perform and visualize DE results.
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
 #' @param metadata, metadata
 #' @param columns, columns
@@ -14,7 +12,9 @@
 #' @export
 #'
 #' @examples
-#' x <- debrowserdeanalysis()
+#' \dontrun{
+#' x <- debrowserdeanalysis("de")
+#' }
 #'
 debrowserdeanalysis <- function(id, data = NULL, metadata = NULL,
                                 columns = NULL, conds = NULL, params = NULL) {

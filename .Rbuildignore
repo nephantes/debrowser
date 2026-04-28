@@ -12,3 +12,4 @@
 ^renv\.lock$
 ^renv$
 ^\.positai$
+^\.env$

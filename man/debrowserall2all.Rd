@@ -4,14 +4,10 @@
 \alias{debrowserall2all}
 \title{debrowserall2all}
 \usage{
-debrowserall2all(input, output, session, data = NULL, cex = 2)
+debrowserall2all(id, data = NULL, cex = 2)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{data, }{a matrix that includes expression values}
 
@@ -25,6 +21,8 @@ Module for a bar plot that can be used in data prep, main plots
 low count removal modules or any desired module
 }
 \examples{
-x <- debrowserall2all()
+\dontrun{
+x <- debrowserall2all("all2all")
+}
 
 }

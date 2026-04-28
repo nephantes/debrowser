@@ -3,9 +3,7 @@
 #' Module for a bar plot that can be used in data prep, main plots
 #' low count removal modules or any desired module
 #'
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
 #' @param cols, columns
 #' @param conds, conditions
@@ -15,7 +13,9 @@
 #' @export
 #'
 #' @examples
-#' x <- debrowserbarmainplot()
+#' \dontrun{
+#' x <- debrowserbarmainplot("bar")
+#' }
 #'
 debrowserbarmainplot <- function(id, data = NULL, cols = NULL, conds = NULL,
                                  cond_names = NULL, key = NULL) {
