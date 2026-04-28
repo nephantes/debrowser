@@ -210,18 +210,6 @@ getTableDetails <- function(output = NULL, session = NULL, tablename = NULL, dat
     }
   )
 
-  output[[tablename]] <- renderUI({
-    ret <- getBSTableUI(session$ns(tablenameUI), "Show Data", paste0("show", tablename), modal = modal)
-    if (!is.null(modal) && modal) {
-      ret <- list(
-        downloadButton(session$ns(paste(tablename, "Download")), "Download"),
-        actionButtonDE(paste0("show", tablename), "Show Data", styleclass = "primary", icon = "show"),
-        ret
-      )
-    }
-    ret
-  })
-
   output[[tablenameUI]] <- DT::renderDataTable({
     if (!is.null(data)) {
       DT::datatable(data,
@@ -247,13 +235,61 @@ getTableDetails <- function(output = NULL, session = NULL, tablename = NULL, dat
     }
   })
 
-  # When `modal = TRUE`, the dataTableOutput lives inside a bsModal whose
-  # initial state is `display: none`. Shiny suspends hidden outputs by
-  # default, and Bootstrap modal show/hide is not visible to Shiny's
-  # default suspension tracking — so the renderDataTable above would
-  # never fire when the user opens the modal. Force it to keep computing.
-  if (!is.null(modal) && modal) {
-    outputOptions(output, tablenameUI, suspendWhenHidden = FALSE)
+  if (is.null(modal) || !modal) {
+    # Inline mode: render the table directly into the page.
+    output[[tablename]] <- renderUI({
+      div(
+        style = "display:block;overflow-y:auto; overflow-x:auto;",
+        wellPanel(DT::dataTableOutput(session$ns(tablenameUI)))
+      )
+    })
+    return(invisible(NULL))
+  }
+
+  # Modal mode: render a Download button and a "Show Data" trigger.
+  # Clicking the trigger opens a shiny::modalDialog with the table inside.
+  # We deliberately replaced shinyBS::bsModal here: the legacy bsModal
+  # (last released 2015) emits Shiny.setInputValue calls with a malformed
+  # `opts.mode` object, which Shiny >= 1.7 rejects with
+  # "Unexpected input value mode: '[object Object]'" — that error was
+  # swallowing the click event so the modal-trigger update never reached
+  # the server. shiny::modalDialog uses modern bindings and has no such
+  # problem. Also: the dataTableOutput lives inside a freshly shown modal
+  # which is not initially in the DOM, so we keep the underlying output
+  # alive with suspendWhenHidden=FALSE.
+  trigger_id <- session$ns(paste0("show", tablename))
+
+  output[[tablename]] <- renderUI({
+    list(
+      downloadButton(session$ns(paste(tablename, "Download")), "Download"),
+      actionButtonDE(trigger_id, "Show Data", styleclass = "primary", icon = "show")
+    )
+  })
+
+  outputOptions(output, tablenameUI, suspendWhenHidden = FALSE)
+
+  # Register the click -> showModal observer once per (session, tablename).
+  # getTableDetails is called from inside reactive observers in the calling
+  # modules, so without this guard we'd accumulate one observer per
+  # observer fire.
+  registered_key <- paste0("__debrowser_modaltable_", tablename)
+  if (is.null(session$userData[[registered_key]])) {
+    session$userData[[registered_key]] <- TRUE
+    observeEvent(session$input[[paste0("show", tablename)]],
+      {
+        showModal(modalDialog(
+          title = "Data",
+          div(
+            style = "display:block;overflow-y:auto;overflow-x:auto;",
+            DT::dataTableOutput(session$ns(tablenameUI))
+          ),
+          size = "l",
+          easyClose = TRUE,
+          footer = modalButton("Close")
+        ))
+      },
+      ignoreInit = TRUE
+    )
   }
 }
 

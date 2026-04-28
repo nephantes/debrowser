@@ -30,6 +30,7 @@
 #'             verbatimTextOutput imageOutput renderTable incProgress
 #'             a h3 strong h2 withMathJax updateCheckboxInput
 #'             showNotification updateSelectInput moduleServer
+#'             showModal modalDialog modalButton
 #' @importFrom shinyjs show hide enable disable useShinyjs extendShinyjs
 #'             js inlineCSS onclick
 #' @importFrom DT datatable dataTableOutput renderDataTable formatStyle
