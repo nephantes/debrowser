@@ -162,7 +162,13 @@ getBSTableUI <- function(name = NULL, label = NULL, trigger = NULL, size = "larg
     wellPanel(DT::dataTableOutput(name))
   )
   if (!is.null(modal) && modal) {
-    ret <- shinyBS::bsModal(name, label, trigger, size = size, ret)
+    # The modal needs a distinct outer id from the dataTableOutput it
+    # contains: bsModal renders <div id="...">, and so does
+    # DT::dataTableOutput(). Reusing `name` for both produces duplicate
+    # HTML ids, which makes Shiny's binding-by-id pick the wrong element
+    # and the table never renders inside the modal.
+    ret <- shinyBS::bsModal(paste0(name, "Modal"), label, trigger,
+                            size = size, ret)
   }
   ret
 }
