@@ -641,7 +641,7 @@ getPCAcontolUpdatesJS <- function() {
     }
     lapply(..., reqFun)
   }
-  packs <- c("debrowser", "plotly", "shiny", "jsonlite", "shinyjs", "shinydashboard", "shinyBS")
+  packs <- c("debrowser", "plotly", "shiny", "jsonlite", "shinyjs", "bslib", "shinyBS")
   req(packs)
 }
 
