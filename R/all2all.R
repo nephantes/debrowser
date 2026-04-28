@@ -23,10 +23,9 @@ debrowserall2all <- function(id, data = NULL, cex = 2) {
       all2all(data, cex)
     })
     output$all2allUI <- renderUI({
-      shinydashboard::box(
-        collapsible = TRUE, title = "All2all plot", status = "primary",
-        solidHeader = TRUE, width = NULL,
-        draggable = TRUE, plotOutput(session$ns("all2allplot"),
+      de_card(
+        title = "All2all plot",
+        plotOutput(session$ns("all2allplot"),
           width = input$width, height = input$height
         )
       )
