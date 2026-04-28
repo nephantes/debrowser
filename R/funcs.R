@@ -639,9 +639,15 @@ getTabUpdateJS <- function() {
                       $('.sidebar-menu > :nth-child(6)').css('display', 'none');
                       $('.sidebar-menu > :nth-child(7)').css('display', 'none');
                       });
-                      $(document).on('click', '#startDE', function () {
+                      // Phase A4ac migrated condSelect to a moduleServer, so
+                      // the Start DE button id is now namespaced as
+                      // cs-startDE. Listen for both ids during the
+                      // transition. Item 6 is the merged DE Analysis
+                      // menuItem (holds the cutoff + comparison controls
+                      // as children); the previous DEFilter wrapper at
+                      // index 7 is gone.
+                      $(document).on('click', '#startDE, #cs-startDE', function () {
                       $('.sidebar-menu > :nth-child(6)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'inline');
                       $('.sidebar-menu > :nth-child(2)').css('display', 'none');
                       });
                       })

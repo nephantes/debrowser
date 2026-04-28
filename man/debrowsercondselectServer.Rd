@@ -17,11 +17,12 @@ debrowsercondselectServer(id, data = NULL, metadata = NULL)
 a list with:
   - `cc`: choice-counter reactive (number of comparison panels)
   - `start_de`: reactive that fires when the user clicks "Start DE"
-  - `dc`: reactive holding the data container (`prepDataContainer` result)
-    once Start DE has been clicked and DE has finished — `NULL` until then
   - `input`: the module's `input` reactivevalues, exposed so callers can
     read the dynamically-named per-comparison widgets (`condition1`,
-    `demethod1`, …) without knowing the namespace prefix.
+    `demethod1`, …) without knowing the namespace prefix. Used by the
+    parent session to call `prepDataContainer()` outside the module
+    namespace so the inner `debrowserdeanalysis` modules bind to the
+    top-level `DEResultsN` ids that `getDEResultsUI()` renders.
 }
 \description{
 Shiny module server for the comparison-selection panel. Pair with

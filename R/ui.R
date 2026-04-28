@@ -71,13 +71,27 @@ deUI <- function() {
               menuItem("Filter", icon = icon("filter"), tabName = "Filter"),
               menuItem("BatchEffect", icon = icon("align-left"), tabName = "BatchEffect"),
               menuItem("CondSelect", icon = icon("bars"), tabName = "CondSelect"),
-              menuItem("DEAnalysis", icon = icon("adjust"), tabName = "DEAnalysis"),
-              menuItem("DEFilter",
-                icon = icon("code"), tabName = "DEAnalysis", startExpanded = TRUE,
+              menuItem("DE Analysis",
+                icon = icon("adjust"), tabName = "DEAnalysis"
+              )
+            ),
+            # DE filter controls — directly in the sidebar, shown only
+            # when the user is on the DE Analysis tab. Lives outside
+            # sidebarMenu because shinydashboard refuses tabName navigation
+            # on a menuItem that also has children (it becomes a collapse
+            # toggle), and we want a single clickable DE Analysis link.
+            conditionalPanel(
+              condition = "input.DataPrep == 'DEAnalysis'",
+              div(
+                style = "padding: 8px 15px; color: #b8c7ce;",
+                tags$h5("DE Filter",
+                  style = "margin: 4px 0 8px; font-weight: 600;"
+                ),
                 uiOutput("cutOffUI"),
                 uiOutput("compselectUI")
               )
-            ), helpText("Developed by ", a("UMMS Biocore.",
+            ),
+            helpText("Developed by ", a("UMMS Biocore.",
               href = "https://www.umassmed.edu/biocore/", target = "_blank"
             ))
           ),

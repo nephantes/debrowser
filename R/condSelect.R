@@ -49,11 +49,12 @@ debrowsercondselect <- function(input = NULL, output = NULL, session = NULL, dat
 #' @return a list with:
 #'   - `cc`: choice-counter reactive (number of comparison panels)
 #'   - `start_de`: reactive that fires when the user clicks "Start DE"
-#'   - `dc`: reactive holding the data container (`prepDataContainer` result)
-#'     once Start DE has been clicked and DE has finished — `NULL` until then
 #'   - `input`: the module's `input` reactivevalues, exposed so callers can
 #'     read the dynamically-named per-comparison widgets (`condition1`,
-#'     `demethod1`, …) without knowing the namespace prefix.
+#'     `demethod1`, …) without knowing the namespace prefix. Used by the
+#'     parent session to call `prepDataContainer()` outside the module
+#'     namespace so the inner `debrowserdeanalysis` modules bind to the
+#'     top-level `DEResultsN` ids that `getDEResultsUI()` renders.
 #' @export
 #'
 #' @examples
@@ -81,16 +82,9 @@ debrowsercondselectServer <- function(id, data = NULL, metadata = NULL) {
     output$condReady <- reactive(choicecounter())
     outputOptions(output, "condReady", suspendWhenHidden = FALSE)
 
-    dc_val <- reactiveVal(NULL)
-    observeEvent(input$startDE, {
-      res <- prepDataContainer(data, choicecounter(), input, metadata)
-      if (!is.null(res)) dc_val(res)
-    })
-
     list(
       cc       = choicecounter,
       start_de = reactive(input$startDE),
-      dc       = dc_val,
       input    = input
     )
   })

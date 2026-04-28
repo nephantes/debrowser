@@ -152,12 +152,21 @@ deServer <- function(input, output, session) {
           choicecounter$nc <- sel()$cc()
         })
         observeEvent(req(sel())$start_de(), {
-          if (!is.null(batch()$BatchEffect()$count)) {
-            togglePanels(0, c(0), session)
-          }
-        })
-        observeEvent(req(sel())$dc(), {
-          dc(sel()$dc())
+          if (is.null(batch()$BatchEffect()$count)) return()
+          togglePanels(0, c(0), session)
+          # Run prepDataContainer at the parent session so the inner
+          # debrowserdeanalysis modules bind to top-level "DEResultsN" ids
+          # that getDEResultsUI() renders. If we left this inside the cs
+          # moduleServer, the namespace would become cs-DEResultsN-… and
+          # the DE Results panel would render empty.
+          dc_res <- prepDataContainer(
+            batch()$BatchEffect()$count,
+            sel()$cc(),
+            sel()$input,
+            batch()$BatchEffect()$meta
+          )
+          if (is.null(dc_res)) return()
+          dc(dc_res)
           updateTabItems(session, "DataPrep", "DEAnalysis")
           buttonValues$startDE <- TRUE
           buttonValues$goQCplots <- FALSE
@@ -182,6 +191,14 @@ deServer <- function(input, output, session) {
         output$cutOffUI <- renderUI({
           cutOffSelectionUI(paste0("DEResults", compsel()))
         })
+        # Sidebar uiOutputs live inside the "DEFilter" submenu in ui.R.
+        # When that submenu is collapsed, Shiny's default suspend-when-
+        # hidden behavior drops the renderUI on the floor and the controls
+        # never populate. Force the outputs to stay alive so the moment
+        # the user clicks DEFilter to expand, the cutoff + comparison
+        # widgets are already rendered.
+        outputOptions(output, "cutOffUI", suspendWhenHidden = FALSE)
+        outputOptions(output, "compselectUI", suspendWhenHidden = FALSE)
         output$deresUI <- renderUI({
           column(12, getDEResultsUI(paste0("DEResults", compsel())))
         })
