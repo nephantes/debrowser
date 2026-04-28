@@ -4,7 +4,7 @@ source(testthat::test_path("../shinytest2/setup.R"))
 
 test_that("loading demo data and running DESeq2 renders the MA plot", {
   skip_on_cran()
-  skip_on_ci() # turn on once Phase A4 stabilises module IDs
+  skip_on_ci() # turn on after Phase B2's three-stage shell stabilises top-level IDs
   skip_if_not_installed("shinytest2")
 
   app <- AppDriver$new(
