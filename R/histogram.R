@@ -59,10 +59,9 @@ debrowserhistogram <- function(id, data = NULL) {
     p
   })
   output$histogramUI <- renderUI({
-    shinydashboard::box(
-      collapsible = TRUE, title = session$ns("plot"), status = "primary",
-      solidHeader = TRUE, width = NULL,
-      draggable = TRUE, plotlyOutput(session$ns("histogram"),
+    de_card(
+      title = session$ns("plot"),
+      plotlyOutput(session$ns("histogram"),
         width = input$width, height = input$height
       )
     )
