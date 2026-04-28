@@ -73,7 +73,7 @@
 #'             exactTest estimateCommonDisp glmFit topTags
 #' @importFrom shinydashboard dashboardHeader dropdownMenu messageItem
 #'             dashboardPage dashboardSidebar sidebarMenu dashboardBody
-#'             updateTabItems menuItem tabItems tabItem menuSubItem
+#'             menuItem tabItems tabItem menuSubItem
 #' @importFrom limma lmFit voom eBayes topTable
 #' @importFrom sva ComBat
 #' @importFrom RCurl getURL
@@ -119,24 +119,24 @@ deServer <- function(input, output, session) {
 
       observe({
         updata(debrowserdataload("load", "Filter"))
-        updateTabItems(session, "DataPrep", "Upload")
+        bslib::nav_select("DataPrep", "Upload", session = session)
 
         observeEvent(input$Filter, {
           if (!is.null(updata()$load())) {
-            updateTabItems(session, "DataPrep", "Filter")
+            bslib::nav_select("DataPrep", "Filter", session = session)
             filtd(debrowserlowcountfilter("lcf", updata()$load()))
           }
         })
         observeEvent(input$Batch, {
           if (!is.null(filtd()$filter())) {
-            updateTabItems(session, "DataPrep", "BatchEffect")
+            bslib::nav_select("DataPrep", "BatchEffect", session = session)
             batch(debrowserbatcheffect("batcheffect", filtd()$filter()))
           }
         })
 
         observeEvent(input$goDEFromFilter, {
           if (is.null(batch())) batch(setBatch(filtd()))
-          updateTabItems(session, "DataPrep", "CondSelect")
+          bslib::nav_select("DataPrep", "CondSelect", session = session)
           sel(debrowsercondselectServer(
             "cs",
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
@@ -144,7 +144,7 @@ deServer <- function(input, output, session) {
           choicecounter$nc <- sel()$cc()
         })
         observeEvent(input$goDE, {
-          updateTabItems(session, "DataPrep", "CondSelect")
+          bslib::nav_select("DataPrep", "CondSelect", session = session)
           sel(debrowsercondselectServer(
             "cs",
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
@@ -167,7 +167,7 @@ deServer <- function(input, output, session) {
           )
           if (is.null(dc_res)) return()
           dc(dc_res)
-          updateTabItems(session, "DataPrep", "DEAnalysis")
+          bslib::nav_select("DataPrep", "DEAnalysis", session = session)
           buttonValues$startDE <- TRUE
           buttonValues$goQCplots <- FALSE
           hideObj(c(
@@ -177,8 +177,7 @@ deServer <- function(input, output, session) {
         })
 
         observeEvent(input$goMain, {
-          updateTabItems(session, "methodtabs", "panel1")
-          updateTabItems(session, "menutabs", "discover")
+          bslib::nav_select("methodtabs", "panel1", session = session)
           togglePanels(0, c(0, 1, 2, 3, 4), session)
         })
 
@@ -285,13 +284,11 @@ deServer <- function(input, output, session) {
         if (is.null(batch())) batch(setBatch(filtd()))
         buttonValues$startDE <- FALSE
         buttonValues$goQCplots <- TRUE
-        updateTabItems(session, "menutabs", "discover")
         togglePanels(2, c(0, 2, 4), session)
       })
       observeEvent(input$goQCplots, {
         buttonValues$startDE <- FALSE
         buttonValues$goQCplots <- TRUE
-        updateTabItems(session, "menutabs", "discover")
         togglePanels(2, c(0, 2, 4), session)
       })
       comparison <- reactive({
