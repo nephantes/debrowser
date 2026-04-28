@@ -220,10 +220,8 @@ dataLoadUI <- function(id) {
       )
     )), br(),
     fluidRow(
-      shinydashboard::box(
+      de_card(
         title = "Upload Summary",
-        solidHeader = T, status = "info",
-        width = 12,
         fluidRow(
           column(
             12,
@@ -258,17 +256,18 @@ dataLoadUI <- function(id) {
 #'
 fileUploadBox <- function(id = NULL, inputId = NULL, label = NULL) {
   ns <- NS(id)
-  shinydashboard::box(
-    title = paste0(label, " File"),
-    solidHeader = TRUE, status = "info",
-    width = 6,
-    helpText(paste0("Upload your '", label, " File'")),
-    fileInput(
-      inputId = ns(inputId),
-      label = NULL,
-      accept = fileTypes()
-    ),
-    sepRadio(id, paste0(inputId, "Sep"))
+  column(
+    6,
+    de_card(
+      title = paste0(label, " File"),
+      helpText(paste0("Upload your '", label, " File'")),
+      fileInput(
+        inputId = ns(inputId),
+        label = NULL,
+        accept = fileTypes()
+      ),
+      sepRadio(id, paste0(inputId, "Sep"))
+    )
   )
 }
 
