@@ -182,16 +182,33 @@ deServer <- function(input, output, session) {
         updata(debrowserdataload("load", "Filter"))
         bslib::nav_select("DataPrep", "Upload", session = session)
 
+        # B2a: when counts arrive, mark upload done and unlock filter.
+        # Also auto-show the QC tab (panel2) so users can inspect raw
+        # QC plots without first running DE.
+        observeEvent(updata()$load(), {
+          if (!is.null(updata()$load())) {
+            progress$upload <- "done"
+            progress$filter <- "pending"
+            bslib::nav_show("methodtabs", target = "panel2", session = session)
+          }
+        }, ignoreInit = TRUE)
+
         observeEvent(input$Filter, {
           if (!is.null(updata()$load())) {
             bslib::nav_select("DataPrep", "Filter", session = session)
             filtd(debrowserlowcountfilter("lcf", updata()$load()))
+            # B2a: filter clicked → mark filter done; unlock batch.
+            progress$filter <- "done"
+            progress$batch  <- "pending"
           }
         })
         observeEvent(input$Batch, {
           if (!is.null(filtd()$filter())) {
             bslib::nav_select("DataPrep", "BatchEffect", session = session)
             batch(debrowserbatcheffect("batcheffect", filtd()$filter()))
+            # B2a: batch step entered → mark batch done; unlock condselect.
+            progress$batch      <- "done"
+            progress$condselect <- "pending"
           }
         })
 
@@ -203,6 +220,12 @@ deServer <- function(input, output, session) {
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
           choicecounter$nc <- sel()$cc()
+          # B2a: skipping past Filter+Batch — mark them done/skipped.
+          if (progress$filter != "done") progress$filter <- "done"
+          if (progress$batch  == "pending" || progress$batch == "locked") {
+            progress$batch <- "skipped"
+          }
+          progress$condselect <- "pending"
         })
         observeEvent(input$goDE, {
           bslib::nav_select("DataPrep", "CondSelect", session = session)
@@ -211,6 +234,8 @@ deServer <- function(input, output, session) {
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
           choicecounter$nc <- sel()$cc()
+          # B2a: condselect step entered.
+          progress$condselect <- "pending"
         })
         observeEvent(req(sel())$start_de(), {
           if (is.null(batch()$BatchEffect()$count)) return()
