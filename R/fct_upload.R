@@ -95,7 +95,6 @@ detect_separator <- function(path, sample_lines = 50L) {
 #' @export
 make_default_metadata <- function(counts) {
   samples <- colnames(counts)
-  if (is.null(samples)) samples <- character(0)
   data.frame(
     Sample    = samples,
     Condition = if (length(samples)) "All" else character(0),

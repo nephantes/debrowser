@@ -108,8 +108,9 @@ test_that("detect_separator tie-breaks tab > comma > semicolon when scores match
   expect_equal(detect_separator(path), "\t")
 })
 
-test_that("detect_separator caps lines read at sample_lines parameter", {
-  # If sample_lines is too low to hit threshold, NA returned.
+test_that("detect_separator returns NA when sample_lines is too low to score", {
+  # sample_lines = 1 gives the helper only the header line; with < 2 lines
+  # the scorer can't compute column scores, so NA is returned.
   path <- write_fixture(counts_tsv, "tsv")
-  expect_equal(detect_separator(path, sample_lines = 50), "\t")
+  expect_true(is.na(detect_separator(path, sample_lines = 1)))
 })
