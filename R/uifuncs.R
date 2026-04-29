@@ -21,7 +21,8 @@ getLeftMenu <- function(input = NULL) {
     conditionalPanel(
       (condition <- "input.methodtabs=='panel2'"),
       bslib::accordion(
-        open = TRUE,
+        multiple = TRUE,
+        open = c(" Plot Type", " Select Columns"),
         bslib::accordion_panel(
           " Plot Type",
           wellPanel(radioButtons(
@@ -32,15 +33,16 @@ getLeftMenu <- function(input = NULL) {
               Density = "Density"
             )
           ))
-        )
-      ),
-      getQCLeftMenu(input)
+        ),
+        getQCLeftMenu(input)
+      )
     ),
     conditionalPanel(
       (condition <- "input.methodtabs=='panel3'"),
       actionButton("startGO", "Submit"),
       bslib::accordion(
-        open = TRUE,
+        multiple = TRUE,
+        open = c(" Plot Type", " Go Term Options"),
         bslib::accordion_panel(
           " Plot Type",
           wellPanel(radioButtons(
@@ -50,9 +52,9 @@ getLeftMenu <- function(input = NULL) {
               Disease = "disease", compareClusters = "compare", GSEA = "GSEA"
             )
           ))
-        )
-      ),
-      getGOLeftMenu()
+        ),
+        getGOLeftMenu()
+      )
     ),
     conditionalPanel(
       (condition <- "input.methodtabs=='panel4'"),
@@ -105,47 +107,42 @@ getMainPlotsLeftMenu <- function() {
 #' @export
 #'
 getGOLeftMenu <- function() {
-  list(
-    bslib::accordion(
-      open = TRUE,
-      bslib::accordion_panel(
-        " Go Term Options",
-        textInput("gopvalue", "p.adjust", value = "0.01"),
-        getOrganismBox(),
-        actionButton("GeneTableButton", "DE Genes"),
-        conditionalPanel(
-          (condition <- "input.goplot=='enrichKEGG'"),
-          actionButton("KeggPathway", "KeggPathway")
-        ),
-        conditionalPanel(
-          (condition <- "(input.goplot=='enrichGO' ||
-              (input.goplot=='compare' && input.gofunc!='enrichDO' &&
-              input.gofunc!='enrichKEGG'))"),
-          selectInput("ontology", "Choose an ontology:",
-            choices = c("CC", "MF", "BP")
-          )
-        ),
-        conditionalPanel(
-          (condition <- "input.goplot!='compare'"),
-          selectInput("goextplot", "Plot Type:",
-            choices = c("Summary", "Dotplot")
-          )
-        ),
-        conditionalPanel(
-          (condition <- "input.goplot=='compare'"),
-          selectInput("gofunc", "Plot Function:",
-            choices = c("enrichGO", "enrichDO", "enrichKEGG")
-          )
-        ),
-        conditionalPanel(
-          (condition <- "input.goplot=='GSEA'"),
-          selectInput("sortfield", "Sort field:",
-            choices = c("stat", "log2FoldChange")
-          )
-        ),
-        downloadButton("downloadGOPlot", "Download Plots")
+  bslib::accordion_panel(
+    " Go Term Options",
+    textInput("gopvalue", "p.adjust", value = "0.01"),
+    getOrganismBox(),
+    actionButton("GeneTableButton", "DE Genes"),
+    conditionalPanel(
+      (condition <- "input.goplot=='enrichKEGG'"),
+      actionButton("KeggPathway", "KeggPathway")
+    ),
+    conditionalPanel(
+      (condition <- "(input.goplot=='enrichGO' ||
+          (input.goplot=='compare' && input.gofunc!='enrichDO' &&
+          input.gofunc!='enrichKEGG'))"),
+      selectInput("ontology", "Choose an ontology:",
+        choices = c("CC", "MF", "BP")
       )
-    )
+    ),
+    conditionalPanel(
+      (condition <- "input.goplot!='compare'"),
+      selectInput("goextplot", "Plot Type:",
+        choices = c("Summary", "Dotplot")
+      )
+    ),
+    conditionalPanel(
+      (condition <- "input.goplot=='compare'"),
+      selectInput("gofunc", "Plot Function:",
+        choices = c("enrichGO", "enrichDO", "enrichKEGG")
+      )
+    ),
+    conditionalPanel(
+      (condition <- "input.goplot=='GSEA'"),
+      selectInput("sortfield", "Sort field:",
+        choices = c("stat", "log2FoldChange")
+      )
+    ),
+    downloadButton("downloadGOPlot", "Download Plots")
   )
 }
 
@@ -166,52 +163,46 @@ getQCLeftMenu <- function(input = NULL) {
     return(NULL)
   }
   list(
-    bslib::accordion(
-      open = TRUE,
-      bslib::accordion_panel(
-        " Select Columns",
-        uiOutput("columnSelForQC")
-      )
+    bslib::accordion_panel(
+      " Select Columns",
+      uiOutput("columnSelForQC")
     ),
-    bslib::accordion(
-      open = FALSE,
-      bslib::accordion_panel(
-        " QC Options",
-        conditionalPanel(
-          (condition <- "input.qcplot=='heatmap'"),
-          plotSizeMarginsUI("heatmapQC"),
-          heatmapControlsUI("heatmapQC")
+    bslib::accordion_panel(
+      " QC Options",
+      conditionalPanel(
+        (condition <- "input.qcplot=='heatmap'"),
+        plotSizeMarginsUI("heatmapQC"),
+        heatmapControlsUI("heatmapQC")
+      ),
+      conditionalPanel(
+        condition <- "(input.qcplot=='all2all')",
+        plotSizeMarginsUI("all2all"),
+        all2allControlsUI("all2all")
+      ),
+      conditionalPanel(
+        condition <- "(input.qcplot=='Density')",
+        plotSizeMarginsUI("density"),
+        plotSizeMarginsUI("normdensity")
+      ),
+      conditionalPanel(
+        condition <- "(input.qcplot=='IQR')",
+        plotSizeMarginsUI("IQR"),
+        plotSizeMarginsUI("normIQR")
+      ),
+      getHelpButton(
+        "method",
+        "http://debrowser.readthedocs.io/en/master/heatmap/heatmap.html"
+      ),
+      conditionalPanel(
+        (condition <- "input.qcplot=='pca'"),
+        bslib::accordion(
+          open = FALSE,
+          bslib::accordion_panel(
+            "PCA Options",
+            pcaPlotControlsUI("qcpca")
+          )
         ),
-        conditionalPanel(
-          condition <- "(input.qcplot=='all2all')",
-          plotSizeMarginsUI("all2all"),
-          all2allControlsUI("all2all")
-        ),
-        conditionalPanel(
-          condition <- "(input.qcplot=='Density')",
-          plotSizeMarginsUI("density"),
-          plotSizeMarginsUI("normdensity")
-        ),
-        conditionalPanel(
-          condition <- "(input.qcplot=='IQR')",
-          plotSizeMarginsUI("IQR"),
-          plotSizeMarginsUI("normIQR")
-        ),
-        getHelpButton(
-          "method",
-          "http://debrowser.readthedocs.io/en/master/heatmap/heatmap.html"
-        ),
-        conditionalPanel(
-          (condition <- "input.qcplot=='pca'"),
-          bslib::accordion(
-            open = FALSE,
-            bslib::accordion_panel(
-              "PCA Options",
-              pcaPlotControlsUI("qcpca")
-            )
-          ),
-          plotSizeMarginsUI("qcpca", w = 600, h = 400, t = 0, b = 0, l = 0, r = 0)
-        )
+        plotSizeMarginsUI("qcpca", w = 600, h = 400, t = 0, b = 0, l = 0, r = 0)
       )
     )
   )
