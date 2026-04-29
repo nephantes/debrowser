@@ -585,12 +585,30 @@ setBatch <- function(fd = NULL) {
 #'
 #' @export
 getTabUpdateJS <- function() {
-  # B1: progressive wizard step reveal moved to server-side observers
-  # in R/server.R (see observeEvent blocks for input$Filter, input$Batch,
-  # input$goDE, input$goDEFromFilter, input$startDE, input$`cs-startDE`).
-  # Function retained as a no-op for export-compat with downstream
-  # callers and for future JS hooks.
-  tags$script(HTML(""))
+  # B2a: install a Shiny custom-message handler that toggles CSS classes
+  # on progress icons (.de-progress-icon[data-progress-key=...]) and on
+  # parent pills (a[data-progress-pill=...]). The server side calls
+  # update_progress(session, key, state) to drive these.
+  tags$script(HTML(
+    "Shiny.addCustomMessageHandler('debrowser-progress', function(msg) {",
+    "  var iconSel = '.de-progress-icon[data-progress-key=\"' + msg.key + '\"]';",
+    "  document.querySelectorAll(iconSel).forEach(function(el) {",
+    "    el.classList.remove('done', 'locked', 'skipped');",
+    "    if (msg.state === 'done' || msg.state === 'locked' || msg.state === 'skipped') {",
+    "      el.classList.add(msg.state);",
+    "    }",
+    "  });",
+    "  var pillSel = 'a[data-progress-pill=\"' + msg.key + '\"]';",
+    "  document.querySelectorAll(pillSel).forEach(function(el) {",
+    "    el.classList.remove('de-pill-done', 'de-pill-locked');",
+    "    if (msg.state === 'done' || msg.state === 'skipped') {",
+    "      el.classList.add('de-pill-done');",
+    "    } else if (msg.state === 'locked') {",
+    "      el.classList.add('de-pill-locked');",
+    "    }",
+    "  });",
+    "});"
+  ))
 }
 #' getPCAcontolUpdatesJS
 #' in the prep menu we have two PCA plots to show how batch effect correction worked.
