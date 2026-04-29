@@ -45,15 +45,22 @@
     background: rgb(25, 31, 38);
 }
 
-/* B1.15: fully hide the page-level shared sidebar on the Data Prep tab.
-   bslib::toggle_sidebar only collapses contents but leaves a visible
-   toggle bar; on Data Prep we want zero left-rail chrome so the
-   wizard's navset_pill_list flushes to the page edge. */
-body.debrowser-no-sidebar .bslib-sidebar-layout > .sidebar,
-body.debrowser-no-sidebar .bslib-sidebar-layout > .collapse-toggle {
-    display: none !important;
+/* B1.16: wizard step nav inside the page-level shared sidebar on the
+   Data Prep tab. ActionLinks render inline by default; force a vertical
+   list with comfortable spacing and pill-button feel on hover. */
+.wizard-step-list a.action-button {
+    display: block;
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 6px;
+    color: #0f172a;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
 }
-body.debrowser-no-sidebar .bslib-sidebar-layout {
-    grid-template-columns: 0 1fr !important;
+.wizard-step-list a.action-button:hover {
+    background: #e2e8f0;
+    color: #0369a1;
+    text-decoration: none;
 }
 

@@ -61,7 +61,36 @@ deUI <- function() {
 
     sidebar = bslib::sidebar(
       id = "shared_sidebar",
-      width = 220, open = "open",
+      width = 250, open = "open",
+
+      # Data Prep tab — wizard nav lives in the sidebar (was nested in
+      # navset_pill_list inside the panel content prior to B1.16).
+      conditionalPanel(
+        condition = "input.methodtabs == 'panel0'",
+        tags$div(
+          class = "wizard-step-list",
+          actionLink("nav_DataPrep_Intro",       "Quick Start Guide"),
+          actionLink("nav_DataPrep_Upload",      "Upload"),
+          conditionalPanel(
+            condition = "input.Filter",
+            actionLink("nav_DataPrep_Filter",      "Filter")
+          ),
+          conditionalPanel(
+            condition = "input.Batch",
+            actionLink("nav_DataPrep_BatchEffect", "BatchEffect")
+          ),
+          conditionalPanel(
+            condition = "input.goDE || input.goDEFromFilter",
+            actionLink("nav_DataPrep_CondSelect",  "CondSelect")
+          ),
+          conditionalPanel(
+            condition = "input.startDE || input['cs-startDE']",
+            actionLink("nav_DataPrep_DEAnalysis",  "DE Analysis")
+          )
+        )
+      ),
+
+      # Plot/table tabs — existing left-menu content
       conditionalPanel(
         condition = "input.methodtabs != 'panel0'",
         conditionalPanel(
@@ -79,12 +108,10 @@ deUI <- function() {
 
     bslib::nav_panel(
       title = "Data Prep", value = "panel0",
-      bslib::navset_pill_list(
+      bslib::navset_hidden(
         id = "DataPrep",
-        widths = c(2, 10),
-        well = FALSE,
         bslib::nav_panel(
-          title = "Quick Start Guide", value = "Intro",
+          value = "Intro",
           bslib::navset_pill(
             bslib::nav_panel("Introduction",       debrowser::getIntroText()),
             bslib::nav_panel("Data Assesment",     debrowser::getDataAssesmentText()),
@@ -94,32 +121,32 @@ deUI <- function() {
           )
         ),
         bslib::nav_panel(
-          title = "Upload", value = "Upload",
+          value = "Upload",
           debrowser::dataLoadUI("load")
         ),
         bslib::nav_panel(
-          title = "Filter", value = "Filter",
+          value = "Filter",
           conditionalPanel(
             condition = "input.Filter",
             debrowser::dataLCFUI("lcf")
           )
         ),
         bslib::nav_panel(
-          title = "BatchEffect", value = "BatchEffect",
+          value = "BatchEffect",
           conditionalPanel(
             condition = "input.Batch",
             debrowser::batchEffectUI("batcheffect")
           )
         ),
         bslib::nav_panel(
-          title = "CondSelect", value = "CondSelect",
+          value = "CondSelect",
           conditionalPanel(
             condition = "input.goDE || input.goDEFromFilter",
             debrowser::condSelectUI("cs")
           )
         ),
         bslib::nav_panel(
-          title = "DE Analysis", value = "DEAnalysis",
+          value = "DEAnalysis",
           tagList(
             de_card(
               title = "DE Filter",

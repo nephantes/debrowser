@@ -114,65 +114,42 @@ deServer <- function(input, output, session) {
         cp
       })
 
-      # B1: progressive wizard step reveal — replaces the JS in
-      # getTabUpdateJS that used .sidebar-menu :nth-child selectors.
-      # Initial state: only Quick Start + Upload are visible.
-      # Note: these reveal-observers run alongside the data-flow
-      # observers in the outer observe({...}) below — same trigger
-      # ids (Filter, Batch, goDE, ...), different concerns. Each
-      # button click fires both: this block reveals the next step,
-      # the outer block advances state and `nav_select`s into it.
-      bslib::nav_hide("DataPrep", "Filter")
-      bslib::nav_hide("DataPrep", "BatchEffect")
-      bslib::nav_hide("DataPrep", "CondSelect")
-      bslib::nav_hide("DataPrep", "DEAnalysis")
-
-      # B1.13/B1.15: fully hide the page-level shared sidebar when the
-      # user is on the Data Prep tab. bslib::toggle_sidebar leaves a
-      # visible toggle strip on the left even when collapsed. Use a body
-      # CSS class (`.debrowser-no-sidebar`) that the rule in
-      # inst/extdata/www/debrowser.css hides via display:none.
-      observeEvent(input$methodtabs, ignoreInit = FALSE, {
-        is_data_prep <- isTRUE(input$methodtabs == "panel0")
-        shinyjs::runjs(sprintf(
-          "document.body.classList.toggle('debrowser-no-sidebar', %s);",
-          tolower(is_data_prep)
-        ))
-      })
-
-      observeEvent(input$Filter, {
-        bslib::nav_show("DataPrep", "Filter")
-        bslib::nav_hide("DataPrep", "BatchEffect")
-        bslib::nav_hide("DataPrep", "CondSelect")
-        bslib::nav_hide("DataPrep", "DEAnalysis")
+      # B1.16: wizard reveal moved entirely to UI-side conditionalPanels
+      # in R/ui.R (sidebar's Data Prep section). Each step's actionLink is
+      # wrapped in a conditionalPanel keyed on input.<trigger> > 0, so the
+      # actionButton click counts (which never decrement) give us natural
+      # high-water-mark reveal without server observers.
+      #
+      # Sidebar nav: 6 actionLinks in the Data Prep section call
+      # nav_select on the navset_hidden(id="DataPrep") body.
+      observeEvent(input$nav_DataPrep_Intro, {
+        bslib::nav_select("DataPrep", "Intro", session = session)
+      }, ignoreInit = TRUE)
+      observeEvent(input$nav_DataPrep_Upload, {
+        bslib::nav_select("DataPrep", "Upload", session = session)
+      }, ignoreInit = TRUE)
+      observeEvent(input$nav_DataPrep_Filter, {
+        bslib::nav_select("DataPrep", "Filter", session = session)
+      }, ignoreInit = TRUE)
+      observeEvent(input$nav_DataPrep_BatchEffect, {
+        bslib::nav_select("DataPrep", "BatchEffect", session = session)
+      }, ignoreInit = TRUE)
+      observeEvent(input$nav_DataPrep_CondSelect, {
+        bslib::nav_select("DataPrep", "CondSelect", session = session)
+      }, ignoreInit = TRUE)
+      observeEvent(input$nav_DataPrep_DEAnalysis, {
+        bslib::nav_select("DataPrep", "DEAnalysis", session = session)
       }, ignoreInit = TRUE)
 
-      observeEvent(input$Batch, {
-        bslib::nav_show("DataPrep", "BatchEffect")
-        bslib::nav_hide("DataPrep", "CondSelect")
-        bslib::nav_hide("DataPrep", "DEAnalysis")
-      }, ignoreInit = TRUE)
-
-      observeEvent(input$goDEFromFilter, {
-        bslib::nav_show("DataPrep", "CondSelect")
-        bslib::nav_hide("DataPrep", "DEAnalysis")
-      }, ignoreInit = TRUE)
-
-      observeEvent(input$goDE, {
-        bslib::nav_show("DataPrep", "CondSelect")
-        bslib::nav_hide("DataPrep", "DEAnalysis")
-      }, ignoreInit = TRUE)
-
-      # startDE / cs-startDE — both ids exist post-A4ac (cs- is the
-      # namespaced module id). Listen to both during the transition.
+      # Auto-advance the wizard when the user clicks a Submit/Start
+      # button. (Previously these observers also called nav_show/nav_hide
+      # on the now-replaced navset_pill_list; with navset_hidden those
+      # are no-ops.) startDE / cs-startDE — both ids exist post-A4ac.
       observeEvent(input$startDE, {
-        bslib::nav_show("DataPrep", "DEAnalysis")
-        bslib::nav_select("DataPrep", "DEAnalysis")
+        bslib::nav_select("DataPrep", "DEAnalysis", session = session)
       }, ignoreInit = TRUE)
-
       observeEvent(input[["cs-startDE"]], {
-        bslib::nav_show("DataPrep", "DEAnalysis")
-        bslib::nav_select("DataPrep", "DEAnalysis")
+        bslib::nav_select("DataPrep", "DEAnalysis", session = session)
       }, ignoreInit = TRUE)
 
       observe({
