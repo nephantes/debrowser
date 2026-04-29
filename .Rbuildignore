@@ -5,6 +5,7 @@
 ^\.lintr$
 ^\.aidrift$
 ^\.claude$
+^\.superpowers$
 ^viafoundry_errors\.log$
 ^README\.md$
 ^codecov\.yml$

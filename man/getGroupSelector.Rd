@@ -21,6 +21,9 @@ getGroupSelector(
 \item{index, }{index}
 
 \item{num, }{num}
+
+\item{ns, }{Shiny module namespace function (defaults to `identity` for
+non-module callers)}
 }
 \value{
 meta select box

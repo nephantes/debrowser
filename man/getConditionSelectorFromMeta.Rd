@@ -26,6 +26,9 @@ getConditionSelectorFromMeta(
 \item{choices, }{choices}
 
 \item{selected, }{selected}
+
+\item{ns, }{Shiny module namespace function (defaults to `identity` for
+non-module callers)}
 }
 \description{
 Selects user input conditions to run in DESeq from metadata

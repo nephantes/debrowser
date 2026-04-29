@@ -134,6 +134,8 @@ condSelectUI <- function(id = NULL) {
 #'
 #' @param num, panel that is going to be shown
 #' @param input, user input
+#' @param ns, Shiny module namespace function (defaults to `identity` for
+#'   non-module callers)
 #' @examples
 #' x <- getMethodDetails()
 #'
@@ -238,6 +240,8 @@ getMethodDetails <- function(num = NULL, input = NULL, ns = identity) {
 #' @param num, panel that is going to be shown
 #' @param input, user input
 #' @param metadata, metadata
+#' @param ns, Shiny module namespace function (defaults to `identity` for
+#'   non-module callers)
 #'
 #' @examples
 #' x <- getCovariateDetails()
@@ -267,6 +271,8 @@ getCovariateDetails <- function(num = NULL, input = NULL, metadata = NULL,
 #' @param num, panel that is going to be shown
 #' @param choices, sample list
 #' @param selected, selected smaple list
+#' @param ns, Shiny module namespace function (defaults to `identity` for
+#'   non-module callers)
 #' @examples
 #' x <- getConditionSelector()
 #'
@@ -296,6 +302,8 @@ getConditionSelector <- function(num = NULL, choices = NULL, selected = NULL,
 #' @param num, num
 #' @param choices, choices
 #' @param selected, selected
+#' @param ns, Shiny module namespace function (defaults to `identity` for
+#'   non-module callers)
 #'
 #' @examples
 #' x <- getConditionSelectorFromMeta()
@@ -406,6 +414,8 @@ selectedInput <- function(
 #' @param selected, selected smaple list
 #' @param cw, column width
 #' @param multiple, if multiple choices are available
+#' @param ns, Shiny module namespace function (defaults to `identity` for
+#'   non-module callers)
 #' @examples
 #' x <- getSelectInputBox()
 #'
@@ -603,6 +613,8 @@ selectConditions <- function(Dataset = NULL,
 #' @param input, input params
 #' @param index, index
 #' @param num, num
+#' @param ns, Shiny module namespace function (defaults to `identity` for
+#'   non-module callers)
 #' @return meta select box
 #'
 #' @examples
@@ -654,6 +666,8 @@ getGroupSelector <- function(metadata = NULL, input = NULL, index = 1, num = 0,
 #' @param metadata, meta data table
 #' @param input, input params
 #' @param n, the box number
+#' @param ns, Shiny module namespace function (defaults to `identity` for
+#'   non-module callers)
 #' @return meta select box
 #'
 #' @examples

@@ -10,6 +10,9 @@ getMethodDetails(num = NULL, input = NULL, ns = identity)
 \item{num, }{panel that is going to be shown}
 
 \item{input, }{user input}
+
+\item{ns, }{Shiny module namespace function (defaults to `identity` for
+non-module callers)}
 }
 \description{
 get the detail boxes after DE method selected

@@ -29,6 +29,9 @@ getSelectInputBox(
 \item{cw, }{column width}
 
 \item{multiple, }{if multiple choices are available}
+
+\item{ns, }{Shiny module namespace function (defaults to `identity` for
+non-module callers)}
 }
 \description{
 Selects user input conditions to run in DESeq.

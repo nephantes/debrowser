@@ -17,6 +17,9 @@ getConditionSelector(
 \item{choices, }{sample list}
 
 \item{selected, }{selected smaple list}
+
+\item{ns, }{Shiny module namespace function (defaults to `identity` for
+non-module callers)}
 }
 \description{
 Selects user input conditions to run in DESeq.

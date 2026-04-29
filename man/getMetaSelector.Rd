@@ -12,6 +12,9 @@ getMetaSelector(metadata = NULL, input = NULL, n = 0, ns = identity)
 \item{input, }{input params}
 
 \item{n, }{the box number}
+
+\item{ns, }{Shiny module namespace function (defaults to `identity` for
+non-module callers)}
 }
 \value{
 meta select box

@@ -12,6 +12,9 @@ getCovariateDetails(num = NULL, input = NULL, metadata = NULL, ns = identity)
 \item{input, }{user input}
 
 \item{metadata, }{metadata}
+
+\item{ns, }{Shiny module namespace function (defaults to `identity` for
+non-module callers)}
 }
 \description{
 get the covariate detail box after DE method selected
