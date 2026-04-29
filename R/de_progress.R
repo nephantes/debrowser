@@ -26,3 +26,24 @@ NULL
 progress_message <- function(key, state) {
   list(key = key, state = state)
 }
+
+#' Compute the CSS class name for a pill given its progress state.
+#'
+#' Used by the JS handler in `getTabUpdateJS()` (R/funcs.R) and as a
+#' direct render path for static initial state.
+#'
+#' @param state character, progress state.
+#' @return character, CSS class name or empty string.
+#'
+#' @examples
+#' compute_pill_class("done")
+#'
+#' @export
+compute_pill_class <- function(state) {
+  switch(state,
+    "done"    = "de-pill-done",
+    "skipped" = "de-pill-done",
+    "locked"  = "de-pill-locked",
+    ""
+  )
+}
