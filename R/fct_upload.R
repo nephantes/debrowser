@@ -82,3 +82,24 @@ detect_separator <- function(path, sample_lines = 50L) {
   if (length(best) == 0 || scores[best] < 3) return(NA_character_)
   candidates[best]
 }
+
+#' Build a single-condition single-batch metadata data frame.
+#'
+#' Used as a fallback when the user uploads counts without metadata.
+#' Downstream condSelect's existing "need >=2 conditions" validation
+#' will surface the requirement when the user proceeds — no new
+#' validation is added here.
+#'
+#' @param counts data frame whose column names are the sample IDs.
+#' @return data frame with columns `Sample`, `Condition`, `Batch`.
+#' @export
+make_default_metadata <- function(counts) {
+  samples <- colnames(counts)
+  if (is.null(samples)) samples <- character(0)
+  data.frame(
+    Sample    = samples,
+    Condition = if (length(samples)) "All" else character(0),
+    Batch     = if (length(samples)) 1L else integer(0),
+    stringsAsFactors = FALSE
+  )
+}
