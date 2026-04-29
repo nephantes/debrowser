@@ -47,3 +47,24 @@ compute_pill_class <- function(state) {
     ""
   )
 }
+
+#' Render a label suitable for nav_panel(title=) or actionLink(label=)
+#' that includes a slot the JS handler can decorate with a progress icon.
+#'
+#' @param name character, the visible label (e.g. "Upload", "Data Prep").
+#' @param key character, the progress key the JS handler listens for.
+#' @return a `tags$span` HTML wrapper.
+#'
+#' @examples
+#' de_progress_label("Upload", "upload")
+#'
+#' @export
+de_progress_label <- function(name, key) {
+  shiny::tags$span(
+    name,
+    shiny::tags$span(
+      class = "de-progress-icon",
+      `data-progress-key` = key
+    )
+  )
+}

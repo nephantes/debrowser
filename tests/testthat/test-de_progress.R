@@ -37,3 +37,18 @@ test_that("compute_pill_class treats skipped like done (faded check)", {
   # treat skipped == done for unlock purposes.
   expect_equal(compute_pill_class("skipped"), "de-pill-done")
 })
+
+test_that("de_progress_label wraps name + icon span with the right key", {
+  lbl <- de_progress_label("Upload", "upload")
+  html <- as.character(lbl)
+  expect_match(html, "Upload", fixed = TRUE)
+  expect_match(html, 'class="de-progress-icon"', fixed = TRUE)
+  expect_match(html, 'data-progress-key="upload"', fixed = TRUE)
+})
+
+test_that("de_progress_label preserves the visible name verbatim", {
+  lbl <- de_progress_label("DE Analysis", "de")
+  html <- as.character(lbl)
+  # The name should appear before the icon span
+  expect_match(html, "DE Analysis", fixed = TRUE)
+})
