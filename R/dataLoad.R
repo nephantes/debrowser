@@ -105,8 +105,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
         print(dim(ldata$count))
       } else {
         ldata$count <- jsondata
-        metadatatable <- cbind(colnames(ldata$count), 1)
-        colnames(metadatatable) <- c("Sample", "Batch")
+        metadatatable <- make_default_metadata(jsondata)
       }
       ldata$meta <- metadatatable
       input$Filter
@@ -128,6 +127,38 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     ldata$count <- demoEnv$demodata
     ldata$meta <- demoEnv$metadatatable
   })
+
+  # B2b: auto-detect separator on counts file change.
+  # Also opens the "Show all options" accordion when detection fails.
+  autoDetectFailed <- reactiveVal(FALSE)
+  output$autoDetectFailed <- reactive(autoDetectFailed())
+  outputOptions(output, "autoDetectFailed", suspendWhenHidden = FALSE)
+
+  observeEvent(input$countdata, {
+    f <- input$countdata
+    if (is.null(f)) return()
+    sep <- detect_separator(f$datapath)
+    if (is.na(sep)) {
+      autoDetectFailed(TRUE)
+      bslib::accordion_panel_open(
+        id = "advancedOptions",
+        values = TRUE,
+        session = session
+      )
+    } else {
+      autoDetectFailed(FALSE)
+      updateRadioButtons(session, "countdataSep", selected = sep)
+    }
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$metadata, {
+    f <- input$metadata
+    if (is.null(f)) return()
+    sep <- detect_separator(f$datapath)
+    if (!is.na(sep)) {
+      updateRadioButtons(session, "metadataSep", selected = sep)
+    }
+  }, ignoreInit = TRUE)
 
   observeEvent(input$uploadFile, {
     if (is.null(input$countdata)) {
@@ -167,8 +198,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
       }
       counttable <- counttable[, metadatatable[, 1]]
     } else {
-      metadatatable <- cbind(colnames(counttable), 1)
-      colnames(metadatatable) <- c("Sample", "Batch")
+      metadatatable <- make_default_metadata(counttable)
     }
     if (is.null(counttable)) {
       stop("Please upload the count file")
@@ -179,6 +209,14 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
   output$nextButton <- renderUI({
     actionButtonDE(nextpagebutton, label = nextpagebutton, styleclass = "primary")
   })
+  output$countPreview <- renderTable({
+    d <- loadeddata()
+    if (is.null(d) || is.null(d$count)) return(NULL)
+    cnt <- d$count
+    n_rows <- min(5L, nrow(cnt))
+    n_cols <- min(6L, ncol(cnt))
+    cnt[seq_len(n_rows), seq_len(n_cols), drop = FALSE]
+  }, rownames = TRUE, digits = 2)
   observe({
     getSampleDetails(output, "uploadSummary", "sampleDetails", loadeddata())
   })
