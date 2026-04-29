@@ -124,7 +124,7 @@ deUI <- function() {
     ),
 
     bslib::nav_panel(
-      title = "Data Prep", value = "panel0",
+      title = de_progress_label("Data Prep", "data_prep"), value = "panel0",
       bslib::navset_hidden(
         id = "DataPrep",
         bslib::nav_panel(
