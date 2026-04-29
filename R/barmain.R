@@ -25,7 +25,7 @@ debrowserbarmainplot <- function(id, data = NULL, cols = NULL, conds = NULL,
   moduleServer(id, function(input, output, session) {
     output$BarMainUI <- renderUI({
       de_card(
-        title = session$ns("plot"),
+        title = "Plot",
         plotlyOutput(session$ns("BarMain"),
           height = input$height, width = input$width
         )

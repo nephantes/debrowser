@@ -23,7 +23,7 @@ debrowserIQRplot <- function(id, data = NULL) {
     })
     output$IQRUI <- renderUI({
       de_card(
-        title = session$ns("plot"),
+        title = "Plot",
         plotlyOutput(session$ns("IQR"),
           width = input$width, height = input$height
         )

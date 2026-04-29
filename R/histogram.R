@@ -60,7 +60,7 @@ debrowserhistogram <- function(id, data = NULL) {
   })
   output$histogramUI <- renderUI({
     de_card(
-      title = session$ns("plot"),
+      title = "Plot",
       plotlyOutput(session$ns("histogram"),
         width = input$width, height = input$height
       )

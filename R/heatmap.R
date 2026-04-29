@@ -58,7 +58,7 @@ debrowserheatmap <- function(id, expdata = NULL) {
       return(NULL)
     }
     de_card(
-      title = session$ns("Heatmap"),
+      title = "Heatmap",
       getPlotArea(input, session)
     )
   })

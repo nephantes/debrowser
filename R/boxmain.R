@@ -47,7 +47,7 @@ debrowserboxmainplot <- function(id, data = NULL, cols = NULL, conds = NULL,
 
     output$BoxMainUI <- renderUI({
       de_card(
-        title = session$ns("plot"),
+        title = "Plot",
         plotlyOutput(session$ns("BoxMain"),
           height = input$height, width = input$width
         )
