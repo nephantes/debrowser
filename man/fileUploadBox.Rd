@@ -4,7 +4,7 @@
 \alias{fileUploadBox}
 \title{fileUploadBox}
 \usage{
-fileUploadBox(id = NULL, inputId = NULL, label = NULL)
+fileUploadBox(id = NULL, inputId = NULL, label = NULL, helper = NULL)
 }
 \arguments{
 \item{id, }{namespace id}
@@ -12,6 +12,8 @@ fileUploadBox(id = NULL, inputId = NULL, label = NULL)
 \item{inputId, }{input file ID}
 
 \item{label, }{label}
+
+\item{helper, }{optional help-text string shown beneath the card title}
 }
 \value{
 radio control

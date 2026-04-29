@@ -71,7 +71,7 @@ NULL
 #'
 #' @param path character, path to the file (may end in `.gz`).
 #' @param sample_lines integer, number of lines to read for scoring.
-#' @return one of `"\t"`, `","`, `";"`, or `NA_character_`.
+#' @return one of tab, comma, semicolon, or `NA_character_`.
 #' @export
 detect_separator <- function(path, sample_lines = 50L) {
   lines <- .read_head_lines(path, sample_lines)

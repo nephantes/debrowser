@@ -12,7 +12,7 @@ detect_separator(path, sample_lines = 50L)
 \item{sample_lines}{integer, number of lines to read for scoring.}
 }
 \value{
-one of `"\t"`, `","`, `";"`, or `NA_character_`.
+one of tab, comma, semicolon, or `NA_character_`.
 }
 \description{
 Tries tab, comma, semicolon. Returns the highest-scoring delimiter

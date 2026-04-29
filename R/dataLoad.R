@@ -271,7 +271,7 @@ dataLoadUI <- function(id) {
             condition = paste0("output['", ns("autoDetectFailed"), "']"),
             div(
               class = "de-detect-fail-caption",
-              "Couldn't auto-detect the separator — pick it under Show all options."
+              "Couldn't auto-detect the separator -- pick it under Show all options."
             )
           )
         )
@@ -313,7 +313,7 @@ dataLoadUI <- function(id) {
       conditionalPanel(
         condition = paste0("output['", ns("dataloaded"), "']"),
         de_card(
-          title = "Preview (first 5 rows × 6 columns)",
+          title = "Preview (first 5 rows x 6 columns)",
           div(
             style = "overflow: auto",
             tableOutput(ns("countPreview"))
@@ -355,6 +355,7 @@ dataLoadUI <- function(id) {
 #' @param id, namespace id
 #' @param inputId, input file ID
 #' @param label, label
+#' @param helper, optional help-text string shown beneath the card title
 #' @note \code{fileUploadBox}
 #' @return radio control
 #'
