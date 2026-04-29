@@ -127,6 +127,17 @@ deServer <- function(input, output, session) {
       bslib::nav_hide("DataPrep", "CondSelect")
       bslib::nav_hide("DataPrep", "DEAnalysis")
 
+      # B1.13: collapse the page-level shared sidebar when the user is on
+      # the Data Prep tab (the wizard's own navset_pill_list owns that
+      # tab's layout; an empty sidebar there would leave a blank strip
+      # on the left and push the wizard's nav into the middle).
+      observeEvent(input$methodtabs, ignoreInit = FALSE, {
+        is_data_prep <- isTRUE(input$methodtabs == "panel0")
+        bslib::toggle_sidebar("shared_sidebar",
+                              open = !is_data_prep,
+                              session = session)
+      })
+
       observeEvent(input$Filter, {
         bslib::nav_show("DataPrep", "Filter")
         bslib::nav_hide("DataPrep", "BatchEffect")

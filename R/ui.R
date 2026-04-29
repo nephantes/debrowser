@@ -61,7 +61,7 @@ deUI <- function() {
 
     sidebar = bslib::sidebar(
       id = "shared_sidebar",
-      width = 320, open = "open",
+      width = 220, open = "open",
       conditionalPanel(
         condition = "input.methodtabs != 'panel0'",
         conditionalPanel(
@@ -81,7 +81,7 @@ deUI <- function() {
       title = "Data Prep", value = "panel0",
       bslib::navset_pill_list(
         id = "DataPrep",
-        widths = c(3, 9),
+        widths = c(2, 10),
         well = FALSE,
         bslib::nav_panel(
           title = "Quick Start Guide", value = "Intro",
