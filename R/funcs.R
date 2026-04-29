@@ -517,10 +517,12 @@ getColors <- function(domains = NULL) {
 #'
 #' @export
 getKEGGModal <- function() {
-  bsModal("modalExample", "KEGG Pathway", "KeggPathway",
-    size = "large",
-    div(style = "display:block;overflow-y:auto; overflow-x:auto;", imageOutput("KEGGPlot"))
-  )
+  # B1.12: migrated from shinyBS::bsModal to shiny::modalDialog.
+  # The modal contents are now constructed and shown server-side via
+  # observeEvent(input$KeggPathway, ...) in R/server.R. This function
+  # returns NULL so the existing call site in R/gopanel.R (line 35)
+  # doesn't change.
+  NULL
 }
 
 #' getTableModal
@@ -533,13 +535,12 @@ getKEGGModal <- function() {
 #'
 #' @export
 getTableModal <- function() {
-  bsModal("modalTable", "Genes in the category", "GeneTableButton",
-    size = "large",
-    div(
-      style = "display:block;overflow-y:auto; overflow-x:auto;",
-      wellPanel(DT::dataTableOutput("GOGeneTable"))
-    )
-  )
+  # B1.12: migrated from shinyBS::bsModal to shiny::modalDialog.
+  # The modal contents are now constructed and shown server-side via
+  # observeEvent(input$GeneTableButton, ...) in R/server.R. This function
+  # returns NULL so the existing call site in R/gopanel.R (line 36)
+  # doesn't change.
+  NULL
 }
 
 #' setBatch

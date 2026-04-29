@@ -685,22 +685,6 @@ hideObj <- function(btns = NULL) {
   }
 }
 
-#' getKEGGModal
-#' prepares a helpbutton for to go to a specific site in the documentation
-#'
-#' @return the info button
-#'
-#' @examples
-#' x <- getKEGGModal()
-#'
-#' @export
-getKEGGModal <- function() {
-  bsModal("modalExample", "KEGG Pathway", "KeggPathway",
-    size = "large",
-    div(style = "display:block;overflow-y:auto; overflow-x:auto;", imageOutput("KEGGPlot"))
-  )
-}
-
 #' getDownloadSection
 #'
 #' download section button and dataset selection box in the

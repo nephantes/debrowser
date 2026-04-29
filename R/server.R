@@ -540,6 +540,32 @@ deServer <- function(input, output, session) {
           return(inputGOstart()$p)
         }
       })
+      observeEvent(input$KeggPathway, {
+        showModal(modalDialog(
+          title = "KEGG Pathway",
+          size = "l",
+          easyClose = TRUE,
+          footer = modalButton("Close"),
+          tags$div(
+            style = "display:block;overflow-y:auto;overflow-x:auto;",
+            imageOutput("KEGGPlot")
+          )
+        ))
+      })
+
+      observeEvent(input$GeneTableButton, {
+        showModal(modalDialog(
+          title = "Genes in the category",
+          size = "l",
+          easyClose = TRUE,
+          footer = modalButton("Close"),
+          tags$div(
+            style = "display:block;overflow-y:auto;overflow-x:auto;",
+            wellPanel(DT::dataTableOutput("GOGeneTable"))
+          )
+        ))
+      })
+
       output$KEGGPlot <- renderImage(
         {
           shiny::validate(need(
