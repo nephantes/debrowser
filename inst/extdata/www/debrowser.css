@@ -45,37 +45,4 @@
     background: rgb(25, 31, 38);
 }
 
-/* B1.16/17: wizard step nav inside the page-level shared sidebar on
-   the Data Prep tab. ActionLinks render inline by default; force a
-   vertical list with comfortable spacing and pill-button hover. */
-.wizard-step-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 4px 0;
-}
-.wizard-step-list .action-button,
-.wizard-step-list a.action-button {
-    display: block;
-    width: 100%;
-    padding: 8px 12px;
-    margin: 0;
-    border-radius: 6px;
-    color: #0f172a;
-    background: transparent;
-    text-decoration: none !important;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid transparent;
-}
-.wizard-step-list .action-button:hover,
-.wizard-step-list a.action-button:hover {
-    background: #e2e8f0;
-    color: #0369a1;
-}
-.wizard-step-list .action-button:focus,
-.wizard-step-list a.action-button:focus {
-    outline: 2px solid #0369a1;
-    outline-offset: -2px;
-}
 
