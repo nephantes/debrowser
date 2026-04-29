@@ -843,7 +843,9 @@ heatmapServer <- function(input, output, session) {
 #' @return the panel for heatmapUI;
 #'
 #' @examples
-#' x <- heatmapUI()
+#' \dontrun{
+#'   shiny::shinyApp(ui = heatmapUI, server = function(input, output) {})
+#' }
 #'
 #' @export
 #'
