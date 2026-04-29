@@ -70,12 +70,15 @@ getEntrezTable <- function(genes = NULL, dat = NULL, org = "org.Hs.eg.db") {
     )
     return(NULL)
   }
-  allkeys <- AnnotationDbi::keys(eval(parse(text = org)),
-    keytype = "SYMBOL"
-  )
+  # Fetch the AnnotationDb object directly from the package namespace —
+  # `eval(parse(text = org))` only works if the org package is attached
+  # to the search path. Suggests-status packages (e.g., org.Mm.eg.db)
+  # aren't attached by requireNamespace alone.
+  org_db <- getExportedValue(org, org)
+  allkeys <- AnnotationDbi::keys(org_db, keytype = "SYMBOL")
   entrezIDs <- unlist(strsplit(genes, "/"))
 
-  mapped_genes <- mapIds(eval(parse(text = org)),
+  mapped_genes <- mapIds(org_db,
     keys = rownames(dat),
     column = "ENTREZID", keytype = "SYMBOL",
     multiVals = "first"
@@ -114,11 +117,12 @@ getEntrezIds <- function(genes = NULL, org = "org.Hs.eg.db") {
     )
     return(NULL)
   }
-  allkeys <- AnnotationDbi::keys(eval(parse(text = org)),
-    keytype = "SYMBOL"
-  )
+  # Fetch the AnnotationDb object directly from the package namespace —
+  # see getEntrezTable() for the rationale.
+  org_db <- getExportedValue(org, org)
+  allkeys <- AnnotationDbi::keys(org_db, keytype = "SYMBOL")
 
-  mapped_genes <- mapIds(eval(parse(text = org)),
+  mapped_genes <- mapIds(org_db,
     keys = rownames(genes),
     column = "ENTREZID", keytype = "SYMBOL",
     multiVals = "first"
@@ -470,6 +474,14 @@ drawKEGG <- function(input = NULL, dat = NULL, pid = NULL) {
   }
   tryCatch({
     if (requireNamespace("pathview", quietly = TRUE)) {
+      # pathview::pathview() references its unexported lazy-data
+      # object `bods` directly. With pathview in Suggests,
+      # requireNamespace alone does not auto-load lazy-data — the
+      # package must be attached to the search path. Cheap and
+      # idempotent: only attach if not already attached.
+      if (!"package:pathview" %in% search()) {
+        suppressPackageStartupMessages(attachNamespace("pathview"))
+      }
       org <- input$organism
       genedata <- getEntrezIds(dat[[1]], org)
       foldChangeData <- data.frame(genedata$log2FoldChange)
