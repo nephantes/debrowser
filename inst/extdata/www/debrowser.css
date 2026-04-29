@@ -82,4 +82,36 @@
     /* No special treatment; the trailing checkmark is enough. */
 }
 
+/* B2b: Quick Start wizard upload card */
+.de-secondary-zone {
+    margin-top: 0.5rem;
+    opacity: 0.92;
+}
 
+.de-secondary-zone .card-header {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.de-secondary-zone .card-body {
+    padding: 0.6rem 0.75rem;
+}
+
+.de-demo-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 1.25rem;
+}
+
+.de-demo-caption {
+    color: var(--bs-secondary-color, #6c757d);
+    font-style: italic;
+    margin-right: 0.25rem;
+}
+
+.de-detect-fail-caption {
+    color: var(--bs-warning-text-emphasis, #997404);
+    font-size: 0.875rem;
+    margin: 0.25rem 0 0.5rem 0.25rem;
+}
