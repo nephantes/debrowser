@@ -201,24 +201,96 @@ dataLoadUI <- function(id) {
   ns <- NS(id)
   list(
     conditionalPanel(
-      condition = paste0("!output['", ns("dataloaded"), "']"), fluidRow(
-        fileUploadBox(id, "countdata", "Count Data"),
-        fileUploadBox(id, "metadata", "Metadata")
+      condition = paste0("!output['", ns("dataloaded"), "']"),
+      # Primary drop zone: counts.
+      fluidRow(
+        column(
+          12,
+          fileUploadBox(
+            id, "countdata", "Count Data",
+            helper = "Tab-, comma-, or semicolon-separated. .tsv / .csv / .txt / .csv.gz."
+          )
+        )
       ),
-      fluidRow(column(
-        12,
-        actionButtonDE(ns("uploadFile"), label = "Upload", styleclass = "primary"),
-        actionButtonDE(ns("demo"), label = "Load Demo (Vernia et. al)", styleclass = "primary"),
-        actionButtonDE(ns("demo2"), label = "Load Demo (Donnard et. al)", styleclass = "primary")
-      ))
+      # Secondary drop zone: metadata (optional).
+      fluidRow(
+        column(
+          12,
+          div(
+            class = "de-secondary-zone",
+            fileUploadBox(
+              id, "metadata", "Metadata",
+              helper = "Optional. If omitted, all samples are placed in one condition."
+            )
+          )
+        )
+      ),
+      # "couldn't auto-detect" caption (hidden by default).
+      fluidRow(
+        column(
+          12,
+          conditionalPanel(
+            condition = paste0("output['", ns("autoDetectFailed"), "']"),
+            div(
+              class = "de-detect-fail-caption",
+              "Couldn't auto-detect the separator — pick it under Show all options."
+            )
+          )
+        )
+      ),
+      # "Show all options" disclosure: separator radios for both files.
+      fluidRow(
+        column(
+          12,
+          bslib::accordion(
+            id = ns("advancedOptions"),
+            open = FALSE,
+            bslib::accordion_panel(
+              title = "Show all options",
+              fluidRow(
+                column(6, sepRadio(id, "countdataSep")),
+                column(6, sepRadio(id, "metadataSep"))
+              )
+            )
+          )
+        )
+      ),
+      # Action row: Upload (primary) + demo buttons under "or try a demo:".
+      fluidRow(
+        column(
+          12,
+          actionButtonDE(ns("uploadFile"), label = "Upload", styleclass = "primary"),
+          div(
+            class = "de-demo-row",
+            span(class = "de-demo-caption", "or try a demo:"),
+            actionButtonDE(ns("demo"), label = "Vernia et. al",  styleclass = "primary"),
+            actionButtonDE(ns("demo2"), label = "Donnard et. al", styleclass = "primary")
+          )
+        )
+      )
     ),
+    # Inline preview (5 rows x 6 cols) shown immediately after upload.
+    fluidRow(column(
+      12,
+      conditionalPanel(
+        condition = paste0("output['", ns("dataloaded"), "']"),
+        de_card(
+          title = "Preview (first 5 rows × 6 columns)",
+          div(
+            style = "overflow: auto",
+            tableOutput(ns("countPreview"))
+          )
+        )
+      )
+    )),
     fluidRow(column(
       12,
       conditionalPanel(
         condition = paste0("output['", ns("dataloaded"), "']"),
         uiOutput(ns("nextButton"))
       )
-    )), br(),
+    )),
+    br(),
     fluidRow(
       bslib::card(
         bslib::card_header("Upload Summary"),
@@ -254,19 +326,20 @@ dataLoadUI <- function(id) {
 #'
 #' @export
 #'
-fileUploadBox <- function(id = NULL, inputId = NULL, label = NULL) {
+fileUploadBox <- function(id = NULL, inputId = NULL, label = NULL, helper = NULL) {
   ns <- NS(id)
-  column(
-    6,
-    de_card(
-      title = paste0(label, " File"),
-      helpText(paste0("Upload your '", label, " File'")),
-      fileInput(
-        inputId = ns(inputId),
-        label = NULL,
-        accept = fileTypes()
-      ),
-      sepRadio(id, paste0(inputId, "Sep"))
+  helptext <- if (is.null(helper)) {
+    paste0("Upload your '", label, " File'")
+  } else {
+    helper
+  }
+  de_card(
+    title = paste0(label, " File"),
+    helpText(helptext),
+    fileInput(
+      inputId = ns(inputId),
+      label = NULL,
+      accept = fileTypes()
     )
   )
 }
