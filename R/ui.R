@@ -59,6 +59,24 @@ deUI <- function() {
       debrowser::getTabUpdateJS()
     ),
 
+    sidebar = bslib::sidebar(
+      id = "shared_sidebar",
+      width = 320, open = "open",
+      conditionalPanel(
+        condition = "input.methodtabs != 'panel0'",
+        conditionalPanel(
+          condition = "(output.dataready)",
+          conditionalPanel(
+            condition = "input.methodtabs == 'panel1'",
+            debrowser::mainPlotControlsUI("main")
+          ),
+          uiOutput("downloadSection"),
+          uiOutput("cutoffSelection"),
+          uiOutput("leftMenu")
+        )
+      )
+    ),
+
     bslib::nav_panel(
       title = "Data Prep", value = "panel0",
       bslib::navset_pill_list(
@@ -119,23 +137,8 @@ deUI <- function() {
 
     bslib::nav_panel(
       title = "Main Plots", value = "panel1",
-      bslib::layout_sidebar(
-        sidebar = bslib::sidebar(
-          width = 320, open = "open",
-          conditionalPanel(
-            condition = "(output.dataready)",
-            conditionalPanel(
-              condition = "input.methodtabs == 'panel1'",
-              debrowser::mainPlotControlsUI("main")
-            ),
-            uiOutput("downloadSection"),
-            uiOutput("cutoffSelection"),
-            uiOutput("leftMenu")
-          )
-        ),
-        uiOutput("mainmsgs"),
-        uiOutput("mainpanel")
-      )
+      uiOutput("mainmsgs"),
+      uiOutput("mainpanel")
     ),
 
     bslib::nav_panel(
