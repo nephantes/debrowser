@@ -417,21 +417,19 @@ heatmapControlsUI <- function(id) {
   ns <- NS(id)
   list(
     checkboxInput(ns("interactive"), "Interactive", value = FALSE),
-    kmeansControlsUI(id),
     bslib::accordion(
+      multiple = TRUE,
       open = FALSE,
+      kmeansControlsUI(id),
       bslib::accordion_panel(
         "Scale Options",
         checkboxInput(ns("scale"), "Scale", value = TRUE),
         checkboxInput(ns("center"), "Center", value = TRUE),
         checkboxInput(ns("log"), "Log", value = TRUE),
         textInput(ns("pseudo"), "Pseudo Count", "0.1")
-      )
-    ),
-    dendControlsUI(id, "Row"),
-    dendControlsUI(id, "Col"),
-    bslib::accordion(
-      open = FALSE,
+      ),
+      dendControlsUI(id, "Row"),
+      dendControlsUI(id, "Col"),
       bslib::accordion_panel(
         "Heatmap Colors",
         conditionalPanel(
@@ -442,10 +440,7 @@ heatmapControlsUI <- function(id) {
           )
         ),
         customColorsUI(id)
-      )
-    ),
-    bslib::accordion(
-      open = FALSE,
+      ),
       bslib::accordion_panel(
         "Heatmap Dendrogram",
         selectInput(ns("dendrogram"), "Type",
@@ -458,10 +453,7 @@ heatmapControlsUI <- function(id) {
         sliderInput(ns("branches_lwd"), "Branch Width",
           value = 0.6, min = 0, max = 5, step = 0.1
         )
-      )
-    ),
-    bslib::accordion(
-      open = FALSE,
+      ),
       bslib::accordion_panel(
         "Heatmap Layout",
         textInput(ns("main"), "Title", ""),
@@ -490,30 +482,27 @@ heatmapControlsUI <- function(id) {
 #'
 kmeansControlsUI <- function(id) {
   ns <- NS(id)
-  bslib::accordion(
-    open = FALSE,
-    bslib::accordion_panel(
-      "kmeans",
-      checkboxInput(ns("kmeansControl"), "kmeans clustering", value = FALSE),
-      conditionalPanel(
-        paste0("input['", ns("kmeansControl"), "']"),
-        sliderInput(ns("knum"), "k: # of Clusters",
-          min = 2, max = 20, value = 2
+  bslib::accordion_panel(
+    "kmeans",
+    checkboxInput(ns("kmeansControl"), "kmeans clustering", value = FALSE),
+    conditionalPanel(
+      paste0("input['", ns("kmeansControl"), "']"),
+      sliderInput(ns("knum"), "k: # of Clusters",
+        min = 2, max = 20, value = 2
+      ),
+      selectizeInput(ns("kmeansalgo"), "kmeans.algorithm",
+        c(
+          "Hartigan-Wong", "Lloyd", "Forgy",
+          "MacQueen"
         ),
-        selectizeInput(ns("kmeansalgo"), "kmeans.algorithm",
-          c(
-            "Hartigan-Wong", "Lloyd", "Forgy",
-            "MacQueen"
-          ),
-          selected = "Lloyd"
-        ),
-        textInput(
-          ns("clusterorder"),
-          "The order of the clusters", ""
-        ),
-        actionButtonDE(ns("changeOrder"), label = "Change Order", styleclass = "primary"),
-        checkboxInput(ns("showClasses"), "Show Classes", value = FALSE)
-      )
+        selected = "Lloyd"
+      ),
+      textInput(
+        ns("clusterorder"),
+        "The order of the clusters", ""
+      ),
+      actionButtonDE(ns("changeOrder"), label = "Change Order", styleclass = "primary"),
+      checkboxInput(ns("showClasses"), "Show Classes", value = FALSE)
     )
   )
 }
@@ -531,23 +520,20 @@ kmeansControlsUI <- function(id) {
 #'
 dendControlsUI <- function(id, dendtype = "Row") {
   ns <- NS(id)
-  bslib::accordion(
-    open = FALSE,
-    bslib::accordion_panel(
-      paste0(dendtype, " dendrogram"),
-      selectizeInput(ns(paste0("distFun_", dendtype)), "Dist. method",
-        distFunParamsUI(),
-        selected = "euclidean"
-      ),
-      selectizeInput(ns(paste0("hclustFun_", dendtype)), "Clustering linkage",
-        clustFunParamsUI(),
-        selected = "complete"
-      ),
-      sliderInput(ns(paste0("k_", dendtype)), "# of Clusters",
-        min = 1, max = 10, value = 2
-      ),
-      checkboxInput(ns(paste0("lab", dendtype)), paste0(dendtype, " Labels"), value = TRUE)
-    )
+  bslib::accordion_panel(
+    paste0(dendtype, " dendrogram"),
+    selectizeInput(ns(paste0("distFun_", dendtype)), "Dist. method",
+      distFunParamsUI(),
+      selected = "euclidean"
+    ),
+    selectizeInput(ns(paste0("hclustFun_", dendtype)), "Clustering linkage",
+      clustFunParamsUI(),
+      selected = "complete"
+    ),
+    sliderInput(ns(paste0("k_", dendtype)), "# of Clusters",
+      min = 1, max = 10, value = 2
+    ),
+    checkboxInput(ns(paste0("lab", dendtype)), paste0(dendtype, " Labels"), value = TRUE)
   )
 }
 
