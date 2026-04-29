@@ -68,3 +68,29 @@ de_progress_label <- function(name, key) {
     )
   )
 }
+
+#' Push a progress update to the browser for one key.
+#'
+#' Sends a Shiny custom message of type "debrowser-progress" with a
+#' payload built by `progress_message(key, state)`. The handler installed
+#' by `getTabUpdateJS()` (R/funcs.R) reads the message and toggles CSS
+#' classes on the matching icon span and parent pill.
+#'
+#' @param session Shiny session object.
+#' @param key character, progress key.
+#' @param state character, progress state.
+#' @return Invisibly NULL.
+#'
+#' @examples
+#' \dontrun{
+#'   update_progress(session, "upload", "done")
+#' }
+#'
+#' @export
+update_progress <- function(session, key, state) {
+  session$sendCustomMessage(
+    "debrowser-progress",
+    progress_message(key, state)
+  )
+  invisible(NULL)
+}
