@@ -2,25 +2,24 @@
 % Please edit documentation in R/funcs.R
 \name{getTabUpdateJS}
 \alias{getTabUpdateJS}
-\title{getTabUpdateJS
-Wizard reveal kept-as-no-op tag for export compatibility. The
-progressive reveal logic moved to server-side observers in B1
-(see R/server.R near input$Filter / input$Batch / input$goDE /
-input$goDEFromFilter / input$startDE / input[["cs-startDE"]]).}
+\title{getTabUpdateJS}
 \usage{
 getTabUpdateJS()
 }
 \value{
-an empty `<script>` tag (kept as-is so the existing
-  `header = tagList(..., getTabUpdateJS())` slot in deUI() still
-  produces a valid tag and downstream callers still work)
+a `<script>` tag with the custom-message handler installed.
 }
 \description{
-getTabUpdateJS
-Wizard reveal kept-as-no-op tag for export compatibility. The
-progressive reveal logic moved to server-side observers in B1
-(see R/server.R near input$Filter / input$Batch / input$goDE /
-input$goDEFromFilter / input$startDE / input[["cs-startDE"]]).
+Returns a `<script>` tag that installs a Shiny custom-message handler
+for type "debrowser-progress". The handler decorates wizard progress
+icons (`.de-progress-icon[data-progress-key=...]`) and parent pills
+(`a[data-progress-pill=...]`) with done/locked/skipped CSS classes.
+Producer side: `update_progress(session, key, state)` in R/de_progress.R.
+}
+\details{
+Name retained for export-compatibility; historically this tag drove
+wizard tab updates, but progressive reveal moved to server-side
+observers in B1 and progress decoration is the current responsibility.
 }
 \examples{
 x <- getTabUpdateJS()
