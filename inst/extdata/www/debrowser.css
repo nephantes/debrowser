@@ -45,12 +45,9 @@
     background: rgb(25, 31, 38);
 }
 
-/* B1.19: minimal styling for the Data Prep wizard nav. ActionLinks are
-   inline by default; force one-per-line. No colors/hovers — let bslib
-   sidebar defaults paint them. */
-.wizard-step-list .action-button {
-    display: block;
-    padding: 4px 0;
-}
+/* B1.20: wizard step nav uses Bootstrap's list-group classes directly
+   (set on the actionLinks in R/ui.R). No custom styling needed —
+   list-group-item-action gives the right hover/focus/border treatment
+   for the matching bslib BS5 theme. */
 
 

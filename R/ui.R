@@ -72,24 +72,30 @@ deUI <- function() {
       conditionalPanel(
         condition = "input.methodtabs == 'panel0'",
         tags$div(
-          class = "wizard-step-list",
-          actionLink("nav_DataPrep_Intro",       "Quick Start Guide"),
-          actionLink("nav_DataPrep_Upload",      "Upload"),
+          class = "wizard-step-list list-group list-group-flush",
+          actionLink("nav_DataPrep_Intro",       "Quick Start Guide",
+                     class = "list-group-item list-group-item-action"),
+          actionLink("nav_DataPrep_Upload",      "Upload",
+                     class = "list-group-item list-group-item-action"),
           conditionalPanel(
             condition = "input.Filter",
-            actionLink("nav_DataPrep_Filter",      "Filter")
+            actionLink("nav_DataPrep_Filter",      "Filter",
+                       class = "list-group-item list-group-item-action")
           ),
           conditionalPanel(
             condition = "input.Batch",
-            actionLink("nav_DataPrep_BatchEffect", "BatchEffect")
+            actionLink("nav_DataPrep_BatchEffect", "BatchEffect",
+                       class = "list-group-item list-group-item-action")
           ),
           conditionalPanel(
             condition = "input.goDE || input.goDEFromFilter",
-            actionLink("nav_DataPrep_CondSelect",  "CondSelect")
+            actionLink("nav_DataPrep_CondSelect",  "CondSelect",
+                       class = "list-group-item list-group-item-action")
           ),
           conditionalPanel(
             condition = "input.startDE || input['cs-startDE']",
-            actionLink("nav_DataPrep_DEAnalysis",  "DE Analysis")
+            actionLink("nav_DataPrep_DEAnalysis",  "DE Analysis",
+                       class = "list-group-item list-group-item-action")
           )
         ),
         conditionalPanel(
