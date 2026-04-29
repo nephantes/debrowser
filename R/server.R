@@ -239,7 +239,12 @@ deServer <- function(input, output, session) {
         })
         observeEvent(req(sel())$start_de(), {
           if (is.null(batch()$BatchEffect()$count)) return()
-          togglePanels(0, c(0), session)
+          # B2a: mark condselect done at this point (the user has
+          # clicked start-de, which is the natural exit from the cs step).
+          progress$condselect <- "done"
+          progress$de         <- "pending"
+          # Re-lock plot/GO/Table tabs while DE runs (existing behavior).
+          togglePanels(0, c(0, 2), session)
           # Run prepDataContainer at the parent session so the inner
           # debrowserdeanalysis modules bind to top-level "DEResultsN" ids
           # that getDEResultsUI() renders. If we left this inside the cs
@@ -260,6 +265,12 @@ deServer <- function(input, output, session) {
             "load-uploadFile", "load-demo",
             "load-demo2", "goQCplots", "goQCplotsFromFilter"
           ))
+          # B2a: DE finished — mark done, unlock all outer tabs, and
+          # auto-navigate to Main Plots (panel1). The existing goMain
+          # observer is preserved for back-navigation but no longer
+          # required for the golden path.
+          progress$de <- "done"
+          togglePanels(1, c(0, 1, 2, 3, 4), session)
         })
 
         observeEvent(input$goMain, {
