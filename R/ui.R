@@ -53,7 +53,8 @@ deUI <- function() {
         tags$link(
           rel = "stylesheet", type = "text/css",
           href = "www/debrowser.css"
-        )
+        ),
+        tags$script(src = "www/dropzone.js")
       ),
       debrowser::getJSLine(),
       debrowser::getTabUpdateJS()

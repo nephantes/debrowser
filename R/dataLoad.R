@@ -240,25 +240,25 @@ dataLoadUI <- function(id) {
   list(
     conditionalPanel(
       condition = paste0("!output['", ns("dataloaded"), "']"),
-      # Primary drop zone: counts.
+      # Side-by-side drop zones: counts (required) + metadata (optional).
       fluidRow(
         column(
-          12,
-          fileUploadBox(
-            id, "countdata", "Count Data",
-            helper = "Tab-, comma-, or semicolon-separated. .tsv / .csv / .txt / .csv.gz."
-          )
-        )
-      ),
-      # Secondary drop zone: metadata (optional).
-      fluidRow(
-        column(
-          12,
+          6,
           div(
-            class = "de-secondary-zone",
+            class = "de-dropzone",
+            fileUploadBox(
+              id, "countdata", "Count Data",
+              helper = "Drop or browse. .tsv / .csv / .txt / .csv.gz."
+            )
+          )
+        ),
+        column(
+          6,
+          div(
+            class = "de-dropzone",
             fileUploadBox(
               id, "metadata", "Metadata",
-              helper = "Optional. If omitted, all samples are placed in one condition."
+              helper = "Optional. Drop or browse."
             )
           )
         )

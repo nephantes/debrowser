@@ -82,19 +82,32 @@
     /* No special treatment; the trailing checkmark is enough. */
 }
 
-/* B2b: Quick Start wizard upload card */
-.de-secondary-zone {
-    margin-top: 0.5rem;
-    opacity: 0.92;
+/* B2b: Quick Start wizard upload cards.
+   Two side-by-side compact drop zones with HTML5 drag-and-drop wiring
+   (see inst/extdata/www/dropzone.js). */
+.de-dropzone .card {
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.de-secondary-zone .card-header {
+.de-dropzone .card-header {
     font-size: 0.9rem;
     font-weight: 500;
+    padding: 0.5rem 0.75rem;
 }
 
-.de-secondary-zone .card-body {
-    padding: 0.6rem 0.75rem;
+.de-dropzone .card-body {
+    padding: 0.5rem 0.75rem;
+}
+
+.de-dropzone .form-text,
+.de-dropzone .help-block {
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.de-dropzone.dragover .card {
+    border-color: #2563eb;
+    background-color: rgba(37, 99, 235, 0.06);
 }
 
 .de-demo-row {
