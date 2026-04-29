@@ -75,27 +75,32 @@ deUI <- function() {
           class = "wizard-step-list list-group list-group-flush",
           actionLink("nav_DataPrep_Intro",       "Quick Start Guide",
                      class = "list-group-item list-group-item-action"),
-          actionLink("nav_DataPrep_Upload",      "Upload",
-                     class = "list-group-item list-group-item-action"),
+          actionLink("nav_DataPrep_Upload",      de_progress_label("Upload", "upload"),
+                     class = "list-group-item list-group-item-action",
+                     `data-progress-pill` = "upload"),
           conditionalPanel(
             condition = "input.Filter",
-            actionLink("nav_DataPrep_Filter",      "Filter",
-                       class = "list-group-item list-group-item-action")
+            actionLink("nav_DataPrep_Filter",      de_progress_label("Filter", "filter"),
+                       class = "list-group-item list-group-item-action",
+                       `data-progress-pill` = "filter")
           ),
           conditionalPanel(
             condition = "input.Batch",
-            actionLink("nav_DataPrep_BatchEffect", "BatchEffect",
-                       class = "list-group-item list-group-item-action")
+            actionLink("nav_DataPrep_BatchEffect", de_progress_label("BatchEffect", "batch"),
+                       class = "list-group-item list-group-item-action",
+                       `data-progress-pill` = "batch")
           ),
           conditionalPanel(
             condition = "input.goDE || input.goDEFromFilter",
-            actionLink("nav_DataPrep_CondSelect",  "CondSelect",
-                       class = "list-group-item list-group-item-action")
+            actionLink("nav_DataPrep_CondSelect",  de_progress_label("CondSelect", "condselect"),
+                       class = "list-group-item list-group-item-action",
+                       `data-progress-pill` = "condselect")
           ),
           conditionalPanel(
             condition = "input.startDE || input['cs-startDE']",
-            actionLink("nav_DataPrep_DEAnalysis",  "DE Analysis",
-                       class = "list-group-item list-group-item-action")
+            actionLink("nav_DataPrep_DEAnalysis",  de_progress_label("DE Analysis", "de"),
+                       class = "list-group-item list-group-item-action",
+                       `data-progress-pill` = "de")
           )
         ),
         conditionalPanel(
