@@ -45,4 +45,12 @@
     background: rgb(25, 31, 38);
 }
 
+/* B1.19: minimal styling for the Data Prep wizard nav. ActionLinks are
+   inline by default; force one-per-line. No colors/hovers — let bslib
+   sidebar defaults paint them. */
+.wizard-step-list .action-button {
+    display: block;
+    padding: 4px 0;
+}
+
 

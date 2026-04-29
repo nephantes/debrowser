@@ -64,7 +64,11 @@ deUI <- function() {
       width = 250, open = "open",
 
       # Data Prep tab — wizard nav lives in the sidebar (was nested in
-      # navset_pill_list inside the panel content prior to B1.16).
+      # navset_pill_list inside the panel content prior to B1.16). DE
+      # Filter (cutoff + comparison-selector) docks below the wizard nav
+      # when on the DEAnalysis step (matches pre-B1 sidebar location;
+      # B1.2 had moved it into the DEAnalysis panel content but the user
+      # asked for the sidebar location).
       conditionalPanel(
         condition = "input.methodtabs == 'panel0'",
         tags$div(
@@ -87,6 +91,13 @@ deUI <- function() {
             condition = "input.startDE || input['cs-startDE']",
             actionLink("nav_DataPrep_DEAnalysis",  "DE Analysis")
           )
+        ),
+        conditionalPanel(
+          condition = "input.DataPrep == 'DEAnalysis'",
+          tags$hr(),
+          tags$h6("DE Filter", style = "font-weight: 600; margin-top: 8px;"),
+          uiOutput("cutOffUI"),
+          uiOutput("compselectUI")
         )
       ),
 
@@ -147,16 +158,9 @@ deUI <- function() {
         ),
         bslib::nav_panel(
           title = "DE Analysis", value = "DEAnalysis",
-          tagList(
-            de_card(
-              title = "DE Filter",
-              uiOutput("cutOffUI"),
-              uiOutput("compselectUI")
-            ),
-            conditionalPanel(
-              condition = "input.goDE || input.goDEFromFilter",
-              uiOutput("deresUI")
-            )
+          conditionalPanel(
+            condition = "input.goDE || input.goDEFromFilter",
+            uiOutput("deresUI")
           )
         )
       )
