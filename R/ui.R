@@ -111,7 +111,7 @@ deUI <- function() {
       bslib::navset_hidden(
         id = "DataPrep",
         bslib::nav_panel(
-          value = "Intro",
+          title = "Quick Start Guide", value = "Intro",
           bslib::navset_pill(
             bslib::nav_panel("Introduction",       debrowser::getIntroText()),
             bslib::nav_panel("Data Assesment",     debrowser::getDataAssesmentText()),
@@ -121,32 +121,32 @@ deUI <- function() {
           )
         ),
         bslib::nav_panel(
-          value = "Upload",
+          title = "Upload", value = "Upload",
           debrowser::dataLoadUI("load")
         ),
         bslib::nav_panel(
-          value = "Filter",
+          title = "Filter", value = "Filter",
           conditionalPanel(
             condition = "input.Filter",
             debrowser::dataLCFUI("lcf")
           )
         ),
         bslib::nav_panel(
-          value = "BatchEffect",
+          title = "BatchEffect", value = "BatchEffect",
           conditionalPanel(
             condition = "input.Batch",
             debrowser::batchEffectUI("batcheffect")
           )
         ),
         bslib::nav_panel(
-          value = "CondSelect",
+          title = "CondSelect", value = "CondSelect",
           conditionalPanel(
             condition = "input.goDE || input.goDEFromFilter",
             debrowser::condSelectUI("cs")
           )
         ),
         bslib::nav_panel(
-          value = "DEAnalysis",
+          title = "DE Analysis", value = "DEAnalysis",
           tagList(
             de_card(
               title = "DE Filter",
