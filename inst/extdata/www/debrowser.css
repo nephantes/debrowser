@@ -50,4 +50,36 @@
    list-group-item-action gives the right hover/focus/border treatment
    for the matching bslib BS5 theme. */
 
+/* B2a: wizard progress decoration */
+.de-progress-icon {
+    display: inline-block;
+    margin-left: 0.4em;
+    width: 1em;
+}
+
+.de-progress-icon.done::after {
+    content: "\2713";          /* heavy check mark U+2713 */
+    color: #22c55e;
+    font-weight: 700;
+}
+
+.de-progress-icon.skipped::after {
+    content: "\2713";
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.de-progress-icon.locked::after {
+    content: "";               /* no glyph; the pill itself is greyed */
+}
+
+.de-pill-locked {
+    pointer-events: none;
+    opacity: 0.55;
+}
+
+.de-pill-done {
+    /* No special treatment; the trailing checkmark is enough. */
+}
+
 
