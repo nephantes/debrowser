@@ -45,3 +45,15 @@
     background: rgb(25, 31, 38);
 }
 
+/* B1.15: fully hide the page-level shared sidebar on the Data Prep tab.
+   bslib::toggle_sidebar only collapses contents but leaves a visible
+   toggle bar; on Data Prep we want zero left-rail chrome so the
+   wizard's navset_pill_list flushes to the page edge. */
+body.debrowser-no-sidebar .bslib-sidebar-layout > .sidebar,
+body.debrowser-no-sidebar .bslib-sidebar-layout > .collapse-toggle {
+    display: none !important;
+}
+body.debrowser-no-sidebar .bslib-sidebar-layout {
+    grid-template-columns: 0 1fr !important;
+}
+

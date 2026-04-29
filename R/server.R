@@ -127,15 +127,17 @@ deServer <- function(input, output, session) {
       bslib::nav_hide("DataPrep", "CondSelect")
       bslib::nav_hide("DataPrep", "DEAnalysis")
 
-      # B1.13: collapse the page-level shared sidebar when the user is on
-      # the Data Prep tab (the wizard's own navset_pill_list owns that
-      # tab's layout; an empty sidebar there would leave a blank strip
-      # on the left and push the wizard's nav into the middle).
+      # B1.13/B1.15: fully hide the page-level shared sidebar when the
+      # user is on the Data Prep tab. bslib::toggle_sidebar leaves a
+      # visible toggle strip on the left even when collapsed. Use a body
+      # CSS class (`.debrowser-no-sidebar`) that the rule in
+      # inst/extdata/www/debrowser.css hides via display:none.
       observeEvent(input$methodtabs, ignoreInit = FALSE, {
         is_data_prep <- isTRUE(input$methodtabs == "panel0")
-        bslib::toggle_sidebar("shared_sidebar",
-                              open = !is_data_prep,
-                              session = session)
+        shinyjs::runjs(sprintf(
+          "document.body.classList.toggle('debrowser-no-sidebar', %s);",
+          tolower(is_data_prep)
+        ))
       })
 
       observeEvent(input$Filter, {
