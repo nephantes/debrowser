@@ -187,8 +187,14 @@ deServer <- function(input, output, session) {
         # QC plots without first running DE.
         observeEvent(updata()$load(), {
           if (!is.null(updata()$load())) {
-            progress$upload <- "done"
-            progress$filter <- "pending"
+            progress$upload     <- "done"
+            progress$filter     <- "pending"
+            # B2a.12: re-upload mid-session — reset downstream pills so
+            # stale "done" decorations from a prior run don't carry over
+            # onto the new dataset.
+            progress$batch      <- "skipped"
+            progress$condselect <- "locked"
+            progress$de         <- "locked"
             bslib::nav_show("methodtabs", target = "panel2", session = session)
           }
         }, ignoreInit = TRUE)
@@ -381,12 +387,23 @@ deServer <- function(input, output, session) {
         if (is.null(batch())) batch(setBatch(filtd()))
         buttonValues$startDE <- FALSE
         buttonValues$goQCplots <- TRUE
-        togglePanels(2, c(0, 2, 4), session)
+        # B2a.12: once DE has run, keep all unlocked tabs visible
+        # rather than re-hiding Main Plots + GO Term.
+        if (isTRUE(progress$de == "done")) {
+          togglePanels(2, c(0, 1, 2, 3, 4), session)
+        } else {
+          togglePanels(2, c(0, 2, 4), session)
+        }
       })
       observeEvent(input$goQCplots, {
         buttonValues$startDE <- FALSE
         buttonValues$goQCplots <- TRUE
-        togglePanels(2, c(0, 2, 4), session)
+        # B2a.12: same post-DE preservation as goQCplotsFromFilter above.
+        if (isTRUE(progress$de == "done")) {
+          togglePanels(2, c(0, 1, 2, 3, 4), session)
+        } else {
+          togglePanels(2, c(0, 2, 4), session)
+        }
       })
       comparison <- reactive({
         compselect <- 1
