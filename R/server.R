@@ -96,6 +96,32 @@ deServer <- function(input, output, session) {
 
       choicecounter <- reactiveValues(nc = 0)
 
+      # B2a: progress reactiveValues drives the wizard pill / Data Prep tab
+      # icon decoration. Tab visibility is still managed by togglePanels()
+      # in R/uifuncs.R; this is icon state only.
+      # State enum per key: pending | done | locked | skipped | "" (blank)
+      progress <- reactiveValues(
+        upload     = "pending",
+        filter     = "locked",
+        batch      = "skipped",   # batch is optional; default to skipped
+        condselect = "locked",
+        de         = "locked"
+      )
+
+      # Broadcast every progress field on any change. Also derives the
+      # Data Prep outer tab's "data_prep" key (done iff DE is done).
+      observe({
+        update_progress(session, "upload",     progress$upload)
+        update_progress(session, "filter",     progress$filter)
+        update_progress(session, "batch",      progress$batch)
+        update_progress(session, "condselect", progress$condselect)
+        update_progress(session, "de",         progress$de)
+        update_progress(
+          session, "data_prep",
+          if (progress$de == "done") "done" else ""
+        )
+      })
+
       output$programtitle <- renderUI({
         togglePanels(0, c(0), session)
         getProgramTitle(session)
