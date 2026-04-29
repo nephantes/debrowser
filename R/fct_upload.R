@@ -62,24 +62,30 @@ NULL
 #' Auto-detect the field separator in a count-data file.
 #'
 #' Tries tab, comma, semicolon. Returns the highest-scoring delimiter
-#' with score >= 3, with the tie-break order tab > comma > semicolon.
-#' Returns NA when no candidate clears the threshold.
+#' with score >= `min_score`, with the tie-break order tab > comma >
+#' semicolon. Returns NA when no candidate clears the threshold.
 #'
 #' Decompresses `.gz` files and strips a leading UTF-8 BOM before
 #' scoring. Excel files are not handled here — callers should branch
 #' on extension before calling this.
 #'
+#' Counts files default to `min_score = 3` (3+ numeric columns is a strong
+#' signal). Metadata files have only 1-2 numeric columns typically; pass
+#' `min_score = 1` to keep the helper useful for them.
+#'
 #' @param path character, path to the file (may end in `.gz`).
 #' @param sample_lines integer, number of lines to read for scoring.
+#' @param min_score integer, minimum numeric-column count required to
+#'   accept a candidate delimiter.
 #' @return one of tab, comma, semicolon, or `NA_character_`.
 #' @export
-detect_separator <- function(path, sample_lines = 50L) {
+detect_separator <- function(path, sample_lines = 50L, min_score = 3L) {
   lines <- .read_head_lines(path, sample_lines)
   if (length(lines) < 2) return(NA_character_)
   candidates <- c("\t", ",", ";")
   scores <- vapply(candidates, function(s) .score_separator(lines, s), integer(1))
   best <- which.max(scores)
-  if (length(best) == 0 || scores[best] < 3) return(NA_character_)
+  if (length(best) == 0 || scores[best] < min_score) return(NA_character_)
   candidates[best]
 }
 

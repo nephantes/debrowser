@@ -73,6 +73,15 @@ test_that("detect_separator returns NA on a 1-numeric-column file (score < 3)", 
   expect_true(is.na(detect_separator(path)))
 })
 
+test_that("detect_separator picks tab on a 1-numeric-column file with min_score = 1", {
+  # Metadata files typically have only 1-2 numeric columns. With the
+  # default min_score = 3 they fail to detect; with min_score = 1 the
+  # helper still picks the right delimiter.
+  rows <- c("sample\tbatch", "A\t1", "B\t2", "C\t3")
+  path <- write_fixture(paste(rows, collapse = "\n"), "tsv")
+  expect_equal(detect_separator(path, min_score = 1L), "\t")
+})
+
 test_that("detect_separator returns NA on a malformed/empty file", {
   path <- write_fixture("", "tsv")
   expect_true(is.na(detect_separator(path)))

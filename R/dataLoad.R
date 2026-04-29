@@ -154,7 +154,9 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
   observeEvent(input$metadata, {
     f <- input$metadata
     if (is.null(f)) return()
-    sep <- detect_separator(f$datapath)
+    # Metadata files typically have 1-2 numeric columns -- min_score = 1
+    # so the helper isn't inert on the common case.
+    sep <- detect_separator(f$datapath, min_score = 1L)
     if (!is.na(sep)) {
       updateRadioButtons(session, "metadataSep", selected = sep)
     }
@@ -164,7 +166,16 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     if (is.null(input$countdata)) {
       return(NULL)
     }
-    checkRes <- checkCountData(input)
+    # B2b followup: re-detect the separator inside the upload handler.
+    # Shiny's updateRadioButtons is queued client-side, so a fast click
+    # on Upload right after picking a file can read input$countdataSep
+    # before the auto-detect roundtrip completes. Falling back to the
+    # radio only when detect can't decide preserves the user's manual
+    # override path (Show all options + sep change after detect failed).
+    detected_count <- detect_separator(input$countdata$datapath)
+    count_sep <- if (!is.na(detected_count)) detected_count else input$countdataSep
+
+    checkRes <- checkCountData(input, sep = count_sep)
 
     if (checkRes != "success") {
       showNotification(checkRes, type = "error")
@@ -173,7 +184,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     counttable <- as.data.frame(
       try(
         read.delim(input$countdata$datapath,
-          header = T, sep = input$countdataSep,
+          header = T, sep = count_sep,
           row.names = 1, strip.white = TRUE
         ), TRUE
       )
@@ -182,16 +193,18 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     counttable <- counttable[, sapply(counttable, is.numeric)]
     metadatatable <- c()
     if (!is.null(input$metadata$datapath)) {
+      detected_meta <- detect_separator(input$metadata$datapath, min_score = 1L)
+      meta_sep <- if (!is.na(detected_meta)) detected_meta else input$metadataSep
       metadatatable <- as.data.frame(
         try(
           read.delim(input$metadata$datapath,
-            header = TRUE, sep = input$metadataSep, strip.white = TRUE
+            header = TRUE, sep = meta_sep, strip.white = TRUE
           ), TRUE
         )
       )
 
       metadatatable[, 1] <- gsub("\\s+|\\.|\\-", "_", metadatatable[, 1])
-      checkRes <- checkMetaData(input, counttable)
+      checkRes <- checkMetaData(input, counttable, sep = meta_sep)
       if (checkRes != "success") {
         showNotification(checkRes, type = "error")
         return(NULL)
@@ -442,6 +455,8 @@ fileTypes <- function() {
 #'
 #' @note \code{checkCountData}
 #' @param input, inputs
+#' @param sep, optional override for the field separator; defaults to
+#'   `input$countdataSep` when NULL
 #' @return error if there is a problem about the loaded data
 #
 #' @examples
@@ -449,13 +464,14 @@ fileTypes <- function() {
 #'
 #' @export
 #'
-checkCountData <- function(input = NULL) {
+checkCountData <- function(input = NULL, sep = NULL) {
   if (is.null(input$countdata$datapath)) {
     return(NULL)
   }
+  if (is.null(sep)) sep <- input$countdataSep
   tryCatch(
     {
-      data <- read.table(input$countdata$datapath, sep = input$countdataSep)
+      data <- read.table(input$countdata$datapath, sep = sep)
       if (ncol(data) < 3) {
         return("Error: Please check if you chose the right separator!")
       }
@@ -486,6 +502,8 @@ checkCountData <- function(input = NULL) {
 #' @note \code{checkMetaData}
 #' @param input, input
 #' @param counttable, counttable
+#' @param sep, optional override for the field separator; defaults to
+#'   `input$metadataSep` when NULL
 #' @return error if there is a problem about the loaded data
 #
 #' @examples
@@ -493,13 +511,14 @@ checkCountData <- function(input = NULL) {
 #'
 #' @export
 #'
-checkMetaData <- function(input = NULL, counttable = NULL) {
+checkMetaData <- function(input = NULL, counttable = NULL, sep = NULL) {
   if (is.null(counttable) || is.null(input$metadata$datapath)) {
     return(NULL)
   }
+  if (is.null(sep)) sep <- input$metadataSep
   tryCatch(
     {
-      metadatatable <- read.table(input$metadata$datapath, sep = input$metadataSep, header = T)
+      metadatatable <- read.table(input$metadata$datapath, sep = sep, header = T)
       if (ncol(metadatatable) < 2) {
         return("Error: Please check if you chose the right separator!")
       }

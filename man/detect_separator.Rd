@@ -4,23 +4,30 @@
 \alias{detect_separator}
 \title{Auto-detect the field separator in a count-data file.}
 \usage{
-detect_separator(path, sample_lines = 50L)
+detect_separator(path, sample_lines = 50L, min_score = 3L)
 }
 \arguments{
 \item{path}{character, path to the file (may end in `.gz`).}
 
 \item{sample_lines}{integer, number of lines to read for scoring.}
+
+\item{min_score}{integer, minimum numeric-column count required to
+accept a candidate delimiter.}
 }
 \value{
 one of tab, comma, semicolon, or `NA_character_`.
 }
 \description{
 Tries tab, comma, semicolon. Returns the highest-scoring delimiter
-with score >= 3, with the tie-break order tab > comma > semicolon.
-Returns NA when no candidate clears the threshold.
+with score >= `min_score`, with the tie-break order tab > comma >
+semicolon. Returns NA when no candidate clears the threshold.
 }
 \details{
 Decompresses `.gz` files and strips a leading UTF-8 BOM before
 scoring. Excel files are not handled here — callers should branch
 on extension before calling this.
+
+Counts files default to `min_score = 3` (3+ numeric columns is a strong
+signal). Metadata files have only 1-2 numeric columns typically; pass
+`min_score = 1` to keep the helper useful for them.
 }

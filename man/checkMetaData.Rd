@@ -4,12 +4,15 @@
 \alias{checkMetaData}
 \title{checkMetaData}
 \usage{
-checkMetaData(input = NULL, counttable = NULL)
+checkMetaData(input = NULL, counttable = NULL, sep = NULL)
 }
 \arguments{
 \item{input, }{input}
 
 \item{counttable, }{counttable}
+
+\item{sep, }{optional override for the field separator; defaults to
+`input$metadataSep` when NULL}
 }
 \value{
 error if there is a problem about the loaded data

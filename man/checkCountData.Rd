@@ -4,10 +4,13 @@
 \alias{checkCountData}
 \title{checkCountData}
 \usage{
-checkCountData(input = NULL)
+checkCountData(input = NULL, sep = NULL)
 }
 \arguments{
 \item{input, }{inputs}
+
+\item{sep, }{optional override for the field separator; defaults to
+`input$countdataSep` when NULL}
 }
 \value{
 error if there is a problem about the loaded data
