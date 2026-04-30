@@ -87,3 +87,61 @@ test_that("compute_cond_names extracts the two display labels in order", {
   spec <- list(treatment_label = "Drug 24h", control_label = "DMSO")
   expect_equal(compute_cond_names(spec), c("Drug 24h", "DMSO"))
 })
+
+test_that("build_demethod_params_string reproduces today's DESeq2 format", {
+  s <- build_demethod_params_string(
+    de_method = "DESeq2",
+    method_params = list(
+      fitType = "parametric", betaPrior = FALSE,
+      testType = "LRT", shrinkage = "None"
+    ),
+    covariates = character(0)
+  )
+  expect_equal(s, "DESeq2,NoCovariate,parametric,FALSE,LRT,None")
+})
+
+test_that("build_demethod_params_string handles single covariate", {
+  s <- build_demethod_params_string(
+    de_method = "DESeq2",
+    method_params = list(
+      fitType = "parametric", betaPrior = FALSE,
+      testType = "LRT", shrinkage = "None"
+    ),
+    covariates = "batch"
+  )
+  expect_equal(s, "DESeq2,batch,parametric,FALSE,LRT,None")
+})
+
+test_that("build_demethod_params_string handles multiple covariates with pipe sep", {
+  s <- build_demethod_params_string(
+    de_method = "DESeq2",
+    method_params = list(
+      fitType = "parametric", betaPrior = FALSE,
+      testType = "LRT", shrinkage = "None"
+    ),
+    covariates = c("batch", "donor")
+  )
+  expect_equal(s, "DESeq2,batch|donor,parametric,FALSE,LRT,None")
+})
+
+test_that("build_demethod_params_string reproduces today's EdgeR format", {
+  s <- build_demethod_params_string(
+    de_method = "EdgeR",
+    method_params = list(
+      edgeR_normfact = "TMM", dispersion = "0", edgeR_testType = "exactTest"
+    ),
+    covariates = character(0)
+  )
+  expect_equal(s, "EdgeR,NoCovariate,TMM,0,exactTest")
+})
+
+test_that("build_demethod_params_string reproduces today's Limma format", {
+  s <- build_demethod_params_string(
+    de_method = "Limma",
+    method_params = list(
+      limma_normfact = "TMM", limma_fitType = "ls", normBetween = "none"
+    ),
+    covariates = character(0)
+  )
+  expect_equal(s, "Limma,NoCovariate,TMM,ls,none")
+})

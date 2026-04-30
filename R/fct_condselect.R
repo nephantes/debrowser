@@ -75,3 +75,45 @@ halve_sample_names <- function(sample_names) {
 compute_cond_names <- function(spec) {
   c(spec$treatment_label, spec$control_label)
 }
+
+#' Serialize a comparison's DE method + params + covariates into the comma-
+#' separated string that `R/fct_de_methods.R` and `R/deprogs.R` parse
+#' positionally. Reproduces the legacy `prepDataContainer` format byte-for-byte.
+#'
+#' Schema by method:
+#'   DESeq2: "DESeq2,<covariate>,<fitType>,<betaPrior>,<testType>,<shrinkage>"
+#'   EdgeR:  "EdgeR,<covariate>,<edgeR_normfact>,<dispersion>,<edgeR_testType>"
+#'   Limma:  "Limma,<covariate>,<limma_normfact>,<limma_fitType>,<normBetween>"
+#'
+#' Where `<covariate>` is the pipe-joined covariate column names, or the
+#' literal string "NoCovariate" when empty (legacy convention).
+#'
+#' @noRd
+build_demethod_params_string <- function(de_method, method_params, covariates) {
+  cov_str <- if (length(covariates) == 0L) {
+    "NoCovariate"
+  } else {
+    paste(covariates, collapse = "|")
+  }
+  switch(de_method,
+    "DESeq2" = paste(
+      "DESeq2", cov_str,
+      method_params$fitType, method_params$betaPrior,
+      method_params$testType, method_params$shrinkage,
+      sep = ","
+    ),
+    "EdgeR" = paste(
+      "EdgeR", cov_str,
+      method_params$edgeR_normfact, method_params$dispersion,
+      method_params$edgeR_testType,
+      sep = ","
+    ),
+    "Limma" = paste(
+      "Limma", cov_str,
+      method_params$limma_normfact, method_params$limma_fitType,
+      method_params$normBetween,
+      sep = ","
+    ),
+    stop("Unknown de_method: ", de_method)
+  )
+}
