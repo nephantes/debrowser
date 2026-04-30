@@ -243,5 +243,47 @@ validate_comparison <- function(spec, metadata) {
     }
   }
 
+  # Covariate predicates (severity = warning, advisory only).
+  selected_samples <- c(spec$treatment_samples, spec$control_samples)
+  treatment_marker <- c(rep("Treat", length(spec$treatment_samples)),
+                       rep("Control", length(spec$control_samples)))
+
+  for (cov in spec$covariates) {
+    if (!cov %in% colnames(metadata)) next  # silently skip; should not happen
+
+    msg <- NULL
+
+    # 1. Equal to meta column?
+    if (!is.na(spec$meta_column) && cov == spec$meta_column) {
+      msg <- paste0("Covariate `", cov, "` is the comparison column itself.")
+    }
+
+    # 2. NA in selected samples?
+    if (is.null(msg)) {
+      cov_vals <- metadata[[cov]][match(selected_samples, metadata[[1]])]
+      if (any(is.na(cov_vals))) {
+        msg <- paste0("Covariate `", cov, "` has NA in selected samples.")
+      } else if (length(unique(cov_vals)) < 2) {
+        # 3. < 2 unique values?
+        msg <- paste0("Covariate `", cov,
+                      "` has fewer than 2 distinct values in selected samples.")
+      } else {
+        # 4. Confounded? (each level of cov should appear in both sides)
+        ct <- table(cov_vals, treatment_marker)
+        if (any(ct == 0)) {
+          msg <- paste0("Covariate `", cov,
+                        "` is confounded with treatment (some levels appear ",
+                        "on only one side).")
+        }
+      }
+    }
+
+    if (!is.null(msg)) {
+      records[[length(records) + 1]] <- .rec(
+        paste0("covariate_", cov), FALSE, msg, "warning"
+      )
+    }
+  }
+
   records
 }

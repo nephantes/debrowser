@@ -134,3 +134,51 @@ test_that("validate_comparison: surfaces every failing predicate, not just the f
   expect_setequal(fields, c("treatment_samples", "control_samples",
                             "treatment_label", "control_label"))
 })
+
+test_that("covariate with NA in selected samples -> warning", {
+  meta <- mk_meta()
+  meta$batch[1] <- NA  # s1 has NA batch
+  records <- validate_comparison(mk_spec(covariates = "batch"), meta)
+  warnings <- Filter(function(r) r$severity == "warning", records)
+  expect_true(any(vapply(warnings,
+    function(r) r$field == "covariate_batch", logical(1))))
+})
+
+test_that("covariate with < 2 unique values in selected samples -> warning", {
+  meta <- mk_meta()
+  meta$batch <- c("A", "A", "A", "A")  # all same
+  records <- validate_comparison(mk_spec(covariates = "batch"), meta)
+  warnings <- Filter(function(r) r$severity == "warning", records)
+  expect_true(any(vapply(warnings,
+    function(r) r$field == "covariate_batch", logical(1))))
+})
+
+test_that("covariate confounded with treatment -> warning", {
+  meta <- mk_meta()
+  # batch perfectly correlated with treatment side: A on treatment, B on control.
+  meta$batch <- c("A", "A", "B", "B")
+  records <- validate_comparison(mk_spec(covariates = "batch"), meta)
+  warnings <- Filter(function(r) r$severity == "warning", records)
+  expect_true(any(vapply(warnings,
+    function(r) r$field == "covariate_batch", logical(1))))
+})
+
+test_that("covariate equal to meta_column -> warning", {
+  records <- validate_comparison(
+    mk_spec(meta_column = "cond", treatment_level = "KO",
+            control_level = "WT", covariates = "cond"),
+    mk_meta()
+  )
+  warnings <- Filter(function(r) r$severity == "warning", records)
+  expect_true(any(vapply(warnings,
+    function(r) r$field == "covariate_cond", logical(1))))
+})
+
+test_that("baseline-valid covariate (well-balanced, no NA) yields no warning", {
+  meta <- mk_meta()
+  # batch crosses treatment cleanly.
+  meta$batch <- c("A", "B", "A", "B")
+  records <- validate_comparison(mk_spec(covariates = "batch"), meta)
+  warnings <- Filter(function(r) r$severity == "warning", records)
+  expect_length(warnings, 0)
+})
