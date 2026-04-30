@@ -47,9 +47,10 @@ default_side_labels <- function(meta_column, treatment_level, control_level) {
 
 #' Halve a sample-name vector into default treatment / control halves.
 #'
-#' Preserves the exact behavior of the legacy `getSampleNames(cnames, part)`:
-#' the first half (length floor(n/2)) is assigned to treatment, the rest to
-#' control.
+#' Replaces the legacy `getSampleNames(cnames, part)` and fixes its `1:0`
+#' index-reversal quirk at length 1. The first half (length floor(n/2)) is
+#' assigned to treatment, the rest to control. At n = 1 treatment is empty
+#' and control gets the single sample.
 #'
 #' @param sample_names character vector of column names from the count matrix.
 #' @return list with components `treatment` and `control`, or NULL on NULL input.

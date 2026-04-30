@@ -75,3 +75,10 @@ test_that("halve_sample_names returns empty halves for empty input", {
 test_that("halve_sample_names returns NULL on NULL input", {
   expect_null(halve_sample_names(NULL))
 })
+
+test_that("halve_sample_names with length-1 input gives empty treatment", {
+  # Locks in the deliberate divergence from the legacy 1:0-reversal behavior.
+  result <- halve_sample_names("only")
+  expect_equal(result$treatment, character(0))
+  expect_equal(result$control, "only")
+})
