@@ -182,3 +182,35 @@ test_that("baseline-valid covariate (well-balanced, no NA) yields no warning", {
   warnings <- Filter(function(r) r$severity == "warning", records)
   expect_length(warnings, 0)
 })
+
+test_that("validate_comparison: unknown covariate column surfaces as error", {
+  records <- validate_comparison(mk_spec(covariates = "nonexistent"), mk_meta())
+  errors <- Filter(function(r) r$severity == "error", records)
+  expect_true(any(vapply(errors,
+    function(r) r$field == "covariate_nonexistent", logical(1))))
+})
+
+test_that("validate_comparison: covariate evaluated correctly when sample column is not first", {
+  meta <- data.frame(
+    cond   = c("KO", "KO", "WT", "WT"),
+    sample = c("s1", "s2", "s3", "s4"),
+    batch  = c("A",  "B",  "A",  "B"),  # well-balanced
+    stringsAsFactors = FALSE
+  )
+  records <- validate_comparison(mk_spec(covariates = "batch"), meta)
+  warnings <- Filter(function(r) r$severity == "warning", records)
+  expect_length(warnings, 0)  # no false-positive NA warning
+})
+
+test_that("validate_comparison: two covariates - emits one warning per bad cov", {
+  meta <- mk_meta()
+  meta$donor <- c("X", "X", "Y", "Y")  # confounded
+  # batch is c("A","B","A","B") in mk_meta — well balanced, should not warn.
+  records <- validate_comparison(
+    mk_spec(covariates = c("batch", "donor")),
+    meta
+  )
+  warnings <- Filter(function(r) r$severity == "warning", records)
+  expect_length(warnings, 1)
+  expect_equal(warnings[[1]]$field, "covariate_donor")
+})

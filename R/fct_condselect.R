@@ -168,6 +168,23 @@ is_nonblank <- function(x) {
   length(x) == 1L && !is.na(x) && nzchar(trimws(x))
 }
 
+# Locate the column in metadata whose values contain all the named samples.
+# Mirrors the convention used in R/deprogs.R::prepGroup so the validator and
+# downstream DE machinery agree on which column is the sample-name column.
+# Returns the column name, or NA_character_ if no column qualifies.
+find_sample_column <- function(metadata, samples) {
+  if (is.null(metadata) || ncol(metadata) == 0L || length(samples) == 0L) {
+    return(NA_character_)
+  }
+  hit <- vapply(seq_len(ncol(metadata)), function(j) {
+    col <- metadata[[j]]
+    if (is.factor(col)) col <- as.character(col)
+    sum(samples %in% col) == length(samples)
+  }, logical(1))
+  if (!any(hit)) return(NA_character_)
+  colnames(metadata)[which(hit)[1]]
+}
+
 #' Compose all validation predicates for a comparison spec.
 #'
 #' Returns a list of validation records (one per check that produced a
@@ -243,13 +260,22 @@ validate_comparison <- function(spec, metadata) {
     }
   }
 
-  # Covariate predicates (severity = warning, advisory only).
+  # Covariate predicates (severity = warning, advisory only — except an
+  # unknown column name, which is a hard configuration error).
   selected_samples <- c(spec$treatment_samples, spec$control_samples)
   treatment_marker <- c(rep("Treat", length(spec$treatment_samples)),
                        rep("Control", length(spec$control_samples)))
+  sample_col <- find_sample_column(metadata, selected_samples)
 
   for (cov in spec$covariates) {
-    if (!cov %in% colnames(metadata)) next  # silently skip; should not happen
+    if (!cov %in% colnames(metadata)) {
+      records[[length(records) + 1]] <- .rec(
+        paste0("covariate_", cov), FALSE,
+        paste0("Covariate `", cov, "` is not a column of the metadata."),
+        "error"
+      )
+      next
+    }
 
     msg <- NULL
 
@@ -260,20 +286,29 @@ validate_comparison <- function(spec, metadata) {
 
     # 2. NA in selected samples?
     if (is.null(msg)) {
-      cov_vals <- metadata[[cov]][match(selected_samples, metadata[[1]])]
-      if (any(is.na(cov_vals))) {
-        msg <- paste0("Covariate `", cov, "` has NA in selected samples.")
-      } else if (length(unique(cov_vals)) < 2) {
-        # 3. < 2 unique values?
+      if (is.na(sample_col)) {
+        # Can't locate the sample-name column at all; nothing more to check
+        # for this covariate without that anchor.
         msg <- paste0("Covariate `", cov,
-                      "` has fewer than 2 distinct values in selected samples.")
+                      "` cannot be evaluated (no metadata column matches the ",
+                      "selected sample names).")
       } else {
-        # 4. Confounded? (each level of cov should appear in both sides)
-        ct <- table(cov_vals, treatment_marker)
-        if (any(ct == 0)) {
+        cov_vals <- metadata[[cov]][match(selected_samples, metadata[[sample_col]])]
+        if (is.factor(cov_vals)) cov_vals <- as.character(cov_vals)
+        if (any(is.na(cov_vals))) {
+          msg <- paste0("Covariate `", cov, "` has NA in selected samples.")
+        } else if (length(unique(cov_vals)) < 2) {
+          # 3. < 2 unique values?
           msg <- paste0("Covariate `", cov,
-                        "` is confounded with treatment (some levels appear ",
-                        "on only one side).")
+                        "` has fewer than 2 distinct values in selected samples.")
+        } else {
+          # 4. Confounded? (each level of cov should appear in both sides)
+          ct <- table(cov_vals, treatment_marker)
+          if (any(ct == 0)) {
+            msg <- paste0("Covariate `", cov,
+                          "` is confounded with treatment (some levels appear ",
+                          "on only one side).")
+          }
         }
       }
     }
