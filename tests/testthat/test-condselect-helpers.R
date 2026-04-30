@@ -145,3 +145,73 @@ test_that("build_demethod_params_string reproduces today's Limma format", {
   )
   expect_equal(s, "Limma,NoCovariate,TMM,ls,none")
 })
+
+test_that("build_demethod_params_string normalizes empty-string covariate to NoCovariate", {
+  s <- build_demethod_params_string(
+    de_method = "DESeq2",
+    method_params = list(
+      fitType = "parametric", betaPrior = FALSE,
+      testType = "LRT", shrinkage = "None"
+    ),
+    covariates = ""
+  )
+  expect_equal(s, "DESeq2,NoCovariate,parametric,FALSE,LRT,None")
+})
+
+test_that("build_demethod_params_string drops empty strings inside a covariate vector", {
+  s <- build_demethod_params_string(
+    de_method = "DESeq2",
+    method_params = list(
+      fitType = "parametric", betaPrior = FALSE,
+      testType = "LRT", shrinkage = "None"
+    ),
+    covariates = c("", "batch", "")
+  )
+  expect_equal(s, "DESeq2,batch,parametric,FALSE,LRT,None")
+})
+
+test_that("build_demethod_params_string errors hard on missing method_params field", {
+  expect_error(
+    build_demethod_params_string(
+      de_method = "DESeq2",
+      method_params = list(  # shrinkage missing
+        fitType = "parametric", betaPrior = FALSE, testType = "LRT"
+      ),
+      covariates = character(0)
+    ),
+    regexp = "shrinkage"
+  )
+})
+
+test_that("build_demethod_params_string errors hard on NULL method_params field", {
+  expect_error(
+    build_demethod_params_string(
+      de_method = "EdgeR",
+      method_params = list(
+        edgeR_normfact = NULL, dispersion = "0", edgeR_testType = "exactTest"
+      ),
+      covariates = character(0)
+    ),
+    regexp = "edgeR_normfact"
+  )
+})
+
+test_that("build_demethod_params_string covariate handling works for EdgeR + Limma", {
+  s_e <- build_demethod_params_string(
+    de_method = "EdgeR",
+    method_params = list(
+      edgeR_normfact = "TMM", dispersion = "0", edgeR_testType = "exactTest"
+    ),
+    covariates = c("batch", "donor")
+  )
+  expect_equal(s_e, "EdgeR,batch|donor,TMM,0,exactTest")
+
+  s_l <- build_demethod_params_string(
+    de_method = "Limma",
+    method_params = list(
+      limma_normfact = "TMM", limma_fitType = "ls", normBetween = "none"
+    ),
+    covariates = "batch"
+  )
+  expect_equal(s_l, "Limma,batch,TMM,ls,none")
+})

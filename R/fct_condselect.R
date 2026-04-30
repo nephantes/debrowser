@@ -88,32 +88,68 @@ compute_cond_names <- function(spec) {
 #' Where `<covariate>` is the pipe-joined covariate column names, or the
 #' literal string "NoCovariate" when empty (legacy convention).
 #'
+#' Empty-string covariates (length-1 `""` from a legacy reactive context) are
+#' normalized away alongside `character(0)` to the literal `"NoCovariate"`.
+#' Missing or `NULL` `method_params` fields produce a hard error rather than
+#' silently dropping a field via `paste()`.
+#'
 #' @noRd
 build_demethod_params_string <- function(de_method, method_params, covariates) {
+  # Drop empty-string covariates so callers passing "" (legacy artifact of an
+  # empty selectInput) get the "NoCovariate" sentinel just like length-0.
+  covariates <- covariates[nzchar(covariates)]
   cov_str <- if (length(covariates) == 0L) {
     "NoCovariate"
   } else {
     paste(covariates, collapse = "|")
   }
+
+  # Hard-fail on missing/NULL method_params fields so a downstream parser
+  # off-by-one (paste() silently drops NULL) is impossible. Each branch
+  # consumes a fixed-arity vector; missing fields = bug, not a recoverable case.
+  require_fields <- function(params, fields) {
+    missing_or_null <- vapply(
+      fields,
+      function(f) is.null(params[[f]]),
+      logical(1)
+    )
+    if (any(missing_or_null)) {
+      stop("build_demethod_params_string: missing method_params field(s) for ",
+           sQuote(de_method), ": ",
+           paste(fields[missing_or_null], collapse = ", "),
+           call. = FALSE)
+    }
+  }
+
   switch(de_method,
-    "DESeq2" = paste(
-      "DESeq2", cov_str,
-      method_params$fitType, method_params$betaPrior,
-      method_params$testType, method_params$shrinkage,
-      sep = ","
-    ),
-    "EdgeR" = paste(
-      "EdgeR", cov_str,
-      method_params$edgeR_normfact, method_params$dispersion,
-      method_params$edgeR_testType,
-      sep = ","
-    ),
-    "Limma" = paste(
-      "Limma", cov_str,
-      method_params$limma_normfact, method_params$limma_fitType,
-      method_params$normBetween,
-      sep = ","
-    ),
-    stop("Unknown de_method: ", de_method)
+    "DESeq2" = {
+      require_fields(method_params, c("fitType", "betaPrior", "testType", "shrinkage"))
+      paste(
+        "DESeq2", cov_str,
+        method_params$fitType, method_params$betaPrior,
+        method_params$testType, method_params$shrinkage,
+        sep = ","
+      )
+    },
+    "EdgeR" = {
+      require_fields(method_params, c("edgeR_normfact", "dispersion", "edgeR_testType"))
+      paste(
+        "EdgeR", cov_str,
+        method_params$edgeR_normfact, method_params$dispersion,
+        method_params$edgeR_testType,
+        sep = ","
+      )
+    },
+    "Limma" = {
+      require_fields(method_params, c("limma_normfact", "limma_fitType", "normBetween"))
+      paste(
+        "Limma", cov_str,
+        method_params$limma_normfact, method_params$limma_fitType,
+        method_params$normBetween,
+        sep = ","
+      )
+    },
+    stop("build_demethod_params_string: unknown de_method: ",
+         sQuote(de_method), call. = FALSE)
   )
 }
