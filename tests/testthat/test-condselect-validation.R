@@ -88,3 +88,49 @@ test_that("validate_comparison: treatment_level == control_level -> error", {
   errors <- Filter(function(r) r$severity == "error", records)
   expect_true(any(vapply(errors, function(r) r$field == "level_distinct", logical(1))))
 })
+
+test_that("validate_comparison: whitespace-only label is rejected", {
+  records <- validate_comparison(mk_spec(treatment_label = "   "), mk_meta())
+  errors <- Filter(function(r) r$severity == "error", records)
+  expect_true(any(vapply(errors,
+    function(r) r$field == "treatment_label", logical(1))))
+})
+
+test_that("validate_comparison: NA label is rejected", {
+  records <- validate_comparison(mk_spec(control_label = NA_character_), mk_meta())
+  errors <- Filter(function(r) r$severity == "error", records)
+  expect_true(any(vapply(errors,
+    function(r) r$field == "control_label", logical(1))))
+})
+
+test_that("validate_comparison: NULL label is rejected without crashing", {
+  records <- validate_comparison(mk_spec(treatment_label = NULL), mk_meta())
+  errors <- Filter(function(r) r$severity == "error", records)
+  expect_true(any(vapply(errors,
+    function(r) r$field == "treatment_label", logical(1))))
+})
+
+test_that("validate_comparison: factor-typed metadata column does not crash", {
+  meta <- mk_meta()
+  meta$cond <- factor(meta$cond)
+  expect_silent(
+    records <- validate_comparison(
+      mk_spec(meta_column = "cond", treatment_level = "KO", control_level = "WT"),
+      meta
+    )
+  )
+  errors <- Filter(function(r) r$severity == "error", records)
+  expect_length(errors, 0)
+})
+
+test_that("validate_comparison: surfaces every failing predicate, not just the first", {
+  recs <- validate_comparison(
+    mk_spec(treatment_samples = character(0), control_samples = character(0),
+            treatment_label = "", control_label = ""),
+    mk_meta()
+  )
+  errs <- Filter(function(r) r$severity == "error", recs)
+  fields <- vapply(errs, function(r) r$field, character(1))
+  expect_setequal(fields, c("treatment_samples", "control_samples",
+                            "treatment_label", "control_label"))
+})

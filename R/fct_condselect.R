@@ -155,10 +155,17 @@ build_demethod_params_string <- function(de_method, method_params, covariates) {
 }
 
 .rec <- function(field, ok, message = NULL, severity = NULL) {
+  stopifnot(is.logical(ok), length(ok) == 1L, !is.na(ok))
   if (is.null(severity)) {
     severity <- if (ok) "pass" else "error"
   }
   list(field = field, ok = ok, message = message, severity = severity)
+}
+
+# Treats character(1) without leading/trailing whitespace as non-blank.
+# NULL, NA, length != 1, and pure-whitespace are all blank.
+is_nonblank <- function(x) {
+  length(x) == 1L && !is.na(x) && nzchar(trimws(x))
 }
 
 #' Compose all validation predicates for a comparison spec.
@@ -197,14 +204,14 @@ validate_comparison <- function(spec, metadata) {
                 paste(overlap, collapse = ", "), "."), "error")
   }
 
-  if (nzchar(spec$treatment_label)) {
+  if (is_nonblank(spec$treatment_label)) {
     records[[length(records) + 1]] <- .rec("treatment_label", TRUE)
   } else {
     records[[length(records) + 1]] <- .rec("treatment_label", FALSE,
          "Treatment label is empty.", "error")
   }
 
-  if (nzchar(spec$control_label)) {
+  if (is_nonblank(spec$control_label)) {
     records[[length(records) + 1]] <- .rec("control_label", TRUE)
   } else {
     records[[length(records) + 1]] <- .rec("control_label", FALSE,
@@ -213,7 +220,9 @@ validate_comparison <- function(spec, metadata) {
 
   # Meta-path-only predicates.
   if (!is.na(spec$meta_column) && spec$meta_column %in% colnames(metadata)) {
-    levels_present <- unique(metadata[[spec$meta_column]])
+    col <- metadata[[spec$meta_column]]
+    if (is.factor(col)) col <- as.character(col)
+    levels_present <- unique(col)
     levels_present <- levels_present[!is.na(levels_present) & nzchar(levels_present)]
 
     if (length(levels_present) >= 2) {
