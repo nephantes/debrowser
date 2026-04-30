@@ -4,15 +4,25 @@
 \alias{de_theme}
 \title{de_theme}
 \usage{
-de_theme()
+de_theme(preset = NULL)
+}
+\arguments{
+\item{preset}{Optional bslib preset name. One of `.de_theme_presets`.
+`NULL` (default) returns the standard custom theme.}
 }
 \value{
 a `bs_theme` object
 }
 \description{
-DEBrowser bslib theme — Slate + OK-blue, Bootstrap 5, Inter typography.
-Used as the `theme` argument to `bslib::page_navbar()` in [deUI()].
+DEBrowser bslib theme. Default behavior: hand-rolled Slate + OK-blue
+palette with Inter typography on Bootstrap 5. When `preset` is supplied
+(e.g. `"zephyr"`, `"lumen"`, `"cosmo"`), returns a preset-only theme so
+the chosen preset's palette is visible — custom color overrides are
+dropped; Inter font is kept so typography stays constant across
+comparisons. Used as the `theme` argument to `bslib::page_navbar()` in
+[deUI()]. The URL-param playground (`?preset=NAME`) wires this up.
 }
 \examples{
 x <- de_theme()
+y <- de_theme(preset = "zephyr")
 }
