@@ -65,3 +65,48 @@ fold_to_log2fc <- function(x) log2(x)
 is_finite_scalar <- function(x) {
   is.numeric(x) && length(x) == 1L && is.finite(x)
 }
+
+#' Install Shiny observers that synchronise a preset-button input
+#' with the (padj, log2fc_cutoff) numeric inputs.
+#'
+#' Two observers are installed on the supplied session:
+#' (1) a click on the `cutoff_preset` radio group fills the two
+#'     numeric inputs with that preset's values;
+#' (2) a manual edit on either numeric input clears the preset
+#'     highlight if the resulting (padj, log2fc) pair no longer
+#'     matches any preset (or selects the matching preset if it
+#'     happens to match one exactly).
+#'
+#' The observers guard against echoing each other via an
+#' `isolate()` + `!identical()` check on the current radio-group
+#' selection. Both use `ignoreInit = TRUE` to avoid the page-load
+#' click cascade.
+#'
+#' @param input,session A Shiny input/session pair (either the
+#'   top-level session for the global widget, or a moduleServer
+#'   session for the namespaced widget).
+#' @return Invisible NULL; observers are installed as a side effect.
+#' @export
+install_cutoff_preset_observers <- function(input, session) {
+  observeEvent(input$cutoff_preset, ignoreInit = TRUE, {
+    presets <- cutoff_presets()
+    row <- presets[presets$name == input$cutoff_preset, ]
+    if (nrow(row) == 1L) {
+      updateNumericInput(session, "padj",          value = row$padj)
+      updateNumericInput(session, "log2fc_cutoff", value = row$log2fc)
+    }
+  })
+
+  observeEvent(c(input$padj, input$log2fc_cutoff), ignoreInit = TRUE, {
+    matched <- match_preset(input$padj, input$log2fc_cutoff)
+    current <- isolate(input$cutoff_preset)
+    desired <- if (is.na(matched)) character(0) else matched
+    if (!identical(current, desired)) {
+      shinyWidgets::updateRadioGroupButtons(
+        session, "cutoff_preset", selected = desired
+      )
+    }
+  })
+
+  invisible(NULL)
+}

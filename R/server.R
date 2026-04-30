@@ -21,7 +21,7 @@
 #'             selectInput shinyApp  shinyServer  shinyUI sidebarLayout
 #'             sidebarPanel sliderInput  stopApp  tabPanel tabsetPanel
 #'             textInput textOutput titlePanel uiOutput tags HTML
-#'             h4 img icon updateTabsetPanel updateTextInput  validate
+#'             h4 img icon updateNumericInput updateTabsetPanel updateTextInput  validate
 #'             wellPanel checkboxInput br p checkboxGroupInput onRestore
 #'             reactiveValuesToList renderText onBookmark onBookmarked
 #'             updateQueryString enableBookmarking htmlOutput
