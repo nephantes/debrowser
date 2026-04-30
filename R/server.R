@@ -222,11 +222,11 @@ deServer <- function(input, output, session) {
         observeEvent(input$goDEFromFilter, {
           if (is.null(batch())) batch(setBatch(filtd()))
           bslib::nav_select("DataPrep", "CondSelect", session = session)
-          sel(debrowsercondselectServer(
+          sel(condSelectServer(
             "cs",
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
-          choicecounter$nc <- sel()$cc()
+          choicecounter$nc <- sel()$n_comparisons()
           # B2a: skipping past Filter+Batch — mark them done/skipped.
           if (progress$filter != "done") progress$filter <- "done"
           if (progress$batch  == "pending" || progress$batch == "locked") {
@@ -236,11 +236,11 @@ deServer <- function(input, output, session) {
         })
         observeEvent(input$goDE, {
           bslib::nav_select("DataPrep", "CondSelect", session = session)
-          sel(debrowsercondselectServer(
+          sel(condSelectServer(
             "cs",
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
-          choicecounter$nc <- sel()$cc()
+          choicecounter$nc <- sel()$n_comparisons()
           # B2a: condselect step entered.
           progress$condselect <- "pending"
         })
@@ -252,16 +252,15 @@ deServer <- function(input, output, session) {
           progress$de         <- "pending"
           # Re-lock plot/GO/Table tabs while DE runs (existing behavior).
           togglePanels(0, c(0, 2), session)
-          # Run prepDataContainer at the parent session so the inner
-          # debrowserdeanalysis modules bind to top-level "DEResultsN" ids
-          # that getDEResultsUI() renders. If we left this inside the cs
-          # moduleServer, the namespace would become cs-DEResultsN-… and
-          # the DE Results panel would render empty.
+          # B2.5: prepDataContainer rewritten to take a structured
+          # comparisons_spec instead of reaching into the module's input
+          # rv. We still call it at the parent session so the inner
+          # debrowserdeanalysis modules bind to the top-level "DEResultsN"
+          # ids that getDEResultsUI() renders.
           dc_res <- prepDataContainer(
             batch()$BatchEffect()$count,
-            sel()$cc(),
-            sel()$input,
-            batch()$BatchEffect()$meta
+            batch()$BatchEffect()$meta,
+            sel()$comparisons_spec()
           )
           if (is.null(dc_res)) return()
           dc(dc_res)
@@ -286,8 +285,8 @@ deServer <- function(input, output, session) {
         })
 
         output$compselectUI <- renderUI({
-          if (!is.null(sel()) && !is.null(sel()$cc())) {
-            getCompSelection("compselect_dataprep", sel()$cc())
+          if (!is.null(sel()) && !is.null(sel()$n_comparisons())) {
+            getCompSelection("compselect_dataprep", sel()$n_comparisons())
           }
         })
 
