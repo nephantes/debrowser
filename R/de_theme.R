@@ -1,3 +1,14 @@
+# Valid bslib preset names (Bootstrap 5 + Bootswatch + shiny default).
+# Used by `de_theme()` to validate the `preset` argument and by the URL-
+# param playground in `deUI()`. See `?bslib::bs_theme` for the source list.
+.de_theme_presets <- c(
+  "bootstrap", "shiny",
+  "cerulean", "cosmo", "cyborg", "darkly", "flatly", "journal", "litera",
+  "lumen", "lux", "materia", "minty", "morph", "pulse", "quartz",
+  "sandstone", "simplex", "sketchy", "slate", "solar", "spacelab",
+  "superhero", "united", "vapor", "yeti", "zephyr"
+)
+
 #' de_theme
 #'
 #' DEBrowser bslib theme — Slate + OK-blue, Bootstrap 5, Inter typography.
