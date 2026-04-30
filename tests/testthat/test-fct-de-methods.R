@@ -60,6 +60,51 @@ test_that("run_edger() with structured params matches the legacy edgeR golden ha
   expect_snapshot_value(stable_hash(res), style = "json2")
 })
 
+test_that("run_edger() returns log2FoldChange in log2 scale and aligned with input gene order", {
+  # Regression for two B2.5 followup bugs in run_edger's exactTest branch:
+  #   (1) `logFC / log(2)` inflated reported log2FoldChange by 1/log(2) ~= 1.44.
+  #   (2) `topTags()` reordered rows by FDR, but `rownames(res) <- rownames(filtd)`
+  #       reassigned the original gene names to the reordered values, scrambling
+  #       which gene each log2FoldChange / pvalue / padj belonged to.
+  # After fix, run_edger's per-gene log2FoldChange equals edgeR's native logFC.
+  skip_on_cran()
+  skip_if_not_installed("edgeR")
+
+  set.seed(7L)
+  counts <- matrix(
+    c(50L, 60L, 100L, 120L,   # g1
+      40L, 50L,  20L,  25L,   # g2
+      30L, 35L,  30L,  35L),  # g3
+    nrow = 3, byrow = TRUE,
+    dimnames = list(c("g1", "g2", "g3"), c("a", "b", "c", "d"))
+  )
+  meta <- data.frame(sample = c("a", "b", "c", "d"), stringsAsFactors = FALSE)
+  conds <- factor(c("Control", "Control", "Treat", "Treat"))
+
+  ours <- run_edger(
+    counts   = counts,
+    metadata = meta,
+    columns  = c("a", "b", "c", "d"),
+    conds    = conds,
+    params   = list(
+      covariates = "NoCovariate", norm_fact = "TMM",
+      dispersion = "0.1",          test_type = "exactTest"
+    )
+  )
+
+  # Reference: native edgeR exactTest, no reordering.
+  set.seed(7L)
+  d <- edgeR::DGEList(counts = counts, group = conds)
+  d <- edgeR::calcNormFactors(d, method = "TMM")
+  ref <- edgeR::exactTest(d, dispersion = 0.1)$table
+
+  # Per-gene log2FoldChange equals edgeR's logFC byte-for-byte.
+  expect_equal(ours[rownames(ref), "log2FoldChange"], ref$logFC,
+               tolerance = 1e-8)
+  expect_equal(ours[rownames(ref), "pvalue"], ref$PValue,
+               tolerance = 1e-8)
+})
+
 test_that("run_de() dispatches by method name and matches per-method results", {
   skip_on_cran()
 

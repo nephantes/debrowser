@@ -11,7 +11,7 @@
     {
       "type": "character",
       "attributes": {},
-      "value": ["c81475fa94d099b5"]
+      "value": ["2fa726415decc9fc"]
     }
 
 # run_limma() with structured params matches the legacy limma golden hash

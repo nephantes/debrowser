@@ -11,7 +11,7 @@
     {
       "type": "character",
       "attributes": {},
-      "value": ["c81475fa94d099b5"]
+      "value": ["2fa726415decc9fc"]
     }
 
 # Limma result on demo data matches golden hash

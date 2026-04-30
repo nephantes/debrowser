@@ -170,7 +170,12 @@ run_edger <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
     } else {
       edgeR::exactTest(d, dispersion = dispersion)
     }
-    de_com$table <- edgeR::topTags(de_com, n = nrow(de_com$table))$table
+    # Pass `sort.by = "none"` so the table stays aligned with the input gene
+    # order. Without this, topTags would sort by FDR and the subsequent
+    # `rownames(res) <- rownames(filtd)` would attach values to the wrong
+    # genes (a long-standing bug).
+    de_com$table <- edgeR::topTags(de_com, n = nrow(de_com$table),
+                                   sort.by = "none")$table
     colnames(de_com$table)[colnames(de_com$table) == "FDR"] <- "stat"
   } else {
     fit <- if (identical(dispersion, 0)) {
@@ -184,8 +189,13 @@ run_edger <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
 
   options(digits = 4)
   padj <- p.adjust(de_com$table$PValue, method = "BH")
+  # edgeR's `logFC` is log2-fold-change by default (per `?exactTest` /
+  # `?glmLRT`). The legacy `/ log(2)` divided by ~0.693, inflating reported
+  # log2FoldChange by ~44% and the derived linear `foldChange = 2^...` by
+  # even more. Fixed: use `logFC` directly so all three DE methods produce
+  # consistent log2-scale fold changes that downstream filters can compare.
   res <- data.frame(
-    log2FoldChange = de_com$table$logFC / log(2),
+    log2FoldChange = de_com$table$logFC,
     pvalue         = de_com$table$PValue,
     padj           = padj,
     stat           = de_com$table$stat
