@@ -140,3 +140,31 @@ test_that("apply_merged_filters() labels rows Sig where any comparison crosses c
   expect_true("Legend" %in% colnames(out))
   expect_equal(out$Legend, c("Sig", "Sig", "NS"))
 })
+
+test_that("apply_merged_filters() with fold_cutoff = log2fc_to_fold(1) matches fold_cutoff = 2", {
+  fake_dc <- list(
+    list(
+      cols = c("s1", "s2"),
+      cond_names = c("A", "B"),
+      init_data = data.frame(
+        foldChange = c(3, 0.1, 1.0),
+        padj       = c(0.001, 0.001, 0.5),
+        s1 = c(10, 20, 30), s2 = c(11, 22, 33),
+        row.names = c("g1", "g2", "g3")
+      )
+    )
+  )
+
+  base <- apply_merged_filters(fake_dc, 1L,
+    params = list(padj_cutoff = 0.05, fold_cutoff = 2, norm_method = "none")
+  )
+  via_log2fc <- apply_merged_filters(fake_dc, 1L,
+    params = list(padj_cutoff = 0.05,
+                  fold_cutoff = log2fc_to_fold(1),
+                  norm_method = "none")
+  )
+
+  expect_equal(via_log2fc$Legend, base$Legend)
+  # Sanity: with this fixture the labels are non-trivial (not all NS).
+  expect_true(any(via_log2fc$Legend == "Sig"))
+})
