@@ -144,6 +144,35 @@ For releases prior to 1.31, see the legacy `NEWS` file.
 * Dark-mode plot theming (plotly/heatmaply/ggplot color flips) deferred
   to Phase B6.
 
+### Phase B2.5 — Comparison Selection wizard rewrite
+
+* Rewrote `R/condSelect.R` (≈900 LOC monolith) into three focused files:
+  `R/fct_condselect.R` (pure helpers + validation predicates),
+  `R/mod_condselect.R` (`condSelectUI` + `condSelectServer` module), and
+  `R/prep_data_container.R` (the DE runner with a structured signature).
+* New module API: `condSelectUI(id)` and `condSelectServer(id, data, metadata)`.
+  Returns `list(n_comparisons, start_de, is_ready, comparisons_spec)`.
+* `prepDataContainer()` signature changed from
+  `(data, counter, input, meta)` to `(data, metadata, comparisons_spec)`.
+  The leaky `condselect$input` boundary in `R/server.R` is gone.
+* UX: single-comparison default with "Add another comparison" footer for
+  multi-comparison; editable per-side Treatment/Control labels with metadata-
+  driven defaults; reference-word direction heuristic
+  (`control|ctrl|wt|wildtype|...`) with always-visible swap button;
+  per-method advanced settings + covariates collapsed by default;
+  inline non-toast validation messages (`.text-warning` / `.text-danger`).
+* Internal `conds` codes (`"Cond1"`/`"Cond2"`) preserved so
+  `R/fct_de_methods.R`, `R/fct_prep_data.R`, `R/deprogs.R`, `R/barmain.R`,
+  and downstream plotting need no changes.
+* Removed exports (no known external callers): `debrowsercondselect`,
+  `debrowsercondselectServer`, `selectedInput`, `getSelectInputBox`,
+  `getMetaSelector`, `getGroupSelector`, `getConditionSelector`,
+  `getConditionSelectorFromMeta`, `getMethodDetails`, `getCovariateDetails`,
+  `selectConditions`, `get_conditions_given_selection`, `getSampleNames`.
+* New tests: `test-condselect-helpers.R` (helpers), `test-condselect-validation.R`
+  (predicates), `test-prepdatacontainer.R` (`prep_comparison_inputs` purity).
+  Total +73 assertions (126 → 199 PASS).
+
 ### User-visible
 
 * Raised `startDEBrowser()` upload limit from 30 MB to 90 MB.
