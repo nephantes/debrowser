@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: ubuntu-latest, r: 'release', bioc: '3.18'}
+          - {os: ubuntu-latest, r: 'release', bioc: 'release'}
           - {os: ubuntu-latest, r: 'devel',   bioc: 'devel'}
 
     env:

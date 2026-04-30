@@ -9,7 +9,7 @@ on:
 jobs:
   bioc-check:
     runs-on: ubuntu-latest
-    container: bioconductor/bioconductor_docker:RELEASE_3_18
+    container: bioconductor/bioconductor_docker:devel
 
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
       - name: Install package deps
         run: |
           BiocManager::install(ask = FALSE, update = FALSE)
-          install.packages("BiocCheck")
+          BiocManager::install("BiocCheck", ask = FALSE, update = FALSE)
         shell: Rscript {0}
 
       - name: Run BiocCheck
