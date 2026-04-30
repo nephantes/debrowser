@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: ubuntu-latest, r: 'release', bioc: 'release'}
-          - {os: ubuntu-latest, r: 'devel',   bioc: 'devel'}
+          - {os: ubuntu-latest, r: 'release'}
+          - {os: ubuntu-latest, r: 'devel'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -33,9 +33,13 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
 
       - name: Install Bioconductor
+        # No `version =` — BiocManager auto-picks the Bioc release that
+        # matches the R version chosen above. This avoids the brittle
+        # bitrot pattern where pinning a specific Bioc release goes stale
+        # the moment 'release' R bumps to the next minor.
         run: |
           install.packages("BiocManager")
-          BiocManager::install(version = "${{ matrix.config.bioc }}", ask = FALSE, update = FALSE)
+          BiocManager::install(ask = FALSE, update = FALSE)
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2

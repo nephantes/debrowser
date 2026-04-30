@@ -32,7 +32,7 @@ jobs:
       - name: Install Bioconductor
         run: |
           install.packages("BiocManager")
-          BiocManager::install(version = "release", ask = FALSE, update = FALSE)
+          BiocManager::install(ask = FALSE, update = FALSE)
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2

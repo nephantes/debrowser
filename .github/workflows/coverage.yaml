@@ -13,7 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install deps
         run: |
-          BiocManager::install(ask = FALSE, update = FALSE)
+          remotes::install_deps(dependencies = TRUE,
+                                repos = BiocManager::repositories())
           install.packages(c("covr", "xml2"))
         shell: Rscript {0}
       - name: Run coverage
