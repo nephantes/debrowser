@@ -153,3 +153,86 @@ build_demethod_params_string <- function(de_method, method_params, covariates) {
          sQuote(de_method), call. = FALSE)
   )
 }
+
+.rec <- function(field, ok, message = NULL, severity = NULL) {
+  if (is.null(severity)) {
+    severity <- if (ok) "pass" else "error"
+  }
+  list(field = field, ok = ok, message = message, severity = severity)
+}
+
+#' Compose all validation predicates for a comparison spec.
+#'
+#' Returns a list of validation records (one per check that produced a
+#' result). Records are `list(field, ok, message, severity)`. Fields:
+#' "treatment_samples", "control_samples", "samples_disjoint",
+#' "treatment_label", "control_label", "meta_levels", "level_distinct",
+#' "covariate_<name>".
+#'
+#' @noRd
+validate_comparison <- function(spec, metadata) {
+  records <- list()
+
+  # Error-severity predicates.
+  if (length(spec$treatment_samples) >= 1) {
+    records[[length(records) + 1]] <- .rec("treatment_samples", TRUE)
+  } else {
+    records[[length(records) + 1]] <- .rec("treatment_samples", FALSE,
+         "Treatment side has no samples selected.", "error")
+  }
+
+  if (length(spec$control_samples) >= 1) {
+    records[[length(records) + 1]] <- .rec("control_samples", TRUE)
+  } else {
+    records[[length(records) + 1]] <- .rec("control_samples", FALSE,
+         "Control side has no samples selected.", "error")
+  }
+
+  overlap <- intersect(spec$treatment_samples, spec$control_samples)
+  if (length(overlap) == 0) {
+    records[[length(records) + 1]] <- .rec("samples_disjoint", TRUE)
+  } else {
+    records[[length(records) + 1]] <- .rec("samples_disjoint", FALSE,
+         paste0("Sample(s) appear on both sides: ",
+                paste(overlap, collapse = ", "), "."), "error")
+  }
+
+  if (nzchar(spec$treatment_label)) {
+    records[[length(records) + 1]] <- .rec("treatment_label", TRUE)
+  } else {
+    records[[length(records) + 1]] <- .rec("treatment_label", FALSE,
+         "Treatment label is empty.", "error")
+  }
+
+  if (nzchar(spec$control_label)) {
+    records[[length(records) + 1]] <- .rec("control_label", TRUE)
+  } else {
+    records[[length(records) + 1]] <- .rec("control_label", FALSE,
+         "Control label is empty.", "error")
+  }
+
+  # Meta-path-only predicates.
+  if (!is.na(spec$meta_column) && spec$meta_column %in% colnames(metadata)) {
+    levels_present <- unique(metadata[[spec$meta_column]])
+    levels_present <- levels_present[!is.na(levels_present) & nzchar(levels_present)]
+
+    if (length(levels_present) >= 2) {
+      records[[length(records) + 1]] <- .rec("meta_levels", TRUE)
+    } else {
+      records[[length(records) + 1]] <- .rec("meta_levels", FALSE,
+           paste0("Metadata column `", spec$meta_column,
+                  "` has fewer than 2 distinct levels."), "error")
+    }
+
+    if (!is.na(spec$treatment_level) && !is.na(spec$control_level)) {
+      if (spec$treatment_level != spec$control_level) {
+        records[[length(records) + 1]] <- .rec("level_distinct", TRUE)
+      } else {
+        records[[length(records) + 1]] <- .rec("level_distinct", FALSE,
+             "Treatment and Control must be different levels.", "error")
+      }
+    }
+  }
+
+  records
+}
