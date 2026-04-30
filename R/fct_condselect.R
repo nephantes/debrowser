@@ -30,3 +30,17 @@ infer_control_level <- function(levels) {
   }
   sort(levels)[1]
 }
+
+#' Compute initial side labels for a comparison.
+#'
+#' Returns a named character(2) `c(treatment = ..., control = ...)`. When
+#' a metadata column with two non-NA levels is supplied, the level names are
+#' used directly. Otherwise falls back to the literal "Treatment" / "Control".
+#'
+#' @noRd
+default_side_labels <- function(meta_column, treatment_level, control_level) {
+  if (!is.na(meta_column) && !is.na(treatment_level) && !is.na(control_level)) {
+    return(c(treatment = treatment_level, control = control_level))
+  }
+  c(treatment = "Treatment", control = "Control")
+}

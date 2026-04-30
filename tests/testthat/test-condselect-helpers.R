@@ -29,3 +29,25 @@ test_that("infer_control_level is anchored (avoids substring matches)", {
 test_that("infer_control_level is case-insensitive", {
   expect_equal(infer_control_level(c("WILDTYPE", "MUTANT")), "WILDTYPE")
 })
+
+test_that("default_side_labels uses level names when meta column is set", {
+  result <- default_side_labels(meta_column = "Cell Type",
+                                treatment_level = "KO",
+                                control_level   = "WT")
+  expect_equal(result, c(treatment = "KO", control = "WT"))
+})
+
+test_that("default_side_labels falls back to Treatment/Control when no meta", {
+  result <- default_side_labels(meta_column = NA_character_,
+                                treatment_level = NA_character_,
+                                control_level   = NA_character_)
+  expect_equal(result, c(treatment = "Treatment", control = "Control"))
+})
+
+test_that("default_side_labels handles partial NA gracefully", {
+  # Defensive: if only one level is NA (shouldn't happen but be safe), fall back.
+  result <- default_side_labels(meta_column = "Cell Type",
+                                treatment_level = "KO",
+                                control_level   = NA_character_)
+  expect_equal(result, c(treatment = "Treatment", control = "Control"))
+})
