@@ -4,7 +4,11 @@
 \alias{deUI}
 \title{deUI}
 \usage{
-deUI()
+deUI(req = NULL)
+}
+\arguments{
+\item{req}{Shiny request object (auto-supplied by Shiny when `deUI` is
+used as the `ui` argument to `shinyApp()`).}
 }
 \value{
 the page tagList for DEBrowser
@@ -14,10 +18,17 @@ Creates a shinyUI to be able to run DEBrowser interactively.
 B1 shell: bslib::page_navbar with 5 nav panels (Data Prep / Main Plots /
 QC Plots / GO Term / Tables), Slate + OK-blue theme, light/dark toggle.
 }
+\details{
+Accepts a Shiny `request` argument so that the theme can be swapped at
+runtime via the `?preset=NAME` query parameter (e.g. `?preset=zephyr`).
+Unknown or missing `preset` keeps the default theme.
+}
 \note{
 \code{deUI}
 }
 \examples{
-x <- deUI()
+\dontrun{
+  shiny::shinyApp(ui = deUI, server = deServer)
+}
 
 }

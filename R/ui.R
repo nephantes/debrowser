@@ -4,20 +4,36 @@
 #' B1 shell: bslib::page_navbar with 5 nav panels (Data Prep / Main Plots /
 #' QC Plots / GO Term / Tables), Slate + OK-blue theme, light/dark toggle.
 #'
+#' Accepts a Shiny `request` argument so that the theme can be swapped at
+#' runtime via the `?preset=NAME` query parameter (e.g. `?preset=zephyr`).
+#' Unknown or missing `preset` keeps the default theme.
+#'
+#' @param req Shiny request object (auto-supplied by Shiny when `deUI` is
+#'   used as the `ui` argument to `shinyApp()`).
 #' @note \code{deUI}
 #' @return the page tagList for DEBrowser
 #'
 #' @examples
-#' x <- deUI()
+#' \dontrun{
+#'   shiny::shinyApp(ui = deUI, server = deServer)
+#' }
 #'
 #' @export
-deUI <- function() {
+deUI <- function(req = NULL) {
   addResourcePath(
     prefix = "www",
     directoryPath = system.file("extdata", "www", package = "debrowser")
   )
 
   version_label <- getNamespaceVersion("debrowser")
+
+  # Theme playground: ?preset=NAME swaps the bslib preset at runtime.
+  # Unknown / missing preset → default Slate theme. See `de_theme()`.
+  preset <- if (!is.null(req)) {
+    shiny::parseQueryString(req$QUERY_STRING)[["preset"]]
+  } else {
+    NULL
+  }
 
   bslib::page_navbar(
     id      = "methodtabs",
@@ -26,7 +42,7 @@ deUI <- function() {
       version_label, "</span>"
     )),
     window_title = paste0("DEBrowser v", version_label),
-    theme   = de_theme(),
+    theme   = de_theme(preset = preset),
     bg      = "#0f172a",
     inverse = TRUE,
     fillable = FALSE,
