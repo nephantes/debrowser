@@ -16,6 +16,7 @@ jobs:
 
       - name: Install package deps
         run: |
+          install.packages("remotes")
           remotes::install_deps(dependencies = TRUE,
                                 repos = BiocManager::repositories())
           BiocManager::install("BiocCheck", ask = FALSE, update = FALSE)
