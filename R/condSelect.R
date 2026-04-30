@@ -90,19 +90,7 @@ debrowsercondselectServer <- function(id, data = NULL, metadata = NULL) {
   })
 }
 
-#' condSelectUI
-#' Creates a panel to select samples for each condition.
-#'
-#' @param id, optional Shiny module namespace id. When `NULL` (default),
-#'   ids are emitted bare for the legacy non-module call style. When set,
-#'   every widget id is wrapped with `NS(id)` so the panel can live inside
-#'   a `moduleServer()` boundary.
-#' @return panel
-#' @examples
-#' x <- condSelectUI()
-#'
-#' @export
-#'
+if (FALSE) {  # B2.5: legacy condSelectUI disabled; replaced by R/mod_condselect.R. File deleted at end of B2.5.
 condSelectUI <- function(id = NULL) {
   ns <- if (is.null(id)) identity else NS(id)
   cond_ready_js <- if (is.null(id)) {
@@ -127,6 +115,7 @@ condSelectUI <- function(id = NULL) {
       )
     )
   )
+}
 }
 # getMethodDetails
 #'
