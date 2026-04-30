@@ -59,3 +59,38 @@ test_that("prepDataContainer returns NULL for empty/missing inputs", {
   expect_null(prepDataContainer(NULL, data.frame(), list(mk_minimal_spec())))
   expect_null(prepDataContainer(matrix(1, 1, 1), data.frame(), list()))
 })
+
+test_that("prep_comparison_inputs preserves meta-path labels (Task 9)", {
+  # Meta-path spec — meta_column is set, and the user has overridden the
+  # auto-defaulted level names to friendlier labels.
+  spec <- mk_minimal_spec(
+    meta_column     = "treatment",
+    treatment_level = "exper",
+    control_level   = "control",
+    treatment_label = "Drug 24h",
+    control_label   = "DMSO"
+  )
+  inputs <- prep_comparison_inputs(spec)
+  expect_equal(inputs$cond_names, c("Drug 24h", "DMSO"))
+  expect_equal(inputs$conds, c("Cond1", "Cond1", "Cond1",
+                               "Cond2", "Cond2", "Cond2"))
+})
+
+test_that("prep_comparison_inputs handles N comparisons independently (Task 10)", {
+  # Two comparisons with different labels. Multi-comparison correctness in
+  # `prepDataContainer` is the for-loop's responsibility; per-spec
+  # field-derivation must remain a pure mapping (no shared mutable state).
+  spec_a <- mk_minimal_spec(treatment_label = "A", control_label = "B")
+  spec_b <- mk_minimal_spec(treatment_label = "C", control_label = "D",
+                            covariates = "batch")
+
+  ia <- prep_comparison_inputs(spec_a)
+  ib <- prep_comparison_inputs(spec_b)
+
+  expect_equal(ia$cond_names, c("A", "B"))
+  expect_equal(ib$cond_names, c("C", "D"))
+  expect_equal(ia$demethod_params,
+               "DESeq2,NoCovariate,parametric,FALSE,Wald,None")
+  expect_equal(ib$demethod_params,
+               "DESeq2,batch,parametric,FALSE,Wald,None")
+})
