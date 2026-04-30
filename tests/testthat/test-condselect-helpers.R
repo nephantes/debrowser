@@ -51,3 +51,27 @@ test_that("default_side_labels handles partial NA gracefully", {
                                 control_level   = NA_character_)
   expect_equal(result, c(treatment = "Treatment", control = "Control"))
 })
+
+test_that("halve_sample_names splits sample list into two halves", {
+  result <- halve_sample_names(c("s1", "s2", "s3", "s4", "s5", "s6"))
+  expect_equal(result$treatment, c("s1", "s2", "s3"))
+  expect_equal(result$control,   c("s4", "s5", "s6"))
+})
+
+test_that("halve_sample_names handles odd-count by giving control the extra", {
+  # Today's getSampleNames floor()s the cut so part 1 gets the smaller half.
+  # New behavior preserves that exactly.
+  result <- halve_sample_names(c("s1", "s2", "s3", "s4", "s5"))
+  expect_equal(result$treatment, c("s1", "s2"))
+  expect_equal(result$control,   c("s3", "s4", "s5"))
+})
+
+test_that("halve_sample_names returns empty halves for empty input", {
+  result <- halve_sample_names(character(0))
+  expect_equal(result$treatment, character(0))
+  expect_equal(result$control,   character(0))
+})
+
+test_that("halve_sample_names returns NULL on NULL input", {
+  expect_null(halve_sample_names(NULL))
+})

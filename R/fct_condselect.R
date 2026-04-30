@@ -44,3 +44,23 @@ default_side_labels <- function(meta_column, treatment_level, control_level) {
   }
   c(treatment = "Treatment", control = "Control")
 }
+
+#' Halve a sample-name vector into default treatment / control halves.
+#'
+#' Preserves the exact behavior of the legacy `getSampleNames(cnames, part)`:
+#' the first half (length floor(n/2)) is assigned to treatment, the rest to
+#' control.
+#'
+#' @param sample_names character vector of column names from the count matrix.
+#' @return list with components `treatment` and `control`, or NULL on NULL input.
+#' @noRd
+halve_sample_names <- function(sample_names) {
+  if (is.null(sample_names)) return(NULL)
+  n <- length(sample_names)
+  if (n == 0L) return(list(treatment = character(0), control = character(0)))
+  cut <- floor(n / 2L)
+  list(
+    treatment = if (cut >= 1L) sample_names[seq_len(cut)] else character(0),
+    control   = if (cut + 1L <= n) sample_names[(cut + 1L):n] else character(0)
+  )
+}
