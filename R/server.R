@@ -380,7 +380,7 @@ deServer <- function(input, output, session) {
 
       observe({
         if (!is.null(sel())) {
-          choicecounter$nc <- sel()$cc()
+          choicecounter$nc <- sel()$n_comparisons()
         }
       })
       observeEvent(input$goQCplotsFromFilter, {

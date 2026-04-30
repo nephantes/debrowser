@@ -11,11 +11,17 @@
 # Pure helper extracted so the spec -> (cols, conds, cond_names,
 # demethod_params) mapping is unit-testable without a Shiny session or
 # DESeq2. `prepDataContainer` consumes the result and runs DE on top.
-prep_comparison_inputs <- function(spec) {
+#
+# `comparison_idx` (1-based) is the comparison's slot in the wizard. The
+# `conds` vector uses globally-numbered codes (`Cond1/Cond2` for slot 1,
+# `Cond3/Cond4` for slot 2, ...) to match the legacy contract that
+# `R/fct_prep_data.R::apply_de_filters` consumes via
+# `paste0("Cond", 2 * compselect - 1)` and `paste0("Cond", 2 * compselect)`.
+prep_comparison_inputs <- function(spec, comparison_idx = 1L) {
   cols <- c(spec$treatment_samples, spec$control_samples)
   conds <- c(
-    rep("Cond1", length(spec$treatment_samples)),
-    rep("Cond2", length(spec$control_samples))
+    rep(paste0("Cond", 2L * comparison_idx - 1L), length(spec$treatment_samples)),
+    rep(paste0("Cond", 2L * comparison_idx),     length(spec$control_samples))
   )
   cond_names <- compute_cond_names(spec)
   demethod_params <- build_demethod_params_string(
@@ -50,7 +56,7 @@ prepDataContainer <- function(data, metadata, comparisons_spec) {
   n <- length(comparisons_spec)
 
   for (i in seq_len(n)) {
-    inputs <- prep_comparison_inputs(comparisons_spec[[i]])
+    inputs <- prep_comparison_inputs(comparisons_spec[[i]], comparison_idx = i)
 
     shiny::withProgress(
       message = "Running DE Algorithms",
