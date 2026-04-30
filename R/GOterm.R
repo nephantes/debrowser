@@ -267,7 +267,7 @@ getGSEA <- function(dataset = NULL, pvalueCutoff = 0.01,
     OrgDb <- eval(parse(text = OrgDb))
   }
   res$enrich_p <- gseGO(
-    geneList = newdatatmp, ont = "All", OrgDb = OrgDb, verbose = F,
+    geneList = newdatatmp, ont = "All", OrgDb = OrgDb, verbose = FALSE,
     pvalueCutoff = pvalueCutoff
   )
 

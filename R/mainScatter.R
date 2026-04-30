@@ -380,7 +380,7 @@ generateTestData <- function(dat = NULL) {
   data <- dat$data
   params <-
     # Run DESeq2 with the following parameters
-    c("DESeq2", "NoCovariate", "parametric", F, "Wald", "None")
+    c("DESeq2", "NoCovariate", "parametric", FALSE, "Wald", "None")
   non_expressed_cutoff <- 10
   data <- subset(data, rowSums(data) > 10)
   deseqrun <- runDE(data, dat$metadata, columns, conds, params)

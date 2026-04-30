@@ -10,3 +10,5 @@ vignettes/*_files/
 .env
 .env.*
 !.env.example
+debrowser.BiocCheck/
+*.Rcheck/

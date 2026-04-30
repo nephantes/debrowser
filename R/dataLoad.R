@@ -184,7 +184,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     counttable <- as.data.frame(
       try(
         read.delim(input$countdata$datapath,
-          header = T, sep = count_sep,
+          header = TRUE, sep = count_sep,
           row.names = 1, strip.white = TRUE
         ), TRUE
       )
@@ -518,7 +518,7 @@ checkMetaData <- function(input = NULL, counttable = NULL, sep = NULL) {
   if (is.null(sep)) sep <- input$metadataSep
   tryCatch(
     {
-      metadatatable <- read.table(input$metadata$datapath, sep = sep, header = T)
+      metadatatable <- read.table(input$metadata$datapath, sep = sep, header = TRUE)
       if (ncol(metadatatable) < 2) {
         return("Error: Please check if you chose the right separator!")
       }

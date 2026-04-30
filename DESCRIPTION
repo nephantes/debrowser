@@ -3,10 +3,16 @@ Type: Package
 Title: Interactive Differential Expresion Analysis Browser
 Version: 1.31.2
 Date: 2026-04-27
-Author: Alper Kucukural <alper.kucukural@umassmed.edu>,
-        Onur Yukselen <onur.yukselen@umassmed.edu>,
-        Manuel Garber <manuel.garber@umassmed.edu>
-Maintainer: Alper Kucukural <alper.kucukural@umassmed.edu>
+Authors@R: c(
+    person("Alper", "Kucukural",
+           email = "alper.kucukural@umassmed.edu",
+           role = c("aut", "cre")),
+    person("Onur", "Yukselen",
+           email = "onur.yukselen@umassmed.edu",
+           role = "aut"),
+    person("Manuel", "Garber",
+           email = "manuel.garber@umassmed.edu",
+           role = "aut"))
 Description: Bioinformatics platform containing interactive plots and tables
     for differential gene and region expression studies. Allows visualizing
     expression data much more deeply in an interactive and faster way. By
@@ -61,6 +67,7 @@ Suggests: testthat (>= 3.2.0),
     knitr,
     digest,
     shinytest2,
+    chromote,
     Harman,
     pathview,
     org.Mm.eg.db,
@@ -69,7 +76,7 @@ Suggests: testthat (>= 3.2.0),
     enrichplot,
     DOSE
 Config/testthat/edition: 3
-VignetteBuilder: knitr, rmarkdown
+VignetteBuilder: knitr
 URL: https://github.com/UMMS-Biocore/debrowser
 BugReports: https://github.com/UMMS-Biocore/debrowser/issues/new
 biocViews:

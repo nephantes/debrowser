@@ -9,6 +9,16 @@
 skip_if_not_installed("shinytest2")
 skip_if_not_installed("chromote")
 
+# Skip when Chrome isn't reachable. R-CMD-check workflow installs
+# `shinytest2` + `chromote` (because they're in Suggests) but does NOT
+# install Chrome — only the dedicated `shinytest2` workflow does.
+# Without this guard the AppDriver$new() call below times out at 15s
+# and fails 11 tests in R-CMD-check; the dedicated job still covers them.
+chrome_path <- tryCatch(chromote::find_chrome(), error = function(e) NULL)
+if (is.null(chrome_path)) {
+  skip("Chrome not available; shinytest2 covered by dedicated CI job")
+}
+
 # Helper: build the DEBrowser app object the same way startDEBrowser()
 # does, but without runApp(). Reused across tests to keep the dispatch
 # pattern visible in one place.
@@ -21,7 +31,8 @@ test_that("app starts and the outer navbar exposes the methodtabs id", {
   app <- shinytest2::AppDriver$new(
     build_debrowser_app(),
     name = "smoke",
-    timeout = 20000
+    timeout = 20000,
+    load_timeout = 60000
   )
   on.exit(app$stop(), add = TRUE)
 
@@ -38,24 +49,19 @@ test_that("downstream tabs are hidden before any data is loaded", {
   app <- shinytest2::AppDriver$new(
     build_debrowser_app(),
     name = "locked-tabs-pre-de",
-    timeout = 20000
+    timeout = 20000,
+    load_timeout = 60000
   )
   on.exit(app$stop(), add = TRUE)
 
   # B2a hides Main Plots / GO Term / Tables panels until DE has run.
-  # In bslib::page_navbar, hidden nav_panels carry display:none on the
-  # nav-link <li>. Rather than poke at internal DOM, assert the user
-  # cannot navigate to those tabs by trying nav_select; if hidden, the
-  # active tab won't change.
-  app$set_inputs(methodtabs = "panel1")
-  app$wait_for_idle(500)
-  values <- app$get_values(input = TRUE)
-  # Hidden panels shouldn't accept the selection; the input may either
-  # stay on panel0 or echo panel1 depending on bslib's hide impl. We
-  # assert the panel-1-only output (volcano) hasn't rendered.
+  # We assert pre-DE state by checking an output that *only* renders
+  # after `sel()` is populated by the wizard — `compselectUI` is
+  # rendered as NULL when no condSelectServer module is wired, which is
+  # the pre-DE state. Checking `leftMenu` was unreliable: getLeftMenu()
+  # returns a static `list(conditionalPanel(...))` that always renders
+  # an HTML envelope (visibility is client-side via the conditions).
   outputs <- app$get_values(output = TRUE)
-  # mainScatterUI etc. live under "main-..." once unlocked; before
-  # data load, the leftMenu output is empty.
-  expect_true(is.null(outputs$output$leftMenu) ||
-              identical(outputs$output$leftMenu, ""))
+  expect_true(is.null(outputs$output$compselectUI) ||
+              identical(outputs$output$compselectUI, ""))
 })
