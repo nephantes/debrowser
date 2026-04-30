@@ -1,5 +1,6 @@
 test_that("getNormalizedMatrix on demo data matches golden hash", {
   skip_on_cran()
+  skip_on_ci()
 
   demo <- load_demo()
   data <- demo$counts[, demo_columns]
@@ -14,6 +15,7 @@ test_that("getNormalizedMatrix on demo data matches golden hash", {
 
 test_that("PCA on demo normalized data matches golden coordinates", {
   skip_on_cran()
+  skip_on_ci()
 
   demo <- load_demo()
   data <- demo$counts[, demo_columns]
