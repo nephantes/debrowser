@@ -65,3 +65,13 @@ halve_sample_names <- function(sample_names) {
     control   = if (cut + 1L <= n) sample_names[(cut + 1L):n] else character(0)
   )
 }
+
+#' Extract the user-visible label vector from a comparison spec.
+#'
+#' This is the single source of truth that flows into `cond_names` for plot
+#' legends, table column prefixes, etc.
+#'
+#' @noRd
+compute_cond_names <- function(spec) {
+  c(spec$treatment_label, spec$control_label)
+}

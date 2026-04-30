@@ -82,3 +82,8 @@ test_that("halve_sample_names with length-1 input gives empty treatment", {
   expect_equal(result$treatment, character(0))
   expect_equal(result$control, "only")
 })
+
+test_that("compute_cond_names extracts the two display labels in order", {
+  spec <- list(treatment_label = "Drug 24h", control_label = "DMSO")
+  expect_equal(compute_cond_names(spec), c("Drug 24h", "DMSO"))
+})
