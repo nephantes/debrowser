@@ -28,6 +28,15 @@
 #' @export
 de_theme <- function(preset = NULL) {
   if (!is.null(preset)) {
+    if (!preset %in% .de_theme_presets) {
+      message(sprintf(
+        "de_theme(): unknown preset '%s'. Valid presets: %s. Falling back to default theme.",
+        preset, paste(.de_theme_presets, collapse = ", ")
+      ))
+      preset <- NULL
+    }
+  }
+  if (!is.null(preset)) {
     return(bslib::bs_theme(
       version      = 5,
       preset       = preset,
