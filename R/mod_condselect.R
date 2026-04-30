@@ -150,7 +150,7 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
         }
       }, ignoreInit = TRUE, ignoreNULL = FALSE)
 
-      # Level pickers — rendered only when meta_column is not NA.
+      # Level pickers -- rendered only when meta_column is not NA.
       output[[iid("treatment_level_ui")]] <- shiny::renderUI({
         rv <- comparisons[[as.character(i)]]
         if (is.null(rv) || is.na(rv$meta_column)) return(NULL)
@@ -247,7 +247,7 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
           selected = rv$control_samples)
       }, ignoreInit = TRUE)
 
-      # Swap button — flips treatment <-> control across labels, levels,
+      # Swap button -- flips treatment <-> control across labels, levels,
       # and sample lists.
       shiny::observeEvent(input[[iid("swap")]], {
         rv <- comparisons[[as.character(i)]]; if (is.null(rv)) return()
@@ -324,7 +324,7 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
         )
       })
 
-      # Method-params observers — write back into rv$method_params.
+      # Method-params observers -- write back into rv$method_params.
       shiny::observe({
         rv <- comparisons[[as.character(i)]]; if (is.null(rv)) return()
         m <- rv$de_method
@@ -375,7 +375,7 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
         rv$covariates <- input[[iid("covariates")]] %||% character(0)
       }, ignoreInit = TRUE, ignoreNULL = FALSE)
 
-      # Validation messages — card footer (all errors + warnings).
+      # Validation messages -- card footer (all errors + warnings).
       output[[iid("validation_msgs")]] <- shiny::renderUI({
         rv <- comparisons[[as.character(i)]]; if (is.null(rv)) return(NULL)
         records <- validate_comparison(snapshot_spec(rv), metadata)
@@ -390,7 +390,7 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
         }))
       })
 
-      # Validation messages — covariate widget area only.
+      # Validation messages -- covariate widget area only.
       output[[iid("covariate_msgs")]] <- shiny::renderUI({
         rv <- comparisons[[as.character(i)]]; if (is.null(rv)) return(NULL)
         records <- validate_comparison(snapshot_spec(rv), metadata)
@@ -475,17 +475,17 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
 
 # Per-comparison card UI. Renders the manual-path widgets directly and
 # uses uiOutput slots for level pickers (shown when meta_column is set),
-# advanced model settings, and validation messages — all populated by
+# advanced model settings, and validation messages -- all populated by
 # observers in `install_card_observers()`.
 comparisonCardUI <- function(ns, i, rv, data, metadata) {
   if (is.null(rv)) return(NULL)
   iid <- function(name) ns(paste0(name, "_", i))
   sample_choices <- colnames(data)
   meta_choices <- if (!is.null(metadata) && ncol(metadata) > 1L) {
-    c("None — pick samples manually" = NA_character_,
+    c("None -- pick samples manually" = NA_character_,
       stats::setNames(colnames(metadata)[-1], colnames(metadata)[-1]))
   } else {
-    c("None — pick samples manually" = NA_character_)
+    c("None -- pick samples manually" = NA_character_)
   }
 
   bslib::card(
