@@ -784,20 +784,7 @@ getSampleNames <- function(cnames = NULL, part = 1) {
   m
 }
 
-#' prepDataContainer
-#'
-#' Prepares the data container that stores values used within DESeq.
-#'
-#' @param data, loaded dataset
-#' @param counter, the number of comparisons
-#' @param input, input parameters
-#' @param meta, loaded metadata
-#' @return data
-#' @export
-#'
-#' @examples
-#' x <- prepDataContainer()
-#'
+if (FALSE) {  # B2.5: legacy prepDataContainer disabled; replaced by R/prep_data_container.R. File deleted at end of B2.5.
 prepDataContainer <- function(data = NULL, counter = NULL,
                               input = NULL, meta = NULL) {
   if (is.null(data)) {
@@ -893,3 +880,4 @@ prepDataContainer <- function(data = NULL, counter = NULL,
 
   inputconds$dclist
 }
+}  # end if (FALSE) — B2.5 legacy prepDataContainer
