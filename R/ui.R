@@ -35,17 +35,31 @@ deUI <- function(req = NULL) {
     NULL
   }
 
-  bslib::page_navbar(
+  # Default mode forces a dark Slate navbar; preset mode lets the preset's
+  # own navbar palette show through so the swap is actually visible. Title
+  # gets a small badge with the active preset name for at-a-glance verification.
+  navbar_args <- if (is.null(preset)) {
+    list(bg = "#0f172a", inverse = TRUE)
+  } else {
+    list()
+  }
+  preset_badge <- if (!is.null(preset)) {
+    paste0(" <span class='badge bg-secondary ms-2 small'>preset: ",
+           htmltools::htmlEscape(preset), "</span>")
+  } else {
+    ""
+  }
+
+  do.call(bslib::page_navbar, c(list(
     id      = "methodtabs",
     title   = HTML(paste0(
       "DEBrowser <span class='text-light opacity-50 small ms-1'>v",
-      version_label, "</span>"
+      version_label, "</span>", preset_badge
     )),
     window_title = paste0("DEBrowser v", version_label),
     theme   = de_theme(preset = preset),
-    bg      = "#0f172a",
-    inverse = TRUE,
-    fillable = FALSE,
+    fillable = FALSE
+  ), navbar_args, list(
 
     header = tagList(
       shinyjs::useShinyjs(),
@@ -229,5 +243,5 @@ deUI <- function(req = NULL) {
         "UMMS Biocore"
       )
     )
-  )
+  )))
 }
