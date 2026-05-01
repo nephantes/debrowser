@@ -28,9 +28,12 @@ deUI <- function(req = NULL) {
   version_label <- getNamespaceVersion("debrowser")
 
   # Theme playground: ?preset=NAME swaps the bslib preset at runtime.
-  # Unknown / missing preset → default Slate theme. See `de_theme()`.
+  # Precedence: explicit URL ?preset= wins, then `debrowser_preset` cookie,
+  # then default. Unknown values → default Slate theme via de_theme().
   preset <- if (!is.null(req)) {
-    shiny::parseQueryString(req$QUERY_STRING)[["preset"]]
+    p <- shiny::parseQueryString(req$QUERY_STRING)[["preset"]]
+    if (is.null(p) || !nzchar(p)) p <- parse_preset_cookie(req$HTTP_COOKIE)
+    p
   } else {
     NULL
   }
@@ -106,7 +109,9 @@ deUI <- function(req = NULL) {
           rel = "stylesheet", type = "text/css",
           href = "www/debrowser.css"
         ),
-        tags$script(src = "www/dropzone.js")
+        tags$script(src = "www/dropzone.js"),
+        # Wires the navbar preset picker → cookie + reload (see de_theme.R).
+        de_preset_js()
       ),
       debrowser::getJSLine(),
       debrowser::getTabUpdateJS()
@@ -256,6 +261,11 @@ deUI <- function(req = NULL) {
     bslib::nav_item(
       bslib::input_dark_mode(id = "dark_mode", mode = "light")
     ),
+
+    # Theme preset picker. Persists choice in `debrowser_preset` cookie via
+    # de_preset_js(). Reload-driven so the chosen preset's CSS is loaded
+    # cleanly (bslib doesn't support hot-swapping themes mid-session).
+    bslib::nav_item(de_preset_picker(current = preset)),
 
     bslib::nav_item(
       tags$a(

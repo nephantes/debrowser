@@ -16,6 +16,16 @@ test_that("de_theme(preset = '<unknown>') falls back to default with a message",
   expect_s3_class(t, "bs_theme")
 })
 
+test_that("parse_preset_cookie extracts debrowser_preset from a Cookie header", {
+  expect_equal(parse_preset_cookie("debrowser_preset=zephyr"), "zephyr")
+  expect_equal(parse_preset_cookie("a=1; debrowser_preset=lumen; b=2"), "lumen")
+  expect_equal(parse_preset_cookie("debrowser_preset=zephyr%20variant"), "zephyr variant")
+  expect_null(parse_preset_cookie(NULL))
+  expect_null(parse_preset_cookie(""))
+  expect_null(parse_preset_cookie("session=abc; other=xyz"))
+  expect_null(parse_preset_cookie("debrowser_preset="))
+})
+
 test_that("startDEBrowser passes deUI as a function reference (not shinyUI(deUI))", {
   # Regression: shinyUI(deUI) calls deUI() at app-construction with no `req`,
   # freezing the UI tag list and silently breaking the ?preset= URL playground.
