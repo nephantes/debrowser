@@ -16,11 +16,12 @@ a `bs_theme` object
 \description{
 DEBrowser bslib theme. Default behavior: hand-rolled Slate + OK-blue
 palette with Inter typography on Bootstrap 5. When `preset` is supplied
-(e.g. `"zephyr"`, `"lumen"`, `"cosmo"`), returns a preset-only theme so
-the chosen preset's palette is visible — custom color overrides are
-dropped; Inter font is kept so typography stays constant across
-comparisons. Used as the `theme` argument to `bslib::page_navbar()` in
-[deUI()]. The URL-param playground (`?preset=NAME`) wires this up.
+(e.g. `"zephyr"`, `"lumen"`, `"cosmo"`), returns a bare Bootstrap 5
+theme with only Inter font applied — preset-specific colors come from
+the bootswatch CDN stylesheet that `deUI()` injects separately, so
+each preset URL is unique and tabs don't collide on the same compiled
+bootstrap.min.css. Used as the `theme` argument to `bslib::page_navbar()`
+in [deUI()]. The URL-param playground (`?preset=NAME`) wires this up.
 }
 \examples{
 x <- de_theme()

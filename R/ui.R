@@ -80,6 +80,11 @@ deUI <- function(req = NULL) {
         tags$img(src = "www/images/initial_loading.gif")
       ),
       tags$head(
+        # Bootswatch CDN preset (when ?preset=NAME is set). Each preset
+        # gets a unique CDN URL so multiple browser tabs comparing presets
+        # don't collide on a single shared bslib-compiled bootstrap.min.css.
+        # Loaded BEFORE debrowser.css so our overrides still win.
+        de_bootswatch_link(preset),
         tags$link(
           rel = "stylesheet", type = "text/css",
           href = "www/debrowser.css"
