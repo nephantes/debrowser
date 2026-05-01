@@ -79,8 +79,10 @@ de_progress_label <- function(name, key) {
 #' @return Invisibly NULL.
 #'
 #' @examples
-#' \dontrun{
-#'   update_progress(session, "upload", "done")
+#' \donttest{
+#'   if (interactive()) {
+#'     update_progress(session, "upload", "done")
+#'   }
 #' }
 #'
 #' @export

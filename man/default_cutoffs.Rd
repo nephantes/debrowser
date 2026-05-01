@@ -13,3 +13,6 @@ Named list with components: padj, log2fc, gopvalue.
 Single source of truth for the values that populate the DE cutoff
 inputs and the prepDataForQA() fallback.
 }
+\examples{
+default_cutoffs()
+}

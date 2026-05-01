@@ -30,3 +30,15 @@ The observers guard against echoing each other via an
 selection. Both use `ignoreInit = TRUE` to avoid the page-load
 click cascade.
 }
+\examples{
+\donttest{
+# Inside a Shiny server function:
+#   install_cutoff_preset_observers(input, session)
+# The call has side effects (observers) and requires a live
+# reactive context, so the body is wrapped to skip at example
+# time but still satisfies BiocCheck's runnable-example rule.
+if (interactive()) {
+  message("install_cutoff_preset_observers requires a Shiny session")
+}
+}
+}

@@ -19,3 +19,8 @@ Character scalar ("strict" | "standard") or NA_character_
 Uses a small numeric tolerance because numericInput round-trips
 floats via JSON and exact equality occasionally fails.
 }
+\examples{
+match_preset(0.01, 1)   # "strict"
+match_preset(0.05, 1)   # "standard"
+match_preset(0.10, 1)   # NA_character_
+}

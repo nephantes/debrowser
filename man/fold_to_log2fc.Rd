@@ -15,3 +15,7 @@ fold_to_log2fc(x)
 \description{
 Convert fold-change cutoff to |log2FC|.
 }
+\examples{
+fold_to_log2fc(2)   # 1
+fold_to_log2fc(4)   # 2
+}
