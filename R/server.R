@@ -292,9 +292,17 @@ deServer <- function(input, output, session) {
 
         install_cutoff_preset_observers(input, session)
 
+        cutoff_servers_registered <- reactiveValues()
         output$cutOffUI <- renderUI({
           cutOffSelectionUI(paste0("DEResults", compsel()))
         })
+        observeEvent(compsel(), {
+          id <- paste0("DEResults", compsel())
+          if (is.null(cutoff_servers_registered[[id]])) {
+            cutOffSelectionServer(id)
+            cutoff_servers_registered[[id]] <- TRUE
+          }
+        }, ignoreNULL = TRUE)
         # Sidebar uiOutputs live inside the "DEFilter" submenu in ui.R.
         # When that submenu is collapsed, Shiny's default suspend-when-
         # hidden behavior drops the renderUI on the floor and the controls
