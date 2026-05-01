@@ -35,14 +35,7 @@ deUI <- function(req = NULL) {
     NULL
   }
 
-  # Default mode forces a dark Slate navbar; preset mode lets the preset's
-  # own navbar palette show through so the swap is actually visible. Title
-  # gets a small badge with the active preset name for at-a-glance verification.
-  navbar_args <- if (is.null(preset)) {
-    list(bg = "#0f172a", inverse = TRUE)
-  } else {
-    list()
-  }
+  # Visible badge so the active preset is obvious at a glance.
   preset_badge <- if (!is.null(preset)) {
     paste0(" <span class='badge bg-secondary ms-2 small'>preset: ",
            htmltools::htmlEscape(preset), "</span>")
@@ -50,16 +43,28 @@ deUI <- function(req = NULL) {
     ""
   }
 
-  do.call(bslib::page_navbar, c(list(
+  # Navbar coloring strategy (no non-standard classes):
+  #  * Default mode: keep the original dark Slate (#0f172a) inline bg so
+  #    nothing changes for users not using the playground.
+  #  * Preset mode:  drop the inline bg and let a tiny <style> override
+  #    paint the navbar with `var(--bs-primary)`, the standard Bootstrap 5
+  #    CSS variable that bootswatch sets per preset. Result: the navbar
+  #    bg automatically tracks whichever preset is active. `inverse=TRUE`
+  #    is kept so bslib emits the standard `navbar-dark` class — light
+  #    text on the colored bar.
+  navbar_bg <- if (is.null(preset)) "#0f172a" else NULL
+
+  bslib::page_navbar(
     id      = "methodtabs",
     title   = HTML(paste0(
       "DEBrowser <span class='text-light opacity-50 small ms-1'>v",
       version_label, "</span>", preset_badge
     )),
     window_title = paste0("DEBrowser v", version_label),
-    theme   = de_theme(preset = preset),
-    fillable = FALSE
-  ), navbar_args, list(
+    theme    = de_theme(preset = preset),
+    bg       = navbar_bg,
+    inverse  = TRUE,
+    fillable = FALSE,
 
     header = tagList(
       shinyjs::useShinyjs(),
@@ -85,6 +90,18 @@ deUI <- function(req = NULL) {
         # don't collide on a single shared bslib-compiled bootstrap.min.css.
         # Loaded BEFORE debrowser.css so our overrides still win.
         de_bootswatch_link(preset),
+        # Preset mode: paint the navbar with the preset's --bs-primary so
+        # the menu bar adapts. Uses standard Bootstrap CSS variables only
+        # (no custom classes). Includes nav-link colors so contrast holds.
+        if (!is.null(preset)) tags$style(htmltools::HTML(
+          paste(
+            ".navbar { background-color: var(--bs-primary) !important; }",
+            ".navbar .navbar-brand, .navbar .nav-link { color: rgba(255,255,255,.85) !important; }",
+            ".navbar .nav-link:hover, .navbar .nav-link.active, .navbar .navbar-brand:hover { color: #fff !important; }",
+            ".navbar .badge.bg-secondary { background-color: rgba(0,0,0,.25) !important; }",
+            sep = "\n"
+          )
+        )),
         tags$link(
           rel = "stylesheet", type = "text/css",
           href = "www/debrowser.css"
@@ -248,5 +265,5 @@ deUI <- function(req = NULL) {
         "UMMS Biocore"
       )
     )
-  )))
+  )
 }
