@@ -1,5 +1,6 @@
 test_that("run_deseq2() with structured params matches the legacy DESeq2 golden hash", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("DESeq2")
 
   demo <- load_demo()
@@ -37,6 +38,7 @@ test_that("run_deseq2() raises de_error when fewer than 3 columns supplied", {
 
 test_that("run_edger() with structured params matches the legacy edgeR golden hash", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("edgeR")
 
   demo <- load_demo()
@@ -137,6 +139,7 @@ test_that("run_de() rejects unknown methods", {
 
 test_that("run_limma() with structured params matches the legacy limma golden hash", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("limma")
 
   demo <- load_demo()

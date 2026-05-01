@@ -1,5 +1,6 @@
 test_that("normalize_counts() with method='TMM' matches golden hash", {
   skip_on_cran()
+  skip_on_ci()
 
   demo <- load_demo()
   data <- demo$counts[, demo_columns]

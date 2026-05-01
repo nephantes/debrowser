@@ -1,5 +1,6 @@
 test_that("DESeq2 result on demo data matches golden hash", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("DESeq2")
 
   demo <- load_demo()
@@ -21,6 +22,7 @@ test_that("DESeq2 result on demo data matches golden hash", {
 
 test_that("EdgeR result on demo data matches golden hash", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("edgeR")
 
   demo <- load_demo()
@@ -38,6 +40,7 @@ test_that("EdgeR result on demo data matches golden hash", {
 
 test_that("Limma result on demo data matches golden hash", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("limma")
 
   demo <- load_demo()

@@ -87,8 +87,22 @@ cutOffSelectionUI <- function(id) {
   ns <- NS(id)
   list(
     getLegendRadio(id),
-    textInput(ns("padj"), "padj value cut off", value = "0.01"),
-    textInput(ns("foldChange"), "or foldChange", value = "2")
+    shinyWidgets::radioGroupButtons(
+      ns("cutoff_preset"),
+      label    = NULL,
+      choices  = setNames(cutoff_presets()$name, cutoff_presets()$label),
+      selected = "strict",
+      size     = "sm",
+      justified = TRUE
+    ),
+    numericInput(ns("padj"), "padj <=",
+      value = default_cutoffs()$padj,
+      min = 0, max = 1, step = 0.01
+    ),
+    numericInput(ns("log2fc_cutoff"), "|log2FC| >=",
+      value = default_cutoffs()$log2fc,
+      min = 0, step = 0.5
+    )
   )
 }
 
@@ -111,7 +125,7 @@ applyFiltersNew <- function(data = NULL, input = NULL) {
     return(NULL)
   }
   padj_cutoff <- as.numeric(input$padj)
-  foldChange_cutoff <- as.numeric(input$foldChange)
+  foldChange_cutoff <- log2fc_to_fold(as.numeric(input$log2fc_cutoff))
   m <- data
   if (!("Legend" %in% names(m))) {
     m$Legend <- character(nrow(m))
@@ -457,4 +471,24 @@ getLegendRadio <- function(id) {
     label = "Data Type:",
     choices = types
   )
+}
+
+#' cutOffSelectionServer
+#'
+#' Server-side companion for cutOffSelectionUI. Wires the preset
+#' radio-group buttons to the namespaced numeric inputs via
+#' install_cutoff_preset_observers.
+#'
+#' @param id Module id (matches cutOffSelectionUI(id)).
+#' @return Invisible NULL.
+#'
+#' @examples
+#' if (FALSE) cutOffSelectionServer("DEResults1")
+#'
+#' @export
+cutOffSelectionServer <- function(id) {
+  moduleServer(id, function(input, output, session) {
+    install_cutoff_preset_observers(input, session)
+    invisible(NULL)
+  })
 }

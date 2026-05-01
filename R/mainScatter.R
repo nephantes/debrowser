@@ -409,9 +409,9 @@ generateTestData <- function(dat = NULL) {
   rdata <- as.data.frame(rdata)
   rdata$padj[is.na(rdata$padj)] <- 1
 
-  padj_cutoff <- 0.01
-  foldChange_cutoff <- 2
-
+  defaults <- default_cutoffs()
+  padj_cutoff       <- defaults$padj
+  foldChange_cutoff <- log2fc_to_fold(defaults$log2fc)
 
   rdata$Legend <- "NS"
   rdata$Legend[rdata$log2FoldChange > log2(foldChange_cutoff) &

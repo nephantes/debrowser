@@ -109,7 +109,10 @@ getMainPlotsLeftMenu <- function() {
 getGOLeftMenu <- function() {
   bslib::accordion_panel(
     " Go Term Options",
-    textInput("gopvalue", "p.adjust", value = "0.01"),
+    numericInput("gopvalue", "p.adjust <=",
+      value = default_cutoffs()$gopvalue,
+      min = 0, max = 1, step = 0.01
+    ),
     getOrganismBox(),
     actionButton("GeneTableButton", "DE Genes"),
     conditionalPanel(

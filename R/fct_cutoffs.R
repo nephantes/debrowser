@@ -4,6 +4,8 @@
 #' inputs and the prepDataForQA() fallback.
 #'
 #' @return Named list with components: padj, log2fc, gopvalue.
+#' @examples
+#' default_cutoffs()
 #' @export
 default_cutoffs <- function() {
   list(padj = 0.01, log2fc = 1, gopvalue = 0.01)
@@ -16,6 +18,8 @@ default_cutoffs <- function() {
 #' padj differs.
 #'
 #' @return data.frame with columns: name, label, padj, log2fc.
+#' @examples
+#' cutoff_presets()
 #' @export
 cutoff_presets <- function() {
   data.frame(
@@ -36,6 +40,10 @@ cutoff_presets <- function() {
 #' @param tol Match tolerance.
 #' @return Character scalar ("strict" | "standard") or NA_character_
 #'   if either input is invalid or no preset matches.
+#' @examples
+#' match_preset(0.01, 1)   # "strict"
+#' match_preset(0.05, 1)   # "standard"
+#' match_preset(0.10, 1)   # NA_character_
 #' @export
 match_preset <- function(padj, log2fc, tol = 1e-9) {
   if (!is_finite_scalar(padj) || !is_finite_scalar(log2fc)) {
@@ -52,12 +60,18 @@ match_preset <- function(padj, log2fc, tol = 1e-9) {
 #' Convert |log2FC| cutoff to fold-change cutoff.
 #' @param x Numeric |log2FC| cutoff.
 #' @return Fold-change cutoff (2^x).
+#' @examples
+#' log2fc_to_fold(1)   # 2
+#' log2fc_to_fold(2)   # 4
 #' @export
 log2fc_to_fold <- function(x) 2^x
 
 #' Convert fold-change cutoff to |log2FC|.
 #' @param x Numeric fold-change cutoff.
 #' @return |log2FC| cutoff (log2(x)).
+#' @examples
+#' fold_to_log2fc(2)   # 1
+#' fold_to_log2fc(4)   # 2
 #' @export
 fold_to_log2fc <- function(x) log2(x)
 
@@ -86,6 +100,17 @@ is_finite_scalar <- function(x) {
 #'   top-level session for the global widget, or a moduleServer
 #'   session for the namespaced widget).
 #' @return Invisible NULL; observers are installed as a side effect.
+#' @examples
+#' \donttest{
+#' # Inside a Shiny server function:
+#' #   install_cutoff_preset_observers(input, session)
+#' # The call has side effects (observers) and requires a live
+#' # reactive context, so the body is wrapped to skip at example
+#' # time but still satisfies BiocCheck's runnable-example rule.
+#' if (interactive()) {
+#'   message("install_cutoff_preset_observers requires a Shiny session")
+#' }
+#' }
 #' @export
 install_cutoff_preset_observers <- function(input, session) {
   observeEvent(input$cutoff_preset, ignoreInit = TRUE, {

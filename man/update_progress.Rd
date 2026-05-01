@@ -23,8 +23,10 @@ by `getTabUpdateJS()` (R/funcs.R) reads the message and toggles CSS
 classes on the matching icon span and parent pill.
 }
 \examples{
-\dontrun{
-  update_progress(session, "upload", "done")
+\donttest{
+  if (interactive()) {
+    update_progress(session, "upload", "done")
+  }
 }
 
 }

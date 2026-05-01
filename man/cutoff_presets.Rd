@@ -14,3 +14,6 @@ Each row defines a one-click preset for the Strict / Standard
 button bar. log2fc is shared across presets by design -- only
 padj differs.
 }
+\examples{
+cutoff_presets()
+}
