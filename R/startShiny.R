@@ -32,7 +32,7 @@ startDEBrowser <- function() {
     environment(deServer) <- environment()
 
     app <- shinyApp(
-      ui = shinyUI(deUI),
+      ui = deUI,
       server = shinyServer(deServer)
     )
     runApp(app)
