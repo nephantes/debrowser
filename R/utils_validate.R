@@ -86,7 +86,7 @@ de_assert_count_matrix <- function(x) {
 filter_params_from_input <- function(input) {
   list(
     padj_cutoff   = input$padj,
-    fold_cutoff   = input$foldChange,
+    fold_cutoff   = log2fc_to_fold(as.numeric(input$log2fc_cutoff)),
     dataset       = input$dataset,
     compselect    = input$compselect,
     norm_method   = input$norm_method,

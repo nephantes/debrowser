@@ -231,9 +231,22 @@ getCutOffSelection <- function(nc = 1) {
       open = FALSE,
       bslib::accordion_panel(
         " Filter",
-        # h4("Filter"),
-        textInput("padj", "padj", value = "0.01"),
-        textInput("foldChange", "foldChange", value = "2"),
+        shinyWidgets::radioGroupButtons(
+          "cutoff_preset",
+          label    = NULL,
+          choices  = setNames(cutoff_presets()$name, cutoff_presets()$label),
+          selected = "strict",
+          size     = "sm",
+          justified = TRUE
+        ),
+        numericInput("padj", "padj <=",
+          value = default_cutoffs()$padj,
+          min = 0, max = 1, step = 0.01
+        ),
+        numericInput("log2fc_cutoff", "|log2FC| >=",
+          value = default_cutoffs()$log2fc,
+          min = 0, step = 0.5
+        ),
         compselect
       )
     )
@@ -595,17 +608,18 @@ getTableStyle <- function(
     )
   }
   if (!is.null(foldChange) && DEsection && all(foldChange %in% names(dat$x$data))) {
+    fc <- log2fc_to_fold(as.numeric(input$log2fc_cutoff))
     a <- a %>%
       formatStyle(
         foldChange,
         color = styleInterval(c(
-          1 / as.numeric(input$foldChange),
-          as.numeric(input$foldChange)
+          1 / fc,
+          fc
         ), c("white", "black", "white")),
         backgroundColor = styleInterval(
           c(
-            1 / as.numeric(input$foldChange),
-            as.numeric(input$foldChange)
+            1 / fc,
+            fc
           ),
           c("blue", "white", "red")
         )

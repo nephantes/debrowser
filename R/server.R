@@ -290,6 +290,8 @@ deServer <- function(input, output, session) {
           }
         })
 
+        install_cutoff_preset_observers(input, session)
+
         output$cutOffUI <- renderUI({
           cutOffSelectionUI(paste0("DEResults", compsel()))
         })
