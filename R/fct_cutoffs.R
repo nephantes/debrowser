@@ -20,6 +20,7 @@ default_cutoffs <- function() {
 #' @return data.frame with columns: name, label, padj, log2fc.
 #' @examples
 #' cutoff_presets()
+#' @importFrom stats setNames
 #' @export
 cutoff_presets <- function() {
   data.frame(
