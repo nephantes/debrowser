@@ -141,3 +141,19 @@
 .bslib-sidebar-layout .accordion-body {
     padding: 0.5rem 0.75rem;
 }
+
+/* Dark-mode toggle: icon = destination convention.
+   In light mode, show moon (click → dark). In dark mode, show sun (click → light). */
+.de-theme-toggle {
+    background: transparent;
+    border: 0;
+    padding: 0.5rem 0.75rem;
+    line-height: 1;
+    cursor: pointer;
+}
+/* Scope the dark-theme matcher to <html> only — the navbar carries its
+   own data-bs-theme="dark" to keep the menu bar dark on light pages. */
+.de-theme-toggle .de-theme-icon-moon { display: inline-block !important; }
+.de-theme-toggle .de-theme-icon-sun  { display: none !important; }
+html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-moon { display: none !important; }
+html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-sun  { display: inline-block !important; }
