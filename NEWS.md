@@ -173,6 +173,29 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   (predicates), `test-prepdatacontainer.R` (`prep_comparison_inputs` purity).
   Total +73 assertions (126 → 199 PASS).
 
+### Phase B3 — Sane defaults harmonization
+
+* Switched DE cutoff input from fold-change to |log2FC| convention.
+  The cutoff numeric inputs are now labelled `padj <=` and `|log2FC| >=`.
+* Added `[ Strict ] [ Standard ]` preset buttons above the DE cutoff
+  inputs. Strict (padj 0.01, |log2FC| 1) is the default; Standard is
+  (padj 0.05, |log2FC| 1). Manual edits clear the preset highlight
+  unless the new pair matches a preset exactly.
+* Cutoff inputs (DE padj, DE |log2FC|, GO p.adjust) are now
+  `numericInput` with bounds + native validation, replacing
+  `textInput` widgets that silently produced NaN downstream when
+  users typed non-numeric values.
+* New helper module `R/fct_cutoffs.R` owns the single source of
+  truth for default values and preset definitions:
+  `default_cutoffs()`, `cutoff_presets()`, `match_preset()`,
+  `log2fc_to_fold()`, `fold_to_log2fc()`,
+  `install_cutoff_preset_observers()`. The hardcoded fallback in
+  `generateTestData()` now reads from `default_cutoffs()`.
+* Internal-only Shiny input rename: `input$foldChange` -> `input$log2fc_cutoff`.
+  Public `cutOffSelectionUI` API is unchanged; new exported
+  companion `cutOffSelectionServer(id)` wires preset observers
+  for the namespaced widget.
+
 ### User-visible
 
 * Raised `startDEBrowser()` upload limit from 30 MB to 90 MB.
