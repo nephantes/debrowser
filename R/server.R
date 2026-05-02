@@ -246,6 +246,13 @@ deServer <- function(input, output, session) {
         })
         observeEvent(req(sel())$start_de(), {
           if (is.null(batch()$BatchEffect()$count)) return()
+          # Guard against double-clicks: a second click while
+          # prepDataContainer is still running would reassign dc()
+          # mid-render and intermittently leave the scatter plot blank.
+          # on.exit() ensures the button isn't left stuck disabled if
+          # anything below errors out.
+          shinyjs::disable("cs-startDE")
+          on.exit(shinyjs::enable("cs-startDE"), add = TRUE)
           # B2a: mark condselect done at this point (the user has
           # clicked start-de, which is the natural exit from the cs step).
           progress$condselect <- "done"
