@@ -11,7 +11,7 @@ test_that("apply_de_filters() labels Up/Down/NS for the demo DE result", {
     metadata = demo$meta,
     columns  = demo_columns,
     conds    = demo_conds,
-    params   = list(covariates = "NoCovariate")
+    params   = list(covariates = "NoCovariate", test_type = "Wald", shrinkage = "None")
   )
   de <- as.data.frame(de)
   de$foldChange <- 2^de$log2FoldChange
