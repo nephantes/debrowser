@@ -5,6 +5,7 @@
 manifest.json
 .positai
 .superpowers/
+docs/superpowers/
 vignettes/*.html
 vignettes/*_files/
 .env
