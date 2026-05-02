@@ -38,11 +38,11 @@ debrowserlowcountfilter <- function(id, ldata = NULL) {
   observe({
     req(ldata$count)
     if (init_done()) return()
-    # First time data is available: apply the default low-count filter
-    # (same Max < 10 the user would get by clicking Filter immediately).
-    # Reactivity uses isolate() because we are reading inputs in an
-    # observe that should fire only on first data arrival, not on every
-    # input edit.
+    # Apply the same default Max < 10 filter the user would get from
+    # clicking Filter, so the after-histogram and filtered table populate
+    # on data load. ldata is a closed-over plain list (not a reactive),
+    # so this observe fires once on module flush; init_done + isolate()
+    # are defensive in case the module's reactivity surface changes.
     method <- if (is.null(isolate(input$lcfmethod))) "Max" else isolate(input$lcfmethod)
     fdata$count <- switch(method,
       "Max"  = filter_low_counts(ldata$count, "max",
