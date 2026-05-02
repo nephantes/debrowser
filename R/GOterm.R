@@ -299,9 +299,26 @@ clusterData <- function(dat = NULL) {
   if (is.null(dat)) {
     return(NULL)
   }
+  # dat is typically the filt_data subset returned by getDataForTables(),
+  # which carries UI metadata (Legend/Size/x/y/ID) and DE-result columns
+  # (foldChange/padj/pvalue/log2FoldChange and their *.condA.vs.condB
+  # variants from merged comparisons) alongside the count columns. Strip
+  # them so getNormalizedMatrix() sees only the numeric count matrix.
+  drop_exact <- c(
+    "ID", "x", "y", "Legend", "Size",
+    "foldChange", "padj", "pvalue", "log2FoldChange"
+  )
+  drop_pat <- grepl(
+    "^(foldChange|padj|pvalue|log2FoldChange)\\.", colnames(dat)
+  )
+  count_dat <- dat[, !(colnames(dat) %in% drop_exact) & !drop_pat, drop = FALSE]
+  count_dat <- count_dat[, vapply(count_dat, is.numeric, logical(1)),
+    drop = FALSE
+  ]
+
   ret <- list()
-  itemlabels <- rownames(dat)
-  norm_data <- getNormalizedMatrix(dat)
+  itemlabels <- rownames(count_dat)
+  norm_data <- getNormalizedMatrix(count_dat)
   mydata <- na.omit(norm_data) # listwise deletion of missing
   mydata <- scale(mydata) # standardize variables
 
@@ -371,53 +388,64 @@ compareClust <- function(
   k <- max(dat$fit.cluster)
   for (i in 1:k) {
     clgenes <- rownames(dat[dat$fit.cluster == i, ])
-    genelist <- getGeneList(clgenes, org)
-    genecl <- list()
-    genecl <- push(genecl, genelist)
-    genecluster[c(paste("X", i, sep = ""))] <- genecl
+    # getGeneList() returns a data.frame(SYMBOL, ENTREZID).
+    # compareCluster() expects a list of character gene-ID vectors.
+    entrez_ids <- unique(as.character(getGeneList(clgenes, org)$ENTREZID))
+    entrez_ids <- entrez_ids[!is.na(entrez_ids) & nzchar(entrez_ids)]
+    if (length(entrez_ids) == 0L) next
+    genecluster[[paste0("X", i)]] <- entrez_ids
+  }
+  if (length(genecluster) == 0L) {
+    showNotification(
+      "No mappable gene IDs in any cluster — check organism selection.",
+      type = "warning"
+    )
+    return(NULL)
   }
   res$table <- NULL
-  p <- tryCatch({
-    title <- paste(fun, title)
-    xx <- c()
-    if (fun == "enrichKEGG") {
-      xx <- compareCluster(genecluster,
-        fun = fun,
-        organism = getOrganism(org),
-        pvalueCutoff = pvalueCutoff
+  title <- paste(fun, title)
+  if (fun == "enrichKEGG") {
+    xx <- compareCluster(genecluster,
+      fun = fun,
+      organism = getOrganism(org),
+      pvalueCutoff = pvalueCutoff
+    )
+  } else if (fun == "enrichDO") {
+    if (!requireNamespace("DOSE", quietly = TRUE)) {
+      showNotification(
+        "Please install DOSE to use this function.",
+        type = "error"
       )
-    } else if (fun == "enrichDO") {
-      if (!requireNamespace("DOSE", quietly = TRUE)) {
-        showNotification(
-          "Please install DOSE to use this function.",
-          type = "error"
-        )
-        return(NULL)
-      }
-      xx <- compareCluster(genecluster,
-        fun = fun,
-        pvalueCutoff = pvalueCutoff
-      )
-    } else {
-      title <- paste(ont, title)
-      xx <- compareCluster(genecluster,
-        fun = fun,
-        ont = ont, OrgDb = org, pvalueCutoff = pvalueCutoff
-      )
-      # ont = ont, organism = "human", pvalueCutoff = pvalueCutoff)
+      return(NULL)
     }
-    if (!is.null(xx@compareClusterResult)) {
-      res$table <- xx@compareClusterResult[
-        ,
-        c(
-          "Cluster", "ID", "Description", "GeneRatio", "BgRatio",
-          "pvalue", "p.adjust", "qvalue"
-        )
-      ]
-    }
-    require_pkg("enrichplot", feature = "GO/KEGG dotplot")
-    res$p <- enrichplot::dotplot(xx, title = title)
-  })
+    xx <- compareCluster(genecluster,
+      fun = fun,
+      pvalueCutoff = pvalueCutoff
+    )
+  } else {
+    title <- paste(ont, title)
+    xx <- compareCluster(genecluster,
+      fun = fun,
+      ont = ont, OrgDb = org, pvalueCutoff = pvalueCutoff
+    )
+  }
+  if (is.null(xx) || is.null(xx@compareClusterResult) ||
+    nrow(xx@compareClusterResult) == 0L) {
+    showNotification(
+      "No enrichment found for any cluster at this p-value cutoff.",
+      type = "warning"
+    )
+    return(NULL)
+  }
+  res$table <- xx@compareClusterResult[
+    ,
+    c(
+      "Cluster", "ID", "Description", "GeneRatio", "BgRatio",
+      "pvalue", "p.adjust", "qvalue"
+    )
+  ]
+  require_pkg("enrichplot", feature = "GO/KEGG dotplot")
+  res$p <- enrichplot::dotplot(xx, title = title)
   res
 }
 #' getEnrichDO
