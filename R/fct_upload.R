@@ -170,6 +170,8 @@ validate_count_upload <- function(path, sep) {
 #'
 #' @param path       Path to the metadata file.
 #' @param count_cols Character vector of count-file column (sample) names.
+#'   Must be pre-normalized (callers apply `gsub("\\s+|\\.|\\-", "_", ...)`
+#'   before passing); the validator normalizes only its own metadata side.
 #' @param sep        Field separator string.
 #' @return Invisibly returns `path` on success.
 #' @keywords internal

@@ -60,6 +60,8 @@ test_that("validate_count_upload's $dups is character even for numeric IDs", {
 })
 
 test_that("validate_metadata_upload accepts well-formed metadata", {
+  # 2 columns is the minimum legal width (Sample + at least one annotation).
+  # This implicitly covers the boundary of the `ncol < 2` separator check.
   path <- tempfile(fileext = ".tsv")
   on.exit(unlink(path), add = TRUE)
   writeLines(c(
