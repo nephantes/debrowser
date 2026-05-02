@@ -34,6 +34,31 @@ debrowserlowcountfilter <- function(id, ldata = NULL) {
     fdata$meta <- ldata$meta
   })
 
+  init_done <- reactiveVal(FALSE)
+  observe({
+    req(ldata$count)
+    if (init_done()) return()
+    # First time data is available: apply the default low-count filter
+    # (same Max < 10 the user would get by clicking Filter immediately).
+    # Reactivity uses isolate() because we are reading inputs in an
+    # observe that should fire only on first data arrival, not on every
+    # input edit.
+    method <- if (is.null(isolate(input$lcfmethod))) "Max" else isolate(input$lcfmethod)
+    fdata$count <- switch(method,
+      "Max"  = filter_low_counts(ldata$count, "max",
+                                 if (is.null(isolate(input$maxCutoff)))  10 else as.numeric(isolate(input$maxCutoff))),
+      "Mean" = filter_low_counts(ldata$count, "mean",
+                                 if (is.null(isolate(input$meanCutoff))) 10 else as.numeric(isolate(input$meanCutoff))),
+      "CPM"  = filter_low_counts(ldata$count, "cpm",
+                                 if (is.null(isolate(input$CPMCutoff)))  1  else as.numeric(isolate(input$CPMCutoff)),
+                                 min_samples = if (is.null(isolate(input$numSample)))
+                                                 (ncol(ldata$count) - 1)
+                                               else as.numeric(isolate(input$numSample)))
+    )
+    fdata$meta <- ldata$meta
+    init_done(TRUE)
+  })
+
   output$cutoffLCFMet <- renderUI({
     ret <- textInput(session$ns("maxCutoff"), "Filter features where Max Value <", value = "10")
     if (input$lcfmethod == "Mean") {
