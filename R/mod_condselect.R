@@ -276,41 +276,42 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
           character(0)
         }
         method_block <- switch(method,
-          "DESeq2" = shiny::tagList(
-            shiny::selectInput(session$ns(iid("fitType")), "Fit type",
-              c("parametric", "local", "mean"),
-              selected = rv$method_params$fitType),
-            shiny::selectInput(session$ns(iid("betaPrior")), "betaPrior",
-              c(FALSE, TRUE),
-              selected = rv$method_params$betaPrior),
-            shiny::selectInput(session$ns(iid("testType")), "Test type",
-              c("LRT", "Wald"),
-              selected = rv$method_params$testType),
-            shiny::selectInput(session$ns(iid("shrinkage")), "Shrinkage",
-              c("None", "apeglm", "ashr", "normal"),
-              selected = rv$method_params$shrinkage)
+          "DESeq2" = shiny::fluidRow(
+            shiny::column(3, shiny::selectInput(session$ns(iid("fitType")),
+              "Fit type", c("parametric", "local", "mean"),
+              selected = rv$method_params$fitType, width = "100%")),
+            shiny::column(3, shiny::selectInput(session$ns(iid("betaPrior")),
+              "betaPrior", c(FALSE, TRUE),
+              selected = rv$method_params$betaPrior, width = "100%")),
+            shiny::column(3, shiny::selectInput(session$ns(iid("testType")),
+              "Test type", c("LRT", "Wald"),
+              selected = rv$method_params$testType, width = "100%")),
+            shiny::column(3, shiny::selectInput(session$ns(iid("shrinkage")),
+              "Shrinkage", c("None", "apeglm", "ashr", "normal"),
+              selected = rv$method_params$shrinkage, width = "100%"))
           ),
-          "EdgeR" = shiny::tagList(
-            shiny::selectInput(session$ns(iid("edgeR_normfact")), "Normalization",
-              c("TMM", "RLE", "upperquartile", "none"),
-              selected = rv$method_params$edgeR_normfact),
-            shiny::textInput(session$ns(iid("dispersion")), "Dispersion",
-              value = rv$method_params$dispersion),
-            shiny::selectInput(session$ns(iid("edgeR_testType")), "Test type",
-              c("exactTest", "glmLRT"),
-              selected = rv$method_params$edgeR_testType)
+          "EdgeR" = shiny::fluidRow(
+            shiny::column(4, shiny::selectInput(session$ns(iid("edgeR_normfact")),
+              "Normalization", c("TMM", "RLE", "upperquartile", "none"),
+              selected = rv$method_params$edgeR_normfact, width = "100%")),
+            shiny::column(4, shiny::textInput(session$ns(iid("dispersion")),
+              "Dispersion", value = rv$method_params$dispersion, width = "100%")),
+            shiny::column(4, shiny::selectInput(session$ns(iid("edgeR_testType")),
+              "Test type", c("exactTest", "glmLRT"),
+              selected = rv$method_params$edgeR_testType, width = "100%"))
           ),
-          "Limma" = shiny::tagList(
-            shiny::selectInput(session$ns(iid("limma_normfact")), "Normalization",
-              c("TMM", "RLE", "upperquartile", "none"),
-              selected = rv$method_params$limma_normfact),
-            shiny::selectInput(session$ns(iid("limma_fitType")), "Fit type",
-              c("ls", "robust"),
-              selected = rv$method_params$limma_fitType),
-            shiny::selectInput(session$ns(iid("normBetween")), "Norm. Bet. Arrays",
+          "Limma" = shiny::fluidRow(
+            shiny::column(4, shiny::selectInput(session$ns(iid("limma_normfact")),
+              "Normalization", c("TMM", "RLE", "upperquartile", "none"),
+              selected = rv$method_params$limma_normfact, width = "100%")),
+            shiny::column(4, shiny::selectInput(session$ns(iid("limma_fitType")),
+              "Fit type", c("ls", "robust"),
+              selected = rv$method_params$limma_fitType, width = "100%")),
+            shiny::column(4, shiny::selectInput(session$ns(iid("normBetween")),
+              "Norm. Bet. Arrays",
               c("none", "scale", "quantile", "cyclicloess",
                 "Aquantile", "Gquantile", "Rquantile", "Tquantile"),
-              selected = rv$method_params$normBetween)
+              selected = rv$method_params$normBetween, width = "100%"))
           )
         )
         shiny::tagList(
@@ -319,7 +320,8 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
             label = "Covariates",
             choices = cov_choices,
             selected = rv$covariates,
-            multiple = TRUE),
+            multiple = TRUE,
+            width = "100%"),
           shiny::uiOutput(session$ns(iid("covariate_msgs")))
         )
       })
@@ -521,7 +523,7 @@ comparisonCardUI <- function(ns, i, rv, data, metadata) {
         shiny::column(2,
           shiny::div(class = "de-swap-wrap",
             actionButtonDE(iid("swap"), "Swap", styleclass = "primary",
-                           icon = shiny::icon("arrows-left-right"))
+                           icon = shiny::icon("right-left"))
           )
         ),
         shiny::column(5,

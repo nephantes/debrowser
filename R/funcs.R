@@ -370,7 +370,11 @@ actionButtonDE <- function(inputId, label, styleclass = "", size = "",
   }
 
   if (!is.null(icon)) {
-    icon.code <- HTML(paste0("<i class='fa fa-", icon, "'></i>"))
+    if (inherits(icon, c("shiny.tag", "shiny.tag.list"))) {
+      icon.code <- icon
+    } else {
+      icon.code <- HTML(paste0("<i class='fa fa-", icon, "'></i>"))
+    }
   } else {
     icon.code <- ""
   }

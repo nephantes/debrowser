@@ -129,7 +129,7 @@ deUI <- function(req = NULL) {
 
     sidebar = bslib::sidebar(
       id = "shared_sidebar",
-      width = 250, open = "open",
+      width = 300, open = "open",
 
       # Data Prep tab — wizard nav lives in the sidebar (was nested in
       # navset_pill_list inside the panel content prior to B1.16). DE

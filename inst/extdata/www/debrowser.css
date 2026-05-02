@@ -157,6 +157,19 @@
     width: 100% !important;
 }
 
+/* bslib cards default to overflow:hidden (for full-screen handling),
+   which clips open selectize dropdowns at the card boundary so the
+   menu disappears under the next sub-card. Allow the dropdown to spill
+   out and lift its z-index above sibling sub-cards. */
+.de-comparison .de-subcard,
+.de-comparison .de-subcard > .card-body {
+    overflow: visible;
+}
+
+.de-comparison .de-subcard .selectize-dropdown {
+    z-index: 1080;
+}
+
 .de-swap-wrap {
     display: flex;
     flex-direction: column;
