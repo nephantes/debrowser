@@ -70,7 +70,7 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
         de_method         = "DESeq2",
         method_params     = list(
           fitType = "parametric", betaPrior = FALSE,
-          testType = "LRT",       shrinkage = "None"
+          testType = "LRT",       shrinkage = "apeglm"
         ),
         covariates        = character(0)
       )
@@ -363,7 +363,7 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
         m <- input[[iid("de_method")]]
         rv$method_params <- switch(m,
           "DESeq2" = list(fitType = "parametric", betaPrior = FALSE,
-                          testType = "LRT",       shrinkage = "None"),
+                          testType = "LRT",       shrinkage = "apeglm"),
           "EdgeR"  = list(edgeR_normfact = "TMM", dispersion = "0",
                           edgeR_testType = "exactTest"),
           "Limma"  = list(limma_normfact = "TMM", limma_fitType = "ls",
