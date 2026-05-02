@@ -48,6 +48,60 @@ require_pkg <- function(pkg, feature = pkg) {
   invisible(TRUE)
 }
 
+#' Show a sticky error notification (manual close).
+#'
+#' Standard surface for Tier 1 user-facing errors — they need to stay
+#' on screen while the user reads the fix hint and acts on it.
+#'
+#' @param msg Plain-text message in "<problem>. <imperative fix>." form.
+#' @return The Shiny notification id (invisibly), or NULL outside a session.
+#' @keywords internal
+de_notify_error <- function(msg) {
+  tryCatch(
+    showNotification(msg, type = "error", duration = NULL),
+    error = function(e) {
+      message(msg)
+      NULL
+    }
+  )
+}
+
+#' Show an auto-dismissing warning notification (8 seconds).
+#'
+#' For "analysis ran but lost data" cases (e.g., dropped samples,
+#' unmapped gene IDs).
+#'
+#' @inheritParams de_notify_error
+#' @return The Shiny notification id (invisibly), or NULL outside a session.
+#' @keywords internal
+de_notify_warning <- function(msg) {
+  tryCatch(
+    showNotification(msg, type = "warning", duration = 8),
+    error = function(e) {
+      message(msg)
+      NULL
+    }
+  )
+}
+
+#' Show an auto-dismissing info notification (8 seconds).
+#'
+#' For "analysis ran successfully but produced no result" cases — these are
+#' NOT errors; they should not display in red.
+#'
+#' @inheritParams de_notify_error
+#' @return The Shiny notification id (invisibly), or NULL outside a session.
+#' @keywords internal
+de_notify_info <- function(msg) {
+  tryCatch(
+    showNotification(msg, type = "message", duration = 8),
+    error = function(e) {
+      message(msg)
+      NULL
+    }
+  )
+}
+
 #' Validate that x is a non-empty numeric count matrix.
 #'
 #' Raises `de_error()` with one of: `"null_input"`, `"empty_matrix"`,

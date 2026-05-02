@@ -44,3 +44,34 @@ test_that("filter_params_from_input() reads the documented input fields", {
   expect_equal(p$top_n, "500")
   expect_null(p$selected_plot)
 })
+
+test_that("de_notify_error / _warning / _info are callable without a Shiny session", {
+  # In a non-Shiny context, showNotification logs a message and returns NULL.
+  # We don't care about the return -- only that the helpers don't error out
+  # and pass the right arguments.
+  expect_silent({
+    suppressMessages(de_notify_error("test problem. test fix."))
+    suppressMessages(de_notify_warning("test caveat. test note."))
+    suppressMessages(de_notify_info("test result. test next."))
+  })
+})
+
+test_that("de_notify_error uses sticky duration; the others auto-dismiss", {
+  # We can't observe Shiny notification state outside a session, so probe the
+  # function definitions directly to lock the duration policy.
+  err_body <- deparse(body(de_notify_error))
+  warn_body <- deparse(body(de_notify_warning))
+  info_body <- deparse(body(de_notify_info))
+  expect_match(paste(err_body, collapse = " "), "duration\\s*=\\s*NULL")
+  expect_match(paste(warn_body, collapse = " "), "duration\\s*=\\s*8")
+  expect_match(paste(info_body, collapse = " "), "duration\\s*=\\s*8")
+})
+
+test_that("de_notify_error/warning/info pass severity correctly", {
+  err_body <- deparse(body(de_notify_error))
+  warn_body <- deparse(body(de_notify_warning))
+  info_body <- deparse(body(de_notify_info))
+  expect_match(paste(err_body, collapse = " "), 'type\\s*=\\s*"error"')
+  expect_match(paste(warn_body, collapse = " "), 'type\\s*=\\s*"warning"')
+  expect_match(paste(info_body, collapse = " "), 'type\\s*=\\s*"message"')
+})
