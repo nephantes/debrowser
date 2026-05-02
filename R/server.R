@@ -681,6 +681,9 @@ deServer <- function(input, output, session) {
         }
         org <- input$organism
         dat <- tabledat()
+        if (is.null(dat)) {
+          return(NULL)
+        }
         i <- input$gotable_rows_selected
         if (input$goplot == "GSEA") {
           genes <- inputGOstart()$enrich_p$core_enrichment[i]
@@ -692,6 +695,12 @@ deServer <- function(input, output, session) {
           genes,
           dat[[1]], org
         )
+        # `dat[[1]] <- NULL` would *remove* the data slot from the list
+        # (shifting indices); coerce to an empty 0-row data frame so the
+        # downstream renderer still has a data.frame to display.
+        if (is.null(genedata)) {
+          genedata <- dat[[1]][integer(0), , drop = FALSE]
+        }
         dat[[1]] <- genedata
         dat
       })

@@ -75,18 +75,34 @@ getEntrezTable <- function(genes = NULL, dat = NULL, org = "org.Hs.eg.db") {
   # to the search path. Suggests-status packages (e.g., org.Mm.eg.db)
   # aren't attached by requireNamespace alone.
   org_db <- getExportedValue(org, org)
-  allkeys <- AnnotationDbi::keys(org_db, keytype = "SYMBOL")
   entrezIDs <- unlist(strsplit(genes, "/"))
+  # Drop NA / empty entries -- otherwise `mapped_genes %in% NA` matches
+  # every NA-mapped DE gene (no-overlap categories ended up showing
+  # all unmapped DE genes in the modal).
+  entrezIDs <- entrezIDs[!is.na(entrezIDs) & nzchar(entrezIDs)]
+  empty_template <- cbind(
+    mapped_genes = character(0),
+    dat[integer(0), , drop = FALSE]
+  )
+  if (length(entrezIDs) == 0L) {
+    return(data.frame(empty_template))
+  }
 
   mapped_genes <- mapIds(org_db,
     keys = rownames(dat),
     column = "ENTREZID", keytype = "SYMBOL",
     multiVals = "first"
   )
+  # Drop unmapped genes before the overlap test so an `entrezIDs`
+  # that still contains a stray NA cannot pull NA-mapped rows in.
+  mapped_genes <- mapped_genes[!is.na(mapped_genes)]
   mapped_genes <- mapped_genes[mapped_genes %in% entrezIDs]
+  if (length(mapped_genes) == 0L) {
+    return(data.frame(empty_template))
+  }
   genelist <- cbind(mapped_genes, dat[names(mapped_genes), ])
 
-  genelist <- data.frame(genelist)
+  data.frame(genelist)
 }
 
 #' getEntrezIds
