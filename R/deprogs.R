@@ -225,7 +225,7 @@ runDESeq2 <- function(data = NULL, metadata = NULL, columns = NULL,
     covariates = if (!is.null(params[2])) params[2] else "NoCovariate",
     fit_type   = if (!is.null(params[3])) params[3] else "parametric",
     beta_prior = if (!is.null(params[4])) as.logical(params[4]) else FALSE,
-    test_type  = if (!is.null(params[5])) params[5] else "Wald",
+    test_type  = if (!is.null(params[5])) params[5] else "LRT",
     shrinkage  = if (!is.null(params[6])) params[6] else "None"
   )
   tryCatch(
