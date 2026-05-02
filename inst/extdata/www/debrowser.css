@@ -129,6 +129,43 @@
     margin: 0.25rem 0 0.5rem 0.25rem;
 }
 
+/* Comparison Selection (mod_condselect): each logical section of the
+   wizard card is rendered as a bslib sub-card (.de-subcard) with a
+   muted header. Form inputs inside sub-cards are forced to 100% width
+   so the Label / Samples / DE-method boxes actually fill the column
+   they sit in (default Bootstrap leaves them at intrinsic width, which
+   leaves the wide columns looking empty). */
+.de-comparison .de-subcard {
+    margin-bottom: 1rem;
+    box-shadow: none;
+    height: calc(100% - 1rem);
+}
+
+.de-comparison .de-subcard > .card-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color, #6c757d);
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    padding: 0.5rem 0.85rem;
+}
+
+.de-comparison .de-subcard .form-control,
+.de-comparison .de-subcard .form-select,
+.de-comparison .de-subcard .selectize-control {
+    width: 100% !important;
+}
+
+.de-swap-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 12rem;
+}
+
 /* B2c: tighter accordion typography inside sidebars only.
    Scoped via .bslib-sidebar-layout so main-content accordions
    keep default sizing. */

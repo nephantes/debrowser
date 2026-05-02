@@ -489,57 +489,74 @@ comparisonCardUI <- function(ns, i, rv, data, metadata) {
   }
 
   bslib::card(
+    class = "de-comparison",
     bslib::card_header(shiny::textOutput(iid("title"), inline = TRUE)),
     bslib::card_body(
-      shiny::fluidRow(shiny::column(
-        12,
-        shiny::selectInput(iid("meta_column"),
-          label = "Group by metadata column",
-          choices = meta_choices,
-          selected = if (is.na(rv$meta_column)) NA_character_ else rv$meta_column)
-      )),
+      bslib::card(
+        class = "de-subcard",
+        bslib::card_header("Sample grouping"),
+        bslib::card_body(
+          shiny::selectInput(iid("meta_column"),
+            label = "Group by metadata column",
+            choices = meta_choices,
+            selected = if (is.na(rv$meta_column)) NA_character_ else rv$meta_column,
+            width = "100%")
+        )
+      ),
       shiny::fluidRow(
         shiny::column(5,
-          shiny::div(class = "side-card",
-            shiny::h6("Treatment"),
-            shiny::uiOutput(iid("treatment_level_ui")),
-            shiny::textInput(iid("treatment_label"),
-              label = "Label", value = rv$treatment_label),
-            shiny::selectInput(iid("treatment_samples"),
-              label = "Samples", choices = sample_choices,
-              selected = rv$treatment_samples, multiple = TRUE)
+          bslib::card(
+            class = "de-subcard",
+            bslib::card_header("Treatment"),
+            bslib::card_body(
+              shiny::uiOutput(iid("treatment_level_ui")),
+              shiny::textInput(iid("treatment_label"),
+                label = "Label", value = rv$treatment_label, width = "100%"),
+              shiny::selectInput(iid("treatment_samples"),
+                label = "Samples", choices = sample_choices,
+                selected = rv$treatment_samples, multiple = TRUE, width = "100%")
+            )
           )
         ),
         shiny::column(2,
-          shiny::div(style = "text-align:center; padding-top:60px;",
+          shiny::div(class = "de-swap-wrap",
             actionButtonDE(iid("swap"), "Swap", styleclass = "primary",
                            icon = shiny::icon("arrows-left-right"))
           )
         ),
         shiny::column(5,
-          shiny::div(class = "side-card",
-            shiny::h6("Control"),
-            shiny::uiOutput(iid("control_level_ui")),
-            shiny::textInput(iid("control_label"),
-              label = "Label", value = rv$control_label),
-            shiny::selectInput(iid("control_samples"),
-              label = "Samples", choices = sample_choices,
-              selected = rv$control_samples, multiple = TRUE)
+          bslib::card(
+            class = "de-subcard",
+            bslib::card_header("Control"),
+            bslib::card_body(
+              shiny::uiOutput(iid("control_level_ui")),
+              shiny::textInput(iid("control_label"),
+                label = "Label", value = rv$control_label, width = "100%"),
+              shiny::selectInput(iid("control_samples"),
+                label = "Samples", choices = sample_choices,
+                selected = rv$control_samples, multiple = TRUE, width = "100%")
+            )
           )
         )
       ),
-      shiny::fluidRow(shiny::column(
-        4,
-        shiny::selectInput(iid("de_method"),
-          label = "DE method",
-          choices = c("DESeq2", "EdgeR", "Limma"),
-          selected = rv$de_method)
-      )),
-      bslib::accordion(
-        open = FALSE, multiple = FALSE,
-        bslib::accordion_panel(
-          title = "Advanced model settings",
-          shiny::uiOutput(iid("advanced_ui"))
+      bslib::card(
+        class = "de-subcard",
+        bslib::card_header("Differential expression model"),
+        bslib::card_body(
+          shiny::fluidRow(shiny::column(
+            6,
+            shiny::selectInput(iid("de_method"),
+              label = "DE method",
+              choices = c("DESeq2", "EdgeR", "Limma"),
+              selected = rv$de_method, width = "100%")
+          )),
+          bslib::accordion(
+            open = FALSE, multiple = FALSE,
+            bslib::accordion_panel(
+              title = "Advanced model settings",
+              shiny::uiOutput(iid("advanced_ui"))
+            )
+          )
         )
       ),
       shiny::uiOutput(iid("validation_msgs"))
