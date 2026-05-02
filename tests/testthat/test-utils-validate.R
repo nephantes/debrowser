@@ -46,7 +46,8 @@ test_that("filter_params_from_input() reads the documented input fields", {
 })
 
 test_that("de_notify_error / _warning / _info are callable without a Shiny session", {
-  # In a non-Shiny context, showNotification logs a message and returns NULL.
+  # In a non-Shiny context, showNotification throws; the helper's tryCatch
+  # catches the error, emits msg via message(), and returns NULL.
   # We don't care about the return -- only that the helpers don't error out
   # and pass the right arguments.
   expect_silent({
@@ -57,6 +58,10 @@ test_that("de_notify_error / _warning / _info are callable without a Shiny sessi
 })
 
 test_that("de_notify_error uses sticky duration; the others auto-dismiss", {
+  # NOTE: deparse(body()) tests are brittle if the implementation is refactored
+  # to use indirect argument passing (do.call, intermediate variables). If a
+  # future refactor breaks them, verify the policy constants are still embedded
+  # literally in the showNotification call.
   # We can't observe Shiny notification state outside a session, so probe the
   # function definitions directly to lock the duration policy.
   err_body <- deparse(body(de_notify_error))

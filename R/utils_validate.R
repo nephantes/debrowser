@@ -54,7 +54,9 @@ require_pkg <- function(pkg, feature = pkg) {
 #' on screen while the user reads the fix hint and acts on it.
 #'
 #' @param msg Plain-text message in "<problem>. <imperative fix>." form.
-#' @return The Shiny notification id (invisibly), or NULL outside a session.
+#' @return A Shiny notification id (character), or NULL if called outside a
+#'   Shiny session (the error is silently caught and the message is emitted
+#'   via \code{message()} instead).
 #' @keywords internal
 de_notify_error <- function(msg) {
   tryCatch(
@@ -72,7 +74,9 @@ de_notify_error <- function(msg) {
 #' unmapped gene IDs).
 #'
 #' @inheritParams de_notify_error
-#' @return The Shiny notification id (invisibly), or NULL outside a session.
+#' @return A Shiny notification id (character), or NULL if called outside a
+#'   Shiny session (the error is silently caught and the message is emitted
+#'   via \code{message()} instead).
 #' @keywords internal
 de_notify_warning <- function(msg) {
   tryCatch(
@@ -90,7 +94,9 @@ de_notify_warning <- function(msg) {
 #' NOT errors; they should not display in red.
 #'
 #' @inheritParams de_notify_error
-#' @return The Shiny notification id (invisibly), or NULL outside a session.
+#' @return A Shiny notification id (character), or NULL if called outside a
+#'   Shiny session (the error is silently caught and the message is emitted
+#'   via \code{message()} instead).
 #' @keywords internal
 de_notify_info <- function(msg) {
   tryCatch(
