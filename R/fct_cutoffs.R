@@ -1,7 +1,7 @@
 #' Default DE significance cutoffs.
 #'
 #' Single source of truth for the values that populate the DE cutoff
-#' inputs and the prepDataForQA() fallback.
+#' inputs and the generateTestData() fallback in R/mainScatter.R.
 #'
 #' @return Named list with components: padj, log2fc, gopvalue.
 #' @examples

@@ -56,7 +56,7 @@ R/deprogs.R                      (MODIFIED — per-plot widget)
                                     converts via log2fc_to_fold()
 
 R/mainScatter.R                  (MODIFIED — hardcoded fallback)
-  prepDataForQA()                -> reads default_cutoffs() instead of literals
+  generateTestData()                -> reads default_cutoffs() instead of literals
 
 R/utils_validate.R               (MODIFIED — input collection)
   collect_run_inputs()           -> renames fold_cutoff field
@@ -78,7 +78,7 @@ R/fct_prep_data.R                (UNCHANGED — params$fold_cutoff stays
 #' Default DE significance cutoffs.
 #'
 #' Single source of truth for the values that populate cutoff
-#' inputs and the prepDataForQA() fallback.
+#' inputs and the generateTestData() fallback.
 #'
 #' @return Named list: padj, log2fc, gopvalue.
 #' @export
@@ -209,7 +209,7 @@ numericInput("gopvalue",
 
 No preset bar.
 
-### prepDataForQA fallback — `R/mainScatter.R:412-413`
+### generateTestData fallback — `R/mainScatter.R:412-413`
 
 ```r
 defaults <- default_cutoffs()
@@ -247,7 +247,7 @@ The new server registration must be co-located. Because the id is dynamic (`comp
    - **Per-plot widget:** Same behavior inside the DE Results plot module.
    - **DE end-to-end:** Vernia demo → load → filter → batch → condselect → DE. Volcano colors Up/Down/NS using the new cutoff inputs.
    - **gopvalue:** GO term tab accepts `numericInput` instead of `textInput`; typing `abc` triggers Shiny's native validation rather than a downstream NaN.
-   - **prepDataForQA fallback:** With no user input present, the QA legend uses padj=0.01 / fc=2.
+   - **generateTestData fallback:** With no user input present, the QA legend uses padj=0.01 / fc=2.
 4. No `input$foldChange` references remain anywhere outside of comments/NEWS.
 5. No observer loop on global or namespaced widget when toggling preset and editing numerics rapidly (verified manually).
 
@@ -277,7 +277,7 @@ No UI tests; no shinytest2 baseline regen.
   - "Switched DE cutoff input from fold-change to |log2FC| convention."
   - "Added Strict / Standard preset buttons; Strict (padj 0.01, |log2FC| 1) is the default."
   - "Cutoff inputs are now `numericInput` with bounds + native validation."
-  - "Hardcoded cutoffs in `prepDataForQA()` now read from `default_cutoffs()`."
+  - "Hardcoded cutoffs in `generateTestData()` now read from `default_cutoffs()`."
 - **No deprecation shim** for `input$foldChange` — internal-only Shiny input, not part of the public R API. `cutOffSelectionUI`/`cutOffSelectionServer` are exported but the input names inside them are implementation detail.
 
 ## Files in scope
@@ -314,7 +314,7 @@ No UI tests; no shinytest2 baseline regen.
 Single sub-plan; this spec maps directly to one implementation plan written next via the `superpowers:writing-plans` skill. Suggested commit boundaries:
 
 1. New helper module + tests (`R/fct_cutoffs.R`, `tests/testthat/test-cutoffs.R`)
-2. `prepDataForQA()` fallback migration (`R/mainScatter.R`)
+2. `generateTestData()` fallback migration (`R/mainScatter.R`)
 3. `utils_validate.R` reader migration
 4. `R/deprogs.R` namespaced widget + `cutOffSelectionServer`
 5. `R/uifuncs.R` global widget + preset bar

@@ -141,6 +141,43 @@ test_that("apply_merged_filters() labels rows Sig where any comparison crosses c
   expect_equal(out$Legend, c("Sig", "Sig", "NS"))
 })
 
+test_that("apply_de_filters() with fold_cutoff = log2fc_to_fold(1) matches fold_cutoff = 2", {
+  filt_data <- data.frame(
+    foldChange = c(3, 0.1, 1.0, 2.5),
+    padj       = c(0.001, 0.001, 0.5, 0.001),
+    s1 = c(10, 20, 30, 40),
+    s2 = c(11, 22, 33, 44),
+    s3 = c(12, 24, 36, 48),
+    s4 = c(13, 26, 39, 52),
+    row.names = c("g1", "g2", "g3", "g4")
+  )
+  base_params <- list(
+    padj_cutoff = 0.05, fold_cutoff = 2,
+    dataset = "up+down", norm_method = "none"
+  )
+  via_log2fc_params <- modifyList(
+    base_params, list(fold_cutoff = log2fc_to_fold(1))
+  )
+
+  out_base <- apply_de_filters(
+    filt_data,
+    cols   = c("s1", "s2", "s3", "s4"),
+    conds  = c("Cond1", "Cond1", "Cond2", "Cond2"),
+    params = base_params
+  )
+  out_via <- apply_de_filters(
+    filt_data,
+    cols   = c("s1", "s2", "s3", "s4"),
+    conds  = c("Cond1", "Cond1", "Cond2", "Cond2"),
+    params = via_log2fc_params
+  )
+
+  expect_equal(out_via$Legend, out_base$Legend)
+  # Sanity: with this fixture both Up and Down labels appear.
+  expect_true(any(out_via$Legend == "Up"))
+  expect_true(any(out_via$Legend == "Down"))
+})
+
 test_that("apply_merged_filters() with fold_cutoff = log2fc_to_fold(1) matches fold_cutoff = 2", {
   fake_dc <- list(
     list(

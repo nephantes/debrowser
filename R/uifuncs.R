@@ -608,6 +608,9 @@ getTableStyle <- function(
     )
   }
   if (!is.null(foldChange) && DEsection && all(foldChange %in% names(dat$x$data))) {
+    # input$padj and input$log2fc_cutoff here are the GLOBAL sidebar
+    # cutoffs (from getCutOffSelection), not the namespaced per-plot
+    # ones — the main DT colours genes by the user's overall threshold.
     fc <- log2fc_to_fold(as.numeric(input$log2fc_cutoff))
     a <- a %>%
       formatStyle(
