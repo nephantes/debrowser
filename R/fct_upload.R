@@ -155,3 +155,47 @@ validate_count_upload <- function(path, sep) {
   }
   invisible(path)
 }
+
+#' Validate a metadata upload file against count-file column names.
+#'
+#' Reads the file with the given separator and raises classed conditions
+#' on validation failures.
+#'
+#' Raises:
+#'   * `bad_separator`   — fewer than 2 columns after read.
+#'   * `column_mismatch` — count column names not present in metadata's
+#'                         first column. Field `unmatched` lists them.
+#'
+#' Other I/O failures propagate as plain conditions.
+#'
+#' @param path       Path to the metadata file.
+#' @param count_cols Character vector of count-file column (sample) names.
+#' @param sep        Field separator string.
+#' @return Invisibly returns `path` on success.
+#' @keywords internal
+validate_metadata_upload <- function(path, count_cols, sep) {
+  # header = TRUE because metadata column names (Sample, Condition, Batch, ...)
+  # are semantically required by downstream code. Contrast with
+  # validate_count_upload, which uses header = FALSE so the header row
+  # participates in the column-count check.
+  meta <- read.table(path, sep = sep, header = TRUE)
+  if (ncol(meta) < 2) {
+    de_error(
+      sprintf("only %d column(s) detected in metadata file", ncol(meta)),
+      class = "bad_separator",
+      n_cols = ncol(meta)
+    )
+  }
+  meta_samples <- as.character(meta[, 1])
+  meta_samples <- gsub("\\s+|\\.|\\-", "_", meta_samples)
+  unmatched <- base::setdiff(count_cols, meta_samples)
+  if (length(unmatched) > 0) {
+    de_error(
+      sprintf("metadata is missing rows for count columns: %s",
+              paste0(unmatched, collapse = ", ")),
+      class = "column_mismatch",
+      unmatched = unmatched
+    )
+  }
+  invisible(path)
+}

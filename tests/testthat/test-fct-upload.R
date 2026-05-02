@@ -58,3 +58,46 @@ test_that("validate_count_upload's $dups is character even for numeric IDs", {
   expect_type(err$dups, "character")
   expect_setequal(err$dups, c("1"))
 })
+
+test_that("validate_metadata_upload accepts well-formed metadata", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "Sample\tCondition",
+    "S1\tA",
+    "S2\tA",
+    "S3\tB"
+  ), path)
+  expect_silent(
+    validate_metadata_upload(path, count_cols = c("S1", "S2", "S3"), sep = "\t")
+  )
+})
+
+test_that("validate_metadata_upload raises bad_separator on single-column read", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  # Tab file, but caller passes comma -> 1 column.
+  writeLines(c("Sample\tCondition", "S1\tA"), path)
+  expect_error(
+    validate_metadata_upload(path, count_cols = c("S1"), sep = ","),
+    class = "bad_separator"
+  )
+})
+
+test_that("validate_metadata_upload raises column_mismatch with the unmatched names", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "Sample\tCondition",
+    "S1\tA",
+    "S2\tA"
+  ), path)
+  err <- tryCatch(
+    validate_metadata_upload(path,
+                             count_cols = c("S1", "S2", "S99", "S100"),
+                             sep = "\t"),
+    error = identity
+  )
+  expect_s3_class(err, "column_mismatch")
+  expect_setequal(err$unmatched, c("S99", "S100"))
+})
