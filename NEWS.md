@@ -196,6 +196,20 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase B3.5 — Sane defaults follow-up
+
+* DESeq2 default test changed from `Wald` to `LRT`, harmonizing the
+  pure-helper, parser fallback, test-data, and (where applicable)
+  help text with the UI default already in place.
+* DESeq2 LFC shrinkage now defaults to `apeglm`. Install via
+  `BiocManager::install("apeglm")` if not already available; a
+  friendly install message surfaces on first DE run otherwise.
+  apeglm remains in `Suggests`, not `Imports`.
+* Low-count filter auto-applies on data load (method = Max,
+  cutoff = 10 — the previous default values, now applied without
+  a Filter click). Click Filter with a different cutoff/method to
+  override, or set cutoff = 0 to restore the unfiltered counts.
+
 ### User-visible
 
 * Raised `startDEBrowser()` upload limit from 30 MB to 90 MB.
