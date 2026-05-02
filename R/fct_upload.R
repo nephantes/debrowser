@@ -108,3 +108,45 @@ make_default_metadata <- function(counts) {
     stringsAsFactors = FALSE
   )
 }
+
+#' Validate a count-data upload file.
+#'
+#' Reads the file with the given separator and raises classed conditions
+#' on validation failures. Designed for the upload observer to dispatch
+#' on class via tryCatch.
+#'
+#' Raises:
+#'   * `bad_separator`     — fewer than 3 columns after read (typically a
+#'                           wrong-separator file).
+#'   * `duplicate_gene_ids` — first column contains duplicate values; the
+#'                           condition object carries field `dups`.
+#'
+#' Other I/O failures propagate as plain `simpleError` / `simpleWarning`
+#' conditions; callers wrap with their own catch-all.
+#'
+#' @param path Path to the count file.
+#' @param sep  Field separator string.
+#' @return Invisibly returns `path` on success.
+#' @keywords internal
+validate_count_upload <- function(path, sep) {
+  data <- read.table(path, sep = sep)
+  if (ncol(data) < 3) {
+    de_error(
+      "only 1 column detected in count file",
+      class = "bad_separator",
+      n_cols = ncol(data)
+    )
+  }
+  dups <- data[duplicated(data[, 1], fromLast = TRUE) |
+                 duplicated(data[, 1], fromLast = FALSE), 1]
+  dups <- unique(dups)
+  if (length(dups) > 0) {
+    de_error(
+      sprintf("duplicate gene IDs in count file: %s",
+              paste0(dups, collapse = ", ")),
+      class = "duplicate_gene_ids",
+      dups = dups
+    )
+  }
+  invisible(path)
+}
