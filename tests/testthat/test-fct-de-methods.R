@@ -162,3 +162,39 @@ test_that("run_limma() with structured params matches the legacy limma golden ha
   res <- res[order(rownames(res)), c("log2FoldChange", "pvalue", "padj"), drop = FALSE]
   expect_snapshot_value(stable_hash(res), style = "json2")
 })
+
+test_that("run_deseq2() default params apply LRT and apeglm shrinkage", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("DESeq2")
+  skip_if_not_installed("apeglm")
+
+  demo <- load_demo()
+  data <- demo$counts[, demo_columns]
+  data <- data[rowSums(data) > 10, ]
+
+  set.seed(1L)
+  res_default <- run_deseq2(
+    counts   = data,
+    metadata = demo$meta,
+    columns  = demo_columns,
+    conds    = demo_conds,
+    params   = list()
+  )
+
+  set.seed(1L)
+  res_explicit <- run_deseq2(
+    counts   = data,
+    metadata = demo$meta,
+    columns  = demo_columns,
+    conds    = demo_conds,
+    params   = list(test_type = "LRT", shrinkage = "apeglm")
+  )
+
+  # Shrinkage path adds a `stat` column (see fct_de_methods.R:93-95).
+  # Its presence proves the default went through the shrinkage branch.
+  expect_true("stat" %in% colnames(res_default))
+  # Default-path result is byte-identical to the explicit-LRT-apeglm
+  # result, proving the default flip is the only change.
+  expect_equal(as.data.frame(res_default), as.data.frame(res_explicit))
+})

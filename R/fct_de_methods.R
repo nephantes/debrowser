@@ -28,8 +28,8 @@ run_deseq2 <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
     covariates = "NoCovariate",
     fit_type   = "parametric",
     beta_prior = FALSE,
-    test_type  = "Wald",
-    shrinkage  = "None"
+    test_type  = "LRT",
+    shrinkage  = "apeglm"
   )
   params <- modifyList(defaults, params)
 
