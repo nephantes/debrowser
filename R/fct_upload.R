@@ -129,17 +129,22 @@ make_default_metadata <- function(counts) {
 #' @return Invisibly returns `path` on success.
 #' @keywords internal
 validate_count_upload <- function(path, sep) {
+  # header = FALSE (default) is intentional and matches legacy checkCountData:
+  # the separator check fires when the parsed table has < 3 columns, which is
+  # most reliable when the header row participates as a data row. The companion
+  # validator validate_metadata_upload uses header = TRUE because metadata
+  # column names are semantically required.
   data <- read.table(path, sep = sep)
   if (ncol(data) < 3) {
     de_error(
-      "only 1 column detected in count file",
+      sprintf("only %d column(s) detected in count file", ncol(data)),
       class = "bad_separator",
       n_cols = ncol(data)
     )
   }
-  dups <- data[duplicated(data[, 1], fromLast = TRUE) |
-                 duplicated(data[, 1], fromLast = FALSE), 1]
-  dups <- unique(dups)
+  ids <- as.character(data[, 1])
+  dups <- unique(ids[duplicated(ids, fromLast = TRUE) |
+                       duplicated(ids, fromLast = FALSE)])
   if (length(dups) > 0) {
     de_error(
       sprintf("duplicate gene IDs in count file: %s",
