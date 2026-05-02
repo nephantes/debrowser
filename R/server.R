@@ -627,6 +627,19 @@ deServer <- function(input, output, session) {
         }
       })
       observeEvent(input$KeggPathway, {
+        if (is.null(input$gotable_rows_selected)) {
+          showModal(modalDialog(
+            title = "KEGG Pathway",
+            size = "l",
+            easyClose = TRUE,
+            footer = modalButton("Close"),
+            div(
+              class = "alert alert-info de-modal-empty mb-0",
+              "Please select a category in the GO/KEGG table to be able to see the pathway diagram."
+            )
+          ))
+          return()
+        }
         showModal(modalDialog(
           title = "KEGG Pathway",
           size = "l",
@@ -640,6 +653,19 @@ deServer <- function(input, output, session) {
       })
 
       observeEvent(input$GeneTableButton, {
+        if (is.null(input$gotable_rows_selected)) {
+          showModal(modalDialog(
+            title = "Genes in the category",
+            size = "l",
+            easyClose = TRUE,
+            footer = modalButton("Close"),
+            div(
+              class = "alert alert-info de-modal-empty mb-0",
+              "Please select a category in the GO/KEGG table to be able to see the gene list."
+            )
+          ))
+          return()
+        }
         showModal(modalDialog(
           title = "Genes in the category",
           size = "l",
@@ -656,8 +682,7 @@ deServer <- function(input, output, session) {
         {
           shiny::validate(need(
             !is.null(input$gotable_rows_selected),
-            "Please select a category in the GO/KEGG table tab to be able
-                to see the pathway diagram"
+            "Please select a category in the GO/KEGG table tab to be able to see the pathway diagram."
           ))
 
           withProgress(message = "KEGG Started", detail = "interactive", value = 0, {
@@ -707,8 +732,7 @@ deServer <- function(input, output, session) {
       output$GOGeneTable <- DT::renderDataTable({
         shiny::validate(need(
           !is.null(input$gotable_rows_selected),
-          "Please select a category in the GO/KEGG table to be able
-                to see the gene list"
+          "Please select a category in the GO/KEGG table to be able to see the gene list."
         ))
         dat <- getGOCatGenes()
         if (!is.null(dat)) {

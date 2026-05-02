@@ -107,7 +107,15 @@ deUI <- function(req = NULL) {
         )),
         tags$link(
           rel = "stylesheet", type = "text/css",
-          href = "www/debrowser.css"
+          href = paste0(
+            "www/debrowser.css?v=",
+            tryCatch(
+              as.integer(file.info(system.file(
+                "extdata", "www", "debrowser.css", package = "debrowser"
+              ))$mtime),
+              error = function(e) version_label
+            )
+          )
         ),
         tags$script(src = "www/dropzone.js"),
         # Wires the navbar preset picker → cookie + reload (see de_theme.R).

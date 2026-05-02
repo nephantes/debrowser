@@ -192,6 +192,61 @@
     padding: 0.5rem 0.75rem;
 }
 
+/* Shiny error / validate(need(...)) messages can get clipped when the
+   output element carries html-fill-item (added by imageOutput,
+   dataTableOutput, etc. inside bslib layouts). The fill class collapses
+   the element to ~0 height in containers without a defined height, so
+   only the top slice of the message text shows. Force natural sizing,
+   readable padding, and visible overflow. Pin colors to fixed values
+   (not theme variables that can resolve to near-invisible on light
+   backgrounds in some Bootswatch presets). */
+.shiny-output-error,
+.shiny-output-error-validation {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0.5rem 0.85rem;
+    line-height: 1.45;
+    font-size: 0.9rem;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.shiny-output-error-validation {
+    color: #495057;
+}
+
+.shiny-output-error:not(.shiny-output-error-validation) {
+    color: #b02a37;
+}
+
+/* Empty-state alert used inside our modals when the user opens a
+   modal that needs a prior selection (e.g. GO/KEGG → Genes). Slight
+   bump in line-height so longer sentences read comfortably. */
+.de-modal-empty {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* showNotification() toasts (bottom-right corner). Defaults are tiny
+   and hard to read for multi-word error messages — bump font/padding
+   slightly and allow normal wrapping so longer messages stay legible
+   without overflowing the viewport. */
+.shiny-notification {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    padding: 0.6rem 0.85rem;
+    max-width: 28rem;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.shiny-notification-message {
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
 /* Dark-mode toggle: icon = destination convention.
    In light mode, show moon (click → dark). In dark mode, show sun (click → light). */
 .de-theme-toggle {

@@ -70,7 +70,7 @@ getEntrezTable <- function(genes = NULL, dat = NULL, org = "org.Hs.eg.db") {
     )
     return(NULL)
   }
-  # Fetch the AnnotationDb object directly from the package namespace —
+  # Fetch the AnnotationDb object directly from the package namespace --
   # `eval(parse(text = org))` only works if the org package is attached
   # to the search path. Suggests-status packages (e.g., org.Mm.eg.db)
   # aren't attached by requireNamespace alone.
@@ -133,7 +133,7 @@ getEntrezIds <- function(genes = NULL, org = "org.Hs.eg.db") {
     )
     return(NULL)
   }
-  # Fetch the AnnotationDb object directly from the package namespace —
+  # Fetch the AnnotationDb object directly from the package namespace --
   # see getEntrezTable() for the rationale.
   org_db <- getExportedValue(org, org)
   allkeys <- AnnotationDbi::keys(org_db, keytype = "SYMBOL")
@@ -413,7 +413,7 @@ compareClust <- function(
   }
   if (length(genecluster) == 0L) {
     showNotification(
-      "No mappable gene IDs in any cluster — check organism selection.",
+      "No mappable gene IDs in any cluster - check organism selection.",
       type = "warning"
     )
     return(NULL)
@@ -520,7 +520,7 @@ drawKEGG <- function(input = NULL, dat = NULL, pid = NULL) {
     if (requireNamespace("pathview", quietly = TRUE)) {
       # pathview::pathview() references its unexported lazy-data
       # object `bods` directly. With pathview in Suggests,
-      # requireNamespace alone does not auto-load lazy-data — the
+      # requireNamespace alone does not auto-load lazy-data -- the
       # package must be attached to the search path. Cheap and
       # idempotent: only attach if not already attached.
       if (!"package:pathview" %in% search()) {
