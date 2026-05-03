@@ -252,6 +252,10 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     } else {
       metadatatable <- make_default_metadata(counttable)
     }
+    # Defensive guard: counttable should already be non-NULL here because
+    # the count tryCatch at line ~208 returns early on parse failure. Kept
+    # as a belt-and-suspenders for any future refactor that loses that
+    # early return.
     if (is.null(counttable)) {
       de_notify_error(
         "Upload a count file before continuing. Use the Browse button to pick a TSV, CSV, or TXT file."
@@ -554,6 +558,16 @@ checkMetaData <- function(input = NULL, counttable = NULL, sep = NULL) {
   # B4 (2026-05-02): kept as a shim around validate_metadata_upload()
   # for any external/programmatic caller. The Shiny upload observer no
   # longer routes through this function.
+  #
+  # BEHAVIORAL CHANGE since B3.5: the legacy `setdiff(meta, count)`
+  # direction (metadata rows with no count column) was changed to
+  # `setdiff(count, meta)` (count columns with no metadata row). The
+  # new direction catches a real silent bug — the legacy code returned
+  # "success" when count columns lacked metadata rows, then later
+  # silently dropped those samples via `counttable[, metadatatable[, 1]]`.
+  # The error string format ("Colnames doesn't match with the metada
+  # table(...)") is preserved for any consumer that string-matches the
+  # prefix; only the names listed inside the parens differ.
   if (is.null(counttable) || is.null(input$metadata$datapath)) {
     return(NULL)
   }
