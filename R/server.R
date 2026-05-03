@@ -475,6 +475,17 @@ deServer <- function(input, output, session) {
         out
       })
 
+      # E11: Method comparison module — consumes the active comparison's
+      # cols/conds + post-batch count matrix. Returned reactive is the
+      # multi-method DE list, also fed to the Enrichment tab's
+      # cross-method NES heatmap (View C, mounted in Task E11.4).
+      mc_de_list <- methodConcordanceServer(
+        "methodConcordance",
+        counts_react     = reactive(batch()$BatchEffect()$count),
+        metadata_react   = reactive(batch()$BatchEffect()$meta),
+        comparison_react = comparison
+      )
+
       # E2.5: fgsea-based GSEA inside the consolidated Enrichment tab
       # (panel3, formerly GO Term). Sidebar's GMT/MSigDB picker is
       # mounted here; a startGO + goplot=='fgseaGSEA' combo triggers a

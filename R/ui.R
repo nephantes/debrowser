@@ -247,7 +247,17 @@ deUI <- function(req = NULL) {
           title = "DE Analysis", value = "DEAnalysis",
           conditionalPanel(
             condition = "input.goDE || input.goDEFromFilter",
-            uiOutput("deresUI")
+            bslib::navset_card_tab(
+              id = "DEAnalysisTabs",
+              bslib::nav_panel(
+                title = "Results", value = "results",
+                uiOutput("deresUI")
+              ),
+              bslib::nav_panel(
+                title = "Method comparison", value = "method_comparison",
+                debrowser::methodConcordanceUI("methodConcordance")
+              )
+            )
           )
         )
       )
