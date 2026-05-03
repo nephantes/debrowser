@@ -482,16 +482,15 @@ deServer <- function(input, output, session) {
             debrowserdensityplot("density", removeExtraCols(df_select()))
             debrowserdensityplot("normdensity", normdat())
           } else if (input$qcplot == "libraryDepth") {
+            raw <- updata()$load()
             debrowserqclibrarydepth("libraryDepth",
-              batch()$BatchEffect()$count, batch()$BatchEffect()$meta, "treatment")
+              raw$count, raw$meta, "treatment")
           } else if (input$qcplot == "detectionRate") {
-            debrowserqcdetectionrate("detectionRate", batch()$BatchEffect()$count)
+            debrowserqcdetectionrate("detectionRate", updata()$load()$count)
           } else if (input$qcplot == "mtPct") {
-            debrowserqcmtpct("mtPct", batch()$BatchEffect()$count)
+            debrowserqcmtpct("mtPct", updata()$load()$count)
           } else if (input$qcplot == "sampleDist") {
             debrowserqcsampledist("sampleDist", batch()$BatchEffect()$count)
-          } else if (input$qcplot == "mappingStats") {
-            debrowserqcmappingstats("mappingStats")
           }
         }
       })
