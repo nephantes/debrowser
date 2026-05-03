@@ -8,48 +8,46 @@ on:
 
 jobs:
   R-CMD-check:
-    runs-on: ${{ matrix.config.os }}
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
-
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - {os: ubuntu-latest, r: 'release'}
-          - {os: ubuntu-latest, r: 'devel'}
+    runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker:devel
+    name: bioc-devel (container)
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # Inside the bioc container we already have system deps, so don't
+      # let r-lib actions try to call add-apt-repository (launchpadlib
+      # times out on hosted runners as of 2026-05).
+      _R_CHECK_FORCE_SUGGESTS_: false
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: ${{ matrix.config.r }}
-          use-public-rspm: true
-
-      - uses: r-lib/actions/setup-pandoc@v2
-
-      - name: Install Bioconductor
-        # No `version =` — BiocManager auto-picks the Bioc release that
-        # matches the R version chosen above. This avoids the brittle
-        # bitrot pattern where pinning a specific Bioc release goes stale
-        # the moment 'release' R bumps to the next minor.
+      - name: Install package deps
+        # Match the pattern used by coverage.yaml + bioc-check.yaml: stay on
+        # remotes::install_deps inside the bioconductor docker image, which
+        # already provides the system libraries r-lib/actions would
+        # otherwise try (and fail) to install via add-apt-repository.
         run: |
-          install.packages("BiocManager")
-          BiocManager::install(ask = FALSE, update = FALSE)
+          install.packages("remotes")
+          remotes::install_deps(dependencies = TRUE,
+                                repos = BiocManager::repositories())
+          install.packages(c("rcmdcheck", "testthat"))
         shell: Rscript {0}
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: |
-            any::rcmdcheck
-            any::testthat
-          needs: check
+      - name: Run R CMD check
+        run: |
+          rcmdcheck::rcmdcheck(
+            args = c("--no-manual", "--as-cran"),
+            error_on = "warning",
+            check_dir = "check"
+          )
+        shell: Rscript {0}
 
-      - uses: r-lib/actions/check-r-package@v2
+      - name: Upload check artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          args: 'c("--no-manual", "--as-cran")'
-          error-on: '"warning"'
+          name: r-cmd-check-debug
+          path: check/
+          if-no-files-found: ignore
