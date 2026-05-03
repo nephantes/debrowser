@@ -10,7 +10,8 @@ methodConcordanceUI(id)
 \item{id}{Module ID.}
 }
 \value{
-A `bslib::card` containing controls and result outputs.
+A `shiny::tagList` containing the control card and a
+  per-comparison accordion that fills after the first Run click.
 }
 \description{
 Renders an empty-state until the user clicks "Run comparison".

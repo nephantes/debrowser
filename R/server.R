@@ -470,22 +470,35 @@ deServer <- function(input, output, session) {
         out
       })
 
-      # E11: Method comparison module — consumes the active comparison's
-      # cols/conds + post-batch count matrix. Returned reactive is the
-      # multi-method DE list, also fed to the Enrichment tab's
-      # cross-method NES heatmap (View C, mounted in Task E11.4).
+      # E11: Method comparison module - consumes ALL comparisons from
+      # dc() + post-batch count matrix. Returns a list of per-comparison
+      # de_lists keyed by comparison_labels(); the active-comparison
+      # slice feeds the Enrichment tab's cross-method NES heatmap
+      # (View C, mounted below).
       #
       # NB: we deliberately go to batch()$BatchEffect()$count rather than
       # the existing init_data() reactive. Post-DE, init_data() returns
       # comparison()$init_data which is the DE-augmented data.frame
-      # (padj/log2FoldChange columns added by addDataCols) — that's the
+      # (padj/log2FoldChange columns added by addDataCols) - that's the
       # wrong shape for run_de_methods(), which needs a raw count matrix.
-      mc_de_list <- methodConcordanceServer(
+      mc_de_lists <- methodConcordanceServer(
         "methodConcordance",
-        counts_react     = reactive(batch()$BatchEffect()$count),
-        metadata_react   = reactive(batch()$BatchEffect()$meta),
-        comparison_react = comparison
+        counts_react      = reactive(batch()$BatchEffect()$count),
+        metadata_react    = reactive(batch()$BatchEffect()$meta),
+        comparisons_react = dc
       )
+
+      # Active-comparison slice for the Enrichment tab View C consumer.
+      # Keyed by index so label edits in CondSelect post-Run don't
+      # invalidate the lookup. Pre-Run, mc_de_lists() is NULL so this
+      # returns NULL and downstream req() chains halt cleanly.
+      mc_de_list <- reactive({
+        d <- mc_de_lists()
+        if (length(d) == 0L) return(NULL)
+        i <- as.integer(compsel())
+        if (length(i) != 1L || is.na(i) || i < 1L || i > length(d)) i <- 1L
+        d[[i]]
+      })
 
       # E2.5: fgsea-based GSEA inside the consolidated Enrichment tab
       # (panel3, formerly GO Term). Sidebar's GMT/MSigDB picker is

@@ -4,7 +4,7 @@
 \alias{methodConcordanceServer}
 \title{Server for the Method comparison card.}
 \usage{
-methodConcordanceServer(id, counts_react, metadata_react, comparison_react)
+methodConcordanceServer(id, counts_react, metadata_react, comparisons_react)
 }
 \arguments{
 \item{id}{Module ID.}
@@ -13,15 +13,20 @@ methodConcordanceServer(id, counts_react, metadata_react, comparison_react)
 
 \item{metadata_react}{Reactive yielding the sample metadata.}
 
-\item{comparison_react}{Reactive yielding a list with components
-`cols` and `conds` for the active comparison (typically
-`comparison()` from `R/server.R`).}
+\item{comparisons_react}{Reactive yielding the full list of
+comparison entries (typically `dc()` from `R/server.R`); each
+entry must have `cols`, `conds`, and (optionally) `cond_names`.}
 }
 \value{
-Reactive yielding the named list returned by
-  [run_de_methods()] (or NULL pre-run). Caller can pass this into
-  the Enrichment tab's cross-method GSEA pass.
+Reactive yielding a named list of per-comparison de_lists
+  (each de_list itself is the named list returned by
+  [run_de_methods()]). Names come from [comparison_labels()].
+  Returns NULL pre-run.
 }
 \description{
-Server for the Method comparison card.
+Runs `run_de_methods()` for every comparison in `comparisons_react()`
+on each Run click. Renders one accordion panel per comparison with
+UpSet / pairwise scatter / summary cards. Returns a named list of
+per-comparison de_lists for downstream consumers (Enrichment tab
+cross-method NES heatmap reads the active-comparison slice).
 }
