@@ -78,6 +78,7 @@ Suggests: testthat (>= 3.2.0),
     enrichplot,
     fgsea,
     msigdbr,
+    UpSetR,
     DOSE
 Config/testthat/edition: 3
 VignetteBuilder: knitr
