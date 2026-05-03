@@ -262,8 +262,11 @@ debrowserqcmtpct <- function(id, counts = NULL, threshold_pct = 5) {
         div(
           class = "alert alert-info",
           paste0(
-            "No mitochondrial gene IDs (^MT-/^mt-/Mt-) detected ",
-            "in this dataset."
+            "No mitochondrial genes detected. The matcher accepts ",
+            "the human (MT-ND1, MT-CO1) and mouse (mt-Nd1, mt-Co1) ",
+            "canonical symbols, the dash-stripped Ensembl variants ",
+            "(MTND1, mtNd1), and the prefix-stripped suffixes ",
+            "(ND1, Nd1)."
           )
         )
       } else {

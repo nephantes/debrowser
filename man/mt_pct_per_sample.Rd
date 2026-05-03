@@ -4,25 +4,36 @@
 \alias{mt_pct_per_sample}
 \title{Per-sample mitochondrial-transcript percentage.}
 \usage{
-mt_pct_per_sample(counts, pattern = "^(MT-|mt-|Mt-)")
+mt_pct_per_sample(counts, pattern = NULL)
 }
 \arguments{
 \item{counts}{Numeric matrix or data.frame (rows = features,
 cols = samples).}
 
-\item{pattern}{Regex applied to `rownames(counts)`.}
+\item{pattern}{Optional regex to override the default matcher. If NULL
+(the default), the curated MT symbol list is used.}
 }
 \value{
 data.frame with columns `sample`, `mt_count`, `total`, `mt_pct`.
-  Zero rows if no rownames match `pattern`.
+  Zero rows if no rownames match.
 }
 \description{
-Identifies rows whose rownames match `pattern` (default catches the common
-human/mouse MT- prefixes) and reports each sample's MT count, total
-count, and MT percentage.
+Identifies mitochondrial-genome rows by matching `rownames(counts)` against
+a curated list of MT gene symbols across the common naming conventions:
+human HGNC (`MT-ND1`, `MT-CO1`), mouse MGI (`mt-Nd1`, `mt-Co1`), the
+dash-stripped Ensembl-style variants (`MTND1`, `mtNd1`), and the
+prefix-stripped suffixes (`ND1`, `Nd1`). Avoids false positives like
+`Mtor`, `Mthfr`, `Atp6v0a1` by anchoring to the exact suffix set.
+}
+\details{
+Returns each sample's mitochondrial count, total count, and MT percentage.
 }
 \examples{
 m <- matrix(c(1, 2, 0, 4, 5, 0), nrow = 3,
-            dimnames = list(c("MT-X", "ACTB", "GAPDH"), c("a", "b")))
+            dimnames = list(c("MT-ND1", "ACTB", "GAPDH"), c("a", "b")))
 mt_pct_per_sample(m)
+# mouse MGI (with or without the dash) also matches:
+m2 <- matrix(c(3, 0, 7, 0), nrow = 2,
+             dimnames = list(c("mt-Nd1", "Actb"), c("a", "b")))
+mt_pct_per_sample(m2)
 }

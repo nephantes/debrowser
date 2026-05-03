@@ -118,21 +118,32 @@ detection_rate <- function(counts, threshold = 0) {
 
 #' Per-sample mitochondrial-transcript percentage.
 #'
-#' Identifies rows whose rownames match `pattern` (default catches the common
-#' human/mouse MT- prefixes) and reports each sample's MT count, total
-#' count, and MT percentage.
+#' Identifies mitochondrial-genome rows by matching `rownames(counts)` against
+#' a curated list of MT gene symbols across the common naming conventions:
+#' human HGNC (`MT-ND1`, `MT-CO1`), mouse MGI (`mt-Nd1`, `mt-Co1`), the
+#' dash-stripped Ensembl-style variants (`MTND1`, `mtNd1`), and the
+#' prefix-stripped suffixes (`ND1`, `Nd1`). Avoids false positives like
+#' `Mtor`, `Mthfr`, `Atp6v0a1` by anchoring to the exact suffix set.
+#'
+#' Returns each sample's mitochondrial count, total count, and MT percentage.
 #'
 #' @param counts Numeric matrix or data.frame (rows = features,
 #'   cols = samples).
-#' @param pattern Regex applied to `rownames(counts)`.
+#' @param pattern Optional regex to override the default matcher. If NULL
+#'   (the default), the curated MT symbol list is used.
 #' @return data.frame with columns `sample`, `mt_count`, `total`, `mt_pct`.
-#'   Zero rows if no rownames match `pattern`.
+#'   Zero rows if no rownames match.
 #' @examples
 #' m <- matrix(c(1, 2, 0, 4, 5, 0), nrow = 3,
-#'             dimnames = list(c("MT-X", "ACTB", "GAPDH"), c("a", "b")))
+#'             dimnames = list(c("MT-ND1", "ACTB", "GAPDH"), c("a", "b")))
 #' mt_pct_per_sample(m)
+#' # mouse MGI (with or without the dash) also matches:
+#' m2 <- matrix(c(3, 0, 7, 0), nrow = 2,
+#'              dimnames = list(c("mt-Nd1", "Actb"), c("a", "b")))
+#' mt_pct_per_sample(m2)
 #' @export
-mt_pct_per_sample <- function(counts, pattern = "^(MT-|mt-|Mt-)") {
+mt_pct_per_sample <- function(counts, pattern = NULL) {
+  if (is.null(pattern)) pattern <- mt_default_pattern()
   if (!is_count_matrix(counts)) {
     de_error(
       "counts must be a numeric matrix or data.frame with >= 1 column",
@@ -240,6 +251,40 @@ flag_outliers_2sd <- function(x) {
   out <- abs(x - m) > 2 * s
   out[is.na(out)] <- FALSE
   out
+}
+
+# Internal: regex matching mitochondrial gene symbols across the common
+# naming conventions. Anchored to a curated suffix set so we never trip on
+# nuclear genes whose names happen to start with "MT" or "Mt" (Mtor, Mthfr,
+# Atp6v0a1, etc.).
+#
+# Suffixes covered (case-insensitive in spirit, listed both cases):
+#   - 13 protein-coding mtDNA genes:
+#       human: ND1..ND6, ND4L, CYTB/CYB, CO1..CO3, COX1..COX3, ATP6, ATP8
+#       mouse: Nd1..Nd6, Nd4l, Cytb,     Co1..Co3,             Atp6, Atp8
+#   - 2 mt-rRNAs: RNR1, RNR2 / Rnr1, Rnr2
+# Prefix forms accepted: "MT-", "Mt-", "mt-" (canonical), "MT_", "Mt_", "mt_"
+# (rare), "MT", "Mt", "mt" (Ensembl no-dash, e.g. MTND1 / mtNd1), or no
+# prefix at all (`ND1`, `Nd1`).
+#' @noRd
+mt_default_pattern <- function() {
+  human_suffix <- c(
+    "ND1", "ND2", "ND3", "ND4", "ND4L", "ND5", "ND6",
+    "CYTB", "CYB",
+    "CO1", "CO2", "CO3",
+    "COX1", "COX2", "COX3",
+    "ATP6", "ATP8",
+    "RNR1", "RNR2"
+  )
+  mouse_suffix <- c(
+    "Nd1", "Nd2", "Nd3", "Nd4", "Nd4l", "Nd5", "Nd6",
+    "Cytb", "Cyb",
+    "Co1", "Co2", "Co3",
+    "Atp6", "Atp8",
+    "Rnr1", "Rnr2"
+  )
+  suffix <- paste(c(human_suffix, mouse_suffix), collapse = "|")
+  paste0("^(MT[-_]?|Mt[-_]?|mt[-_]?)?(", suffix, ")$")
 }
 
 # Internal: TRUE iff x is a matrix or data.frame with >= 1 column and all

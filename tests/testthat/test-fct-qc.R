@@ -91,21 +91,35 @@ test_that("detection_rate respects the threshold argument", {
 
 test_that("mt_pct_per_sample returns zero rows when no rownames match", {
   d <- load_demo()
-  out <- mt_pct_per_sample(d$counts)
+  # The demo data does contain `Cytb` (cytochrome b, prefix-stripped) so the
+  # default pattern picks it up. To assert the empty-state, drop the matched
+  # rows first.
+  pat <- debrowser:::mt_default_pattern()
+  cnt_no_mt <- d$counts[!grepl(pat, rownames(d$counts)), , drop = FALSE]
+  out <- mt_pct_per_sample(cnt_no_mt)
   expect_s3_class(out, "data.frame")
   expect_equal(nrow(out), 0L)
   expect_named(out, c("sample", "mt_count", "total", "mt_pct"))
 })
 
+test_that("mt_pct_per_sample picks up the demo's prefix-stripped Cytb row", {
+  d <- load_demo()
+  out <- mt_pct_per_sample(d$counts)
+  expect_equal(nrow(out), 6L)
+  # Cytb is the only matching row in the Vernia demo.
+  cytb_counts <- as.numeric(d$counts["Cytb", ])
+  expect_equal(out$mt_count, cytb_counts)
+})
+
 test_that("mt_pct_per_sample computes per-sample MT percentage correctly", {
   m <- matrix(
-    c(2, 8, 10, 90,    # MT-X
+    c(2, 8, 10, 90,    # MT-ND1
       1, 9, 5, 95,     # ACTB
       3, 7, 0, 100,    # GAPDH
       4, 6, 20, 80),   # B2M
     nrow = 4, byrow = TRUE,
     dimnames = list(
-      c("MT-X", "ACTB", "GAPDH", "B2M"),
+      c("MT-ND1", "ACTB", "GAPDH", "B2M"),
       c("s1", "s2", "s3", "s4")
     )
   )
@@ -115,6 +129,53 @@ test_that("mt_pct_per_sample computes per-sample MT percentage correctly", {
   expect_equal(out$mt_count, c(2, 8, 10, 90))
   expect_equal(out$total, as.numeric(colSums(m)))
   expect_equal(out$mt_pct, 100 * c(2, 8, 10, 90) / as.numeric(colSums(m)))
+})
+
+test_that("mt_pct_per_sample matches mouse MGI symbols with the dash", {
+  m <- matrix(c(5, 10, 1, 99, 2, 98), nrow = 3, byrow = TRUE,
+              dimnames = list(c("mt-Nd1", "Actb", "Gapdh"), c("s1", "s2")))
+  out <- mt_pct_per_sample(m)
+  expect_equal(out$mt_count, c(5, 10))
+})
+
+test_that("mt_pct_per_sample matches mouse symbols without the dash", {
+  m <- matrix(c(7, 14, 1, 99), nrow = 2, byrow = TRUE,
+              dimnames = list(c("mtNd1", "Actb"), c("s1", "s2")))
+  out <- mt_pct_per_sample(m)
+  expect_equal(out$mt_count, c(7, 14))
+})
+
+test_that("mt_pct_per_sample matches Ensembl all-caps no-dash form", {
+  m <- matrix(c(3, 6, 9, 91), nrow = 2, byrow = TRUE,
+              dimnames = list(c("MTND1", "ACTB"), c("s1", "s2")))
+  out <- mt_pct_per_sample(m)
+  expect_equal(out$mt_count, c(3, 6))
+})
+
+test_that("mt_pct_per_sample matches prefix-stripped suffixes", {
+  m <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, byrow = TRUE,
+              dimnames = list(c("Nd1", "ND1", "Actb"), c("s1", "s2")))
+  out <- mt_pct_per_sample(m)
+  # both Nd1 (mouse) and ND1 (human) count as MT
+  expect_equal(out$mt_count, c(1 + 3, 2 + 4))
+})
+
+test_that("mt_pct_per_sample does NOT match nuclear genes that share a prefix", {
+  m <- matrix(c(100, 100, 100, 100, 100, 100, 100, 100), nrow = 4, byrow = TRUE,
+              dimnames = list(
+                c("Mtor", "Mthfr", "Atp6v0a1", "MTHFD1"),
+                c("s1", "s2")
+              ))
+  out <- mt_pct_per_sample(m)
+  expect_equal(nrow(out), 0L)
+})
+
+test_that("mt_pct_per_sample respects an explicit override pattern", {
+  m <- matrix(c(1, 2, 3, 4), nrow = 2, byrow = TRUE,
+              dimnames = list(c("custom-1", "custom-2"), c("s1", "s2")))
+  out <- mt_pct_per_sample(m, pattern = "^custom-")
+  expect_equal(nrow(out), 2L)
+  expect_equal(out$mt_count, c(1 + 3, 2 + 4))
 })
 
 test_that("sample_distance_matrix on demo: symmetric, 6x6, diag=0, dimnames match", {
