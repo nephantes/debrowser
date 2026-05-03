@@ -1,10 +1,10 @@
 # R/mod_method_concordance.R
 #
-# Phase E11 — Method comparison sub-panel of the DE Analysis tab.
+# Phase E11 - Method comparison sub-panel of the DE Analysis tab.
 # Consumes the active comparison's (counts, metadata, columns, conds)
 # reactives, runs DESeq2/edgeR/limma on demand, exposes the multi-
 # method DE list as a returned reactive (so the Enrichment tab can
-# reuse it for View C — cross-method NES heatmap).
+# reuse it for View C - cross-method NES heatmap).
 
 #' UI for the Method comparison card.
 #'
@@ -21,7 +21,7 @@ methodConcordanceUI <- function(id) {
       bslib::card_body(
         shiny::helpText(
           "Re-runs DESeq2, edgeR, and limma on the active comparison",
-          "and compares overlapping DE genes. This is on demand —",
+          "and compares overlapping DE genes. This is on demand -",
           "press the button below."
         ),
         shiny::fluidRow(
