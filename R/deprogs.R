@@ -231,7 +231,9 @@ runDESeq2 <- function(data = NULL, metadata = NULL, columns = NULL,
   tryCatch(
     run_deseq2(data, metadata, columns, conds, pure_params),
     too_few_columns = function(e) {
-      showNotification(conditionMessage(e), type = "error")
+      de_notify_error(
+        "Cannot run DE analysis: each condition needs at least one sample. Go back to Condition Selection and add samples to the empty group."
+      )
       NULL
     }
   )
@@ -289,7 +291,10 @@ runEdgeR <- function(data = NULL, metadata = NULL, columns = NULL,
   tryCatch(
     run_edger(data, metadata, columns, conds, pure_params),
     bad_dispersion = function(e) {
-      showNotification(conditionMessage(e), type = "error")
+      de_notify_error(sprintf(
+        "Cannot run edgeR with dispersion '%s' when each condition has only one sample. Type a numeric dispersion (e.g., 0.1) in the Dispersion field under DE Detail Options.",
+        pure_params$dispersion
+      ))
       NULL
     }
   )
