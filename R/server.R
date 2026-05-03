@@ -479,6 +479,12 @@ deServer <- function(input, output, session) {
       # cols/conds + post-batch count matrix. Returned reactive is the
       # multi-method DE list, also fed to the Enrichment tab's
       # cross-method NES heatmap (View C, mounted in Task E11.4).
+      #
+      # NB: we deliberately go to batch()$BatchEffect()$count rather than
+      # the existing init_data() reactive. Post-DE, init_data() returns
+      # comparison()$init_data which is the DE-augmented data.frame
+      # (padj/log2FoldChange columns added by addDataCols) — that's the
+      # wrong shape for run_de_methods(), which needs a raw count matrix.
       mc_de_list <- methodConcordanceServer(
         "methodConcordance",
         counts_react     = reactive(batch()$BatchEffect()$count),
