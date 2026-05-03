@@ -117,7 +117,7 @@ getGOPlots <- function(dataset = NULL, GSEARes = NULL, input = NULL) {
       }
     } else {
       de_notify_info(sprintf(
-        "No enriched terms at p ≤ %s. Try a higher cutoff in the GO panel options, or check that genes have valid IDs for this organism.",
+        "No enriched terms at p <= %s. Try a higher cutoff in the GO panel options, or check that genes have valid IDs for this organism.",
         format(gopval, nsmall = 0)
       ))
     }

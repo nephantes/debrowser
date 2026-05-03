@@ -57,9 +57,24 @@ test_that("Pure validators raise the documented classes", {
 test_that("Module messages exist verbatim in the source files", {
   # Snapshot guard: if a future copy-edit changes a message, this test
   # will catch the drift between the catalogue and the source.
-  data_load <- paste(readLines("../../R/dataLoad.R"), collapse = "\n")
-  batch <- paste(readLines("../../R/batcheffect.R"), collapse = "\n")
-  deprogs <- paste(readLines("../../R/deprogs.R"), collapse = "\n")
+  # Handle both devtools::test() (source files) and R CMD check (installed package).
+
+  read_source_file <- function(filename) {
+    # Try source directory first (devtools::test)
+    path <- file.path("..", "..", "R", filename)
+    if (!file.exists(path)) {
+      # Fall back to installed package path (R CMD check)
+      path <- system.file("R", filename, package = "debrowser")
+    }
+    if (!file.exists(path)) {
+      skip(sprintf("Could not find R/%s", filename))
+    }
+    paste(readLines(path), collapse = "\n")
+  }
+
+  data_load <- read_source_file("dataLoad.R")
+  batch <- read_source_file("batcheffect.R")
+  deprogs <- read_source_file("deprogs.R")
 
   expect_true(grepl(tier1_module_messages$missing_count_upload, data_load, fixed = TRUE))
   expect_true(grepl(tier1_module_messages$bad_separator_count, data_load, fixed = TRUE))
@@ -72,8 +87,22 @@ test_that("Module messages exist verbatim in the source files", {
 })
 
 test_that("Empty-result messages flipped from error to info severity", {
-  gopanel <- paste(readLines("../../R/gopanel.R"), collapse = "\n")
-  goterm <- paste(readLines("../../R/GOterm.R"), collapse = "\n")
+  # Handle both devtools::test() (source files in R/) and R CMD check (installed package).
+  read_source_file <- function(filename) {
+    # Try source directory first (devtools::test)
+    path <- file.path("..", "..", "R", filename)
+    if (!file.exists(path)) {
+      # Fall back to installed package path (R CMD check)
+      path <- system.file("R", filename, package = "debrowser")
+    }
+    if (!file.exists(path)) {
+      skip(sprintf("Could not find R/%s", filename))
+    }
+    paste(readLines(path), collapse = "\n")
+  }
+
+  gopanel <- read_source_file("gopanel.R")
+  goterm <- read_source_file("GOterm.R")
   # gopanel: GSEA empty-result must use de_notify_info, not type = "error".
   expect_match(gopanel, "de_notify_info\\(sprintf\\(\\s*\"No enriched terms at p")
   # GOterm: cluster empty-result must use de_notify_info.

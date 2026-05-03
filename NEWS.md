@@ -196,6 +196,14 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase B4 — Friendly errors
+
+* User-facing error messages now follow a consistent "what went wrong + what to do" format with correct severity (red blocks, yellow warns, green/blue empty-result).
+* Replaced raw R diagnostics in file-upload errors (separator mismatch, duplicate gene IDs, column/metadata mismatch).
+* Empty enrichment results no longer display as red errors — they were a category bug.
+* Six hand-rolled "Please install <pkg>" messages in GO/KEGG paths collapsed into the existing `require_pkg()` helper.
+* No behavior change beyond message text and notification persistence.
+
 ### Phase B3.5 — Sane defaults follow-up
 
 * DESeq2 default test changed from `Wald` to `LRT`, harmonizing the

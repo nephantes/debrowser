@@ -383,7 +383,7 @@ compareClust <- function(
   }
   if (length(genecluster) == 0L) {
     de_notify_warning(sprintf(
-      "No gene IDs mapped to %s. Confirm the organism dropdown matches your gene IDs (e.g., human SYMBOL → org.Hs.eg.db).",
+      "No gene IDs mapped to %s. Confirm the organism dropdown matches your gene IDs (e.g., human SYMBOL -> org.Hs.eg.db).",
       org
     ))
     return(NULL)
@@ -412,7 +412,7 @@ compareClust <- function(
   if (is.null(xx) || is.null(xx@compareClusterResult) ||
     nrow(xx@compareClusterResult) == 0L) {
     de_notify_info(sprintf(
-      "No enriched terms in any cluster at p ≤ %s. Try a higher cutoff in the GO panel options.",
+      "No enriched terms in any cluster at p <= %s. Try a higher cutoff in the GO panel options.",
       format(pvalueCutoff, nsmall = 0)
     ))
     return(NULL)
