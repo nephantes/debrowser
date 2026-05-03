@@ -261,3 +261,175 @@ comparison_labels <- function(comparisons) {
   }
   out
 }
+
+#' Per-entry up / down / total significant gene counts.
+#'
+#' Counts significant genes per entry of a named DE-results list at the
+#' given padj / |log2FoldChange| cutoffs. Up = significant + log2FC > 0;
+#' Down = significant + log2FC < 0. NA padj / NA log2FoldChange are
+#' treated as not-significant.
+#'
+#' @param de_list Named list of DE result data.frames; each must
+#'   contain `padj` and `log2FoldChange` columns.
+#' @param padj_cutoff Maximum padj for "significant" (default 0.05).
+#' @param lfc_cutoff Minimum |log2FoldChange| for "significant"
+#'   (default 0).
+#' @return data.frame with columns `comparison`, `n_up`, `n_down`,
+#'   `n_sig` (= `n_up + n_down`). One row per entry of `de_list`,
+#'   in input order.
+#' @export
+de_direction_summary <- function(de_list, padj_cutoff = 0.05,
+                                 lfc_cutoff = 0) {
+  if (length(de_list) == 0L) {
+    de_error("de_list is empty", class = "empty_input")
+  }
+  do.call(rbind, lapply(seq_along(de_list), function(i) {
+    df <- de_list[[i]]
+    sig <- !is.na(df$padj) & df$padj <= padj_cutoff &
+      !is.na(df$log2FoldChange) &
+      abs(df$log2FoldChange) >= lfc_cutoff
+    n_up   <- sum(sig & df$log2FoldChange > 0, na.rm = TRUE)
+    n_down <- sum(sig & df$log2FoldChange < 0, na.rm = TRUE)
+    data.frame(
+      comparison = names(de_list)[i],
+      n_up       = n_up,
+      n_down     = n_down,
+      n_sig      = n_up + n_down,
+      stringsAsFactors = FALSE
+    )
+  }))
+}
+
+#' Horizontal bar plot of up / down DEG counts per comparison.
+#'
+#' Up bars (red) extend right; down bars (blue) extend left from the
+#' zero line. Comparisons are ordered top-to-bottom by total DEG count.
+#'
+#' @param summary data.frame as returned by [de_direction_summary()];
+#'   must contain `comparison`, `n_up`, `n_down`, `n_sig`.
+#' @param subtitle Optional subtitle (typically a cutoff label like
+#'   "Threshold: padj <= 0.05").
+#' @return ggplot object.
+#' @export
+plot_de_direction_bar <- function(summary, subtitle = NULL) {
+  if (is.null(summary) || nrow(summary) == 0L) {
+    de_error("summary is empty", class = "empty_input")
+  }
+  ord <- summary$comparison[order(summary$n_sig, decreasing = TRUE)]
+  long <- data.frame(
+    comparison = rep(summary$comparison, 2L),
+    direction  = rep(c("Up-regulated", "Down-regulated"),
+                     each = nrow(summary)),
+    count      = c(summary$n_up, -summary$n_down),
+    stringsAsFactors = FALSE
+  )
+  long$comparison <- factor(long$comparison, levels = rev(ord))
+  ggplot2::ggplot(long,
+                  ggplot2::aes(x = comparison, y = count,
+                               fill = direction)) +
+    ggplot2::geom_bar(stat = "identity", width = 0.7) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_fill_manual(
+      values = c("Up-regulated"   = "#e74c3c",
+                 "Down-regulated" = "#3498db"),
+      name = "Direction"
+    ) +
+    ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(size = 10),
+      legend.position = "bottom",
+      panel.grid.major.y = ggplot2::element_blank()
+    ) +
+    ggplot2::labs(
+      title    = "Differential Gene Expression by Comparison",
+      subtitle = subtitle,
+      x        = "Comparison",
+      y        = "Number of DEGs"
+    ) +
+    ggplot2::geom_hline(yintercept = 0, color = "#000000",
+                        linewidth = 0.5)
+}
+
+#' Symmetric pairwise heatmap of significant DEG counts between groups.
+#'
+#' Builds a `groups x groups` symmetric matrix (diagonal NA) where each
+#' off-diagonal cell shows the number of significant DEGs in the
+#' comparison between those two groups. Group identities come from
+#' `cond_names` of `comparisons`; sig counts come from `summary`,
+#' matched on `comparison_labels(comparisons)`. When the same group
+#' pair appears in multiple comparisons, the last seen wins.
+#'
+#' @param summary data.frame as returned by [de_direction_summary()].
+#' @param comparisons List of comparison spec/dc-style entries with
+#'   `cond_names` (treatment, control) used as group labels. Length and
+#'   order should mirror the `de_list` that produced `summary`.
+#' @param subtitle Optional subtitle (typically a cutoff label).
+#' @return ggplot object.
+#' @export
+plot_de_pairwise_heatmap <- function(summary, comparisons,
+                                     subtitle = NULL) {
+  if (is.null(summary) || nrow(summary) == 0L) {
+    de_error("summary is empty", class = "empty_input")
+  }
+  if (length(comparisons) == 0L) {
+    de_error("comparisons is empty", class = "empty_input")
+  }
+  labels <- comparison_labels(comparisons)
+  pairs <- lapply(comparisons, function(x) {
+    cn <- x$cond_names
+    if (is.null(cn) || length(cn) < 2L) return(NULL)
+    c(cn[1], cn[2])
+  })
+  ok <- !vapply(pairs, is.null, logical(1))
+  if (sum(ok) == 0L) {
+    de_error("no comparisons with cond_names",
+             class = "empty_input")
+  }
+  groups <- unique(unlist(pairs[ok]))
+  m <- matrix(NA_real_, nrow = length(groups), ncol = length(groups),
+              dimnames = list(groups, groups))
+  for (i in which(ok)) {
+    cnt <- summary$n_sig[match(labels[i], summary$comparison)]
+    if (is.na(cnt)) next
+    g1 <- pairs[[i]][1]
+    g2 <- pairs[[i]][2]
+    m[g1, g2] <- cnt
+    m[g2, g1] <- cnt
+  }
+  long <- data.frame(
+    Group1 = rep(rownames(m), times = ncol(m)),
+    Group2 = rep(colnames(m), each  = nrow(m)),
+    DEGs   = as.vector(m),
+    stringsAsFactors = FALSE
+  )
+  long <- long[!is.na(long$DEGs), , drop = FALSE]
+  if (nrow(long) == 0L) {
+    de_error("no group-pair counts to plot",
+             class = "empty_input")
+  }
+  ggplot2::ggplot(long,
+                  ggplot2::aes(x = Group2, y = Group1, fill = DEGs)) +
+    ggplot2::geom_tile(color = "white", linewidth = 1) +
+    ggplot2::geom_text(ggplot2::aes(label = as.integer(DEGs)),
+                       color = "#000000", size = 4,
+                       fontface = "bold") +
+    ggplot2::scale_fill_gradient(
+      low      = "#ffffff",
+      high     = "#1f77b4",
+      name     = "Significant\nDEGs",
+      na.value = "#f0f0f0"
+    ) +
+    ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1),
+      axis.text.y = ggplot2::element_text(size = 10),
+      axis.title  = ggplot2::element_blank(),
+      panel.grid  = ggplot2::element_blank(),
+      plot.title  = ggplot2::element_text(face = "bold", size = 12)
+    ) +
+    ggplot2::labs(
+      title    = "Pairwise DEG Comparison Heatmap",
+      subtitle = subtitle
+    ) +
+    ggplot2::coord_fixed()
+}

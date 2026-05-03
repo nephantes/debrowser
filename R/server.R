@@ -476,7 +476,8 @@ deServer <- function(input, output, session) {
       # hidden at startup and shown only when there are 2+ comparisons.
       comparisonConcordanceServer(
         "comparison_concordance",
-        de_results_react = de_results_list
+        de_results_react  = de_results_list,
+        comparisons_react = dc
       )
       bslib::nav_hide("methodtabs", target = "panel_cc",
                       session = session)

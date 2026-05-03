@@ -4,7 +4,7 @@
 \alias{comparisonConcordanceServer}
 \title{Server for the Comparison Concordance tab.}
 \usage{
-comparisonConcordanceServer(id, de_results_react)
+comparisonConcordanceServer(id, de_results_react, comparisons_react = NULL)
 }
 \arguments{
 \item{id}{Module ID.}
@@ -14,6 +14,12 @@ per-comparison DE result data.frames (typically `de_results_list`
 from `R/server.R`). Each element must contain `ID`,
 `log2FoldChange`, and `padj` columns; entries are keyed by
 `comparison_labels()` so colliding labels stay unique.}
+
+\item{comparisons_react}{Reactive yielding the full comparison list
+(typically `dc()` from `R/server.R`); each entry should have
+`cond_names` so the pairwise DEG heatmap can label group axes.
+When NULL or missing cond_names, the heatmap card shows an
+empty-state.}
 }
 \value{
 invisible(NULL).

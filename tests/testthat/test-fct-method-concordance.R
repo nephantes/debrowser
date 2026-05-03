@@ -187,3 +187,83 @@ test_that("comparison_labels() handles single-element cond_names with fallback",
   comps <- list(list(cond_names = "OnlyOne"))
   expect_equal(comparison_labels(comps), "comparison_1")
 })
+
+test_that("de_direction_summary() counts up and down separately", {
+  de <- .mc_fixture_de_list()
+  s <- de_direction_summary(de, padj_cutoff = 0.05, lfc_cutoff = 0)
+  expect_s3_class(s, "data.frame")
+  expect_named(s, c("comparison", "n_up", "n_down", "n_sig"))
+  expect_setequal(s$comparison, c("DESeq2", "EdgeR", "Limma"))
+  # DESeq2 fixture: g1, g2 are up sig (lfc > 0); g4 is down sig (lfc < 0).
+  des <- s[s$comparison == "DESeq2", ]
+  expect_equal(des$n_up, 2L)
+  expect_equal(des$n_down, 1L)
+  expect_equal(des$n_sig, 3L)
+  # EdgeR fixture: g1, g2, g3 up sig; g4 down sig.
+  edg <- s[s$comparison == "EdgeR", ]
+  expect_equal(edg$n_up, 3L)
+  expect_equal(edg$n_down, 1L)
+  expect_equal(edg$n_sig, 4L)
+})
+
+test_that("de_direction_summary() respects lfc_cutoff", {
+  de <- .mc_fixture_de_list()
+  s <- de_direction_summary(de, padj_cutoff = 0.05, lfc_cutoff = 1.6)
+  des <- s[s$comparison == "DESeq2", ]
+  # |2.0|>=1.6 (g1 up) and |-1.8|>=1.6 (g4 down); g2 lfc=1.5 dropped.
+  expect_equal(des$n_up, 1L)
+  expect_equal(des$n_down, 1L)
+})
+
+test_that("de_direction_summary() raises empty_input on empty list", {
+  expect_error(de_direction_summary(list()), class = "empty_input")
+})
+
+test_that("plot_de_direction_bar() returns a ggplot with the expected title", {
+  de <- .mc_fixture_de_list()
+  s  <- de_direction_summary(de)
+  p  <- plot_de_direction_bar(s, subtitle = "Threshold: padj <= 0.05")
+  expect_s3_class(p, "ggplot")
+  expect_equal(p$labels$title,
+               "Differential Gene Expression by Comparison")
+  expect_equal(p$labels$subtitle, "Threshold: padj <= 0.05")
+})
+
+test_that("plot_de_direction_bar() raises empty_input on empty summary", {
+  empty <- data.frame(comparison = character(), n_up = integer(),
+                      n_down = integer(), n_sig = integer(),
+                      stringsAsFactors = FALSE)
+  expect_error(plot_de_direction_bar(empty), class = "empty_input")
+})
+
+test_that("plot_de_pairwise_heatmap() returns a ggplot with cond_names groups", {
+  de <- .mc_fixture_de_list()
+  s  <- de_direction_summary(de)
+  # Fixture entries are named DESeq2/EdgeR/Limma; for the heatmap we
+  # still need cond_names per "comparison" — fabricate group pairs so
+  # the helper has something to plot.
+  comps <- list(
+    list(cond_names = c("Treated", "Control")),  # matches "DESeq2" row
+    list(cond_names = c("KO",      "WT")),       # matches "EdgeR" row
+    list(cond_names = c("Drug",    "Vehicle"))   # matches "Limma" row
+  )
+  # Bind label collision resolution to summary's comparison column
+  # by setting comparison_labels(comps) = names(de_list) order:
+  # since the fixture's de_list names are c("DESeq2","EdgeR","Limma")
+  # but comps would produce c("Treated vs Control","KO vs WT",
+  # "Drug vs Vehicle"), they don't match - rename summary's comparison
+  # column to match what comparison_labels(comps) produces.
+  s$comparison <- comparison_labels(comps)
+  p <- plot_de_pairwise_heatmap(s, comps,
+                                subtitle = "Threshold: padj <= 0.05")
+  expect_s3_class(p, "ggplot")
+  expect_equal(p$labels$title, "Pairwise DEG Comparison Heatmap")
+})
+
+test_that("plot_de_pairwise_heatmap() raises empty_input when no cond_names anywhere", {
+  s <- data.frame(comparison = "x", n_up = 0L, n_down = 0L, n_sig = 0L,
+                  stringsAsFactors = FALSE)
+  comps <- list(list())  # no cond_names
+  expect_error(plot_de_pairwise_heatmap(s, comps),
+               class = "empty_input")
+})

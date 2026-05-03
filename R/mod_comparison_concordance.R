@@ -53,6 +53,17 @@ comparisonConcordanceUI <- function(id) {
     bslib::layout_column_wrap(
       width = 1 / 2,
       bslib::card(
+        bslib::card_header("DEGs per comparison (up / down)"),
+        bslib::card_body(shiny::plotOutput(ns("deg_bar"), height = "420px"))
+      ),
+      bslib::card(
+        bslib::card_header("Pairwise DEG count heatmap"),
+        bslib::card_body(shiny::plotOutput(ns("deg_heatmap"), height = "420px"))
+      )
+    ),
+    bslib::layout_column_wrap(
+      width = 1 / 2,
+      bslib::card(
         bslib::card_header("Overlap (UpSet)"),
         bslib::card_body(shiny::plotOutput(ns("upset"), height = "420px"))
       ),
@@ -82,9 +93,15 @@ comparisonConcordanceUI <- function(id) {
 #'   from `R/server.R`). Each element must contain `ID`,
 #'   `log2FoldChange`, and `padj` columns; entries are keyed by
 #'   `comparison_labels()` so colliding labels stay unique.
+#' @param comparisons_react Reactive yielding the full comparison list
+#'   (typically `dc()` from `R/server.R`); each entry should have
+#'   `cond_names` so the pairwise DEG heatmap can label group axes.
+#'   When NULL or missing cond_names, the heatmap card shows an
+#'   empty-state.
 #' @return invisible(NULL).
 #' @export
-comparisonConcordanceServer <- function(id, de_results_react) {
+comparisonConcordanceServer <- function(id, de_results_react,
+                                        comparisons_react = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
 
     # Coerce DE-augmented data.frames (which may use rownames as the
@@ -98,6 +115,47 @@ comparisonConcordanceServer <- function(id, de_results_react) {
         df[, intersect(c("ID", "log2FoldChange", "padj"), names(df)),
            drop = FALSE]
       })
+    })
+
+    # Cutoff label reused as plot subtitle.
+    cutoff_subtitle <- shiny::reactive({
+      padj <- input$padj %||% 0.05
+      lfc  <- input$lfc  %||% 0
+      if (lfc > 0) {
+        sprintf("Threshold: padj <= %g, |log2FC| >= %g", padj, lfc)
+      } else {
+        sprintf("Threshold: padj <= %g", padj)
+      }
+    })
+
+    direction_summary <- shiny::reactive({
+      d <- de_list()
+      shiny::req(length(d) >= 2L)
+      de_direction_summary(d, padj_cutoff = input$padj,
+                           lfc_cutoff = input$lfc)
+    })
+
+    output$deg_bar <- shiny::renderPlot({
+      s <- direction_summary()
+      shiny::validate(shiny::need(
+        sum(s$n_sig) > 0L,
+        "No significant genes at the chosen cutoffs. Loosen padj or |log2FC|."
+      ))
+      plot_de_direction_bar(s, subtitle = cutoff_subtitle())
+    })
+
+    output$deg_heatmap <- shiny::renderPlot({
+      s <- direction_summary()
+      shiny::validate(shiny::need(
+        !is.null(comparisons_react),
+        "Pairwise DEG heatmap requires comparison metadata; the controller did not pass comparisons_react."
+      ))
+      comps <- comparisons_react()
+      shiny::validate(shiny::need(
+        length(comps) > 0L,
+        "No comparisons available."
+      ))
+      plot_de_pairwise_heatmap(s, comps, subtitle = cutoff_subtitle())
     })
 
     output$upset <- shiny::renderPlot({
@@ -157,3 +215,9 @@ comparisonConcordanceServer <- function(id, de_results_react) {
     invisible(NULL)
   })
 }
+
+# Private NULL-coalescing operator. Same definition lives in
+# R/mod_enrichment_gmt.R (E2 era) - duplicated rather than exported
+# to keep the module self-contained until R 4.4's native %||% becomes
+# the package's minimum.
+`%||%` <- function(a, b) if (is.null(a)) b else a
