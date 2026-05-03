@@ -490,6 +490,8 @@ deServer <- function(input, output, session) {
             debrowserqcmtpct("mtPct", batch()$BatchEffect()$count)
           } else if (input$qcplot == "sampleDist") {
             debrowserqcsampledist("sampleDist", batch()$BatchEffect()$count)
+          } else if (input$qcplot == "mappingStats") {
+            debrowserqcmappingstats("mappingStats")
           }
         }
       })

@@ -34,7 +34,8 @@ getLeftMenu <- function(input = NULL) {
               LibraryDepth = "libraryDepth",
               DetectionRate = "detectionRate",
               MtPct = "mtPct",
-              SampleDist = "sampleDist"
+              SampleDist = "sampleDist",
+              MappingStats = "mappingStats"
             )
           ))
         ),
@@ -824,6 +825,10 @@ getQCPanel <- function(input = NULL) {
     conditionalPanel(
       condition = "(input.qcplot == 'sampleDist')",
       qcSampleDistUI("sampleDist")
+    ),
+    conditionalPanel(
+      condition = "(input.qcplot == 'mappingStats')",
+      qcMappingStatsUI("mappingStats")
     )
   )
   return(qcPanel)

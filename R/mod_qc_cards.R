@@ -388,3 +388,71 @@ debrowserqcsampledist <- function(id, counts = NULL) {
   })
   invisible(NULL)
 }
+
+# ---------------------------------------------------------------------------
+# Card 8: Mapping / rRNA stats (sidecar stub)
+# ---------------------------------------------------------------------------
+
+#' qcMappingStatsUI
+#'
+#' UI factory for the mapping/rRNA stats QC card. Empty-state stub: renders
+#' an info block describing the optional sidecar TSV format and a disabled
+#' file input. The upload handler is a follow-up; this round ships the
+#' affordance only.
+#'
+#' @param id character, namespace id
+#' @return a `bslib::card` tagList
+#' @examples
+#' \dontrun{
+#' qcMappingStatsUI("mappingStats")
+#' }
+#' @export
+qcMappingStatsUI <- function(id) {
+  ns <- NS(id)
+  de_card(
+    title = "Mapping / rRNA Stats",
+    div(
+      class = "alert alert-info",
+      tags$p(
+        "Optional: upload a TSV with columns ",
+        tags$code("sample"), ", ",
+        tags$code("mapped_pct"), ", ",
+        tags$code("rRNA_pct"),
+        " to populate this card."
+      ),
+      tags$p(
+        tags$small(
+          "Mapping rate and rRNA contamination cannot be computed from",
+          " the count matrix alone — they require alignment-time",
+          " statistics (e.g. STAR / HISAT2 logs or Picard",
+          " CollectRnaSeqMetrics output)."
+        )
+      )
+    ),
+    fileInput(
+      ns("sidecar"),
+      label = "Mapping stats TSV (handler not yet wired)",
+      accept = c(".tsv", ".txt", "text/tab-separated-values")
+    )
+  )
+}
+
+#' debrowserqcmappingstats
+#'
+#' Server factory for the mapping/rRNA stats QC card. Stub only —
+#' parses no upload, renders no plot. Reserved for a follow-up that wires
+#' the actual sidecar handler when the format is finalised.
+#'
+#' @param id character, namespace id matching `qcMappingStatsUI(id)`
+#' @return invisible(NULL); the module installs no observers in this round
+#' @examples
+#' \dontrun{
+#' debrowserqcmappingstats("mappingStats")
+#' }
+#' @export
+debrowserqcmappingstats <- function(id) {
+  moduleServer(id, function(input, output, session) {
+    invisible(NULL)
+  })
+  invisible(NULL)
+}
