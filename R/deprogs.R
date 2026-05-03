@@ -22,8 +22,18 @@ debrowserdeanalysis <- function(id, data = NULL, metadata = NULL,
     return(NULL)
   }
   moduleServer(id, function(input, output, session) {
+    # E4.5: pull both the DE result and the fitted DESeqDataSet (dds) so QC
+    # cards 5-7 (Dispersion / SizeFactors / Cook's) can introspect the fit.
+    # `dds` is NULL for non-DESeq2 methods; downstream cards render an
+    # empty-state alert in that case.
+    de_full <- reactive({
+      runDE(data, metadata, columns, conds, params, return_dds = TRUE)
+    })
     deres <- reactive({
-      runDE(data, metadata, columns, conds, params)
+      de_full()$res
+    })
+    dds_react <- reactive({
+      de_full()$dds
     })
     prepDat <- reactive({
       applyFiltersNew(addDataCols(data, deres(), columns, conds), input)
@@ -41,7 +51,7 @@ debrowserdeanalysis <- function(id, data = NULL, metadata = NULL,
       dat2 <- removeCols(c("ID", "x", "y", "Legend", "Size"), dat)
       getTableDetails(output, session, "DEResults", dat2, modal = FALSE)
     })
-    list(dat = prepDat)
+    list(dat = prepDat, dds = dds_react)
   })
 }
 #' getDEResultsUI
@@ -152,6 +162,10 @@ applyFiltersNew <- function(data = NULL, input = NULL) {
 #' @param conds, experimental conditions. The order has to match
 #'     with the column order
 #' @param params, all params for the DE methods
+#' @param return_dds Logical. When TRUE the function returns a list
+#'   `list(res, dds)` for DESeq2 (so QC cards can introspect the fit) and
+#'   `list(res, dds = NULL)` for edgeR / limma. Default FALSE returns the
+#'   per-method data.frame as before.
 #' @return de results
 #'
 #' @export
@@ -159,17 +173,35 @@ applyFiltersNew <- function(data = NULL, input = NULL) {
 #' @examples
 #' x <- runDE()
 #'
-runDE <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL, params = NULL) {
+runDE <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL,
+                  params = NULL, return_dds = FALSE) {
   if (is.null(data)) {
     return(NULL)
   }
   de_res <- NULL
+  dds <- NULL
   if (startsWith(params[1], "DESeq2")) {
-    de_res <- runDESeq2(data, metadata, columns, conds, params)
+    if (isTRUE(return_dds)) {
+      full <- runDESeq2(data, metadata, columns, conds, params,
+                        return_dds = TRUE)
+      if (is.null(full)) {
+        de_res <- NULL
+        dds <- NULL
+      } else {
+        de_res <- full$res
+        dds <- full$dds
+      }
+    } else {
+      de_res <- runDESeq2(data, metadata, columns, conds, params)
+    }
   } else if (startsWith(params[1], "EdgeR")) {
     de_res <- runEdgeR(data, metadata, columns, conds, params)
   } else if (startsWith(params[1], "Limma")) {
     de_res <- runLimma(data, metadata, columns, conds, params)
+  }
+  if (isTRUE(return_dds)) {
+    return(list(res = if (is.null(de_res)) NULL else data.frame(de_res),
+                dds = dds))
   }
   data.frame(de_res)
 }
@@ -206,6 +238,9 @@ runDE <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL, pa
 #'     on the estimators). The apeglm publication demonstrates that
 #'     'apeglm' and 'ashr' outperform the original 'normal' shrinkage
 #'     estimator.
+#' @param return_dds Logical. When TRUE the function returns
+#'   `list(res, dds)` so QC cards can introspect the fitted DESeqDataSet.
+#'   Default FALSE preserves the legacy data.frame return shape.
 #' @return deseq2 results
 #'
 #' @export
@@ -214,7 +249,7 @@ runDE <- function(data = NULL, metadata = NULL, columns = NULL, conds = NULL, pa
 #' x <- runDESeq2()
 #'
 runDESeq2 <- function(data = NULL, metadata = NULL, columns = NULL,
-                      conds = NULL, params = NULL) {
+                      conds = NULL, params = NULL, return_dds = FALSE) {
   if (is.null(data)) {
     return(NULL)
   }
@@ -229,7 +264,8 @@ runDESeq2 <- function(data = NULL, metadata = NULL, columns = NULL,
     shrinkage  = if (!is.null(params[6])) params[6] else "None"
   )
   tryCatch(
-    run_deseq2(data, metadata, columns, conds, pure_params),
+    run_deseq2(data, metadata, columns, conds, pure_params,
+               return_dds = isTRUE(return_dds)),
     too_few_columns = function(e) {
       de_notify_error(
         "Cannot run DE analysis: each condition needs at least one sample. Go back to Condition Selection and add samples to the empty group."

@@ -18,8 +18,10 @@ prepDataContainer(data, metadata, comparisons_spec)
 }
 \value{
 list of length `length(comparisons_spec)` with components
-  `conds`, `cols`, `cond_names`, `init_data`, `demethod_params` per
-  comparison. Returns NULL if no comparison produced usable results.
+  `conds`, `cols`, `cond_names`, `init_data`, `demethod_params`, `dds`
+  per comparison. `dds` is the fitted `DESeqDataSet` for DESeq2 runs and
+  NULL for edgeR/limma. Returns NULL if no comparison produced usable
+  results.
 }
 \description{
 Run DE per comparison and return the downstream `dclist` payload.

@@ -10,7 +10,8 @@ run_de(
   metadata = NULL,
   columns = NULL,
   conds = NULL,
-  params = list()
+  params = list(),
+  return_dds = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,12 @@ run_de(
 or "NoCovariate"), fit_type ("parametric"/"local"/"mean"), beta_prior
 (logical), test_type ("Wald"/"LRT"), shrinkage
 ("None"/"apeglm"/"ashr"/"normal").}
+
+\item{return_dds}{Logical. Forwarded to [run_deseq2()] for the DESeq2
+branch; ignored for edgeR/limma. When TRUE for DESeq2 the function
+returns `list(res, dds)`; for non-DESeq2 methods the standard
+per-method result object is wrapped to `list(res = <obj>, dds = NULL)`
+so downstream code can pattern-match a single shape.}
 }
 \value{
 Method-specific result object.

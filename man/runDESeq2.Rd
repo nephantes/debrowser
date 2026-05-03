@@ -9,7 +9,8 @@ runDESeq2(
   metadata = NULL,
   columns = NULL,
   conds = NULL,
-  params = NULL
+  params = NULL,
+  return_dds = FALSE
 )
 }
 \arguments{
@@ -44,6 +45,10 @@ shrinkage: Adds shrunken log2 fold changes (LFC) and SE to a results
     on the estimators). The apeglm publication demonstrates that
     'apeglm' and 'ashr' outperform the original 'normal' shrinkage
     estimator.}
+
+\item{return_dds}{Logical. When TRUE the function returns
+`list(res, dds)` so QC cards can introspect the fitted DESeqDataSet.
+Default FALSE preserves the legacy data.frame return shape.}
 }
 \value{
 deseq2 results

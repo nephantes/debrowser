@@ -446,6 +446,14 @@ deServer <- function(input, output, session) {
           batch()$BatchEffect()$count
         }
       })
+      # E4.5: fitted DESeqDataSet for the active comparison. NULL for
+      # non-DESeq2 methods or pre-DE; QC cards 5-7 (Dispersion / SizeFactors /
+      # Cook's) handle that as an empty-state alert.
+      post_de_dds <- reactive({
+        cmp <- comparison()
+        if (is.null(cmp)) return(NULL)
+        cmp$dds
+      })
       filt_data <- reactive({
         if (!is.null(init_data()) && !is.null(comparison()) && !is.null(input$padj)) {
           applyFilters(init_data(), cols(), conds(), input)

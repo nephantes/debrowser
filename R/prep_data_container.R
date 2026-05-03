@@ -44,8 +44,10 @@ prep_comparison_inputs <- function(spec, comparison_idx = 1L) {
 #'   `control_label`, `de_method`, `method_params`, `covariates`,
 #'   `meta_column` (NA_character_ when manual mode).
 #' @return list of length `length(comparisons_spec)` with components
-#'   `conds`, `cols`, `cond_names`, `init_data`, `demethod_params` per
-#'   comparison. Returns NULL if no comparison produced usable results.
+#'   `conds`, `cols`, `cond_names`, `init_data`, `demethod_params`, `dds`
+#'   per comparison. `dds` is the fitted `DESeqDataSet` for DESeq2 runs and
+#'   NULL for edgeR/limma. Returns NULL if no comparison produced usable
+#'   results.
 #' @export
 prepDataContainer <- function(data, metadata, comparisons_spec) {
   if (is.null(data) || length(comparisons_spec) == 0L) {
@@ -70,11 +72,13 @@ prepDataContainer <- function(data, metadata, comparisons_spec) {
           params = unlist(strsplit(inputs$demethod_params, ","))
         )
         if (!is.null(initd$dat()) && nrow(initd$dat()) > 1L) {
+          dds_val <- tryCatch(initd$dds(), error = function(e) NULL)
           dclist[[i]] <- list(
             conds = inputs$conds, cols = inputs$cols,
             cond_names = inputs$cond_names,
             init_data = initd$dat(),
-            demethod_params = inputs$demethod_params
+            demethod_params = inputs$demethod_params,
+            dds = dds_val
           )
         }
         shiny::incProgress(1 / n)

@@ -9,7 +9,8 @@ run_deseq2(
   metadata = NULL,
   columns = NULL,
   conds = NULL,
-  params = list()
+  params = list(),
+  return_dds = FALSE
 )
 }
 \arguments{
@@ -25,9 +26,15 @@ run_deseq2(
 or "NoCovariate"), fit_type ("parametric"/"local"/"mean"), beta_prior
 (logical), test_type ("Wald"/"LRT"), shrinkage
 ("None"/"apeglm"/"ashr"/"normal").}
+
+\item{return_dds}{Logical. If TRUE, return a list with components `res`
+(DESeqResults) and `dds` (the fitted DESeqDataSet), so downstream QC
+cards (Dispersion / SizeFactors / Cook's) can introspect the fit.
+Default FALSE preserves the legacy data.frame-shaped contract.}
 }
 \value{
-DESeqResults
+DESeqResults if `return_dds = FALSE`; otherwise
+  `list(res = DESeqResults, dds = DESeqDataSet)`.
 }
 \description{
 Pure function: takes plain R objects, returns a `DESeqResults` object.

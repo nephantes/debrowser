@@ -9,7 +9,8 @@ runDE(
   metadata = NULL,
   columns = NULL,
   conds = NULL,
-  params = NULL
+  params = NULL,
+  return_dds = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,11 @@ to be analyzed. These columns has to match with the given data.}
 with the column order}
 
 \item{params, }{all params for the DE methods}
+
+\item{return_dds}{Logical. When TRUE the function returns a list
+`list(res, dds)` for DESeq2 (so QC cards can introspect the fit) and
+`list(res, dds = NULL)` for edgeR / limma. Default FALSE returns the
+per-method data.frame as before.}
 }
 \value{
 de results

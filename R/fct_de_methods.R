@@ -13,10 +13,15 @@
 #'   or "NoCovariate"), fit_type ("parametric"/"local"/"mean"), beta_prior
 #'   (logical), test_type ("Wald"/"LRT"), shrinkage
 #'   ("None"/"apeglm"/"ashr"/"normal").
-#' @return DESeqResults
+#' @param return_dds Logical. If TRUE, return a list with components `res`
+#'   (DESeqResults) and `dds` (the fitted DESeqDataSet), so downstream QC
+#'   cards (Dispersion / SizeFactors / Cook's) can introspect the fit.
+#'   Default FALSE preserves the legacy data.frame-shaped contract.
+#' @return DESeqResults if `return_dds = FALSE`; otherwise
+#'   `list(res = DESeqResults, dds = DESeqDataSet)`.
 #' @export
 run_deseq2 <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
-                       params = list()) {
+                       params = list(), return_dds = FALSE) {
   de_assert_count_matrix(counts)
   if (length(columns) < 3L) {
     de_error(
@@ -93,6 +98,9 @@ run_deseq2 <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
     stat <- dds@rowRanges@elementMetadata[colname]
     res <- cbind(res, stat)
     colnames(res)[colnames(res) == colname] <- "stat"
+  }
+  if (isTRUE(return_dds)) {
+    return(list(res = res, dds = dds))
   }
   res
 }
@@ -272,10 +280,29 @@ run_limma <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
 #'
 #' @param method One of "DESeq2", "EdgeR", "Limma".
 #' @inheritParams run_deseq2
+#' @param return_dds Logical. Forwarded to [run_deseq2()] for the DESeq2
+#'   branch; ignored for edgeR/limma. When TRUE for DESeq2 the function
+#'   returns `list(res, dds)`; for non-DESeq2 methods the standard
+#'   per-method result object is wrapped to `list(res = <obj>, dds = NULL)`
+#'   so downstream code can pattern-match a single shape.
 #' @return Method-specific result object.
 #' @export
 run_de <- function(method, counts, metadata = NULL, columns = NULL,
-                   conds = NULL, params = list()) {
+                   conds = NULL, params = list(), return_dds = FALSE) {
+  if (isTRUE(return_dds)) {
+    return(switch(method,
+      "DESeq2" = run_deseq2(counts, metadata, columns, conds, params,
+                            return_dds = TRUE),
+      "EdgeR"  = list(res = run_edger(counts, metadata, columns, conds, params),
+                      dds = NULL),
+      "Limma"  = list(res = run_limma(counts, metadata, columns, conds, params),
+                      dds = NULL),
+      de_error(
+        paste0("Unknown DE method: ", method),
+        class = "unknown_de_method"
+      )
+    ))
+  }
   switch(method,
     "DESeq2" = run_deseq2(counts, metadata, columns, conds, params),
     "EdgeR"  = run_edger(counts, metadata, columns, conds, params),
