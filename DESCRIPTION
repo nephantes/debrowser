@@ -76,6 +76,7 @@ Suggests: testthat (>= 3.2.0),
     apeglm,
     ashr,
     enrichplot,
+    fgsea,
     DOSE
 Config/testthat/edition: 3
 VignetteBuilder: knitr
