@@ -142,10 +142,10 @@ test_that("plot_method_scatter() returns a ggplot with Spearman in subtitle", {
   expect_match(p$labels$subtitle, "Spearman rho =")
 })
 
-test_that("plot_method_scatter() raises missing_column for unknown method", {
+test_that("plot_method_scatter() raises unknown_de_method for unknown method", {
   de <- .mc_fixture_de_list()
   expect_error(
     plot_method_scatter(de, "DESeq2", "RandomMethod"),
-    class = "missing_column"
+    class = "unknown_de_method"
   )
 })

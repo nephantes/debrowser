@@ -179,7 +179,7 @@ plot_method_scatter <- function(de_list, method1, method2) {
       sprintf("Methods not in de_list: %s",
               paste(setdiff(c(method1, method2), names(de_list)),
                     collapse = ", ")),
-      class = "missing_column"
+      class = "unknown_de_method"
     )
   }
   d1 <- de_list[[method1]]
