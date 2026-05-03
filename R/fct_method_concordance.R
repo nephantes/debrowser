@@ -163,30 +163,36 @@ plot_method_upset <- function(de_list, padj_cutoff = 0.05,
   )
 }
 
-#' Pairwise log2FC scatter between two DE methods.
+#' Pairwise log2FC scatter between two named entries of a DE list.
 #'
-#' Joins the two per-method tables on gene ID and renders a scatter of
-#' log2FoldChange (method1 on x, method2 on y). Spearman rho appears in
-#' the subtitle. The y=x reference line is drawn dashed.
+#' Joins the two per-entry tables on gene ID and renders a scatter of
+#' log2FoldChange (id1 on x, id2 on y). Spearman rho appears in the
+#' subtitle. The y=x reference line is drawn dashed.
 #'
-#' @param de_list Output of [run_de_methods()].
-#' @param method1,method2 Names present in `names(de_list)`.
+#' Generic across "DE list dimensions": entries can be DE methods on the
+#' same comparison, OR comparisons on the same method, OR any other
+#' axis as long as each named entry contains a `data.frame(ID,
+#' log2FoldChange, ...)`.
+#'
+#' @param de_list Named list of DE result data.frames (each with at
+#'   minimum `ID` and `log2FoldChange` columns).
+#' @param id1,id2 Names present in `names(de_list)` to put on x and y.
 #' @return ggplot object.
 #' @export
-plot_method_scatter <- function(de_list, method1, method2) {
-  if (!all(c(method1, method2) %in% names(de_list))) {
+plot_method_scatter <- function(de_list, id1, id2) {
+  if (!all(c(id1, id2) %in% names(de_list))) {
     de_error(
-      sprintf("Methods not in de_list: %s",
-              paste(setdiff(c(method1, method2), names(de_list)),
+      sprintf("Names not in de_list: %s",
+              paste(setdiff(c(id1, id2), names(de_list)),
                     collapse = ", ")),
       class = "unknown_de_method"
     )
   }
-  d1 <- de_list[[method1]]
-  d2 <- de_list[[method2]]
+  d1 <- de_list[[id1]]
+  d2 <- de_list[[id2]]
   common <- intersect(d1$ID, d2$ID)
   if (length(common) == 0L) {
-    de_error("No common genes between the two methods.",
+    de_error("No common genes between the two entries.",
              class = "empty_input")
   }
   df <- data.frame(
@@ -214,9 +220,9 @@ plot_method_scatter <- function(de_list, method1, method2) {
     ggplot2::geom_hline(yintercept = 0, color = "grey80") +
     ggplot2::geom_vline(xintercept = 0, color = "grey80") +
     ggplot2::labs(
-      x = sprintf("%s log2FC", method1),
-      y = sprintf("%s log2FC", method2),
-      title = sprintf("%s vs %s", method1, method2),
+      x = sprintf("%s log2FC", id1),
+      y = sprintf("%s log2FC", id2),
+      title = sprintf("%s vs %s", id1, id2),
       subtitle = subtitle
     ) +
     ggplot2::theme_classic()

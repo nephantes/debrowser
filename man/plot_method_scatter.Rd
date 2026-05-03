@@ -2,20 +2,27 @@
 % Please edit documentation in R/fct_method_concordance.R
 \name{plot_method_scatter}
 \alias{plot_method_scatter}
-\title{Pairwise log2FC scatter between two DE methods.}
+\title{Pairwise log2FC scatter between two named entries of a DE list.}
 \usage{
-plot_method_scatter(de_list, method1, method2)
+plot_method_scatter(de_list, id1, id2)
 }
 \arguments{
-\item{de_list}{Output of [run_de_methods()].}
+\item{de_list}{Named list of DE result data.frames (each with at
+minimum `ID` and `log2FoldChange` columns).}
 
-\item{method1, method2}{Names present in `names(de_list)`.}
+\item{id1, id2}{Names present in `names(de_list)` to put on x and y.}
 }
 \value{
 ggplot object.
 }
 \description{
-Joins the two per-method tables on gene ID and renders a scatter of
-log2FoldChange (method1 on x, method2 on y). Spearman rho appears in
-the subtitle. The y=x reference line is drawn dashed.
+Joins the two per-entry tables on gene ID and renders a scatter of
+log2FoldChange (id1 on x, id2 on y). Spearman rho appears in the
+subtitle. The y=x reference line is drawn dashed.
+}
+\details{
+Generic across "DE list dimensions": entries can be DE methods on the
+same comparison, OR comparisons on the same method, OR any other
+axis as long as each named entry contains a `data.frame(ID,
+log2FoldChange, ...)`.
 }
