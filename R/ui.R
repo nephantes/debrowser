@@ -265,13 +265,8 @@ deUI <- function(req = NULL) {
     ),
 
     bslib::nav_panel(
-      title = "GO Term", value = "panel3",
+      title = "Enrichment", value = "panel3",
       uiOutput("gopanel")
-    ),
-
-    bslib::nav_panel(
-      title = "Enrichment", value = "panel5",
-      debrowser::enrichmentUI("enrichment")
     ),
 
     bslib::nav_panel(

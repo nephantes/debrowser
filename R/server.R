@@ -474,7 +474,94 @@ deServer <- function(input, output, session) {
         names(out) <- nms
         out
       })
-      enrichmentServer("enrichment", de_results = de_results_list)
+
+      # E2.5: fgsea-based GSEA inside the consolidated Enrichment tab
+      # (panel3, formerly GO Term). Sidebar's GMT/MSigDB picker is
+      # mounted here; a startGO + goplot=='fgseaGSEA' combo triggers a
+      # run_gsea() pass per comparison.
+      fgsea_pathways <- enrichmentGmtServer("fgsea_gmt")
+      .fgsea_id_col <- function(de) {
+        if ("ID"   %in% names(de)) return("ID")
+        if ("gene" %in% names(de)) return("gene")
+        NA_character_
+      }
+      fgsea_results_by_comparison <- eventReactive(input$startGO, {
+        req(input$goplot == "fgseaGSEA")
+        req(de_results_list(), fgsea_pathways())
+        withProgress(message = "Running GSEA (fgsea)", value = 0.3, {
+          lapply(de_results_list(), function(df) {
+            run_gsea(df, pathways = fgsea_pathways(),
+                     min_size = input$fgsea_min_size,
+                     max_size = input$fgsea_max_size,
+                     n_perm   = input$fgsea_n_perm,
+                     seed     = input$fgsea_seed,
+                     id_col   = .fgsea_id_col(df))
+          })
+        })
+      }, ignoreNULL = TRUE)
+
+      output$fgsea_show_heatmap <- reactive({
+        length(fgsea_results_by_comparison()) >= 2L
+      })
+      outputOptions(output, "fgsea_show_heatmap",
+                    suspendWhenHidden = FALSE)
+
+      enrichmentNesHeatmapServer("fgsea_nes_heatmap",
+                                 fgsea_results_by_comparison)
+
+      fgsea_primary_result <- reactive({
+        r <- fgsea_results_by_comparison()
+        req(length(r) >= 1L)
+        r[[1]]
+      })
+
+      output$fgsea_results_table <- DT::renderDT({
+        df <- fgsea_primary_result()
+        DT::datatable(
+          df[, c("pathway", "size", "NES", "padj")],
+          rownames  = FALSE,
+          selection = list(mode = "single", selected = 1),
+          filter    = "top",
+          options   = list(pageLength = 10)
+        ) |>
+          DT::formatRound("NES", 4) |>
+          DT::formatSignif("padj", 4)
+      })
+
+      output$fgsea_download_results <- downloadHandler(
+        filename = function() "gsea_results.tsv",
+        content  = function(file) {
+          df <- fgsea_primary_result()
+          df$leading_edge <- vapply(df$leading_edge, paste, character(1),
+                                    collapse = ";")
+          utils::write.table(df, file = file, sep = "\t",
+                             quote = FALSE, row.names = FALSE)
+        }
+      )
+
+      fgsea_selected_pw <- reactive({
+        sel <- input$fgsea_results_table_rows_selected
+        req(length(sel) == 1L)
+        fgsea_primary_result()$pathway[sel]
+      })
+
+      output$fgsea_enrichment_plot <- renderPlot({
+        req(fgsea_selected_pw(), fgsea_pathways(), de_results_list())
+        df <- de_results_list()[[1]]
+        id_col <- .fgsea_id_col(df)
+        stats <- df$log2FoldChange
+        names(stats) <- as.character(df[[id_col]])
+        stats <- sort(stats[is.finite(stats)], decreasing = TRUE)
+        fgsea::plotEnrichment(fgsea_pathways()[[fgsea_selected_pw()]],
+                              stats) +
+          ggplot2::labs(title = fgsea_selected_pw())
+      })
+
+      output$fgsea_leading_edge <- renderText({
+        sel <- input$fgsea_results_table_rows_selected
+        req(length(sel) == 1L)
+        paste(fgsea_primary_result()$leading_edge[[sel]], collapse = ", ")
+      })
       filt_data <- reactive({
         if (!is.null(init_data()) && !is.null(comparison()) && !is.null(input$padj)) {
           applyFilters(init_data(), cols(), conds(), input)

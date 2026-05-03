@@ -21,15 +21,47 @@ getGoPanel <- function() {
         "http://debrowser.readthedocs.io/en/master/examples/examples.html#go-term-plots"
       )
     ),
-    tabsetPanel(
-      id = "gotabs", type = "tabs",
-      tabPanel(
-        title = "Plot", value = "gopanel1", id = "gopanel1",
-        column(12, wellPanel(plotOutput("GOPlots1")))
+    # Legacy GO/KEGG/Disease/compareClusters/gseGO modes — existing
+    # plot+table tab layout.
+    conditionalPanel(
+      condition = "input.goplot != 'fgseaGSEA'",
+      tabsetPanel(
+        id = "gotabs", type = "tabs",
+        tabPanel(
+          title = "Plot", value = "gopanel1", id = "gopanel1",
+          column(12, wellPanel(plotOutput("GOPlots1")))
+        ),
+        tabPanel(
+          title = "Table", value = "gopanel2", id = "gopanel2",
+          column(12, wellPanel(DT::dataTableOutput("gotable")))
+        )
+      )
+    ),
+    # E2.5: fgsea-based GSEA mode (manual .gmt or MSigDB) — cards
+    # mirror the standalone Enrichment tab layout introduced in E1.
+    conditionalPanel(
+      condition = "input.goplot == 'fgseaGSEA'",
+      bslib::layout_column_wrap(
+        width = 1 / 2,
+        bslib::card(
+          bslib::card_header("Results"),
+          bslib::card_body(
+            DT::DTOutput("fgsea_results_table"),
+            downloadButton("fgsea_download_results", "Download")
+          )
+        ),
+        bslib::card(
+          bslib::card_header("Enrichment plot"),
+          bslib::card_body(plotOutput("fgsea_enrichment_plot"))
+        )
       ),
-      tabPanel(
-        title = "Table", value = "gopanel2", id = "gopanel2",
-        column(12, wellPanel(DT::dataTableOutput("gotable")))
+      bslib::card(
+        bslib::card_header("Leading edge"),
+        bslib::card_body(textOutput("fgsea_leading_edge"))
+      ),
+      conditionalPanel(
+        condition = "output.fgsea_show_heatmap == true",
+        enrichmentNesHeatmapUI("fgsea_nes_heatmap")
       )
     ),
     getKEGGModal(),

@@ -196,6 +196,32 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E2.5 — Consolidated Enrichment tab
+
+* The previously-separate **GO Term** and **Enrichment** tabs are
+  now a single **Enrichment** tab. The legacy GO Term modes
+  (enrichGO / enrichKEGG / Disease / compareClusters / GSEA via
+  `clusterProfiler::gseGO`) and the new fgsea-based GSEA share one
+  top-level tab. The standalone Enrichment tab introduced in E1
+  has been removed; its content is folded in here.
+* New radio choice **"GSEA (fgsea / .gmt or MSigDB)"** under the
+  Enrichment-method picker. Selecting it reveals the GMT/MSigDB
+  picker and Advanced controls (min/max set size, permutations,
+  seed) inside the same sidebar that hosts the legacy GO Term
+  options.
+* Both render styles coexist via conditional panels: the legacy
+  modes keep their plot+table tabset; the fgsea mode renders
+  results table + enrichment plot + leading edge cards plus a
+  multi-comparison NES heatmap when more than one comparison is
+  loaded — same widgets the standalone Enrichment tab used.
+* `enrichmentUI()` / `enrichmentServer()` (the standalone-tab
+  module pair from E1) remain exported as a public API for users
+  who want to embed the enrichment tab elsewhere; the consolidated
+  panel reuses the smaller `enrichmentGmtServer()` and
+  `enrichmentNesHeatmapServer()` building blocks directly.
+* `togglePanels()` reverts from a 0..5 loop with backwards-compat
+  rule to a clean 0..4 loop, since panel5 no longer exists.
+
 ### Phase E2 — MSigDB integration (gene-set source picker)
 
 * The Enrichment tab's gene-set picker now offers **MSigDB** as a

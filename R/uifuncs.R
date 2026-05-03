@@ -49,18 +49,36 @@ getLeftMenu <- function(input = NULL) {
       actionButton("startGO", "Submit"),
       bslib::accordion(
         multiple = TRUE,
-        open = c(" Plot Type", " Go Term Options"),
+        open = c(" Plot Type", " Go Term Options", " GSEA (fgsea) Options"),
         bslib::accordion_panel(
           " Plot Type",
           wellPanel(radioButtons(
-            "goplot", paste("Go Plots:", sep = ""),
+            "goplot", paste("Enrichment method:", sep = ""),
             c(
-              enrichGO = "enrichGO", enrichKEGG = "enrichKEGG",
-              Disease = "disease", compareClusters = "compare", GSEA = "GSEA"
+              enrichGO        = "enrichGO",
+              enrichKEGG      = "enrichKEGG",
+              Disease         = "disease",
+              compareClusters = "compare",
+              "GSEA (gseGO)"  = "GSEA",
+              "GSEA (fgsea / .gmt or MSigDB)" = "fgseaGSEA"
             )
           ))
         ),
-        getGOLeftMenu()
+        getGOLeftMenu(),
+        bslib::accordion_panel(
+          " GSEA (fgsea) Options",
+          conditionalPanel(
+            (condition <- "input.goplot=='fgseaGSEA'"),
+            enrichmentGmtUI("fgsea_gmt"),
+            numericInput("fgsea_min_size", "Min set size", 15,
+                         min = 1, step = 1),
+            numericInput("fgsea_max_size", "Max set size", 500,
+                         min = 1, step = 1),
+            numericInput("fgsea_n_perm", "Permutations", 1000,
+                         min = 100, step = 100),
+            numericInput("fgsea_seed", "Seed", 1, step = 1)
+          )
+        )
       )
     ),
     conditionalPanel(
@@ -563,16 +581,11 @@ togglePanels <- function(num = NULL, nums = NULL, session = NULL) {
   if (is.null(num)) {
     return(NULL)
   }
-  # Includes panel5 (Enrichment, added in Phase E1) alongside the
-  # original 0..4 panels (Data Prep, Main Plots, QC Plots, GO Term,
-  # Tables). Callers that pass `nums = c(0, 1, 2, 3, 4)` (the legacy
-  # "everything" set) get Enrichment shown too — Phase E1 treats
-  # Enrichment as a peer of GO Term.
-  for (i in c(0L, 1L, 2L, 3L, 4L, 5L)) {
+  # E2.5: panel3 (formerly "GO Term") is now the consolidated
+  # Enrichment tab; panel5 was removed. Only panels 0..4 remain.
+  for (i in 0:4) {
     target <- paste0("panel", i)
-    show_panel <- (i %in% nums) ||
-      (i == 5L && all(c(0L, 1L, 2L, 3L, 4L) %in% nums))
-    if (show_panel) {
+    if (i %in% nums) {
       bslib::nav_show("methodtabs", target = target, session = session)
     } else {
       bslib::nav_hide("methodtabs", target = target, session = session)
