@@ -247,17 +247,7 @@ deUI <- function(req = NULL) {
           title = "DE Analysis", value = "DEAnalysis",
           conditionalPanel(
             condition = "input.goDE || input.goDEFromFilter",
-            bslib::navset_card_tab(
-              id = "DEAnalysisTabs",
-              bslib::nav_panel(
-                title = "Results", value = "results",
-                uiOutput("deresUI")
-              ),
-              bslib::nav_panel(
-                title = "Method comparison", value = "method_comparison",
-                debrowser::methodConcordanceUI("methodConcordance")
-              )
-            )
+            uiOutput("deresUI")
           )
         )
       )
@@ -272,6 +262,14 @@ deUI <- function(req = NULL) {
     bslib::nav_panel(
       title = "QC Plots", value = "panel2",
       uiOutput("qcpanel")
+    ),
+
+    # E11 (post-redirect): Comparison Concordance — top-level tab
+    # between QC Plots and Enrichment. Hidden at startup; shown by an
+    # observer in R/server.R when length(de_results_list()) >= 2.
+    bslib::nav_panel(
+      title = "Comparison Concordance", value = "panel_cc",
+      debrowser::comparisonConcordanceUI("comparison_concordance")
     ),
 
     bslib::nav_panel(
