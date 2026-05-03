@@ -382,10 +382,10 @@ compareClust <- function(
     genecluster[[paste0("X", i)]] <- entrez_ids
   }
   if (length(genecluster) == 0L) {
-    showNotification(
-      "No mappable gene IDs in any cluster - check organism selection.",
-      type = "warning"
-    )
+    de_notify_warning(sprintf(
+      "No gene IDs mapped to %s. Confirm the organism dropdown matches your gene IDs (e.g., human SYMBOL → org.Hs.eg.db).",
+      org
+    ))
     return(NULL)
   }
   res$table <- NULL
@@ -411,10 +411,10 @@ compareClust <- function(
   }
   if (is.null(xx) || is.null(xx@compareClusterResult) ||
     nrow(xx@compareClusterResult) == 0L) {
-    showNotification(
-      "No enrichment found for any cluster at this p-value cutoff.",
-      type = "warning"
-    )
+    de_notify_info(sprintf(
+      "No enriched terms in any cluster at p ≤ %s. Try a higher cutoff in the GO panel options.",
+      format(pvalueCutoff, nsmall = 0)
+    ))
     return(NULL)
   }
   res$table <- xx@compareClusterResult[

@@ -116,9 +116,10 @@ getGOPlots <- function(dataset = NULL, GSEARes = NULL, input = NULL) {
         ) + facet_grid(. ~ .sign)
       }
     } else {
-      showNotification("no term enriched under specific pvalueCutoff...",
-        type = "error"
-      )
+      de_notify_info(sprintf(
+        "No enriched terms at p ≤ %s. Try a higher cutoff in the GO panel options, or check that genes have valid IDs for this organism.",
+        format(gopval, nsmall = 0)
+      ))
     }
   }
   return(goplots)
