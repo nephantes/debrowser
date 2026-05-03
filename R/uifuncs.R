@@ -34,7 +34,10 @@ getLeftMenu <- function(input = NULL) {
               LibraryDepth = "libraryDepth",
               DetectionRate = "detectionRate",
               MtPct = "mtPct",
-              SampleDist = "sampleDist"
+              SampleDist = "sampleDist",
+              Dispersion = "dispersion",
+              SizeFactors = "sizeFactors",
+              Cooks = "cooks"
             )
           ))
         ),
@@ -824,6 +827,18 @@ getQCPanel <- function(input = NULL) {
     conditionalPanel(
       condition = "(input.qcplot == 'sampleDist')",
       qcSampleDistUI("sampleDist")
+    ),
+    conditionalPanel(
+      condition = "(input.qcplot == 'dispersion')",
+      qcDispersionUI("dispersion")
+    ),
+    conditionalPanel(
+      condition = "(input.qcplot == 'sizeFactors')",
+      qcSizeFactorsUI("sizeFactors")
+    ),
+    conditionalPanel(
+      condition = "(input.qcplot == 'cooks')",
+      qcCooksUI("cooks")
     )
   )
   return(qcPanel)

@@ -499,6 +499,12 @@ deServer <- function(input, output, session) {
             debrowserqcmtpct("mtPct", updata()$load()$count)
           } else if (input$qcplot == "sampleDist") {
             debrowserqcsampledist("sampleDist", batch()$BatchEffect()$count)
+          } else if (input$qcplot == "dispersion") {
+            debrowserqcdispersion("dispersion", post_de_dds())
+          } else if (input$qcplot == "sizeFactors") {
+            debrowserqcsizefactors("sizeFactors", post_de_dds())
+          } else if (input$qcplot == "cooks") {
+            debrowserqccooks("cooks", post_de_dds())
           }
         }
       })

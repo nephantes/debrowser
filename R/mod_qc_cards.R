@@ -345,6 +345,21 @@ qcSampleDistUI <- function(id) {
   )
 }
 
+# Internal: rendered when a post-DE QC card (5/6/7) is asked to render but
+# the active comparison has no fitted DESeqDataSet. This happens before the
+# user clicks Start DE or when the DE method was not DESeq2. Keeps the card
+# visible (so the sidebar selector behaviour matches cards 1-4) but tells
+# the user what to do to populate it.
+#' @noRd
+qc_card_empty_state_no_dds <- function() {
+  div(
+    class = "alert alert-info",
+    "This QC card requires a fitted DESeqDataSet. Run a DESeq2 ",
+    "differential-expression analysis from the Condition Selection step ",
+    "and then return to this tab."
+  )
+}
+
 #' debrowserqcsampledist
 #'
 #' Server factory for the sample-distance heatmap. Computes
@@ -386,6 +401,286 @@ debrowserqcsampledist <- function(id, counts = NULL) {
       filename = function() "sample_distance.csv",
       content = function(file) {
         utils::write.csv(dist_react(), file, row.names = TRUE)
+      }
+    )
+  })
+  invisible(NULL)
+}
+
+# ---------------------------------------------------------------------------
+# Card 5: DESeq2 dispersion estimates (post-DE)
+# ---------------------------------------------------------------------------
+
+#' qcDispersionUI
+#'
+#' UI factory for the DESeq2 dispersion-estimates QC card. The body is a
+#' `uiOutput` so the server can switch between the base-R dispersion plot
+#' and an empty-state alert when no fitted `DESeqDataSet` is available.
+#'
+#' @param id character, namespace id
+#' @return a `bslib::card` tagList
+#' @examples
+#' \dontrun{
+#' qcDispersionUI("dispersion")
+#' }
+#' @export
+qcDispersionUI <- function(id) {
+  ns <- NS(id)
+  de_card(
+    title = "Dispersion Estimates (DESeq2)",
+    uiOutput(ns("body")),
+    helpText(
+      paste0(
+        "Black: gene-wise estimates. Red: fitted trend. ",
+        "Blue: final shrunken values used by Wald/LRT. ",
+        "Outlier genes (circled) escape shrinkage."
+      )
+    ),
+    download_id = NULL
+  )
+}
+
+#' debrowserqcdispersion
+#'
+#' Server factory for the dispersion-estimates QC card. Wraps
+#' \code{DESeq2::plotDispEsts(dds)} in `renderPlot` (base-R graphics, not
+#' plotly). Renders an empty-state alert when `dds` is NULL (no DE run yet,
+#' or method was not DESeq2).
+#'
+#' @param id character, namespace id matching `qcDispersionUI(id)`
+#' @param dds A fitted `DESeqDataSet`, or NULL.
+#' @return invisible(NULL); wires `output$body` and `output$plot`.
+#' @examples
+#' \dontrun{
+#' debrowserqcdispersion("dispersion", dds)
+#' }
+#' @export
+debrowserqcdispersion <- function(id, dds = NULL) {
+  moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    output$body <- renderUI({
+      if (is.null(dds)) {
+        qc_card_empty_state_no_dds()
+      } else {
+        plotOutput(ns("plot"), height = "500px")
+      }
+    })
+    output$plot <- renderPlot({
+      req(dds)
+      DESeq2::plotDispEsts(dds)
+    })
+  })
+  invisible(NULL)
+}
+
+# ---------------------------------------------------------------------------
+# Card 6: Size factors vs library size (post-DE)
+# ---------------------------------------------------------------------------
+
+#' qcSizeFactorsUI
+#'
+#' UI factory for the size-factors-vs-library-size QC card. The body is a
+#' `uiOutput` so the server can render the comparison plot or an empty-state
+#' alert when no fitted `DESeqDataSet` is available.
+#'
+#' @param id character, namespace id
+#' @return a `bslib::card` tagList
+#' @examples
+#' \dontrun{
+#' qcSizeFactorsUI("sizeFactors")
+#' }
+#' @export
+qcSizeFactorsUI <- function(id) {
+  ns <- NS(id)
+  de_card(
+    title = "Size Factors vs Library Size",
+    uiOutput(ns("body")),
+    helpText(
+      paste0(
+        "Per-sample DESeq2 size factor and raw library size, both rescaled ",
+        "to [0, 1]. Spearman rho close to 1 confirms size factors track ",
+        "depth without unexpected composition shifts."
+      )
+    ),
+    download_id = ns("dl")
+  )
+}
+
+#' debrowserqcsizefactors
+#'
+#' Server factory for the size-factors-vs-library-size QC card. Computes
+#' \code{\link{size_factor_library_summary}} and renders two scaled bars per
+#' sample plus the Spearman correlation in the subtitle.
+#'
+#' @param id character, namespace id matching `qcSizeFactorsUI(id)`
+#' @param dds A fitted `DESeqDataSet`, or NULL.
+#' @return invisible(NULL); wires `output$body`, `output$plot`, and
+#'   `output$dl`.
+#' @examples
+#' \dontrun{
+#' debrowserqcsizefactors("sizeFactors", dds)
+#' }
+#' @export
+debrowserqcsizefactors <- function(id, dds = NULL) {
+  moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    df_react <- reactive({
+      req(dds)
+      size_factor_library_summary(dds)
+    })
+    output$body <- renderUI({
+      if (is.null(dds)) {
+        qc_card_empty_state_no_dds()
+      } else {
+        plotly::plotlyOutput(ns("plot"), height = "500px")
+      }
+    })
+    output$plot <- plotly::renderPlotly({
+      df <- df_react()
+      df$sample <- factor(df$sample, levels = df$sample)
+      rho <- attr(df, "spearman_rho")
+      subtitle <- if (is.finite(rho)) {
+        sprintf("Spearman rho = %.3f", rho)
+      } else {
+        "Spearman rho: n/a"
+      }
+      p <- plotly::plot_ly(df) |>
+        plotly::add_bars(
+          x = ~sample, y = ~sf_scaled,
+          name = "Size factor (scaled)",
+          marker = list(color = "#4F81BD"),
+          hovertext = ~sprintf("size factor: %.3f", size_factor),
+          hoverinfo = "text+name"
+        ) |>
+        plotly::add_bars(
+          x = ~sample, y = ~lib_scaled,
+          name = "Library size (scaled)",
+          marker = list(color = "#C0504D"),
+          hovertext = ~sprintf("library size: %s",
+                               formatC(library_size, format = "d",
+                                       big.mark = ",")),
+          hoverinfo = "text+name"
+        ) |>
+        plotly::layout(
+          barmode = "group",
+          xaxis = list(title = "", categoryorder = "array",
+                       categoryarray = as.character(df$sample)),
+          yaxis = list(title = "Scaled value [0, 1]", range = c(0, 1.05)),
+          legend = list(orientation = "h", x = 0, y = -0.15),
+          annotations = list(list(
+            text = subtitle, x = 1, y = 1.06, xref = "paper", yref = "paper",
+            xanchor = "right", showarrow = FALSE
+          ))
+        )
+      p$elementId <- NULL
+      p
+    })
+    output$dl <- downloadHandler(
+      filename = function() "size_factors_vs_library_size.csv",
+      content = function(file) {
+        df <- df_react()
+        # Drop attributes for the CSV (keep them visible only in the UI).
+        utils::write.csv(as.data.frame(df), file, row.names = FALSE)
+      }
+    )
+  })
+  invisible(NULL)
+}
+
+# ---------------------------------------------------------------------------
+# Card 7: Cook's distance outlier counts (post-DE)
+# ---------------------------------------------------------------------------
+
+#' qcCooksUI
+#'
+#' UI factory for the Cook's-distance outlier-count QC card. The body is a
+#' `uiOutput` so the server can switch between the bar plot and an
+#' empty-state alert when no fitted `DESeqDataSet` is available.
+#'
+#' @param id character, namespace id
+#' @return a `bslib::card` tagList
+#' @examples
+#' \dontrun{
+#' qcCooksUI("cooks")
+#' }
+#' @export
+qcCooksUI <- function(id) {
+  ns <- NS(id)
+  de_card(
+    title = "Cook's Outlier Counts",
+    uiOutput(ns("body")),
+    helpText(
+      paste0(
+        "Per-sample count of genes whose Cook's distance exceeds the ",
+        "DESeq2 vignette threshold 4 / (n_samples - n_params). ",
+        "Disproportionately high bars flag samples that drove DE calls."
+      )
+    ),
+    download_id = ns("dl")
+  )
+}
+
+#' debrowserqccooks
+#'
+#' Server factory for the Cook's-distance outlier-count QC card. Computes
+#' \code{\link{cooks_outlier_summary}} and renders a vertical bar of
+#' `n_high_cooks` per sample. Subtitle reports the active threshold.
+#'
+#' @param id character, namespace id matching `qcCooksUI(id)`
+#' @param dds A fitted `DESeqDataSet`, or NULL.
+#' @return invisible(NULL); wires `output$body`, `output$plot`, and
+#'   `output$dl`.
+#' @examples
+#' \dontrun{
+#' debrowserqccooks("cooks", dds)
+#' }
+#' @export
+debrowserqccooks <- function(id, dds = NULL) {
+  moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    df_react <- reactive({
+      req(dds)
+      cooks_outlier_summary(dds)
+    })
+    output$body <- renderUI({
+      if (is.null(dds)) {
+        qc_card_empty_state_no_dds()
+      } else {
+        plotly::plotlyOutput(ns("plot"), height = "500px")
+      }
+    })
+    output$plot <- plotly::renderPlotly({
+      df <- df_react()
+      df$sample <- factor(df$sample, levels = df$sample)
+      thr <- attr(df, "threshold")
+      subtitle <- if (is.finite(thr)) {
+        sprintf("Threshold: %.3f", thr)
+      } else {
+        "Threshold: n/a"
+      }
+      p <- plotly::plot_ly(
+        df, x = ~sample, y = ~n_high_cooks, type = "bar",
+        marker = list(color = "#4F81BD"),
+        hovertext = ~sprintf("%d / %d genes (%.2f%%)",
+                             n_high_cooks, total_genes, high_cooks_pct),
+        hoverinfo = "text"
+      ) |>
+        plotly::layout(
+          xaxis = list(title = "", categoryorder = "array",
+                       categoryarray = as.character(df$sample)),
+          yaxis = list(title = "High-Cook genes"),
+          annotations = list(list(
+            text = subtitle, x = 1, y = 1.06, xref = "paper", yref = "paper",
+            xanchor = "right", showarrow = FALSE
+          ))
+        )
+      p$elementId <- NULL
+      p
+    })
+    output$dl <- downloadHandler(
+      filename = function() "cooks_outliers.csv",
+      content = function(file) {
+        utils::write.csv(as.data.frame(df_react()), file, row.names = FALSE)
       }
     )
   })
