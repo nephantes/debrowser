@@ -222,6 +222,31 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   Cook's outlier flag) are deferred to a follow-up phase
   pending DESeq2 `dds` retention through `prepDataContainer`.
 
+### Phase E4.5 — Post-DE QC cards + dds retention
+
+* `run_deseq2()` gains a `return_dds = FALSE` argument; when
+  TRUE it returns `list(res, dds)` so the fitted DESeqDataSet
+  is recoverable for downstream QC. Threaded through
+  `runDESeq2()`, `runDE()`, `debrowserdeanalysis()`, and
+  `prepDataContainer()` (which now stashes a `dds` slot per
+  comparison alongside `init_data`). Default behaviour is
+  unchanged so existing callers (`generateTestData`,
+  per-method tests) keep their data.frame contract.
+* QC Plots tab adds three post-DE cards driven by the active
+  comparison's `dds`: **Dispersion Estimates** (DESeq2
+  `plotDispEsts` of gene-wise / fitted / shrunken values),
+  **Size Factors vs Library Size** (scaled bars per sample
+  with Spearman ρ in the subtitle), and **Cook's Outlier
+  Counts** (per-sample count of high-Cook genes vs the
+  vignette threshold `4 / (n_samples - n_params)`).
+* New pure helpers in `R/fct_qc.R`:
+  `size_factor_library_summary(dds)` and
+  `cooks_outlier_summary(dds, threshold = NULL)`. The
+  Spearman correlation and active threshold are attached as
+  attributes on the returned data.frame.
+* Cards render a friendly empty-state alert when no fitted
+  `DESeqDataSet` is available (pre-DE, or non-DESeq2 method).
+
 ### Phase B4 — Friendly errors
 
 * User-facing error messages now follow a consistent "what went wrong + what to do" format with correct severity (red blocks, yellow warns, green/blue empty-result).
