@@ -13,7 +13,7 @@ debrowserqcmappingstats(id)
 invisible(NULL); the module installs no observers in this round
 }
 \description{
-Server factory for the mapping/rRNA stats QC card. Stub only —
+Server factory for the mapping/rRNA stats QC card. Stub only --
 parses no upload, renders no plot. Reserved for a follow-up that wires
 the actual sidecar handler when the format is finalised.
 }

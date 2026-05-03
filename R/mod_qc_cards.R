@@ -423,7 +423,7 @@ qcMappingStatsUI <- function(id) {
       tags$p(
         tags$small(
           "Mapping rate and rRNA contamination cannot be computed from",
-          " the count matrix alone — they require alignment-time",
+          " the count matrix alone -- they require alignment-time",
           " statistics (e.g. STAR / HISAT2 logs or Picard",
           " CollectRnaSeqMetrics output)."
         )
@@ -439,7 +439,7 @@ qcMappingStatsUI <- function(id) {
 
 #' debrowserqcmappingstats
 #'
-#' Server factory for the mapping/rRNA stats QC card. Stub only —
+#' Server factory for the mapping/rRNA stats QC card. Stub only --
 #' parses no upload, renders no plot. Reserved for a follow-up that wires
 #' the actual sidecar handler when the format is finalised.
 #'

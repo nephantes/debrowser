@@ -196,6 +196,32 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E4 — Sample QC dashboard (always-on cards)
+
+* QC Plots tab now exposes four new cards for raw-count
+  sample inspection: **Library Depth** (per-sample total
+  counts, with >2-SD outlier flag), **Feature Detection
+  Rate** (% of features with non-zero counts per sample),
+  **Mitochondrial Read %** (sum of `^MT-`/`^mt-`/`Mt-` rows
+  per sample, with empty-state when no MT genes are
+  detected), and **Sample Distance Heatmap** (clustered
+  Euclidean distance on VST-transformed counts).
+* New `R/fct_qc.R` exports the underlying pure helpers
+  (`library_depth_summary`, `detection_rate`,
+  `mt_pct_per_sample`, `sample_distance_matrix`,
+  `flag_outliers_2sd`) so they can be reused outside the
+  Shiny app.
+* New **Mapping / rRNA Stats** card ships as an empty-state
+  stub describing the optional sidecar TSV format
+  (`sample`, `mapped_pct`, `rRNA_pct`); the upload handler
+  itself lands in a follow-up.
+* Cards consume post-filter, post-batch, pre-normalize
+  counts via `batch()$BatchEffect()$count` so library-size
+  metrics report the correct raw values.
+* Three additional post-DE cards (Dispersion, Size factors,
+  Cook's outlier flag) are deferred to a follow-up phase
+  pending DESeq2 `dds` retention through `prepDataContainer`.
+
 ### Phase B4 — Friendly errors
 
 * User-facing error messages now follow a consistent "what went wrong + what to do" format with correct severity (red blocks, yellow warns, green/blue empty-result).
