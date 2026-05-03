@@ -196,6 +196,39 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E11 — Statistical method concordance
+
+* New **Method comparison** sub-tab inside DE Analysis. An on-demand
+  "Run comparison" button re-runs DESeq2, edgeR, and limma on the
+  active comparison and surfaces three views: an UpSet plot of
+  DE-gene overlap at user-chosen padj / |log2FC| cutoffs, a pairwise
+  log2FC scatter (with user-selectable axis methods) and Spearman rho
+  in the subtitle, and a concordance summary table with overlap /
+  Jaccard / Spearman per method pair. The DE Analysis tab itself is
+  now a `bslib::navset_card_tab` with **Results** + **Method
+  comparison** sub-tabs; the Results sub-tab is unchanged.
+* New pure helpers in `R/fct_method_concordance.R` — `run_de_methods()`,
+  `concordance_sets()`, `concordance_summary()`, `plot_method_upset()`,
+  `plot_method_scatter()` — all Shiny-free and exercised by 11 new
+  test_that blocks. Errors are classed via `de_error()` (`empty_input`,
+  `unknown_de_method`) for caller pattern-matching. The Shiny module
+  pair `methodConcordanceUI()` / `methodConcordanceServer()` lives in
+  `R/mod_method_concordance.R` and returns its multi-method DE list as
+  a reactive so other tabs can reuse it.
+* `UpSetR` added to `Suggests` and gated via `require_pkg`. When the
+  cutoffs leave fewer than two methods with non-empty significant
+  sets, the UpSet card renders an empty-state ("Loosen padj or
+  |log2FC|.") instead of erroring.
+* The Enrichment tab gains a sidebar checkbox **"Compare DE methods
+  (cross-method NES heatmap)"**. When ticked together with a primed
+  gene-set source (.gmt or MSigDB) and Submit pressed, fgsea also runs
+  on each method's DE result from the Method comparison panel and
+  renders a second NES heatmap with method names on the x-axis. The
+  per-comparison heatmap stays on screen, so both views can coexist.
+  Reuses `enrichmentNesHeatmapServer` from E1 unchanged. Surfaces a
+  friendly notification when prerequisites (Method comparison run,
+  gene sets loaded) are missing.
+
 ### Phase E2.5 — Consolidated Enrichment tab
 
 * The previously-separate **GO Term** and **Enrichment** tabs are
