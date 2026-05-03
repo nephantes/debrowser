@@ -15,12 +15,12 @@ Reactive expression yielding the parsed pathways list.
 \description{
 Returns a reactive that yields a named list of gene-symbol vectors —
 the same shape \code{\link{gmt_to_pathways}} produces — or NULL until
-the user has supplied a source.
+the user has loaded a source.
 }
 \details{
-For the MSigDB branch the fetch is gated on the "Load gene sets"
-action button so the user controls when (and whether) the (potentially
-large) msigdbr query runs. The result is cached in a reactiveVal
-keyed on (species, collection, subcollection) so re-clicking with the
-same inputs does not re-query msigdbr.
+Both branches populate an internal reactiveVal so the load step is
+observable independently of any downstream consumer (the previous
+eventReactive design was lazy and didn't fire until Submit). A small
+status output reports load success / failure / set count next to the
+picker.
 }

@@ -487,7 +487,18 @@ deServer <- function(input, output, session) {
       }
       fgsea_results_by_comparison <- eventReactive(input$startGO, {
         req(input$goplot == "fgseaGSEA")
-        req(de_results_list(), fgsea_pathways())
+        if (is.null(fgsea_pathways())) {
+          de_notify_warning(
+            "Load gene sets first. Pick a source (.gmt upload or MSigDB) and click \"Load gene sets\" before Submit."
+          )
+          return(NULL)
+        }
+        if (is.null(de_results_list())) {
+          de_notify_warning(
+            "Run a DE analysis before requesting GSEA on its results."
+          )
+          return(NULL)
+        }
         withProgress(message = "Running GSEA (fgsea)", value = 0.3, {
           lapply(de_results_list(), function(df) {
             run_gsea(df, pathways = fgsea_pathways(),

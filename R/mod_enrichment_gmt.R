@@ -1,17 +1,15 @@
 # R/mod_enrichment_gmt.R
 #
-# Gene-set source picker for the Enrichment tab. Two sources in E2:
-#   * "Upload .gmt"  — manual file upload (E1)
-#   * "MSigDB"       — msigdbr-backed species/collection picker (E2)
-# Both branches return the same named-list-of-character-vectors shape so
-# the downstream Enrichment server is source-agnostic.
+# Gene-set source picker for the consolidated Enrichment tab. Two
+# sources:
+#   * "Upload .gmt"  - manual file upload (auto-loads on file pick)
+#   * "MSigDB"       - msigdbr-backed species/collection picker
+#                      (loads on explicit "Load gene sets" click)
+# Both branches populate a reactiveVal keyed off the picker's state, so
+# the loaded pathways are observable immediately (status text updates on
+# load) and the parent server's startGO action just consumes whatever
+# is in the val without waiting on a lazy chain.
 
-# Internal: fetch the msigdbr species list with a fallback when the
-# package isn't installed (the picker will simply offer Homo sapiens
-# and Mus musculus, the two species DEBrowser already supports
-# elsewhere). Only called inside the UI factory; safe to swallow the
-# install-prompt because the GMT-source server reraises via require_pkg
-# on submit.
 #' @noRd
 .msigdb_species_choices <- function() {
   if (!requireNamespace("msigdbr", quietly = TRUE)) {
@@ -25,9 +23,6 @@
   sort(unique(spp))
 }
 
-# Internal: list MSigDB top-level collection codes labelled with their
-# canonical names (Hallmark / Curated / Ontology / etc.). Falls back to
-# the canonical 9-collection list when msigdbr is unavailable.
 #' @noRd
 .msigdb_collection_choices <- function() {
   fallback <- c(
@@ -47,8 +42,6 @@
   cols <- tryCatch(msigdbr::msigdbr_collections(),
                    error = function(e) NULL)
   if (is.null(cols) || !nrow(cols)) return(fallback)
-  # Use the human-readable collection name when available; fall back to
-  # the bare code so users see something either way.
   unique_codes <- unique(cols$gs_collection)
   labels <- vapply(unique_codes, function(code) {
     nm <- unique(cols$gs_collection_name[cols$gs_collection == code])
@@ -59,11 +52,12 @@
   setNames(unique_codes, labels)
 }
 
-#' UI for the gene-set source picker (Enrichment-tab sidebar).
+#' UI for the gene-set source picker (Enrichment tab sidebar).
 #'
-#' E2 ships two sources: manual `.gmt` upload and MSigDB (via
-#' `msigdbr`). The picker is a single integration point so callers stay
-#' oblivious to which source is active.
+#' Two sources: manual `.gmt` upload (auto-loads on file pick) and
+#' MSigDB (loads on explicit "Load gene sets" click). A status line
+#' below the picker reports how many gene sets are currently loaded so
+#' the user has immediate feedback before pressing Submit.
 #'
 #' @param id Module ID.
 #' @return Shiny tagList for inclusion in a `bslib::accordion_panel`.
@@ -102,74 +96,121 @@ enrichmentGmtUI <- function(id) {
       ),
       shiny::actionButton(ns("msigdb_load"), "Load gene sets",
                           class = "btn-primary btn-sm")
-    )
+    ),
+    shiny::uiOutput(ns("status"))
   )
 }
 
 #' Server for the gene-set source picker.
 #'
-#' Returns a reactive that yields a named list of gene-symbol vectors —
-#' the same shape \code{\link{gmt_to_pathways}} produces — or NULL until
-#' the user has supplied a source.
+#' Returns a reactive that yields a named list of gene-symbol vectors -
+#' the same shape \code{\link{gmt_to_pathways}} produces - or NULL until
+#' the user has loaded a source.
 #'
-#' For the MSigDB branch the fetch is gated on the "Load gene sets"
-#' action button so the user controls when (and whether) the (potentially
-#' large) msigdbr query runs. The result is cached in a reactiveVal
-#' keyed on (species, collection, subcollection) so re-clicking with the
-#' same inputs does not re-query msigdbr.
+#' Both branches populate an internal reactiveVal so the load step is
+#' observable independently of any downstream consumer (the previous
+#' eventReactive design was lazy and didn't fire until Submit). A small
+#' status output reports load success / failure / set count next to the
+#' picker.
 #'
 #' @param id Module ID.
 #' @return Reactive expression yielding the parsed pathways list.
 #' @export
 enrichmentGmtServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
-    # E2: in-session memoisation for the MSigDB branch. The cache is
-    # scoped to this module instance so each user session gets its own;
-    # collisions across users are impossible.
-    msigdb_cache <- shiny::reactiveValues(key = NULL, value = NULL)
-    msigdb_loaded <- shiny::eventReactive(input$msigdb_load, {
+    pathways_val <- shiny::reactiveVal(NULL)
+    status_val   <- shiny::reactiveVal(NULL)
+
+    # Manual upload: auto-load on file pick.
+    shiny::observeEvent(input$manual_gmt, {
+      shiny::req(input$gmt_source == "manual", input$manual_gmt)
+      tryCatch({
+        pw <- gmt_to_pathways(input$manual_gmt$datapath)
+        pathways_val(pw)
+        status_val(list(
+          ok = TRUE,
+          msg = sprintf("Loaded %d gene sets from %s",
+                        length(pw),
+                        input$manual_gmt$name %||% ".gmt")
+        ))
+      }, error = function(e) {
+        pathways_val(NULL)
+        status_val(list(ok = FALSE,
+                        msg = sprintf("Could not parse .gmt: %s",
+                                      conditionMessage(e))))
+      })
+    })
+
+    # MSigDB: load on explicit click. observeEvent fires regardless of
+    # whether anything downstream is currently watching, so the user
+    # gets feedback the moment the click happens.
+    shiny::observeEvent(input$msigdb_load, {
       shiny::req(input$msigdb_species, input$msigdb_collection)
-      sub <- if (nzchar(trimws(input$msigdb_subcollection))) {
+      sub <- if (nzchar(trimws(input$msigdb_subcollection %||% ""))) {
         trimws(input$msigdb_subcollection)
       } else {
         NULL
       }
-      key <- paste(input$msigdb_species, input$msigdb_collection,
-                   sub %||% "", sep = "|")
-      if (!is.null(msigdb_cache$key) && identical(msigdb_cache$key, key)) {
-        return(msigdb_cache$value)
-      }
-      pw <- shiny::withProgress(
-        message = "Fetching MSigDB gene sets",
-        detail = sprintf("%s / %s%s", input$msigdb_species,
-                         input$msigdb_collection,
-                         if (is.null(sub)) "" else paste0(" / ", sub)),
-        value = 0.5,
-        msigdb_pathways(species = input$msigdb_species,
-                        collection = input$msigdb_collection,
-                        subcollection = sub)
-      )
-      msigdb_cache$key <- key
-      msigdb_cache$value <- pw
-      pw
-    }, ignoreNULL = TRUE)
+      tryCatch({
+        pw <- shiny::withProgress(
+          message = "Fetching MSigDB gene sets",
+          detail  = sprintf("%s / %s%s", input$msigdb_species,
+                            input$msigdb_collection,
+                            if (is.null(sub)) "" else paste0(" / ", sub)),
+          value   = 0.5,
+          msigdb_pathways(species       = input$msigdb_species,
+                          collection    = input$msigdb_collection,
+                          subcollection = sub)
+        )
+        pathways_val(pw)
+        status_val(list(
+          ok = TRUE,
+          msg = sprintf(
+            "Loaded %d gene sets - MSigDB %s / %s%s",
+            length(pw), input$msigdb_species,
+            input$msigdb_collection,
+            if (is.null(sub)) "" else paste0(" / ", sub)
+          )
+        ))
+      }, error = function(e) {
+        pathways_val(NULL)
+        status_val(list(ok = FALSE,
+                        msg = sprintf("MSigDB load failed: %s",
+                                      conditionMessage(e))))
+      })
+    })
 
-    shiny::reactive({
-      shiny::req(input$gmt_source)
-      if (input$gmt_source == "manual") {
-        shiny::req(input$manual_gmt)
-        gmt_to_pathways(input$manual_gmt$datapath)
-      } else if (input$gmt_source == "msigdb") {
-        msigdb_loaded()
+    # Reset stored pathways when the user switches source so the
+    # status line doesn't lie about which source is loaded.
+    shiny::observeEvent(input$gmt_source, {
+      pathways_val(NULL)
+      status_val(NULL)
+    }, ignoreInit = TRUE)
+
+    output$status <- shiny::renderUI({
+      st <- status_val()
+      if (is.null(st)) {
+        shiny::div(
+          class = "small text-muted mt-2",
+          "No gene sets loaded yet."
+        )
+      } else if (isTRUE(st$ok)) {
+        shiny::div(
+          class = "small text-success mt-2",
+          shiny::icon("check-circle"), " ", st$msg
+        )
       } else {
-        NULL
+        shiny::div(
+          class = "small text-danger mt-2",
+          shiny::icon("circle-exclamation"), " ", st$msg
+        )
       }
     })
+
+    shiny::reactive({ pathways_val() })
   })
 }
 
-# Internal NULL-coalescing helper (Shiny 1.7 ships its own %||% but we
-# keep a private one to avoid cross-package operator-export weirdness in
-# CHECK).
+# Internal NULL-coalescing helper.
 #' @noRd
 `%||%` <- function(a, b) if (is.null(a)) b else a

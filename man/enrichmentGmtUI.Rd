@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_enrichment_gmt.R
 \name{enrichmentGmtUI}
 \alias{enrichmentGmtUI}
-\title{UI for the gene-set source picker (Enrichment-tab sidebar).}
+\title{UI for the gene-set source picker (Enrichment tab sidebar).}
 \usage{
 enrichmentGmtUI(id)
 }
@@ -13,7 +13,8 @@ enrichmentGmtUI(id)
 Shiny tagList for inclusion in a `bslib::accordion_panel`.
 }
 \description{
-E2 ships two sources: manual `.gmt` upload and MSigDB (via
-`msigdbr`). The picker is a single integration point so callers stay
-oblivious to which source is active.
+Two sources: manual `.gmt` upload (auto-loads on file pick) and
+MSigDB (loads on explicit "Load gene sets" click). A status line
+below the picker reports how many gene sets are currently loaded so
+the user has immediate feedback before pressing Submit.
 }
