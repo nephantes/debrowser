@@ -476,10 +476,10 @@ deServer <- function(input, output, session) {
           } else if (input$qcplot == "heatmap") {
             selectedQCHeat(debrowserheatmap("heatmapQC", normdat()))
           } else if (input$qcplot == "IQR") {
-            debrowserIQRplot("IQR", df_select())
+            debrowserIQRplot("IQR", removeExtraCols(df_select()))
             debrowserIQRplot("normIQR", normdat())
           } else if (input$qcplot == "Density") {
-            debrowserdensityplot("density", df_select())
+            debrowserdensityplot("density", removeExtraCols(df_select()))
             debrowserdensityplot("normdensity", normdat())
           } else if (input$qcplot == "libraryDepth") {
             debrowserqclibrarydepth("libraryDepth",
