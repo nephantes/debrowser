@@ -149,3 +149,41 @@ test_that("plot_method_scatter() raises unknown_de_method for unknown method", {
     class = "unknown_de_method"
   )
 })
+
+test_that("comparison_labels() returns 'treatment vs control' format", {
+  comps <- list(
+    list(cond_names = c("Treated", "Control")),
+    list(cond_names = c("KO", "WT"))
+  )
+  expect_equal(comparison_labels(comps),
+               c("Treated vs Control", "KO vs WT"))
+})
+
+test_that("comparison_labels() suffixes duplicates in input order", {
+  comps <- list(
+    list(cond_names = c("A", "B")),
+    list(cond_names = c("A", "B")),
+    list(cond_names = c("X", "Y")),
+    list(cond_names = c("A", "B"))
+  )
+  expect_equal(comparison_labels(comps),
+               c("A vs B (1)", "A vs B (2)", "X vs Y", "A vs B (3)"))
+})
+
+test_that("comparison_labels() falls back to comparison_N when cond_names missing", {
+  comps <- list(
+    list(),
+    list(cond_names = c("A", "B"))
+  )
+  expect_equal(comparison_labels(comps),
+               c("comparison_1", "A vs B"))
+})
+
+test_that("comparison_labels() returns character(0) for empty input", {
+  expect_equal(comparison_labels(list()), character(0))
+})
+
+test_that("comparison_labels() handles single-element cond_names with fallback", {
+  comps <- list(list(cond_names = "OnlyOne"))
+  expect_equal(comparison_labels(comps), "comparison_1")
+})

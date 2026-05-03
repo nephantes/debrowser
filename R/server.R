@@ -456,22 +456,17 @@ deServer <- function(input, output, session) {
       })
       # E1: per-comparison DE result tables for the Enrichment tab. NULL
       # pre-DE so the tab's req() chain blocks rendering until DE has run.
-      # Named by `cond_names` (e.g. "Treat vs Control") when available;
-      # otherwise generic "comparison_N".
+      # Names come from comparison_labels(dc()) which produces
+      # "<treatment> vs <control>" with " (N)" suffixes on collisions.
       de_results_list <- reactive({
         if (!isTRUE(buttonValues$startDE) || is.null(dc())) return(NULL)
-        out <- lapply(dc(), function(x) x$init_data)
-        out <- out[!vapply(out, is.null, logical(1))]
+        comps <- dc()
+        all_labels <- comparison_labels(comps)
+        out <- lapply(comps, function(x) x$init_data)
+        keep <- !vapply(out, is.null, logical(1))
+        out <- out[keep]
         if (length(out) == 0L) return(NULL)
-        nms <- vapply(seq_along(out), function(i) {
-          cn <- dc()[[i]]$cond_names
-          if (!is.null(cn) && length(cn) >= 2L) {
-            paste(cn[1], "vs", cn[2])
-          } else {
-            paste0("comparison_", i)
-          }
-        }, character(1))
-        names(out) <- nms
+        names(out) <- all_labels[keep]
         out
       })
 

@@ -221,3 +221,37 @@ plot_method_scatter <- function(de_list, method1, method2) {
     ) +
     ggplot2::theme_classic()
 }
+
+#' Build unique display labels for a list of comparisons.
+#'
+#' Each comparison contributes a label "<treatment> vs <control>" derived
+#' from its `cond_names` field. When two comparisons collide on the
+#' same label, suffixes " (1)", " (2)", ... are appended in input order
+#' so `names()` of the final list stays unique. Comparisons missing
+#' `cond_names` fall back to "comparison_<index>".
+#'
+#' @param comparisons List of per-comparison entries (typically `dc()`
+#'   from server.R or `comparisons_spec()`); each entry should have a
+#'   `cond_names` character vector of length >= 2 (treatment first).
+#' @return Character vector of length `length(comparisons)`. Empty
+#'   character vector when input is empty.
+#' @export
+comparison_labels <- function(comparisons) {
+  if (length(comparisons) == 0L) return(character(0))
+  base <- vapply(seq_along(comparisons), function(i) {
+    cn <- comparisons[[i]]$cond_names
+    if (!is.null(cn) && length(cn) >= 2L) {
+      paste(cn[1], "vs", cn[2])
+    } else {
+      paste0("comparison_", i)
+    }
+  }, character(1))
+  out <- base
+  for (lbl in unique(base)) {
+    idx <- which(base == lbl)
+    if (length(idx) > 1L) {
+      out[idx] <- paste0(lbl, " (", seq_along(idx), ")")
+    }
+  }
+  out
+}
