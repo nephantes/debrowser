@@ -196,6 +196,35 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E1 — Enrichment tab (GSEA via fgsea)
+
+* New top-level **Enrichment** tab next to GO Term, driven by
+  ranked-list Gene Set Enrichment Analysis. Pre-DE the tab is
+  hidden; once DE has run, paste a `.gmt` file (or use the bundled
+  `inst/extdata/test-gmt/hallmark-mini.gmt` fixture) and the
+  results table populates with NES, padj, leading edge.
+* When more than one comparison is loaded, the NES heatmap card
+  appears below the results, plotting NES across pathways x
+  comparisons (significance stars, axis flip, padj cutoff slider).
+* New pure helpers in `R/fct_gsea.R` (`@export`):
+  `gmt_to_pathways(path)` (fgsea-gated wrapper around
+  `fgsea::gmtPathways`), `run_gsea(de_table, pathways, ...)` (DE
+  table -> tidy enrichment data.frame), and
+  `nes_heatmap_data(results_by_comparison, sig_only, sig_threshold)`
+  (long-format reshape for the heatmap).
+* New Shiny modules in `R/mod_enrichment.R`,
+  `R/mod_enrichment_gmt.R`, `R/mod_enrichment_nes_heatmap.R`. The
+  GMT picker is the integration point Phase E2 will use to add
+  MSigDB as a sibling source; the NES heatmap module is the same
+  widget Phase E11 will reuse for cross-method comparison.
+* `fgsea` added to `Suggests` (Bioconductor); calls go through
+  `require_pkg("fgsea")` so users without it installed see the
+  install command instead of a stack trace.
+* Reference architecture (gsea_analysis shape, NES heatmap card,
+  GMT picker layout) adapted from
+  https://github.com/nephantes/gsea-explorer (Via Scientific) —
+  re-implemented against this package's pure-helper conventions.
+
 ### Phase E4 — Sample QC dashboard (always-on cards)
 
 * QC Plots tab now exposes four new cards for raw-count
