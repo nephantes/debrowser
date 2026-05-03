@@ -22,13 +22,7 @@ getGeneList <- function(
   fromType = "SYMBOL", toType = c("ENTREZID")
 ) {
   # Get the entrez gene identifiers that are mapped to a gene symbol
-  if (!requireNamespace(org, quietly = TRUE)) {
-    showNotification(
-      paste0("Please install ", org, " to use this function."),
-      type = "error"
-    )
-    return(NULL)
-  }
+  require_pkg(org, feature = "GO/KEGG enrichment")
 
   mapped_genes <- bitr(genes,
     fromType = fromType,
@@ -63,13 +57,7 @@ getEntrezTable <- function(genes = NULL, dat = NULL, org = "org.Hs.eg.db") {
   if (is.null(genes)) {
     return(NULL)
   }
-  if (!requireNamespace(org, quietly = TRUE)) {
-    showNotification(
-      paste0("Please install ", org, " to use this function."),
-      type = "error"
-    )
-    return(NULL)
-  }
+  require_pkg(org, feature = "GO/KEGG enrichment")
   # Fetch the AnnotationDb object directly from the package namespace --
   # `eval(parse(text = org))` only works if the org package is attached
   # to the search path. Suggests-status packages (e.g., org.Mm.eg.db)
@@ -126,13 +114,7 @@ getEntrezIds <- function(genes = NULL, org = "org.Hs.eg.db") {
   if (is.null(genes)) {
     return(NULL)
   }
-  if (!requireNamespace(org, quietly = TRUE)) {
-    showNotification(
-      paste0("Please install ", org, " to use this function."),
-      type = "error"
-    )
-    return(NULL)
-  }
+  require_pkg(org, feature = "GO/KEGG enrichment")
   # Fetch the AnnotationDb object directly from the package namespace --
   # see getEntrezTable() for the rationale.
   org_db <- getExportedValue(org, org)
@@ -175,13 +157,7 @@ getEnrichGO <- function(
   if (is.null(genelist)) {
     return(NULL)
   }
-  if (!requireNamespace(org, quietly = TRUE)) {
-    showNotification(
-      paste0("Please install ", org, " to use this function."),
-      type = "error"
-    )
-    return(NULL)
-  }
+  require_pkg(org, feature = "GO/KEGG enrichment")
   res <- c()
   res$enrich_p <- clusterProfiler::enrichGO(
     gene = genelist, OrgDb = org,
@@ -392,13 +368,7 @@ compareClust <- function(
   if (is.null(dat)) {
     return(NULL)
   }
-  if (!requireNamespace(org, quietly = TRUE)) {
-    showNotification(
-      paste0("Please install ", org, " to use this function."),
-      type = "error"
-    )
-    return(NULL)
-  }
+  require_pkg(org, feature = "GO/KEGG enrichment")
   res <- c()
   genecluster <- list()
   k <- max(dat$fit.cluster)
@@ -427,13 +397,7 @@ compareClust <- function(
       pvalueCutoff = pvalueCutoff
     )
   } else if (fun == "enrichDO") {
-    if (!requireNamespace("DOSE", quietly = TRUE)) {
-      showNotification(
-        "Please install DOSE to use this function.",
-        type = "error"
-      )
-      return(NULL)
-    }
+    require_pkg("DOSE", feature = "Disease Ontology enrichment")
     xx <- compareCluster(genecluster,
       fun = fun,
       pvalueCutoff = pvalueCutoff
