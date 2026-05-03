@@ -259,7 +259,9 @@ correctCombat <- function(input = NULL, idata = NULL, metadata = NULL,
     return(NULL)
   }
   if (input$batch == "None") {
-    showNotification("Please select the batch field to use Combat!", type = "error")
+    de_notify_error(
+      "ComBat needs a batch field. Pick one in the Batch dropdown above before applying."
+    )
     return(NULL)
   }
   treatment_col <- if (!is.null(input$treatment) && input$treatment != "None") {
@@ -289,9 +291,8 @@ correctHarman <- function(input = NULL, idata = NULL, metadata = NULL) {
     return(NULL)
   }
   if (input$treatment == "None" || input$batch == "None") {
-    showNotification(
-      "Please select the batch and treatment fields to use Harman!",
-      type = "error"
+    de_notify_error(
+      "Harman needs both a batch and a treatment field. Pick one for each in the dropdowns above."
     )
     return(NULL)
   }
