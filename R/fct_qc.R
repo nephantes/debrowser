@@ -287,6 +287,127 @@ mt_default_pattern <- function() {
   paste0("^(MT[-_]?|Mt[-_]?|mt[-_]?)?(", suffix, ")$")
 }
 
+#' Per-sample size-factor vs. library-size summary.
+#'
+#' Pulls the size factors that DESeq2 estimated for the comparison and the
+#' raw library sizes from the same `DESeqDataSet`, returned in a tidy
+#' data.frame plus `sf_scaled`/`lib_scaled` columns rescaled to [0,1] for
+#' a side-by-side bar comparison. Spearman's rho between size factor and
+#' library size is attached as `attr(out, "spearman_rho")`; values close
+#' to 1 confirm DESeq2 picked up depth differences without unexpected
+#' per-sample composition shifts.
+#'
+#' @param dds A fitted `DESeqDataSet`.
+#' @return data.frame with columns `sample`, `size_factor`, `library_size`,
+#'   `sf_scaled`, `lib_scaled`. Attribute `spearman_rho` holds the rank
+#'   correlation between size factor and library size (NA for n < 2).
+#' @examples
+#' \dontrun{
+#' size_factor_library_summary(dds)
+#' }
+#' @importFrom DESeq2 sizeFactors counts
+#' @export
+size_factor_library_summary <- function(dds) {
+  if (is.null(dds)) {
+    de_error(
+      "dds must be a fitted DESeqDataSet, not NULL",
+      class = "qc_input_error"
+    )
+  }
+  sf <- DESeq2::sizeFactors(dds)
+  if (is.null(sf)) {
+    de_error(
+      "dds has no estimated size factors",
+      class = "qc_input_error"
+    )
+  }
+  cnt <- DESeq2::counts(dds)
+  lib <- colSums(cnt)
+  rho <- if (length(sf) >= 2L) {
+    suppressWarnings(stats::cor(sf, lib, method = "spearman"))
+  } else {
+    NA_real_
+  }
+  sf_max <- max(sf, na.rm = TRUE)
+  lib_max <- max(lib, na.rm = TRUE)
+  out <- data.frame(
+    sample = if (is.null(names(sf))) colnames(cnt) else names(sf),
+    size_factor = unname(sf),
+    library_size = unname(lib),
+    sf_scaled = if (is.finite(sf_max) && sf_max > 0) unname(sf) / sf_max else unname(sf),
+    lib_scaled = if (is.finite(lib_max) && lib_max > 0) unname(lib) / lib_max else unname(lib),
+    stringsAsFactors = FALSE
+  )
+  attr(out, "spearman_rho") <- rho
+  out
+}
+
+#' Per-sample Cook's distance outlier counts.
+#'
+#' Counts how many genes in each sample have a Cook's distance above a
+#' threshold; samples with disproportionately many high-Cook genes drove
+#' DE calls more than their share and may warrant a downstream re-check.
+#' Default threshold is the canonical DESeq2 vignette cut,
+#' `4 / (n_samples - n_params)`, where `n_params` is the column count of
+#' `model.matrix(design(dds), colData(dds))`. The chosen threshold is
+#' attached as `attr(out, "threshold")`.
+#'
+#' @param dds A fitted `DESeqDataSet`. Must carry the `cooks` assay (i.e.
+#'   `DESeq()` was run); otherwise raises `qc_input_error`.
+#' @param threshold Optional numeric Cook's-distance cut. NULL (default)
+#'   uses the DESeq2 vignette cut.
+#' @return data.frame with columns `sample`, `n_high_cooks`, `total_genes`,
+#'   `high_cooks_pct`. The active threshold is attached as
+#'   `attr(out, "threshold")`.
+#' @examples
+#' \dontrun{
+#' cooks_outlier_summary(dds)
+#' }
+#' @importFrom SummarizedExperiment assays colData
+#' @importFrom DESeq2 design
+#' @export
+cooks_outlier_summary <- function(dds, threshold = NULL) {
+  if (is.null(dds)) {
+    de_error(
+      "dds must be a fitted DESeqDataSet, not NULL",
+      class = "qc_input_error"
+    )
+  }
+  cooks_mat <- SummarizedExperiment::assays(dds)[["cooks"]]
+  if (is.null(cooks_mat)) {
+    de_error(
+      "dds has no 'cooks' assay (was DESeq() called?)",
+      class = "qc_input_error"
+    )
+  }
+  n_samples <- ncol(cooks_mat)
+  total_genes <- nrow(cooks_mat)
+  if (is.null(threshold)) {
+    coldat <- as.data.frame(SummarizedExperiment::colData(dds))
+    n_params <- tryCatch(
+      ncol(stats::model.matrix(DESeq2::design(dds), data = coldat)),
+      error = function(e) 1L
+    )
+    denom <- n_samples - n_params
+    if (!is.finite(denom) || denom <= 0L) denom <- 1L
+    threshold <- 4 / denom
+  }
+  n_high <- colSums(cooks_mat > threshold, na.rm = TRUE)
+  out <- data.frame(
+    sample = colnames(cooks_mat),
+    n_high_cooks = unname(n_high),
+    total_genes = total_genes,
+    high_cooks_pct = if (total_genes > 0L) {
+      100 * unname(n_high) / total_genes
+    } else {
+      rep(0, n_samples)
+    },
+    stringsAsFactors = FALSE
+  )
+  attr(out, "threshold") <- threshold
+  out
+}
+
 # Internal: TRUE iff x is a matrix or data.frame with >= 1 column and all
 # numeric content.
 #' @noRd

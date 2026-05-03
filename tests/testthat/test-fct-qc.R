@@ -199,3 +199,109 @@ test_that("sample_distance_matrix falls back to log2 path on tiny input", {
   expect_equal(unname(diag(dm)), rep(0, 3L))
   expect_true(isSymmetric(dm))
 })
+
+# ---------------------------------------------------------------------------
+# E4.5 helpers: size_factor_library_summary, cooks_outlier_summary
+# ---------------------------------------------------------------------------
+
+# Internal helper: build a small fitted DESeqDataSet for the helpers' tests.
+# Filters low-count rows so DESeq()'s dispersion fit doesn't choke on a
+# corner-case 5x4 input. Uses run_deseq2(return_dds = TRUE).
+.qc_test_dds <- function() {
+  skip_if_not_installed("DESeq2")
+  set.seed(11L)
+  m <- matrix(
+    rpois(80L, lambda = 30L), nrow = 20L,
+    dimnames = list(paste0("g", 1:20), paste0("s", 1:4))
+  )
+  meta <- data.frame(samples = paste0("s", 1:4), stringsAsFactors = FALSE)
+  conds <- factor(c("Treat", "Treat", "Control", "Control"))
+  out <- run_deseq2(
+    counts = m, metadata = meta,
+    columns = paste0("s", 1:4), conds = conds,
+    params = list(
+      covariates = "NoCovariate", fit_type = "parametric",
+      beta_prior = FALSE, test_type = "Wald", shrinkage = "None"
+    ),
+    return_dds = TRUE
+  )
+  out$dds
+}
+
+test_that("run_deseq2(return_dds=TRUE) returns list(res, dds) with a fitted dds", {
+  skip_if_not_installed("DESeq2")
+  dds <- .qc_test_dds()
+  expect_s4_class(dds, "DESeqDataSet")
+  # DESeq() populates size factors and the cooks assay.
+  expect_false(is.null(DESeq2::sizeFactors(dds)))
+  expect_true("cooks" %in% names(SummarizedExperiment::assays(dds)))
+})
+
+test_that("size_factor_library_summary returns one row per sample with rho attached", {
+  skip_if_not_installed("DESeq2")
+  dds <- .qc_test_dds()
+  out <- size_factor_library_summary(dds)
+  expect_s3_class(out, "data.frame")
+  expect_equal(nrow(out), 4L)
+  expect_named(out, c("sample", "size_factor", "library_size",
+                      "sf_scaled", "lib_scaled"))
+  # sf_scaled / lib_scaled in [0, 1] with at least one row at exactly 1.
+  expect_true(all(out$sf_scaled  >= 0 & out$sf_scaled  <= 1))
+  expect_true(all(out$lib_scaled >= 0 & out$lib_scaled <= 1))
+  expect_true(any(out$sf_scaled  == 1))
+  expect_true(any(out$lib_scaled == 1))
+  rho <- attr(out, "spearman_rho")
+  expect_type(rho, "double")
+  expect_length(rho, 1L)
+  expect_true(is.finite(rho))
+  # library_size matches DESeq2::counts colSums.
+  expect_equal(out$library_size, as.numeric(colSums(DESeq2::counts(dds))))
+})
+
+test_that("size_factor_library_summary errors on NULL dds", {
+  expect_error(size_factor_library_summary(NULL), class = "qc_input_error")
+})
+
+test_that("cooks_outlier_summary returns one row per sample with threshold attached", {
+  skip_if_not_installed("DESeq2")
+  dds <- .qc_test_dds()
+  out <- cooks_outlier_summary(dds)
+  expect_s3_class(out, "data.frame")
+  expect_equal(nrow(out), 4L)
+  expect_named(out, c("sample", "n_high_cooks", "total_genes",
+                      "high_cooks_pct"))
+  # All 4 samples produced from the same DESeqDataSet have the same total
+  # gene count.
+  expect_true(all(out$total_genes == out$total_genes[1]))
+  # Counts and percentages line up.
+  expect_equal(out$high_cooks_pct,
+               100 * out$n_high_cooks / out$total_genes)
+  thr <- attr(out, "threshold")
+  expect_type(thr, "double")
+  expect_length(thr, 1L)
+  expect_true(is.finite(thr) && thr > 0)
+})
+
+test_that("cooks_outlier_summary respects an explicit threshold override", {
+  skip_if_not_installed("DESeq2")
+  dds <- .qc_test_dds()
+  cooks_mat <- SummarizedExperiment::assays(dds)[["cooks"]]
+  expected <- as.integer(colSums(cooks_mat > 0.5, na.rm = TRUE))
+  out <- cooks_outlier_summary(dds, threshold = 0.5)
+  expect_equal(out$n_high_cooks, expected)
+  expect_identical(attr(out, "threshold"), 0.5)
+})
+
+test_that("cooks_outlier_summary errors on NULL dds", {
+  expect_error(cooks_outlier_summary(NULL), class = "qc_input_error")
+})
+
+test_that("cooks_outlier_summary errors when the cooks assay is absent", {
+  skip_if_not_installed("DESeq2")
+  # Build a DESeqDataSet but skip DESeq() so 'cooks' is never populated.
+  m <- matrix(rpois(30L, lambda = 10L), nrow = 5L,
+              dimnames = list(paste0("g", 1:5), paste0("s", 1:6)))
+  coldat <- data.frame(group = factor(c("A","A","A","B","B","B")))
+  dds <- DESeq2::DESeqDataSetFromMatrix(m, colData = coldat, design = ~group)
+  expect_error(cooks_outlier_summary(dds), class = "qc_input_error")
+})
