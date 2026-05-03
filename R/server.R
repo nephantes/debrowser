@@ -492,19 +492,29 @@ deServer <- function(input, output, session) {
           } else if (input$qcplot == "libraryDepth") {
             raw <- updata()$load()
             debrowserqclibrarydepth("libraryDepth",
-              raw$count, raw$meta, "treatment")
+              qc_keep_cols(raw$count, input$col_list),
+              qc_keep_meta_rows(raw$meta, input$col_list),
+              "treatment")
           } else if (input$qcplot == "detectionRate") {
-            debrowserqcdetectionrate("detectionRate", updata()$load()$count)
+            debrowserqcdetectionrate("detectionRate",
+              qc_keep_cols(updata()$load()$count, input$col_list))
           } else if (input$qcplot == "mtPct") {
-            debrowserqcmtpct("mtPct", updata()$load()$count)
+            debrowserqcmtpct("mtPct",
+              qc_keep_cols(updata()$load()$count, input$col_list))
           } else if (input$qcplot == "sampleDist") {
-            debrowserqcsampledist("sampleDist", batch()$BatchEffect()$count)
+            debrowserqcsampledist("sampleDist",
+              qc_keep_cols(batch()$BatchEffect()$count, input$col_list))
           } else if (input$qcplot == "dispersion") {
+            # Dispersion is a gene-level property of the fit; column
+            # selection has no meaningful effect, so we always render the
+            # full plot.
             debrowserqcdispersion("dispersion", post_de_dds())
           } else if (input$qcplot == "sizeFactors") {
-            debrowserqcsizefactors("sizeFactors", post_de_dds())
+            debrowserqcsizefactors("sizeFactors", post_de_dds(),
+              selected_samples = input$col_list)
           } else if (input$qcplot == "cooks") {
-            debrowserqccooks("cooks", post_de_dds())
+            debrowserqccooks("cooks", post_de_dds(),
+              selected_samples = input$col_list)
           }
         }
       })

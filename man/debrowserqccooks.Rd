@@ -4,12 +4,17 @@
 \alias{debrowserqccooks}
 \title{debrowserqccooks}
 \usage{
-debrowserqccooks(id, dds = NULL)
+debrowserqccooks(id, dds = NULL, selected_samples = NULL)
 }
 \arguments{
 \item{id}{character, namespace id matching `qcCooksUI(id)`}
 
 \item{dds}{A fitted `DESeqDataSet`, or NULL.}
+
+\item{selected_samples}{Optional character vector of sample names to
+show. NULL (default) shows every sample in the dds; otherwise only
+bars for samples whose name is in `selected_samples` are rendered
+(mirrors the QC sidebar's column-selector behaviour).}
 }
 \value{
 invisible(NULL); wires `output$body`, `output$plot`, and

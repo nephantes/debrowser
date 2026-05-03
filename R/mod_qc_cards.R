@@ -514,6 +514,10 @@ qcSizeFactorsUI <- function(id) {
 #'
 #' @param id character, namespace id matching `qcSizeFactorsUI(id)`
 #' @param dds A fitted `DESeqDataSet`, or NULL.
+#' @param selected_samples Optional character vector of sample names to
+#'   show. NULL (default) shows every sample in the dds; otherwise only
+#'   bars for samples whose name is in `selected_samples` are rendered
+#'   (mirrors the QC sidebar's column-selector behaviour).
 #' @return invisible(NULL); wires `output$body`, `output$plot`, and
 #'   `output$dl`.
 #' @examples
@@ -521,12 +525,17 @@ qcSizeFactorsUI <- function(id) {
 #' debrowserqcsizefactors("sizeFactors", dds)
 #' }
 #' @export
-debrowserqcsizefactors <- function(id, dds = NULL) {
+debrowserqcsizefactors <- function(id, dds = NULL,
+                                   selected_samples = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     df_react <- reactive({
       req(dds)
-      size_factor_library_summary(dds)
+      out <- size_factor_library_summary(dds)
+      if (!is.null(selected_samples)) {
+        out <- out[out$sample %in% selected_samples, , drop = FALSE]
+      }
+      out
     })
     output$body <- renderUI({
       if (is.null(dds)) {
@@ -628,6 +637,10 @@ qcCooksUI <- function(id) {
 #'
 #' @param id character, namespace id matching `qcCooksUI(id)`
 #' @param dds A fitted `DESeqDataSet`, or NULL.
+#' @param selected_samples Optional character vector of sample names to
+#'   show. NULL (default) shows every sample in the dds; otherwise only
+#'   bars for samples whose name is in `selected_samples` are rendered
+#'   (mirrors the QC sidebar's column-selector behaviour).
 #' @return invisible(NULL); wires `output$body`, `output$plot`, and
 #'   `output$dl`.
 #' @examples
@@ -635,12 +648,19 @@ qcCooksUI <- function(id) {
 #' debrowserqccooks("cooks", dds)
 #' }
 #' @export
-debrowserqccooks <- function(id, dds = NULL) {
+debrowserqccooks <- function(id, dds = NULL,
+                             selected_samples = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     df_react <- reactive({
       req(dds)
-      cooks_outlier_summary(dds)
+      out <- cooks_outlier_summary(dds)
+      thr <- attr(out, "threshold")
+      if (!is.null(selected_samples)) {
+        out <- out[out$sample %in% selected_samples, , drop = FALSE]
+        attr(out, "threshold") <- thr
+      }
+      out
     })
     output$body <- renderUI({
       if (is.null(dds)) {

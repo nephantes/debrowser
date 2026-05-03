@@ -408,6 +408,53 @@ cooks_outlier_summary <- function(dds, threshold = NULL) {
   out
 }
 
+#' Subset a count matrix to a user-selected column list.
+#'
+#' Mirrors the QC sidebar's column-selector contract: NULL `selected`
+#' (the pre-render state) returns `counts` unchanged; otherwise keeps
+#' only the columns whose name is in `selected`. Empty intersection
+#' returns a zero-column matrix (matches \code{getSelectedCols} on an
+#' empty selection).
+#'
+#' @param counts Numeric matrix or data.frame, or NULL.
+#' @param selected Character vector of sample names to keep, or NULL.
+#' @return The subset matrix (or `counts` unchanged if `selected` is
+#'   NULL); NULL passes through.
+#' @examples
+#' m <- matrix(1:6, nrow = 2,
+#'             dimnames = list(NULL, c("a", "b", "c")))
+#' qc_keep_cols(m, c("a", "c"))
+#' qc_keep_cols(m, NULL)  # unchanged
+#' @export
+qc_keep_cols <- function(counts, selected = NULL) {
+  if (is.null(counts)) return(NULL)
+  if (is.null(selected)) return(counts)
+  keep <- intersect(colnames(counts), selected)
+  counts[, keep, drop = FALSE]
+}
+
+#' Subset a sample-metadata data.frame by a user-selected column list.
+#'
+#' Companion to \code{\link{qc_keep_cols}}: keeps the rows of `meta`
+#' whose `samples` column matches `selected`. NULL `selected` returns
+#' `meta` unchanged. NULL `meta` passes through. If `meta` has no
+#' `samples` column, returns it unchanged.
+#'
+#' @param meta data.frame with a `samples` column, or NULL.
+#' @param selected Character vector of sample names to keep, or NULL.
+#' @return The subset data.frame, or `meta` unchanged when there is
+#'   nothing to do; NULL passes through.
+#' @examples
+#' m <- data.frame(samples = c("a", "b", "c"), x = 1:3)
+#' qc_keep_meta_rows(m, c("a", "c"))
+#' @export
+qc_keep_meta_rows <- function(meta, selected = NULL) {
+  if (is.null(meta)) return(NULL)
+  if (is.null(selected)) return(meta)
+  if (!"samples" %in% colnames(meta)) return(meta)
+  meta[meta$samples %in% selected, , drop = FALSE]
+}
+
 # Internal: TRUE iff x is a matrix or data.frame with >= 1 column and all
 # numeric content.
 #' @noRd

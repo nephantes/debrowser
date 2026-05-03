@@ -246,6 +246,13 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   attributes on the returned data.frame.
 * Cards render a friendly empty-state alert when no fitted
   `DESeqDataSet` is available (pre-DE, or non-DESeq2 method).
+* QC sidebar's "Select Columns" checkboxes now also drive cards
+  1-4 (Library Depth, Detection Rate, MT %, Sample Distance) and
+  cards 6-7 (Size Factors, Cook's): unchecking a sample hides
+  its bar/row across every per-sample card. Card 5 (Dispersion)
+  is gene-level so column selection has no effect there. New
+  pure helpers `qc_keep_cols(counts, selected)` and
+  `qc_keep_meta_rows(meta, selected)` in `R/fct_qc.R`.
 
 ### Phase B4 — Friendly errors
 

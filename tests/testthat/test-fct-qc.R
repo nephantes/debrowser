@@ -296,6 +296,41 @@ test_that("cooks_outlier_summary errors on NULL dds", {
   expect_error(cooks_outlier_summary(NULL), class = "qc_input_error")
 })
 
+test_that("qc_keep_cols passes through on NULL selection", {
+  m <- matrix(1:6, nrow = 2,
+              dimnames = list(NULL, c("a", "b", "c")))
+  expect_identical(qc_keep_cols(m, NULL), m)
+  expect_null(qc_keep_cols(NULL, c("a", "b")))
+})
+
+test_that("qc_keep_cols intersects column names with selection", {
+  m <- matrix(1:6, nrow = 2,
+              dimnames = list(NULL, c("a", "b", "c")))
+  out <- qc_keep_cols(m, c("c", "a", "z"))
+  expect_equal(colnames(out), c("a", "c"))
+  expect_equal(dim(out), c(2L, 2L))
+  out0 <- qc_keep_cols(m, character(0))
+  expect_equal(ncol(out0), 0L)
+})
+
+test_that("qc_keep_meta_rows passes through on NULL selection", {
+  meta <- data.frame(samples = c("a", "b", "c"), x = 1:3)
+  expect_identical(qc_keep_meta_rows(meta, NULL), meta)
+  expect_null(qc_keep_meta_rows(NULL, c("a")))
+})
+
+test_that("qc_keep_meta_rows filters by samples column", {
+  meta <- data.frame(samples = c("a", "b", "c"), x = 1:3)
+  out <- qc_keep_meta_rows(meta, c("a", "c"))
+  expect_equal(out$samples, c("a", "c"))
+  expect_equal(out$x, c(1, 3))
+})
+
+test_that("qc_keep_meta_rows passes meta through unchanged when no samples column", {
+  meta <- data.frame(other = 1:3)
+  expect_identical(qc_keep_meta_rows(meta, c("a", "b")), meta)
+})
+
 test_that("cooks_outlier_summary errors when the cooks assay is absent", {
   skip_if_not_installed("DESeq2")
   # Build a DESeqDataSet but skip DESeq() so 'cooks' is never populated.
