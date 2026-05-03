@@ -175,46 +175,88 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     detected_count <- detect_separator(input$countdata$datapath)
     count_sep <- if (!is.na(detected_count)) detected_count else input$countdataSep
 
-    checkRes <- checkCountData(input, sep = count_sep)
-
-    if (checkRes != "success") {
-      showNotification(checkRes, type = "error")
-      return(NULL)
-    }
-    counttable <- as.data.frame(
-      try(
-        read.delim(input$countdata$datapath,
-          header = TRUE, sep = count_sep,
-          row.names = 1, strip.white = TRUE
-        ), TRUE
-      )
+    counttable <- tryCatch(
+      {
+        validate_count_upload(input$countdata$datapath, sep = count_sep)
+        as.data.frame(
+          read.delim(input$countdata$datapath,
+            header = TRUE, sep = count_sep,
+            row.names = 1, strip.white = TRUE
+          )
+        )
+      },
+      bad_separator = function(e) {
+        de_notify_error(
+          "Could not read the count file: only 1 column was detected. Try Tab or Comma in the separator radio buttons below."
+        )
+        NULL
+      },
+      duplicate_gene_ids = function(e) {
+        de_notify_error(sprintf(
+          "Count file has duplicate gene IDs in the first column: %s. Make each row unique before uploading.",
+          paste0(e$dups, collapse = ", ")
+        ))
+        NULL
+      },
+      error = function(e) {
+        de_notify_error(
+          "Could not read the count file. Check the file is plain text (TSV, CSV, or TXT) and not corrupted."
+        )
+        NULL
+      }
     )
+    if (is.null(counttable)) return(NULL)
     colnames(counttable) <- gsub("\\s+|\\.|\\-", "_", colnames(counttable))
     counttable <- counttable[, sapply(counttable, is.numeric)]
     metadatatable <- c()
     if (!is.null(input$metadata$datapath)) {
       detected_meta <- detect_separator(input$metadata$datapath, min_score = 1L)
       meta_sep <- if (!is.na(detected_meta)) detected_meta else input$metadataSep
-      metadatatable <- as.data.frame(
-        try(
-          read.delim(input$metadata$datapath,
-            header = TRUE, sep = meta_sep, strip.white = TRUE
-          ), TRUE
-        )
+      metadatatable <- tryCatch(
+        {
+          validate_metadata_upload(
+            input$metadata$datapath,
+            count_cols = colnames(counttable),
+            sep = meta_sep
+          )
+          mt <- as.data.frame(
+            read.delim(input$metadata$datapath,
+              header = TRUE, sep = meta_sep, strip.white = TRUE
+            )
+          )
+          mt[, 1] <- gsub("\\s+|\\.|\\-", "_", mt[, 1])
+          mt
+        },
+        bad_separator = function(e) {
+          de_notify_error(
+            "Could not read the metadata file: only 1 column was detected. Try Tab or Comma in the separator radio buttons."
+          )
+          NULL
+        },
+        column_mismatch = function(e) {
+          de_notify_error(sprintf(
+            "Metadata is missing rows for these count columns: %s. Add a row per sample, or remove the unmatched samples from the count file.",
+            paste0(e$unmatched, collapse = ", ")
+          ))
+          NULL
+        },
+        error = function(e) {
+          de_notify_error(
+            "Could not read the metadata file. Check the file is plain text (TSV, CSV, or TXT) and not corrupted."
+          )
+          NULL
+        }
       )
-
-      metadatatable[, 1] <- gsub("\\s+|\\.|\\-", "_", metadatatable[, 1])
-      checkRes <- checkMetaData(input, counttable, sep = meta_sep)
-      if (checkRes != "success") {
-        showNotification(checkRes, type = "error")
-        return(NULL)
-      }
+      if (is.null(metadatatable)) return(NULL)
       counttable <- counttable[, metadatatable[, 1]]
     } else {
       metadatatable <- make_default_metadata(counttable)
     }
     if (is.null(counttable)) {
-      stop("Please upload the count file")
+      de_notify_error(
+        "Upload a count file before continuing. Use the Browse button to pick a TSV, CSV, or TXT file."
+      )
+      return(NULL)
     }
     ldata$count <- counttable
     ldata$meta <- metadatatable
@@ -465,32 +507,29 @@ fileTypes <- function() {
 #' @export
 #'
 checkCountData <- function(input = NULL, sep = NULL) {
+  # B4 (2026-05-02): kept as a shim around validate_count_upload() for
+  # any external/programmatic caller. The Shiny upload observer no
+  # longer routes through this function.
   if (is.null(input$countdata$datapath)) {
     return(NULL)
   }
   if (is.null(sep)) sep <- input$countdataSep
   tryCatch(
     {
-      data <- read.table(input$countdata$datapath, sep = sep)
-      if (ncol(data) < 3) {
-        return("Error: Please check if you chose the right separator!")
-      }
-      dups <- data[duplicated(data[, 1], fromLast = TRUE), 1]
-      if (length(dups) > 1) {
-        return(paste0(
-          "Error: There are duplicate entried in  the rownames. (",
-          paste0(dups, collapse = ","), ")"
-        ))
-      }
-
-      return("success")
+      validate_count_upload(input$countdata$datapath, sep = sep)
+      "success"
     },
-    error = function(err) {
-      return(paste0("Error(Count file):", toString(err)))
+    bad_separator = function(e) {
+      "Error: Please check if you chose the right separator!"
     },
-    warning = function(war) {
-      return(paste0("Warning(Count file):", toString(war)))
-    }
+    duplicate_gene_ids = function(e) {
+      paste0(
+        "Error: There are duplicate gene IDs in the rownames. (",
+        paste0(e$dups, collapse = ","), ")"
+      )
+    },
+    error = function(err) paste0("Error(Count file):", toString(err)),
+    warning = function(war) paste0("Warning(Count file):", toString(war))
   )
 }
 
@@ -512,30 +551,32 @@ checkCountData <- function(input = NULL, sep = NULL) {
 #' @export
 #'
 checkMetaData <- function(input = NULL, counttable = NULL, sep = NULL) {
+  # B4 (2026-05-02): kept as a shim around validate_metadata_upload()
+  # for any external/programmatic caller. The Shiny upload observer no
+  # longer routes through this function.
   if (is.null(counttable) || is.null(input$metadata$datapath)) {
     return(NULL)
   }
   if (is.null(sep)) sep <- input$metadataSep
   tryCatch(
     {
-      metadatatable <- read.table(input$metadata$datapath, sep = sep, header = TRUE)
-      if (ncol(metadatatable) < 2) {
-        return("Error: Please check if you chose the right separator!")
-      }
-      met <- as.vector(metadatatable[order(as.vector(metadatatable[, 1])), 1])
-      met <- gsub("\\s+|\\.|\\-", "_", met)
-      count <- as.vector(colnames(counttable)[order(as.vector(colnames(counttable)))])
-      difference <- base::setdiff(met, count)
-      if (length(difference) > 0) {
-        return(paste0("Colnames doesn't match with the metada table(", paste0(difference, sep = ",", collapse = " "), ")"))
-      }
-      return("success")
+      validate_metadata_upload(
+        input$metadata$datapath,
+        count_cols = colnames(counttable),
+        sep = sep
+      )
+      "success"
     },
-    error = function(err) {
-      return(paste0("Error(Matadata file):", toString(err)))
+    bad_separator = function(e) {
+      "Error: Please check if you chose the right separator!"
     },
-    warning = function(war) {
-      return(paste0("Warning(Matadata file):", toString(war)))
-    }
+    column_mismatch = function(e) {
+      paste0(
+        "Colnames doesn't match with the metada table(",
+        paste0(e$unmatched, sep = ",", collapse = " "), ")"
+      )
+    },
+    error = function(err) paste0("Error(Matadata file):", toString(err)),
+    warning = function(war) paste0("Warning(Matadata file):", toString(war))
   )
 }
