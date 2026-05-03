@@ -127,7 +127,7 @@ make_default_metadata <- function(counts) {
 #' @param path Path to the count file.
 #' @param sep  Field separator string.
 #' @return Invisibly returns `path` on success.
-#' @keywords internal
+#' @noRd
 validate_count_upload <- function(path, sep) {
   # header = FALSE (default) is intentional and matches legacy checkCountData:
   # the separator check fires when the parsed table has < 3 columns, which is
@@ -174,7 +174,7 @@ validate_count_upload <- function(path, sep) {
 #'   before passing); the validator normalizes only its own metadata side.
 #' @param sep        Field separator string.
 #' @return Invisibly returns `path` on success.
-#' @keywords internal
+#' @noRd
 validate_metadata_upload <- function(path, count_cols, sep) {
   # header = TRUE because metadata column names (Sample, Condition, Batch, ...)
   # are semantically required by downstream code. Contrast with

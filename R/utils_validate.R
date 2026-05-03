@@ -57,7 +57,7 @@ require_pkg <- function(pkg, feature = pkg) {
 #' @return A Shiny notification id (character), or NULL if called outside a
 #'   Shiny session (the error is silently caught and the message is emitted
 #'   via \code{message()} instead).
-#' @keywords internal
+#' @noRd
 de_notify_error <- function(msg) {
   tryCatch(
     showNotification(msg, type = "error", duration = NULL),
@@ -77,7 +77,7 @@ de_notify_error <- function(msg) {
 #' @return A Shiny notification id (character), or NULL if called outside a
 #'   Shiny session (the error is silently caught and the message is emitted
 #'   via \code{message()} instead).
-#' @keywords internal
+#' @noRd
 de_notify_warning <- function(msg) {
   tryCatch(
     showNotification(msg, type = "warning", duration = 8),
@@ -97,7 +97,7 @@ de_notify_warning <- function(msg) {
 #' @return A Shiny notification id (character), or NULL if called outside a
 #'   Shiny session (the error is silently caught and the message is emitted
 #'   via \code{message()} instead).
-#' @keywords internal
+#' @noRd
 de_notify_info <- function(msg) {
   tryCatch(
     showNotification(msg, type = "message", duration = 8),
