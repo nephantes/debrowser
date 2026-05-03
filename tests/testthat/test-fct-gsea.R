@@ -95,6 +95,43 @@ test_that("run_gsea() raises de_error when stat_col missing", {
                class = "missing_column")
 })
 
+test_that("msigdb_pathways() returns a named list of character vectors for Hallmark", {
+  skip_on_cran()
+  skip_if_not_installed("msigdbr")
+
+  pw <- msigdb_pathways("Homo sapiens", "H")
+  expect_type(pw, "list")
+  expect_named(pw)
+  # Hallmark has 50 sets.
+  expect_equal(length(pw), 50L)
+  expect_true(all(vapply(pw, is.character, logical(1))))
+  expect_true("HALLMARK_HYPOXIA" %in% names(pw))
+  expect_true(length(pw[["HALLMARK_HYPOXIA"]]) >= 100L)
+})
+
+test_that("msigdb_pathways() raises empty_input for an unknown collection", {
+  skip_on_cran()
+  skip_if_not_installed("msigdbr")
+  expect_error(
+    msigdb_pathways("Homo sapiens", "ZZZ_NO_SUCH_COLLECTION"),
+    class = "empty_input"
+  )
+})
+
+test_that("msigdb_pathways() output is shape-compatible with run_gsea()", {
+  skip_on_cran()
+  skip_if_not_installed("msigdbr")
+  skip_if_not_installed("fgsea")
+
+  pw <- msigdb_pathways("Homo sapiens", "H")
+  res <- run_gsea(.gsea_fixture_de_table(), pathways = pw,
+                  min_size = 5, max_size = 500, n_perm = 1000, seed = 1L)
+  expect_s3_class(res, "data.frame")
+  expect_named(res, c("pathway", "size", "NES", "padj", "pval",
+                      "leading_edge"))
+  expect_gt(nrow(res), 0L)
+})
+
 test_that("nes_heatmap_data() pivots a list of GSEA results into long form", {
   res_a <- data.frame(pathway = c("P1", "P2", "P3"), NES = c(1.5, -1.2, 0.3),
                       padj = c(0.01, 0.04, 0.5), size = c(20, 30, 25),

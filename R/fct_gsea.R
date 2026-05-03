@@ -120,6 +120,79 @@ run_gsea <- function(de_table,
   out
 }
 
+#' Fetch MSigDB gene sets as a named list of gene-symbol vectors.
+#'
+#' Wraps \code{msigdbr::msigdbr()} and reshapes the long-format result
+#' into the same named-list-of-character-vectors shape that
+#' \code{\link{gmt_to_pathways}} returns, so the rest of the Enrichment
+#' tab is source-agnostic. \code{msigdbr} is in Suggests; the
+#' \code{require_pkg("msigdbr")} gate produces a friendly install prompt
+#' for users without it.
+#'
+#' Pathway names use the canonical \code{gs_name} (e.g.
+#' \code{HALLMARK_HYPOXIA}). Genes use the human-readable
+#' \code{gene_symbol} column.
+#'
+#' @param species Character; an MSigDB-supported species name (see
+#'   \code{msigdbr::msigdbr_species()}). Default \code{"Homo sapiens"}.
+#' @param collection Character; the top-level MSigDB collection code
+#'   (e.g. \code{"H"} for Hallmark, \code{"C2"} for curated, \code{"C5"}
+#'   for ontology). See \code{msigdbr::msigdbr_collections()}.
+#' @param subcollection Optional character; the subcollection code (e.g.
+#'   \code{"CP:KEGG"}, \code{"GO:BP"}). NULL returns all subcollections
+#'   under the given top-level collection.
+#' @return Named list — names are pathway names, elements are character
+#'   vectors of gene symbols. Empty list with a classed
+#'   \code{empty_input} error if msigdbr returns no rows for the given
+#'   species/collection/subcollection combination.
+#' @examples
+#' \dontrun{
+#' p <- msigdb_pathways("Homo sapiens", "H")
+#' length(p)               # 50 (Hallmark)
+#' head(p[["HALLMARK_HYPOXIA"]])
+#' }
+#' @export
+msigdb_pathways <- function(species = "Homo sapiens",
+                            collection = "H",
+                            subcollection = NULL) {
+  require_pkg("msigdbr", feature = "MSigDB gene sets")
+
+  args <- list(species = species, collection = collection)
+  if (!is.null(subcollection) && nzchar(subcollection)) {
+    args$subcollection <- subcollection
+  }
+  # Newer msigdbr versions raise "Unknown collection" / "Unknown
+  # species" themselves; older versions silently returned 0 rows. Wrap
+  # both into a single classed condition so callers can pattern-match.
+  long <- tryCatch(
+    do.call(msigdbr::msigdbr, args),
+    error = function(e) {
+      de_error(
+        sprintf(
+          "msigdbr lookup failed for species='%s', collection='%s'%s: %s",
+          species, collection,
+          if (is.null(subcollection)) "" else sprintf(", subcollection='%s'", subcollection),
+          conditionMessage(e)
+        ),
+        class = "empty_input"
+      )
+    }
+  )
+
+  if (nrow(long) == 0L) {
+    de_error(
+      sprintf(
+        "msigdbr returned no rows for species='%s', collection='%s'%s",
+        species, collection,
+        if (is.null(subcollection)) "" else sprintf(", subcollection='%s'", subcollection)
+      ),
+      class = "empty_input"
+    )
+  }
+
+  split(as.character(long$gene_symbol), as.character(long$gs_name))
+}
+
 #' Reshape per-comparison GSEA results for the NES heatmap.
 #'
 #' Used by \code{\link{enrichmentNesHeatmapServer}} to render a tile plot

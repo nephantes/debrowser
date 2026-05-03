@@ -17,3 +17,10 @@ Returns a reactive that yields a named list of gene-symbol vectors —
 the same shape \code{\link{gmt_to_pathways}} produces — or NULL until
 the user has supplied a source.
 }
+\details{
+For the MSigDB branch the fetch is gated on the "Load gene sets"
+action button so the user controls when (and whether) the (potentially
+large) msigdbr query runs. The result is cached in a reactiveVal
+keyed on (species, collection, subcollection) so re-clicking with the
+same inputs does not re-query msigdbr.
+}

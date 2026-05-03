@@ -196,6 +196,33 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E2 — MSigDB integration (gene-set source picker)
+
+* The Enrichment tab's gene-set picker now offers **MSigDB** as a
+  sibling source to manual `.gmt` upload. Pick a species (the 20
+  species `msigdbr` ships, including human, mouse, rat, fly, yeast,
+  zebrafish, C. elegans, and more), a top-level collection
+  (Hallmark, Curated, Ontology, Cell type, ...), and an optional
+  subcollection (e.g. `CP:KEGG`, `GO:BP`). Click "Load gene sets"
+  to pull the named-list of pathways into the running GSEA session.
+* New pure helper `msigdb_pathways(species, collection,
+  subcollection)` in `R/fct_gsea.R` wraps `msigdbr::msigdbr()` and
+  reshapes its long-format tibble into the same named-list-of-
+  character-vectors shape `gmt_to_pathways()` returns, so all
+  downstream code (run_gsea, NES heatmap, leading edge) is
+  source-agnostic. Errors from msigdbr (unknown species, unknown
+  collection, empty result) are normalized to the
+  `empty_input` classed condition.
+* `msigdbr` added to `Suggests` (~50MB local install but no
+  install-time network — Bioc-friendly). Calls go through
+  `require_pkg("msigdbr")` with the install command for users who
+  don't have it.
+* Per-session in-module cache keyed on
+  (species, collection, subcollection) so re-clicking "Load" with
+  the same inputs is instant.
+* The GO Term tab is unchanged in this release; folding ORA into
+  the Enrichment tab as the second method is deferred to E2.5.
+
 ### Phase E1 — Enrichment tab (GSEA via fgsea)
 
 * New top-level **Enrichment** tab next to GO Term, driven by

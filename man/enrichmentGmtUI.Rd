@@ -13,5 +13,7 @@ enrichmentGmtUI(id)
 Shiny tagList for inclusion in a `bslib::accordion_panel`.
 }
 \description{
-UI for the gene-set source picker (Enrichment-tab sidebar).
+E2 ships two sources: manual `.gmt` upload and MSigDB (via
+`msigdbr`). The picker is a single integration point so callers stay
+oblivious to which source is active.
 }
