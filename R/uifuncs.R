@@ -30,7 +30,11 @@ getLeftMenu <- function(input = NULL) {
             paste("QC Plots:", sep = ""),
             c(
               PCA = "pca", All2All = "all2all", Heatmap = "heatmap", IQR = "IQR",
-              Density = "Density"
+              Density = "Density",
+              LibraryDepth = "libraryDepth",
+              DetectionRate = "detectionRate",
+              MtPct = "mtPct",
+              SampleDist = "sampleDist"
             )
           ))
         ),
@@ -804,6 +808,22 @@ getQCPanel <- function(input = NULL) {
     conditionalPanel(
       condition = "(input.qcplot == 'all2all')",
       getAll2AllPlotUI("all2all")
+    ),
+    conditionalPanel(
+      condition = "(input.qcplot == 'libraryDepth')",
+      qcLibraryDepthUI("libraryDepth")
+    ),
+    conditionalPanel(
+      condition = "(input.qcplot == 'detectionRate')",
+      qcDetectionRateUI("detectionRate")
+    ),
+    conditionalPanel(
+      condition = "(input.qcplot == 'mtPct')",
+      qcMtPctUI("mtPct")
+    ),
+    conditionalPanel(
+      condition = "(input.qcplot == 'sampleDist')",
+      qcSampleDistUI("sampleDist")
     )
   )
   return(qcPanel)
