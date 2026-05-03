@@ -76,7 +76,18 @@ getLeftMenu <- function(input = NULL) {
                          min = 1, step = 1),
             numericInput("fgsea_n_perm", "Permutations", 1000,
                          min = 100, step = 100),
-            numericInput("fgsea_seed", "Seed", 1, step = 1)
+            numericInput("fgsea_seed", "Seed", 1, step = 1),
+            checkboxInput(
+              "fgsea_compare_methods",
+              "Compare DE methods (cross-method NES heatmap)",
+              value = FALSE
+            ),
+            helpText(
+              "When checked, fgsea also runs on edgeR/limma DE results from",
+              "the active comparison and renders an additional NES heatmap",
+              "with method names on the x-axis. Requires that you click",
+              "'Run comparison' under DE Analysis -> Method comparison first."
+            )
           )
         )
       )

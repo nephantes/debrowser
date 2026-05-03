@@ -62,6 +62,15 @@ getGoPanel <- function() {
       conditionalPanel(
         condition = "output.fgsea_show_heatmap == true",
         enrichmentNesHeatmapUI("fgsea_nes_heatmap")
+      ),
+      conditionalPanel(
+        condition = "output.fgsea_show_methods_heatmap == true",
+        bslib::card(
+          bslib::card_header("NES heatmap (across DE methods)"),
+          bslib::card_body(
+            enrichmentNesHeatmapUI("fgsea_nes_heatmap_methods")
+          )
+        )
       )
     ),
     getKEGGModal(),

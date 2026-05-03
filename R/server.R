@@ -537,6 +537,49 @@ deServer <- function(input, output, session) {
       enrichmentNesHeatmapServer("fgsea_nes_heatmap",
                                  fgsea_results_by_comparison)
 
+      # E11.4 / View C: when the user has run methodConcordanceServer
+      # AND ticks "Compare DE methods" in the fgsea sidebar AND presses
+      # Submit (input$startGO) on fgseaGSEA mode, run fgsea on each
+      # method's DE table from mc_de_list and render a second NES
+      # heatmap with comparison axis = method name.
+      fgsea_results_by_method <- eventReactive(input$startGO, {
+        req(input$goplot == "fgseaGSEA")
+        req(isTRUE(input$fgsea_compare_methods))
+        if (is.null(fgsea_pathways())) {
+          de_notify_warning(
+            "Load gene sets first. Pick a source (.gmt upload or MSigDB) and click \"Load gene sets\" before Submit."
+          )
+          return(NULL)
+        }
+        de_by_method <- mc_de_list()
+        if (is.null(de_by_method) || length(de_by_method) == 0L) {
+          de_notify_warning(
+            "Run the Method comparison first: DE Analysis -> Method comparison -> 'Run comparison'."
+          )
+          return(NULL)
+        }
+        withProgress(message = "Running GSEA across DE methods", value = 0.3, {
+          lapply(de_by_method, function(df) {
+            id_col <- .fgsea_id_col(df)
+            run_gsea(df, pathways = fgsea_pathways(),
+                     min_size = input$fgsea_min_size,
+                     max_size = input$fgsea_max_size,
+                     n_perm   = input$fgsea_n_perm,
+                     seed     = input$fgsea_seed,
+                     id_col   = id_col)
+          })
+        })
+      }, ignoreNULL = TRUE)
+
+      output$fgsea_show_methods_heatmap <- reactive({
+        length(fgsea_results_by_method()) >= 2L
+      })
+      outputOptions(output, "fgsea_show_methods_heatmap",
+                    suspendWhenHidden = FALSE)
+
+      enrichmentNesHeatmapServer("fgsea_nes_heatmap_methods",
+                                 fgsea_results_by_method)
+
       fgsea_primary_result <- reactive({
         r <- fgsea_results_by_comparison()
         req(length(r) >= 1L)
