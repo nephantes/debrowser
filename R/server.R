@@ -454,6 +454,27 @@ deServer <- function(input, output, session) {
         if (is.null(cmp)) return(NULL)
         cmp$dds
       })
+      # E1: per-comparison DE result tables for the Enrichment tab. NULL
+      # pre-DE so the tab's req() chain blocks rendering until DE has run.
+      # Named by `cond_names` (e.g. "Treat vs Control") when available;
+      # otherwise generic "comparison_N".
+      de_results_list <- reactive({
+        if (!isTRUE(buttonValues$startDE) || is.null(dc())) return(NULL)
+        out <- lapply(dc(), function(x) x$init_data)
+        out <- out[!vapply(out, is.null, logical(1))]
+        if (length(out) == 0L) return(NULL)
+        nms <- vapply(seq_along(out), function(i) {
+          cn <- dc()[[i]]$cond_names
+          if (!is.null(cn) && length(cn) >= 2L) {
+            paste(cn[1], "vs", cn[2])
+          } else {
+            paste0("comparison_", i)
+          }
+        }, character(1))
+        names(out) <- nms
+        out
+      })
+      enrichmentServer("enrichment", de_results = de_results_list)
       filt_data <- reactive({
         if (!is.null(init_data()) && !is.null(comparison()) && !is.null(input$padj)) {
           applyFilters(init_data(), cols(), conds(), input)

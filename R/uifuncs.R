@@ -563,9 +563,16 @@ togglePanels <- function(num = NULL, nums = NULL, session = NULL) {
   if (is.null(num)) {
     return(NULL)
   }
-  for (i in 0:4) {
+  # Includes panel5 (Enrichment, added in Phase E1) alongside the
+  # original 0..4 panels (Data Prep, Main Plots, QC Plots, GO Term,
+  # Tables). Callers that pass `nums = c(0, 1, 2, 3, 4)` (the legacy
+  # "everything" set) get Enrichment shown too — Phase E1 treats
+  # Enrichment as a peer of GO Term.
+  for (i in c(0L, 1L, 2L, 3L, 4L, 5L)) {
     target <- paste0("panel", i)
-    if (i %in% nums) {
+    show_panel <- (i %in% nums) ||
+      (i == 5L && all(c(0L, 1L, 2L, 3L, 4L) %in% nums))
+    if (show_panel) {
       bslib::nav_show("methodtabs", target = target, session = session)
     } else {
       bslib::nav_hide("methodtabs", target = target, session = session)

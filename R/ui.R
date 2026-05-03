@@ -270,6 +270,11 @@ deUI <- function(req = NULL) {
     ),
 
     bslib::nav_panel(
+      title = "Enrichment", value = "panel5",
+      debrowser::enrichmentUI("enrichment")
+    ),
+
+    bslib::nav_panel(
       title = "Tables", value = "panel4",
       DT::dataTableOutput("tables")
     ),
