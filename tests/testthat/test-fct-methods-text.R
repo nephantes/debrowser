@@ -67,3 +67,42 @@ test_that("methods_sentences includes enrichment when MSigDB loaded", {
   expect_match(s["enrichment"], "Homo sapiens")
   expect_match(s["enrichment"], "50 gene sets")
 })
+
+# --- Phase E9 tests -----------------------------------------------------------
+
+test_that(".method_refs covers every UI-producible method value", {
+  # All de_method values from R/mod_condselect.R
+  expect_true(!is.null(.method_refs$deseq2))
+  expect_true(!is.null(.method_refs$edger))
+  expect_true(!is.null(.method_refs$limma))
+  # All batch methods from R/batcheffect.R::batchEffectUI choices
+  expect_true(!is.null(.method_refs$combat))
+  expect_true(!is.null(.method_refs$combat_seq))
+  expect_true(!is.null(.method_refs$harman))
+  # Enrichment + base
+  expect_true(!is.null(.method_refs$debrowser))
+  expect_true(!is.null(.method_refs$fgsea))
+  expect_true(!is.null(.method_refs$msigdb))
+})
+
+test_that(".method_refs entries have name, version_pkg, cite fields", {
+  for (key in names(.method_refs)) {
+    entry <- .method_refs[[key]]
+    expect_true(!is.null(entry$name),        info = key)
+    expect_true(!is.null(entry$version_pkg), info = key)
+    expect_true(!is.null(entry$cite),        info = key)
+    expect_true(grepl("et al\\.,", entry$cite), info = key)
+  }
+})
+
+test_that(".pkg_version_or_unknown returns a version string for installed pkg", {
+  # 'utils' is base R; always installed
+  v <- .pkg_version_or_unknown("utils")
+  expect_match(v, "^[0-9]+\\.[0-9]+")
+})
+
+test_that(".pkg_version_or_unknown returns '(version unknown)' for missing pkg", {
+  # Use a name that cannot be a real installed package
+  v <- .pkg_version_or_unknown("debrowser_no_such_pkg_xxxxx_e9")
+  expect_equal(v, "(version unknown)")
+})

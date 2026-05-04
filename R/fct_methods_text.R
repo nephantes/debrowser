@@ -89,6 +89,71 @@ methods_sentences <- function(blocks) {
     de = de_msg, enrichment = enrichment_msg)
 }
 
+# --- Phase E9: citation registry + version helper -----------------------------
+
+# Maps method-key -> {name, version_pkg, cite}. Method-keys are the lowercase
+# stable keys used by methods_sentences() to look up registry entries; they are
+# distinct from the UI-side strings ("DESeq2", "Combat", etc.) which carry case.
+# See spec: docs/superpowers/specs/2026-05-04-phase-e9-methods-paragraph-design.md
+#' @noRd
+.method_refs <- list(
+  debrowser   = list(name = "DEBrowser",  version_pkg = "debrowser",
+                     cite = "Kucukural et al., 2019"),
+  deseq2      = list(name = "DESeq2",     version_pkg = "DESeq2",
+                     cite = "Love et al., 2014"),
+  edger       = list(name = "edgeR",      version_pkg = "edgeR",
+                     cite = "Robinson et al., 2010"),
+  limma       = list(name = "limma",      version_pkg = "limma",
+                     cite = "Ritchie et al., 2015"),
+  combat      = list(name = "ComBat",     version_pkg = "sva",
+                     cite = "Johnson et al., 2007"),
+  combat_seq  = list(name = "ComBat-seq", version_pkg = "sva",
+                     cite = "Zhang et al., 2020"),
+  harman      = list(name = "Harman",     version_pkg = "Harman",
+                     cite = "Oytam et al., 2016"),
+  fgsea       = list(name = "fgsea",      version_pkg = "fgsea",
+                     cite = "Korotkevich et al., 2021"),
+  msigdb      = list(name = "MSigDB",     version_pkg = "msigdbr",
+                     cite = "Liberzon et al., 2015")
+)
+
+# Package-level tracker for missing-package notification dedup. Persists
+# across Shiny sessions within the same R process (created at module load,
+# never cleared). Suitable for the single-session-per-process pattern most
+# DEBrowser users follow (local app, typical Shiny Server). In multi-session
+# deployments (shinyapps.io etc.), a second user would not see a notification
+# for a package that user 1 already triggered the warning for; acceptable
+# trade-off vs. duplicating the warning N times for the same missing package
+# during one paragraph build.
+#' @noRd
+.missing_pkg_warned <- new.env(parent = emptyenv())
+
+#' @noRd
+.notify_missing_pkg_once <- function(pkg) {
+  if (!is.null(.missing_pkg_warned[[pkg]])) return(invisible(NULL))
+  .missing_pkg_warned[[pkg]] <- TRUE
+  if (requireNamespace("shiny", quietly = TRUE) &&
+      !is.null(shiny::getDefaultReactiveDomain())) {
+    shiny::showNotification(
+      sprintf(
+        "Methods text export: could not query version for package '%s'. Citation will read '(version unknown)'.",
+        pkg
+      ),
+      type = "warning"
+    )
+  }
+  invisible(NULL)
+}
+
+#' @noRd
+.pkg_version_or_unknown <- function(pkg) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    .notify_missing_pkg_once(pkg)
+    return("(version unknown)")
+  }
+  as.character(utils::packageVersion(pkg))
+}
+
 # Internal NULL-coalescing helper. Duplicated in mod_enrichment_gmt.R and
 # mod_comparison_concordance.R; lift to R/utils_validate.R when R 4.4 is
 # the package floor (R 4.4+ has it natively as `%||%`).
