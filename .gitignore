@@ -13,3 +13,6 @@ vignettes/*_files/
 !.env.example
 debrowser.BiocCheck/
 *.Rcheck/
+*.tar.gz
+Rplots.pdf
+**/Rplots.pdf
