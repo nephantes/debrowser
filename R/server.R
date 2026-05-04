@@ -171,7 +171,7 @@ deServer <- function(input, output, session) {
       # Auto-advance the wizard when the user clicks a Submit/Start
       # button. (Previously these observers also called nav_show/nav_hide
       # on the now-replaced navset_pill_list; with navset_hidden those
-      # are no-ops.) startDE / cs-startDE — both ids exist post-A4ac.
+      # are no-ops.) startDE / cs-startDE -- both ids exist post-A4ac.
       observeEvent(input$startDE, {
         bslib::nav_select("DataPrep", "DEAnalysis", session = session)
       }, ignoreInit = TRUE)
@@ -190,7 +190,7 @@ deServer <- function(input, output, session) {
           if (!is.null(updata()$load())) {
             progress$upload     <- "done"
             progress$filter     <- "pending"
-            # B2a.12: re-upload mid-session — reset downstream pills so
+            # B2a.12: re-upload mid-session -- reset downstream pills so
             # stale "done" decorations from a prior run don't carry over
             # onto the new dataset.
             progress$batch      <- "skipped"
@@ -204,7 +204,7 @@ deServer <- function(input, output, session) {
           if (!is.null(updata()$load())) {
             bslib::nav_select("DataPrep", "Filter", session = session)
             filtd(debrowserlowcountfilter("lcf", updata()$load()))
-            # B2a: filter clicked → mark filter done; unlock batch.
+            # B2a: filter clicked -> mark filter done; unlock batch.
             progress$filter <- "done"
             progress$batch  <- "pending"
           }
@@ -213,7 +213,7 @@ deServer <- function(input, output, session) {
           if (!is.null(filtd()$filter())) {
             bslib::nav_select("DataPrep", "BatchEffect", session = session)
             batch(debrowserbatcheffect("batcheffect", filtd()$filter()))
-            # B2a: batch step entered → mark batch done; unlock condselect.
+            # B2a: batch step entered -> mark batch done; unlock condselect.
             progress$batch      <- "done"
             progress$condselect <- "pending"
           }
@@ -227,7 +227,7 @@ deServer <- function(input, output, session) {
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
           choicecounter$nc <- sel()$n_comparisons()
-          # B2a: skipping past Filter+Batch — mark them done/skipped.
+          # B2a: skipping past Filter+Batch -- mark them done/skipped.
           if (progress$filter != "done") progress$filter <- "done"
           if (progress$batch  == "pending" || progress$batch == "locked") {
             progress$batch <- "skipped"
@@ -278,7 +278,7 @@ deServer <- function(input, output, session) {
             "load-uploadFile", "load-demo",
             "load-demo2", "goQCplots", "goQCplotsFromFilter"
           ))
-          # B2a: DE finished — mark done, unlock all outer tabs, and
+          # B2a: DE finished -- mark done, unlock all outer tabs, and
           # auto-navigate to Main Plots (panel1). The existing goMain
           # observer is preserved for back-navigation but no longer
           # required for the golden path.
@@ -613,7 +613,7 @@ deServer <- function(input, output, session) {
         }
         # Pre-flight: how many DE genes match the loaded pathway
         # universe? Mouse pathways vs. human DE (or vice versa) is the
-        # classic species-mismatch trap — fgsea returns 0 rows and the
+        # classic species-mismatch trap -- fgsea returns 0 rows and the
         # user is left with a blank table. Catch it here and tell them
         # exactly what to fix.
         primary_de <- de_results_list()[[1]]
@@ -635,7 +635,7 @@ deServer <- function(input, output, session) {
                 "Only %d of your %d DE genes (%.1f%%) match symbols in ",
                 "the loaded gene sets. The most common cause is a ",
                 "species mismatch (e.g. mouse gene sets loaded but ",
-                "human DE input — symbols are case-sensitive: PGK1 ",
+                "human DE input -- symbols are case-sensitive: PGK1 ",
                 "won't match Pgk1). Reload MSigDB with the species ",
                 "matching your DE genes, or upload a .gmt that uses ",
                 "the same symbol convention."
@@ -656,7 +656,7 @@ deServer <- function(input, output, session) {
           })
         })
         # Even with overlap, every pathway might be filtered out by
-        # min/max size — surface that too instead of leaving the user
+        # min/max size -- surface that too instead of leaving the user
         # with a blank table and no clue.
         n_rows <- vapply(results, function(x) {
           if (is.data.frame(x)) nrow(x) else 0L
@@ -745,7 +745,7 @@ deServer <- function(input, output, session) {
         df <- fgsea_primary_result()
         # DT keeps the old selection across re-renders, so a row index
         # may temporarily point past the new result's nrow. Guard against
-        # that — and against a missing leading_edge column — so the AI
+        # that -- and against a missing leading_edge column -- so the AI
         # panel reactive doesn't crash the whole tab with subscript
         # errors.
         req(is.data.frame(df), nrow(df) >= sel,
