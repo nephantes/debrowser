@@ -196,6 +196,31 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E9 — Methods-paragraph autogen
+
+* Phase E3's Export dropdown now emits a single manuscript-ready methods
+  paragraph (~150-250 words) with inline citations and version stamps,
+  replacing the previous per-step bullet list. The paragraph appears
+  in three places:
+  - At the top of the exported `.R` script as a wrapped comment block.
+  - In the rendered `.Rmd -> HTML` report's "## Methods" section.
+  - In a new **Copy methods text** Export menu item that opens a modal
+    with the paragraph in selectable preformatted text plus a
+    "Download as .txt" button.
+* New exported `methods_paragraph(blocks)` function (in
+  `R/fct_methods_text.R`); upgraded internal `methods_sentences()`
+  helper now produces citation-rich, version-stamped per-step
+  sentences. Both functions are pure (no Shiny dependency) and
+  consume the `build_session_blocks()` output from Phase E3.
+* New internal `.method_refs` registry maps method keys to
+  `list(name, version_pkg, cite)` for nine entries: DEBrowser,
+  DESeq2, edgeR, limma, ComBat, ComBat-seq, Harman, fgsea, MSigDB.
+  Citations are inline "(Author et al., YEAR)" plain text.
+* Soft fallback when a cited package is not installed: citation
+  reads "(version unknown)" and a deduplicated `showNotification`
+  warns the user. Methods text export never errors on a missing
+  version lookup.
+
 ### Phase E3 — Reproducibility export
 
 * New top-right **Export** dropdown in the navbar with two items:
