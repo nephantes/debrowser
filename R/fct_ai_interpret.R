@@ -28,3 +28,43 @@ ai_error <- function(message, class = NULL) {
   )
   stop(cond)
 }
+
+#' Strip fields from an AI payload per privacy mode.
+#'
+#' @param payload list with components `genes` (chr), `stats`
+#'   (data.frame with gene_id/log2FoldChange/padj), `enrichment`
+#'   (list with term/pvalue/n_overlap). All but `genes` may be NULL.
+#' @param privacy_mode chr(1). One of "symbols", "stats", "stats_enrichment".
+#' @param top_n integer(1). Cap on genes-list and stats-row length.
+#' @return list. Always has `genes`. Has `stats` for "stats" /
+#'   "stats_enrichment" modes. Has `enrichment` for "stats_enrichment"
+#'   mode only. Carries attributes `truncated` (logical) and `n_total`
+#'   (integer) when `length(genes) > top_n`.
+#' @keywords internal
+#' @noRd
+.redact_payload <- function(payload, privacy_mode, top_n = 50L) {
+  if (!privacy_mode %in% c("symbols", "stats", "stats_enrichment")) {
+    ai_error(sprintf("Unknown privacy_mode: '%s'", privacy_mode),
+             class = "ai_invalid_response")
+  }
+  genes <- payload$genes
+  n_total <- length(genes)
+  truncated <- n_total > top_n
+  if (truncated) {
+    genes <- genes[seq_len(top_n)]
+  }
+
+  out <- list(genes = genes)
+  if (privacy_mode %in% c("stats", "stats_enrichment") && !is.null(payload$stats)) {
+    s <- payload$stats
+    if (truncated) s <- s[seq_len(min(top_n, nrow(s))), , drop = FALSE]
+    out$stats <- s
+  }
+  if (privacy_mode == "stats_enrichment" && !is.null(payload$enrichment)) {
+    out$enrichment <- payload$enrichment
+  }
+
+  attr(out, "truncated") <- truncated
+  attr(out, "n_total")   <- n_total
+  out
+}
