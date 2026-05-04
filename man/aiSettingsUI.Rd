@@ -13,6 +13,6 @@ aiSettingsUI(id)
 bslib::nav_menu element.
 }
 \description{
-Returns a `bslib::nav_menu` titled "Settings" with one item: "AI...".
+Returns a `bslib::nav_menu` titled "Settings" with one item: "AI Assistant".
 Clicking the item opens a modal handled by [aiSettingsServer()].
 }
