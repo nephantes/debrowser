@@ -200,3 +200,34 @@ test_that("emitted .R script sources cleanly and produces de1 against demo data"
     file.path(tmpdir, "debrowser_results", "results_exper_vs_control.tsv")
   ))
 })
+
+test_that("emit_rmd minimal demo matches snapshot", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  expect_snapshot(cat(emit_rmd(blocks), sep = "\n"))
+})
+
+test_that("emit_rmd full session matches snapshot", {
+  blocks <- build_session_blocks(.fixture_state_full())
+  expect_snapshot(cat(emit_rmd(blocks), sep = "\n"))
+})
+
+test_that("emit_rmd default chunk options set eval=FALSE", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out <- emit_rmd(blocks)
+  expect_true(any(grepl("knitr::opts_chunk\\$set\\(eval = FALSE", out)))
+})
+
+test_that("emit_rmd sessioninfo chunk overrides to eval=TRUE", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out_str <- paste(emit_rmd(blocks), collapse = "\n")
+  expect_match(out_str, "\\{r sessioninfo, eval = TRUE")
+})
+
+test_that("emit_rmd embeds methods_sentences as Methods prose", {
+  blocks <- build_session_blocks(.fixture_state_full())
+  out_str <- paste(emit_rmd(blocks), collapse = "\n")
+  expect_match(out_str, "Counts loaded from uploaded file")
+  expect_match(out_str, "Comparison 1: 'treated'")
+  expect_match(out_str, "Comparison 2: 'high_dose'")
+  expect_match(out_str, "MSigDB Homo sapiens / H")
+})
