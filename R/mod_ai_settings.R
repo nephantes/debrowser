@@ -99,11 +99,18 @@ aiSettingsServer <- function(id) {
         models_cache[[prov]] <- models
       }
       cur_model <- settings_rv()$model
+      # Guard against cur_model being NULL/empty: NULL %in% chr returns
+      # logical(0) and breaks if(); pick the first available model in
+      # that case.
+      selected_model <- if (length(cur_model) == 1L && cur_model %in% models) {
+        cur_model
+      } else {
+        models[1L]
+      }
       shiny::tagList(
         shiny::selectInput(session$ns("model"), "Model",
                            choices = models,
-                           selected = if (cur_model %in% models) cur_model
-                                      else models[1L]),
+                           selected = selected_model),
         shiny::actionLink(session$ns("refresh_models"), "Refresh models")
       )
     })
