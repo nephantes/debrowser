@@ -973,6 +973,134 @@ Once you specify these parameters, your heatmap will be seen as image at below.
 ![*Figure 56. example log heatmap*](https://umms.dolphinnext.com/pub/debrowser/debrowser_pics2/example_log_heatmap.png "Figure 56. example log heatmap")
 
 
+# AI interpretation (optional)
+
+Phase E12.A adds an optional AI-assisted interpretation feature. From the
+**Settings** dropdown in the top-right of the navbar, you can enable a "Summarize
+this gene set's biology" preset that runs alongside any selected fgsea pathway
+on the Enrichment tab. The feature is **off by default** — no network calls
+occur until you explicitly enable it and configure a provider.
+
+## Enabling AI features
+
+1. Click `Settings ▾ → AI...` in the navbar. A modal opens.
+2. Tick **Enable AI features**.
+3. Pick a **Provider**. Three options ship in v1:
+   - **Anthropic** (Claude models) — requires an API key from console.anthropic.com.
+   - **OpenAI** (GPT models) — requires an API key from platform.openai.com.
+   - **Ollama** (local LLM, no key needed) — runs on your own machine; see install
+     instructions below. This is the privacy-preserving option: no data leaves
+     your computer.
+4. The **Model** dropdown auto-populates with the models your account has
+   access to (live-fetched from the provider). Pick one. Use "Refresh models"
+   to re-fetch.
+5. For Anthropic / OpenAI, paste your API key. The key is stored encrypted in
+   your operating system's keychain via the `keyring` package — never written
+   to disk in plaintext.
+6. Pick a **default privacy mode**. The recommended default is "Symbols only".
+7. Click **Test** to verify the configuration with a 1-token round-trip, then
+   **Save**.
+
+After saving, the AI interpretation card appears below the "Leading edge"
+card on the Enrichment tab whenever an fgsea pathway is selected. Pick the
+question, adjust privacy and Top-N, click "What will be sent?" to preview
+the prompt, then click **Ask AI**.
+
+## Privacy modes
+
+The AI panel offers three per-call privacy modes that control what
+analytical context is sent to the provider:
+
+- **Symbols only** (default; most private) — just the gene symbols of the
+  pathway's leading edge.
+- **+ Stats** — also `log2FoldChange` and adjusted p-value per gene.
+- **+ Stats + Enrichment** — also the term name, fgsea p-value, and
+  overlap count.
+
+The "What will be sent?" disclosure shows the literal prompt body with a
+character count before each call. Responses are rendered as plain
+preformatted text — no markdown parsing, no HTML execution, no automatic
+link traversal — to defend against untrusted-content patterns in model
+output.
+
+## Suggested R packages
+
+The AI features depend on three R packages, all in `Suggests`. Install
+them once before using:
+
+```r
+install.packages(c("ellmer", "whisker", "keyring"))
+```
+
+If any of these are not installed, the AI features remain unavailable and
+DEBrowser surfaces a clear "Install the X package..." notification — the
+rest of the app is unaffected.
+
+## Installing Ollama (local LLM provider)
+
+Ollama is the privacy-preserving option: the model runs entirely on your
+machine, no API key, no data sent to a third party.
+
+### macOS — install standalone, NOT Docker
+
+On Apple Silicon Macs (M1 / M2 / M3 / M4), the standalone install is
+dramatically faster than Docker because it uses the **Metal GPU** with the
+unified memory architecture. Docker on macOS runs Ollama in a Linux VM
+that **cannot access the Apple GPU**, so inference falls back to CPU and
+runs roughly 5–10x slower. Always pick standalone on Mac.
+
+```sh
+brew install ollama
+# Or download the .dmg from https://ollama.com/download
+```
+
+Start the service (the menu-bar app does this automatically; with the
+brew install, you can also do it manually):
+
+```sh
+ollama serve &
+```
+
+Pull a model (one-time):
+
+```sh
+ollama pull llama3.2
+```
+
+This downloads a ~2 GB model. Larger models (`llama3.1:70b`, etc.) are
+also available and will be slower but more capable.
+
+### Linux
+
+```sh
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.2
+```
+
+The Linux install includes systemd service files, so Ollama starts
+automatically on boot.
+
+### Verify Ollama is reachable
+
+The Ollama HTTP API listens on `http://localhost:11434`. Verify it works:
+
+```sh
+curl http://localhost:11434/api/tags
+```
+
+You should see a JSON response listing your installed models. DEBrowser's
+Settings → AI → Provider: Ollama → Test will run this lookup automatically
+and surface any "Could not reach Ollama" error with a recovery hint.
+
+## Why AI features are off by default
+
+DEBrowser is intended for biomedical research, including settings where
+sharing patient-derived gene names with a third-party LLM is unacceptable.
+The master switch in Settings keeps the feature inert until the user
+explicitly opts in and chooses a provider. R CMD check and BiocCheck
+both pass without any of the AI Suggests installed; the feature is
+strictly additive.
+
 # Case Study
 
 Taking a look at the case study (Vernia S. et al 2014), Multiple heatmaps were
