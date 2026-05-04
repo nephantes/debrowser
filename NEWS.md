@@ -196,6 +196,37 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E3 — Reproducibility export
+
+* New top-right **Export** dropdown in the navbar with two items:
+  - **R script** -- downloads a runnable `.R` script that reproduces the
+    full analytical pipeline (data load -> low-count filter -> batch
+    correction -> DE per comparison -> GSEA if loaded). Calls only
+    already-exported pure helpers (`filter_low_counts`,
+    `apply_batch_correction`, `run_de`, `run_gsea`, `msigdb_pathways`),
+    so the script has no Shiny dependency. Sets per-comparison `deN`
+    variables in the workspace, writes per-comparison TSVs to
+    `./debrowser_results/`, and prints `sessionInfo()` at the end.
+  - **Rmd -> HTML** -- renders a self-contained HTML report with the
+    same pipeline as code chunks (`eval = FALSE` by default) plus an
+    auto-generated Methods paragraph. Gated on the `rmarkdown` package
+    being installed; falls back to raw `.Rmd` download if pandoc fails.
+* New pure helpers in `R/fct_export_session.R`: `build_session_blocks()`,
+  `emit_r_script()`, `emit_rmd()`, `sanitize_label()`. New
+  `R/fct_methods_text.R::methods_sentences()` produces the per-step
+  prose consumed by both emitters; Phase E9 will upgrade it to a
+  citation-rich paragraph generator.
+* `enrichmentGmtServer()` return is now `list(pathways, state)` instead
+  of just the pathways reactive (additive; consumers extend the
+  destructure).
+* Both export items are gated by a "Run a DE analysis before exporting"
+  notification until DE has been run.
+* Frozen `sessionInfo()` of the export-time R session is embedded in
+  the `.R` script header for audit reproducibility; live `sessionInfo()`
+  is also called at script end.
+* Comparison labels with collisions get `_2`, `_3` suffixes in TSV
+  filenames; unsafe characters in labels are replaced with underscores.
+
 ### Phase E11 — Comparison Concordance tab (top-level)
 
 * New top-level **Comparison Concordance** tab between QC Plots and Enrichment.
