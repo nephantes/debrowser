@@ -611,7 +611,41 @@ deServer <- function(input, output, session) {
           )
           return(NULL)
         }
-        withProgress(message = "Running GSEA (fgsea)", value = 0.3, {
+        # Pre-flight: how many DE genes match the loaded pathway
+        # universe? Mouse pathways vs. human DE (or vice versa) is the
+        # classic species-mismatch trap — fgsea returns 0 rows and the
+        # user is left with a blank table. Catch it here and tell them
+        # exactly what to fix.
+        primary_de <- de_results_list()[[1]]
+        primary_id_col <- .fgsea_id_col(primary_de)
+        if (!is.na(primary_id_col)) {
+          de_genes <- unique(as.character(primary_de[[primary_id_col]]))
+          de_genes <- de_genes[nzchar(de_genes)]
+          pw_universe <- unique(unlist(fgsea_pathways(),
+                                       use.names = FALSE))
+          n_overlap <- length(intersect(de_genes, pw_universe))
+          overlap_pct <- if (length(de_genes) > 0L) {
+            100 * n_overlap / length(de_genes)
+          } else {
+            0
+          }
+          if (n_overlap < input$fgsea_min_size) {
+            de_notify_warning(sprintf(
+              paste0(
+                "Only %d of your %d DE genes (%.1f%%) match symbols in ",
+                "the loaded gene sets. The most common cause is a ",
+                "species mismatch (e.g. mouse gene sets loaded but ",
+                "human DE input — symbols are case-sensitive: PGK1 ",
+                "won't match Pgk1). Reload MSigDB with the species ",
+                "matching your DE genes, or upload a .gmt that uses ",
+                "the same symbol convention."
+              ),
+              n_overlap, length(de_genes), overlap_pct
+            ))
+            return(NULL)
+          }
+        }
+        results <- withProgress(message = "Running GSEA (fgsea)", value = 0.3, {
           lapply(de_results_list(), function(df) {
             run_gsea(df, pathways = fgsea_pathways(),
                      min_size = input$fgsea_min_size,
@@ -621,6 +655,18 @@ deServer <- function(input, output, session) {
                      id_col   = .fgsea_id_col(df))
           })
         })
+        # Even with overlap, every pathway might be filtered out by
+        # min/max size — surface that too instead of leaving the user
+        # with a blank table and no clue.
+        n_rows <- vapply(results, function(x) {
+          if (is.data.frame(x)) nrow(x) else 0L
+        }, integer(1))
+        if (all(n_rows == 0L)) {
+          de_notify_info(
+            "GSEA finished but no pathways passed the size filters. Try lowering 'Min set size' or pick a collection with smaller pathways (e.g. Hallmark)."
+          )
+        }
+        results
       }, ignoreNULL = TRUE)
 
       output$fgsea_show_heatmap <- reactive({
@@ -696,11 +742,22 @@ deServer <- function(input, output, session) {
       ai_enrichment_payload <- reactive({
         sel <- input$fgsea_results_table_rows_selected
         req(length(sel) == 1L)
-        pw_row     <- fgsea_primary_result()[sel, ]
-        leading    <- fgsea_primary_result()$leading_edge[[sel]]
-        primary_de <- de_results_list()[[1]]
+        df <- fgsea_primary_result()
+        # DT keeps the old selection across re-renders, so a row index
+        # may temporarily point past the new result's nrow. Guard against
+        # that — and against a missing leading_edge column — so the AI
+        # panel reactive doesn't crash the whole tab with subscript
+        # errors.
+        req(is.data.frame(df), nrow(df) >= sel,
+            "leading_edge" %in% names(df))
+        pw_row     <- df[sel, , drop = FALSE]
+        leading    <- df$leading_edge[[sel]]
+        if (is.null(leading)) leading <- character(0)
+        primary_de <- de_results_list()
+        if (is.null(primary_de) || length(primary_de) == 0L) return(NULL)
+        primary_de <- primary_de[[1]]
         id_col     <- .fgsea_id_col(primary_de)
-        stats_df   <- if (is.na(id_col)) NULL else {
+        stats_df   <- if (is.na(id_col) || length(leading) == 0L) NULL else {
           keep <- as.character(primary_de[[id_col]]) %in% leading
           data.frame(
             gene_id        = as.character(primary_de[[id_col]][keep]),
