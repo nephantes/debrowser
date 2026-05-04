@@ -8,9 +8,9 @@
       # R version 4.4.2 (2024-10-31)
       #
       # Methods (E9-lite -- auto-generated, refine before publication):
-      # - Counts loaded from DEBrowser demo dataset 'Vernia et al.' (32451 features x 12 samples).
-      # - Low-count features removed using filter (Max value < 10); 28104 of 32451 features retained.
-      # - Comparison 1: 'treated' vs 'control' tested with DESeq2 (fitType=parametric, betaPrior=FALSE, testType=Wald, shrinkage=apeglm); 1247 features significant at padj<0.05, |log2FC|>1.
+      # - Counts loaded from DEBrowser demo dataset 'Vernia et al.' (30739 features x 6 samples).
+      # - Low-count features removed using filter (Max value < 10); 18000 of 30739 features retained.
+      # - Comparison 1: 'exper' vs 'control' tested with DESeq2 (fitType=parametric, betaPrior=FALSE, testType=Wald, shrinkage=apeglm); 1247 features significant at padj<0.05, |log2FC|>1.
       #
       # Frozen sessionInfo (at export time):
       # R version 4.4.2 (2024-10-31)
@@ -32,19 +32,19 @@
       corrected <- filtered
       
       # 4. Differential expression ---------------------------------------------------
-      # --- Comparison 1: treated vs control ---
-      cols_1  <- c("S1", "S2", "S3", "S4", "S5", "S6")
+      # --- Comparison 1: exper vs control ---
+      cols_1  <- c("exper_rep1", "exper_rep2", "exper_rep3", "control_rep1", "control_rep2", "control_rep3")
       conds_1 <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
       de1 <- run_de(
         method = "DESeq2",
         counts = corrected, metadata = meta, columns = cols_1, conds = conds_1,
-        params = c("DESeq2", "NoCovariate", "parametric", "FALSE", "Wald", "apeglm"),
+        params = list(covariates = "NoCovariate", fit_type   = "parametric", beta_prior = FALSE, test_type  = "Wald", shrinkage  = "apeglm"),
         return_dds = FALSE
-      )$res
+      )
       
       # 6. Write per-comparison result tables ----------------------------------------
       dir.create("debrowser_results", showWarnings = FALSE)
-      write.table(de1, "debrowser_results/results_treated_vs_control.tsv",
+      write.table(de1, "debrowser_results/results_exper_vs_control.tsv",
                   sep = "\t", quote = FALSE, col.names = NA)
       
       cat("Wrote 1 result files to debrowser_results/\n")
@@ -98,9 +98,9 @@
       de1 <- run_de(
         method = "DESeq2",
         counts = corrected, metadata = meta, columns = cols_1, conds = conds_1,
-        params = c("DESeq2", "NoCovariate", "parametric", "FALSE", "Wald", "apeglm"),
+        params = list(covariates = "NoCovariate", fit_type   = "parametric", beta_prior = FALSE, test_type  = "Wald", shrinkage  = "apeglm"),
         return_dds = FALSE
-      )$res
+      )
       
       # --- Comparison 2: high_dose vs control ---
       cols_2  <- c("S7", "S8", "S9", "S4", "S5", "S6")
@@ -108,9 +108,9 @@
       de2 <- run_de(
         method = "DESeq2",
         counts = corrected, metadata = meta, columns = cols_2, conds = conds_2,
-        params = c("DESeq2", "NoCovariate", "parametric", "FALSE", "Wald", "apeglm"),
+        params = list(covariates = "NoCovariate", fit_type   = "parametric", beta_prior = FALSE, test_type  = "Wald", shrinkage  = "apeglm"),
         return_dds = FALSE
-      )$res
+      )
       
       # 5. Enrichment (GSEA) ---------------------------------------------------------
       pathways <- msigdb_pathways(species = "Homo sapiens", collection = "H", subcollection = NULL)

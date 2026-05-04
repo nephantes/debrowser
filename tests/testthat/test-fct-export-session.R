@@ -26,25 +26,25 @@ test_that("sanitize_label handles empty and pure-punctuation input", {
     ),
     load = list(
       source = "demo1", counts_path = NA_character_, meta_path = NA_character_,
-      n_features = 32451L, n_samples = 12L
+      n_features = 30739L, n_samples = 6L
     ),
     filter = list(
       method = "Max", cutoff = 10, min_samples = NA_integer_,
-      n_features_in = 32451L, n_features_out = 28104L
+      n_features_in = 30739L, n_features_out = 18000L
     ),
     batch = list(
       method = "none", batch_column = NA_character_, treatment_column = NA_character_
     ),
     comparisons = list(
       list(
-        treatment_label   = "treated", control_label = "control",
-        treatment_samples = c("S1", "S2", "S3"),
-        control_samples   = c("S4", "S5", "S6"),
+        treatment_label   = "exper", control_label = "control",
+        treatment_samples = c("exper_rep1", "exper_rep2", "exper_rep3"),
+        control_samples   = c("control_rep1", "control_rep2", "control_rep3"),
         de_method         = "DESeq2",
         method_params     = list(fitType = "parametric", betaPrior = FALSE,
                                  testType = "Wald", shrinkage = "apeglm"),
         covariates        = character(0),
-        n_features_in     = 28104L,
+        n_features_in     = 18000L,
         n_sig_at_padj0.05_lfc1 = 1247L
       )
     ),
@@ -64,7 +64,18 @@ test_that("sanitize_label handles empty and pure-punctuation input", {
                    n_features_in = 32451L, n_features_out = 28104L)
   s$batch <- list(method = "Combat", batch_column = "batch",
                   treatment_column = "condition")
-  s$comparisons <- c(s$comparisons, list(
+  s$comparisons <- list(
+    list(
+      treatment_label   = "treated", control_label = "control",
+      treatment_samples = c("S1", "S2", "S3"),
+      control_samples   = c("S4", "S5", "S6"),
+      de_method         = "DESeq2",
+      method_params     = list(fitType = "parametric", betaPrior = FALSE,
+                               testType = "Wald", shrinkage = "apeglm"),
+      covariates        = character(0),
+      n_features_in     = 28104L,
+      n_sig_at_padj0.05_lfc1 = 1247L
+    ),
     list(
       treatment_label   = "high_dose", control_label = "control",
       treatment_samples = c("S7", "S8", "S9"),
@@ -76,7 +87,7 @@ test_that("sanitize_label handles empty and pure-punctuation input", {
       n_features_in     = 28104L,
       n_sig_at_padj0.05_lfc1 = 892L
     )
-  ))
+  )
   s$enrichment <- list(
     source = "msigdb", manual_file = NA_character_,
     msigdb = list(species = "Homo sapiens", collection = "H", subcollection = NA_character_),
@@ -156,4 +167,36 @@ test_that("emit_r_script omits batch and enrichment blocks when not configured",
   out_str <- paste(emit_r_script(blocks), collapse = "\n")
   expect_false(grepl("apply_batch_correction", out_str))
   expect_false(grepl("run_gsea", out_str))
+})
+
+test_that("emitted .R script sources cleanly and produces de1 against demo data", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("DESeq2")
+
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  script <- emit_r_script(blocks)
+
+  tmpdir  <- tempfile("debrowser_export_roundtrip_")
+  dir.create(tmpdir)
+  on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE)
+  rfile <- file.path(tmpdir, "session.R")
+  writeLines(script, rfile)
+
+  # Run in a fresh environment with cwd set to tmpdir so that
+  # debrowser_results/ lands inside the cleanup-on-exit scope.
+  old_wd <- setwd(tmpdir); on.exit(setwd(old_wd), add = TRUE)
+  env <- new.env(parent = globalenv())
+  source(rfile, local = env, echo = FALSE)
+
+  expect_true(exists("de1", envir = env))
+  expect_true(
+    is.data.frame(env$de1) ||
+    methods::is(env$de1, "DESeqResults") ||
+    methods::is(env$de1, "DataFrame")
+  )
+  expect_gt(nrow(env$de1), 100L)
+
+  expect_true(file.exists(
+    file.path(tmpdir, "debrowser_results", "results_exper_vs_control.tsv")
+  ))
 })

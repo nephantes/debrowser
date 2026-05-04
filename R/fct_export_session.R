@@ -192,18 +192,28 @@ emit_r_script <- function(blocks) {
     cov_token <- if (length(d$covariates) == 0L) "NoCovariate" else {
       paste(d$covariates, collapse = "|")
     }
-    params_vec <- switch(d$de_method,
-      "DESeq2" = c(d$de_method, cov_token,
-                   d$method_params$fitType, as.character(d$method_params$betaPrior),
-                   d$method_params$testType, d$method_params$shrinkage),
-      "EdgeR"  = c(d$de_method, cov_token,
-                   d$method_params$edgeR_normfact, d$method_params$dispersion,
-                   d$method_params$edgeR_testType),
-      "Limma"  = c(d$de_method, cov_token,
-                   d$method_params$limma_normfact, d$method_params$limma_fitType,
-                   d$method_params$normBetween)
+    params_pairs <- switch(d$de_method,
+      "DESeq2" = c(
+        sprintf('covariates = "%s"', cov_token),
+        sprintf('fit_type   = "%s"', d$method_params$fitType),
+        sprintf('beta_prior = %s',   toupper(as.character(d$method_params$betaPrior))),
+        sprintf('test_type  = "%s"', d$method_params$testType),
+        sprintf('shrinkage  = "%s"', d$method_params$shrinkage)
+      ),
+      "EdgeR"  = c(
+        sprintf('covariates = "%s"', cov_token),
+        sprintf('norm_fact  = "%s"', d$method_params$edgeR_normfact),
+        sprintf('dispersion = "%s"', d$method_params$dispersion),
+        sprintf('test_type  = "%s"', d$method_params$edgeR_testType)
+      ),
+      "Limma"  = c(
+        sprintf('covariates = "%s"', cov_token),
+        sprintf('norm_fact  = "%s"', d$method_params$limma_normfact),
+        sprintf('fit_type   = "%s"', d$method_params$limma_fitType),
+        sprintf('norm_bet   = "%s"', d$method_params$normBetween)
+      )
     )
-    params_str <- paste(sprintf('"%s"', params_vec), collapse = ", ")
+    params_str <- paste(params_pairs, collapse = ", ")
     c(
       sprintf("# --- Comparison %d: %s vs %s ---", i, d$treatment_label, d$control_label),
       sprintf("cols_%d  <- c(%s)", i, cols_str),
@@ -212,9 +222,9 @@ emit_r_script <- function(blocks) {
       sprintf('  method = "%s",', d$de_method),
       sprintf("  counts = corrected, metadata = meta, columns = cols_%d, conds = conds_%d,",
               i, i),
-      sprintf("  params = c(%s),", params_str),
+      sprintf("  params = list(%s),", params_str),
       "  return_dds = FALSE",
-      ")$res",
+      ")",
       ""
     )
   }))
