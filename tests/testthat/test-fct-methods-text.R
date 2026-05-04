@@ -115,3 +115,52 @@ test_that(".pkg_version_or_unknown returns '(version unknown)' for missing pkg",
   v <- .pkg_version_or_unknown("debrowser_no_such_pkg_xxxxx_e9")
   expect_equal(v, "(version unknown)")
 })
+
+# --- Phase E9: methods_paragraph tests ---------------------------------------
+
+test_that("methods_paragraph returns chr(1) starting with the DEBrowser intro", {
+  blocks <- .fixture_blocks_minimal()
+  out <- methods_paragraph(blocks)
+  expect_type(out, "character")
+  expect_length(out, 1L)
+  expect_gt(nchar(out), 100L)
+  expect_match(out, "^Differential expression analysis was performed using DEBrowser v")
+})
+
+test_that("methods_paragraph word count is in the spec target band for full session", {
+  # Build a "full" blocks fixture with batch + 2 comparisons + MSigDB enrichment.
+  blocks <- .fixture_blocks_minimal()
+  blocks$batch <- list(method = "Combat", batch_column = "batch",
+                       treatment_column = "condition")
+  blocks$de <- c(blocks$de, list(blocks$de[[1]]))
+  blocks$de[[2]]$treatment_label <- "high_dose"
+  blocks$de[[2]]$n_sig_at_padj0.05_lfc1 <- 892L
+  blocks$enrichment <- list(
+    source = "msigdb", manual_file = NA_character_,
+    msigdb = list(species = "Homo sapiens", collection = "H",
+                  subcollection = NA_character_),
+    n_pathways = 50L
+  )
+  out <- methods_paragraph(blocks)
+  word_count <- length(strsplit(out, "\\s+")[[1]])
+  expect_gt(word_count, 150L)
+  expect_lt(word_count, 300L)
+})
+
+test_that("methods_paragraph minimal session still produces > 50 words", {
+  out <- methods_paragraph(.fixture_blocks_minimal())
+  word_count <- length(strsplit(out, "\\s+")[[1]])
+  expect_gt(word_count, 50L)
+})
+
+test_that("methods_paragraph drops NA entries (no 'NA' string in output)", {
+  out <- methods_paragraph(.fixture_blocks_minimal())
+  # Minimal fixture has no batch and no enrichment; ensure no literal "NA"
+  # leaked into the joined paragraph.
+  expect_false(grepl("\\bNA\\b", out))
+})
+
+test_that("methods_paragraph returns single-paragraph chr(1) (no embedded newlines)", {
+  out <- methods_paragraph(.fixture_blocks_minimal())
+  expect_false(grepl("\n", out))
+})

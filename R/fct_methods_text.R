@@ -136,6 +136,23 @@ methods_sentences <- function(blocks) {
     de = de_msg, enrichment = enrichment_msg)
 }
 
+#' Manuscript-ready methods paragraph.
+#'
+#' Joins the non-NA per-step sentences from [methods_sentences()] into a
+#' single paragraph (~150-250 words for typical sessions). Embeds inline
+#' citations from `.method_refs` and version stamps via
+#' [.pkg_version_or_unknown()]. Used by `emit_r_script()` (header comment),
+#' `emit_rmd()` (Methods section), and the Export menu's "Copy methods text"
+#' modal.
+#'
+#' @param blocks Output of [build_session_blocks()].
+#' @return character(1). A single paragraph; no embedded newlines.
+#' @export
+methods_paragraph <- function(blocks) {
+  s <- methods_sentences(blocks)
+  paste(unname(s[!is.na(s)]), collapse = " ")
+}
+
 # --- Phase E9: citation registry + version helper -----------------------------
 
 # Maps method-key -> {name, version_pkg, cite}. Method-keys are the lowercase
