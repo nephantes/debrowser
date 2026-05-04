@@ -149,13 +149,28 @@ exportMenuServer <- function(id, state_react) {
 
       shiny::showModal(shiny::modalDialog(
         title = "Methods text",
+        size  = "l",
+        shiny::tags$style(shiny::HTML(
+          ".de-methods-text-wrap pre {
+             min-height: 280px;
+             max-height: 60vh;
+             white-space: pre-wrap;
+             word-wrap: break-word;
+             overflow-y: auto;
+             font-size: 0.9rem;
+             padding: 0.75rem;
+           }"
+        )),
         shiny::tags$p(
           class = "small text-muted",
           "Select the text below and copy with Cmd/Ctrl+C, ",
           "or use the Download button to save as .txt."
         ),
-        shiny::verbatimTextOutput(session$ns("methods_text_render"),
-                                  placeholder = TRUE),
+        shiny::div(
+          class = "de-methods-text-wrap",
+          shiny::verbatimTextOutput(session$ns("methods_text_render"),
+                                    placeholder = TRUE)
+        ),
         easyClose = TRUE,
         footer = shiny::tagList(
           shiny::downloadButton(session$ns("download_methods_txt"),
