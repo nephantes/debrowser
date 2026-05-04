@@ -223,11 +223,16 @@ test_that("emit_rmd sessioninfo chunk overrides to eval=TRUE", {
   expect_match(out_str, "\\{r sessioninfo, eval = TRUE")
 })
 
-test_that("emit_rmd embeds methods_sentences as Methods prose", {
+test_that("emit_rmd embeds methods_paragraph as Methods prose with citations", {
   blocks <- build_session_blocks(.fixture_state_full())
   out_str <- paste(emit_rmd(blocks), collapse = "\n")
-  expect_match(out_str, "Counts loaded from uploaded file")
-  expect_match(out_str, "Comparison 1: 'treated'")
-  expect_match(out_str, "Comparison 2: 'high_dose'")
-  expect_match(out_str, "MSigDB Homo sapiens / H")
+  # E9: paragraph-form prose with inline citations; assertions match the
+  # new methods_sentences/methods_paragraph output rather than the E3-lite
+  # bullet wording.
+  expect_match(out_str, "loaded from a user-uploaded TSV")
+  expect_match(out_str, "`treated`")
+  expect_match(out_str, "`high_dose`")
+  expect_match(out_str, "Love et al")
+  expect_match(out_str, "MSigDB Homo sapiens H")
+  expect_match(out_str, "Liberzon et al")
 })

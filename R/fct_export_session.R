@@ -92,14 +92,13 @@ build_session_blocks <- function(state) {
 #' @keywords internal
 #' @noRd
 emit_r_script <- function(blocks) {
-  m <- methods_sentences(blocks)
-  m_lines <- c(
-    sprintf("# - %s", m["load"]),
-    sprintf("# - %s", m["filter"]),
-    if (!is.na(m["batch"])) sprintf("# - %s", m["batch"]),
-    sprintf("# - %s", m["de"]),
-    if (!is.na(m["enrichment"])) sprintf("# - %s", m["enrichment"])
-  )
+  # Phase E9: assemble methods paragraph and word-wrap it as a comment block
+  # so the .R script header reads as prose. The strwrap() call gives us
+  # 76-char prose lines that fit inside the conventional 80-column window
+  # once the leading "# " prefix is added.
+  paragraph <- methods_paragraph(blocks)
+  wrapped   <- strwrap(paragraph, width = 76)
+  m_lines   <- paste0("# ", wrapped)
 
   header <- c(
     "# DEBrowser session export",
@@ -108,7 +107,7 @@ emit_r_script <- function(blocks) {
             blocks$meta$debrowser_version),
     sprintf("# %s", blocks$meta$r_version),
     "#",
-    "# Methods (E9-lite -- auto-generated, refine before publication):",
+    "# Methods (auto-generated, refine before publication):",
     m_lines,
     "#",
     "# Frozen sessionInfo (at export time):",
