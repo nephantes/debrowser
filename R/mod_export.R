@@ -2,14 +2,19 @@
 #
 # Phase E3 - reproducibility export. Thin Shiny module exposing the
 # navbar Export dropdown plus two downloadHandlers (.R script and
-# .Rmd -> HTML render). Pure helpers (build_session_blocks, emit_r_script,
-# emit_rmd) live in R/fct_export_session.R.
+# .Rmd -> HTML render). Phase E9 added a third item, "Copy methods text",
+# which opens a modal containing methods_paragraph() output plus a
+# Download-as-.txt button. Pure helpers (build_session_blocks,
+# emit_r_script, emit_rmd, methods_paragraph) live in
+# R/fct_export_session.R and R/fct_methods_text.R.
 
 #' Export menu UI -- navbar dropdown.
 #'
-#' Mounted in the page_navbar after `nav_spacer()`. Two items:
-#'   - "R script"   downloads a runnable .R reproducibility script
-#'   - "Rmd -> HTML" renders an .Rmd to HTML (gated on rmarkdown)
+#' Mounted in the page_navbar after `nav_spacer()`. Three items:
+#'   - "R script"           downloads a runnable .R reproducibility script
+#'   - "Rmd -> HTML"        renders an .Rmd to HTML (gated on rmarkdown)
+#'   - "Copy methods text"  opens a modal with a manuscript-ready paragraph
+#'                          (E9) plus a "Download as .txt" button
 #'
 #' Items are disabled at the server level when DE has not yet been run; the
 #' UI emits the disabled-attribute via output bindings.
@@ -29,6 +34,9 @@ exportMenuUI <- function(id) {
     ),
     bslib::nav_item(
       shiny::downloadLink(ns("download_rmd"), "Rmd -> HTML")
+    ),
+    bslib::nav_item(
+      shiny::actionLink(ns("show_methods"), "Copy methods text")
     )
   )
 }
@@ -121,6 +129,56 @@ exportMenuServer <- function(id, state_react) {
           )
           writeLines(rmd_lines, file)
         })
+      }
+    )
+
+    # Phase E9: Copy methods text -- opens a modal showing the paragraph
+    # in selectable preformatted text, plus a Download as .txt button.
+    # Idiomatic Shiny: outputs are defined at module init; the click
+    # observer only updates the reactiveVal that feeds the output.
+    methods_text_rv <- shiny::reactiveVal(NULL)
+    output$methods_text_render <- shiny::renderText({
+      shiny::req(methods_text_rv())
+    })
+
+    shiny::observeEvent(input$show_methods, {
+      st <- .guard()
+      if (is.null(st)) return()
+      blocks <- build_session_blocks(st)
+      methods_text_rv(methods_paragraph(blocks))
+
+      shiny::showModal(shiny::modalDialog(
+        title = "Methods text",
+        shiny::tags$p(
+          class = "small text-muted",
+          "Select the text below and copy with Cmd/Ctrl+C, ",
+          "or use the Download button to save as .txt."
+        ),
+        shiny::verbatimTextOutput(session$ns("methods_text_render"),
+                                  placeholder = TRUE),
+        easyClose = TRUE,
+        footer = shiny::tagList(
+          shiny::downloadButton(session$ns("download_methods_txt"),
+                                "Download as .txt",
+                                class = "btn-primary"),
+          shiny::modalButton("Close")
+        )
+      ))
+    })
+
+    output$download_methods_txt <- shiny::downloadHandler(
+      filename = function() {
+        sprintf("debrowser_methods_%s.txt",
+                format(Sys.time(), "%Y%m%d_%H%M%S"))
+      },
+      content = function(file) {
+        st <- .guard()
+        if (is.null(st)) {
+          writeLines("Run DE first.", file); return(invisible(NULL))
+        }
+        blocks    <- build_session_blocks(st)
+        paragraph <- methods_paragraph(blocks)
+        writeLines(paragraph, file)
       }
     )
 
