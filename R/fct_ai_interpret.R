@@ -109,3 +109,72 @@ ai_error <- function(message, class = NULL) {
     ai_error(msg, class = "ai_invalid_response")
   }
 }
+
+#' Send a redacted analytical question to a configured LLM provider.
+#'
+#' Pure orchestrator over: payload redaction (per `privacy_mode`), prompt
+#' template rendering (whisker), and dispatch to the provided ellmer chat
+#' object. Returns the model's response as `chr(1)`. Errors are surfaced
+#' as classed conditions of class `ai_error` so callers (the Shiny module)
+#' can pattern-match for friendly messages.
+#'
+#' @param question chr(1). Preset key. v1 supports "summarize_geneset".
+#' @param payload list. Pre-built payload. Shape: `list(genes = chr,
+#'   stats = data.frame|NULL, enrichment = list|NULL)`.
+#' @param privacy_mode chr(1). One of "symbols", "stats", "stats_enrichment".
+#' @param provider_chat An ellmer chat object (output of `ai_chat()`).
+#'   The chat object must have a `$chat(text)` method that returns chr(1)
+#'   on success or raises an error on failure.
+#' @param top_n integer(1). Cap on genes-list length. Default 50.
+#' @param template_dir Directory containing `ai_*.md` templates. Default
+#'   `system.file("templates", package = "debrowser")`.
+#' @return character(1). Model's response text.
+#' @export
+ai_interpret <- function(question, payload, privacy_mode, provider_chat,
+                         top_n = 50L,
+                         template_dir = system.file("templates",
+                                                    package = "debrowser")) {
+  template_file <- file.path(template_dir, sprintf("ai_%s.md", question))
+  if (!file.exists(template_file)) {
+    ai_error(sprintf("Unknown AI question preset: '%s'", question),
+             class = "ai_invalid_response")
+  }
+
+  redacted <- .redact_payload(payload, privacy_mode, top_n = top_n)
+  truncated <- isTRUE(attr(redacted, "truncated"))
+  n_total   <- attr(redacted, "n_total")
+
+  slots <- list(
+    n_genes        = length(redacted$genes),
+    n_total        = n_total,
+    truncated      = truncated,
+    gene_list      = paste(redacted$genes, collapse = ", "),
+    has_stats      = !is.null(redacted$stats),
+    stats_table    = if (is.null(redacted$stats)) "" else .format_stats_table(redacted$stats),
+    has_enrichment = !is.null(redacted$enrichment),
+    enrichment_summary = if (is.null(redacted$enrichment)) "" else
+      sprintf("Term: %s; p-value: %g; overlap: %d genes.",
+              redacted$enrichment$term,
+              redacted$enrichment$pvalue,
+              redacted$enrichment$n_overlap)
+  )
+  prompt_text <- .render_prompt(template_file, slots)
+
+  tryCatch(
+    provider_chat$chat(prompt_text),
+    error = function(e) .map_provider_error(e)
+  )
+}
+
+#' Format a stats data.frame as a human-readable two-column table.
+#' @keywords internal
+#' @noRd
+.format_stats_table <- function(stats) {
+  rows <- vapply(seq_len(nrow(stats)), function(i) {
+    sprintf("%s | %.3f | %.3g",
+            stats$gene_id[i],
+            stats$log2FoldChange[i],
+            stats$padj[i])
+  }, character(1))
+  paste(rows, collapse = "\n")
+}

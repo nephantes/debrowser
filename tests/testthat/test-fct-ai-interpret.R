@@ -143,3 +143,101 @@ test_that(".map_provider_error maps unknown errors to ai_invalid_response", {
   e <- simpleError("something completely unexpected happened")
   expect_error(.map_provider_error(e), class = "ai_invalid_response")
 })
+
+# --- ai_interpret tests with stub chat object ---
+
+# Stub chat object: emits canned response, or raises if `raise` is non-null.
+.make_stub_chat <- function(response = "Stubbed response.", raise = NULL) {
+  list(chat = function(text) {
+    if (!is.null(raise)) stop(raise)
+    response
+  })
+}
+
+# Real on-disk template for ai_interpret. Tests that depend on it skip
+# when the template fixture is missing — defensive against E12.A.1 not
+# yet running.
+.summarize_template_path <- function() {
+  system.file("templates", "ai_summarize_geneset.md",
+              package = "debrowser", mustWork = FALSE)
+}
+
+test_that("ai_interpret returns chat response on happy path", {
+  testthat::skip_if_not_installed("whisker")
+  if (!nzchar(.summarize_template_path())) {
+    skip("ai_summarize_geneset.md template not installed")
+  }
+  stub <- .make_stub_chat("This gene set is enriched in DNA damage response.")
+  out <- ai_interpret(
+    question      = "summarize_geneset",
+    payload       = .fixture_payload(),
+    privacy_mode  = "symbols",
+    provider_chat = stub,
+    top_n         = 10L
+  )
+  expect_equal(out, "This gene set is enriched in DNA damage response.")
+})
+
+test_that("ai_interpret raises ai_invalid_response on unknown question key", {
+  stub <- .make_stub_chat()
+  expect_error(
+    ai_interpret(
+      question      = "bogus_preset",
+      payload       = .fixture_payload(),
+      privacy_mode  = "symbols",
+      provider_chat = stub
+    ),
+    class = "ai_invalid_response"
+  )
+})
+
+test_that("ai_interpret raises ai_no_key when chat throws auth error", {
+  testthat::skip_if_not_installed("whisker")
+  if (!nzchar(.summarize_template_path())) skip("template not installed")
+  stub <- .make_stub_chat(raise = "HTTP 401: Unauthorized")
+  expect_error(
+    ai_interpret("summarize_geneset", .fixture_payload(), "symbols", stub),
+    class = "ai_no_key"
+  )
+})
+
+test_that("ai_interpret raises ai_rate_limit when chat throws 429", {
+  testthat::skip_if_not_installed("whisker")
+  if (!nzchar(.summarize_template_path())) skip("template not installed")
+  stub <- .make_stub_chat(raise = "HTTP 429: rate limit exceeded")
+  expect_error(
+    ai_interpret("summarize_geneset", .fixture_payload(), "symbols", stub),
+    class = "ai_rate_limit"
+  )
+})
+
+test_that("ai_interpret raises ai_network when chat throws connection error", {
+  testthat::skip_if_not_installed("whisker")
+  if (!nzchar(.summarize_template_path())) skip("template not installed")
+  stub <- .make_stub_chat(raise = "Could not resolve host: api.anthropic.com")
+  expect_error(
+    ai_interpret("summarize_geneset", .fixture_payload(), "symbols", stub),
+    class = "ai_network"
+  )
+})
+
+test_that("ai_interpret stats mode includes effect-size context in prompt", {
+  testthat::skip_if_not_installed("whisker")
+  if (!nzchar(.summarize_template_path())) skip("template not installed")
+  # Capture the prompt text by stubbing chat to return its input
+  captured <- new.env()
+  stub <- list(chat = function(text) { captured$prompt <- text; "OK" })
+  ai_interpret("summarize_geneset", .fixture_payload(),
+               "stats", stub, top_n = 50L)
+  expect_match(captured$prompt, "Effect-size context")
+})
+
+test_that("ai_interpret symbols mode does NOT include effect-size context", {
+  testthat::skip_if_not_installed("whisker")
+  if (!nzchar(.summarize_template_path())) skip("template not installed")
+  captured <- new.env()
+  stub <- list(chat = function(text) { captured$prompt <- text; "OK" })
+  ai_interpret("summarize_geneset", .fixture_payload(),
+               "symbols", stub, top_n = 50L)
+  expect_no_match(captured$prompt, "Effect-size context")
+})
