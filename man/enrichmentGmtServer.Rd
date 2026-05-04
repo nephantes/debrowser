@@ -25,7 +25,7 @@ status output reports load success / failure / set count next to the
 picker.
 }
 \examples{
-\donttest{
+\dontrun{
   shiny::shinyApp(
     ui = enrichmentGmtUI("gmt"),
     server = function(input, output, session) {

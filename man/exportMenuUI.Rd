@@ -13,9 +13,11 @@ exportMenuUI(id)
 bslib::nav_menu element.
 }
 \description{
-Mounted in the page_navbar after `nav_spacer()`. Two items:
-  - "R script"   downloads a runnable .R reproducibility script
-  - "Rmd -> HTML" renders an .Rmd to HTML (gated on rmarkdown)
+Mounted in the page_navbar after `nav_spacer()`. Three items:
+  - "R script"           downloads a runnable .R reproducibility script
+  - "Rmd -> HTML"        renders an .Rmd to HTML (gated on rmarkdown)
+  - "Copy methods text"  opens a modal with a manuscript-ready paragraph
+                         (E9) plus a "Download as .txt" button
 }
 \details{
 Items are disabled at the server level when DE has not yet been run; the

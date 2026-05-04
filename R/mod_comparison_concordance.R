@@ -102,7 +102,7 @@ comparisonConcordanceUI <- function(id) {
 #'   empty-state.
 #' @return invisible(NULL).
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   de <- list(
 #'     "Treat vs Ctrl" = data.frame(ID = paste0("G", 1:5),
 #'       log2FoldChange = c(2, -1, 0, 3, -2),

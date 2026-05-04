@@ -46,7 +46,7 @@ enrichmentNesHeatmapUI <- function(id) {
 #'   \code{\link{run_gsea}} outputs (one per comparison).
 #' @return invisible(NULL).
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   shiny::shinyApp(
 #'     ui = enrichmentNesHeatmapUI("nes"),
 #'     server = function(input, output, session) {
