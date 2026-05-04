@@ -16,12 +16,13 @@
 #'
 debrowserdataload <- function(id, nextpagebutton = NULL) {
   moduleServer(id, function(input, output, session) {
-  ldata <- reactiveValues(count = NULL, meta = NULL)
+  ldata <- reactiveValues(count = NULL, meta = NULL, data_source = NA_character_)
   loadeddata <- reactive({
     ret <- NULL
     if (!is.null(ldata$count)) {
       ldata$count <- ldata$count[, sapply(ldata$count, is.numeric)]
-      ret <- list(count = ldata$count, meta = ldata$meta)
+      ret <- list(count = ldata$count, meta = ldata$meta,
+                  data_source = ldata$data_source)
     }
     return(ret)
   })
@@ -108,6 +109,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
         metadatatable <- make_default_metadata(jsondata)
       }
       ldata$meta <- metadatatable
+      ldata$data_source <- "json"
       input$Filter
     }
   })
@@ -118,6 +120,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     ), envir = demoEnv)
     ldata$count <- demoEnv$demodata
     ldata$meta <- demoEnv$metadatatable
+    ldata$data_source <- "demo1"
   })
   observeEvent(input$demo2, {
     demoEnv <- new.env()
@@ -126,6 +129,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     ), envir = demoEnv)
     ldata$count <- demoEnv$demodata
     ldata$meta <- demoEnv$metadatatable
+    ldata$data_source <- "demo2"
   })
 
   # B2b: auto-detect separator on counts file change.
@@ -264,6 +268,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     }
     ldata$count <- counttable
     ldata$meta <- metadatatable
+    ldata$data_source <- "upload"
   })
   output$nextButton <- renderUI({
     actionButtonDE(nextpagebutton, label = nextpagebutton, styleclass = "primary")
