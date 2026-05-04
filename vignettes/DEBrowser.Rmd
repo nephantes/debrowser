@@ -983,7 +983,7 @@ occur until you explicitly enable it and configure a provider.
 
 ## Enabling AI features
 
-1. Click `Settings ▾ → AI...` in the navbar. A modal opens.
+1. Click `Settings ▾ → AI Assistant` in the navbar. A modal opens.
 2. Tick **Enable AI features**.
 3. Pick a **Provider**. Three options ship in v1:
    - **Anthropic** (Claude models) — requires an API key from console.anthropic.com.

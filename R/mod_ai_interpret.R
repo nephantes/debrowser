@@ -69,13 +69,17 @@ aiInterpretServer <- function(id, payload_react, settings_react) {
                                 selected = s$default_privacy %||% "symbols")
     }, priority = 100)
 
-    # Live prompt preview (rebuilt on input changes / payload changes)
+    # Live prompt preview (rebuilt on input changes / payload changes).
+    # Wrap the entire body — including payload_react() — in tryCatch so
+    # an upstream error (e.g. a stale row selection raising "subscript
+    # out of bounds") returns a friendly placeholder rather than
+    # crashing this output and the dependent char_count.
     prompt_preview_text <- shiny::reactive({
-      p <- payload_react()
-      if (is.null(p) || length(p$genes) == 0L) {
-        return("(no genes selected)")
-      }
       tryCatch({
+        p <- payload_react()
+        if (is.null(p) || length(p$genes) == 0L) {
+          return("(no genes selected)")
+        }
         # Build the same prompt ai_interpret() would build, without dispatching.
         template_dir <- system.file("templates", package = "debrowser")
         template_file <- file.path(template_dir,
@@ -106,7 +110,12 @@ aiInterpretServer <- function(id, payload_react, settings_react) {
     output$prompt_preview <- shiny::renderText({ prompt_preview_text() })
 
     output$char_count <- shiny::renderText({
-      sprintf("%d characters will be sent.", nchar(prompt_preview_text()))
+      txt <- tryCatch(prompt_preview_text(),
+                      error = function(e) NA_character_)
+      if (is.null(txt) || !is.character(txt) || is.na(txt)) {
+        return("0 characters will be sent.")
+      }
+      sprintf("%d characters will be sent.", nchar(txt))
     })
 
     # Response state
@@ -123,7 +132,7 @@ aiInterpretServer <- function(id, payload_react, settings_react) {
       s <- settings_react()
       if (!.has_required_credentials(s)) {
         shiny::showNotification(
-          "Configure a provider in Settings - AI...", type = "warning"
+          "Configure a provider in Settings - AI Assistant.", type = "warning"
         )
         return()
       }

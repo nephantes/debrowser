@@ -7,7 +7,7 @@
 
 #' Settings nav_menu UI (mounted in the navbar).
 #'
-#' Returns a `bslib::nav_menu` titled "Settings" with one item: "AI...".
+#' Returns a `bslib::nav_menu` titled "Settings" with one item: "AI Assistant".
 #' Clicking the item opens a modal handled by [aiSettingsServer()].
 #'
 #' @param id Module ID.
@@ -19,7 +19,7 @@ aiSettingsUI <- function(id) {
     title = "Settings",
     align = "right",
     bslib::nav_item(
-      shiny::actionLink(ns("open_ai_modal"), "AI...")
+      shiny::actionLink(ns("open_ai_modal"), "AI Assistant")
     )
   )
 }
