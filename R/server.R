@@ -499,6 +499,95 @@ deServer <- function(input, output, session) {
       .fgsea_gmt        <- enrichmentGmtServer("fgsea_gmt")
       fgsea_pathways    <- .fgsea_gmt$pathways
       fgsea_gmt_state   <- .fgsea_gmt$state    # consumed by export module (Task 10)
+
+      # E3: snapshot the analytical state on demand. Read on download click only;
+      # nothing else depends on this reactive, so it does not invalidate other
+      # computations. Returns NULL until DE has run.
+      state_react <- shiny::reactive({
+        if (!isTRUE(buttonValues$startDE) || is.null(dc())) return(NULL)
+
+        count_mat <- batch()$BatchEffect()$count
+
+        # filter inputs live in the lcf module's namespace
+        lcf_input <- function(name) session$input[[paste0("lcf-", name)]]
+        filter_method <- lcf_input("lcfmethod") %||% "Max"
+        filter_cutoff <- switch(filter_method,
+          "Max"  = as.numeric(lcf_input("maxCutoff")  %||% 10),
+          "Mean" = as.numeric(lcf_input("meanCutoff") %||% 10),
+          "CPM"  = as.numeric(lcf_input("CPMCutoff")  %||% 1)
+        )
+        filter_min_samples <- if (identical(filter_method, "CPM")) {
+          as.integer(lcf_input("numSample") %||% (ncol(count_mat) - 1L))
+        } else {
+          NA_integer_
+        }
+
+        batch_input <- function(name) session$input[[paste0("batcheffect-", name)]]
+        batch_method <- batch_input("batchmethod") %||% "none"
+        batch_col    <- batch_input("batch")
+        treat_col    <- batch_input("treatment")
+
+        comps_spec <- if (!is.null(sel())) sel()$comparisons_spec() else list()
+
+        comparisons <- lapply(seq_along(dc()), function(i) {
+          cmp_spec <- if (i <= length(comps_spec)) comps_spec[[i]] else list()
+          init <- dc()[[i]]$init_data
+          sig_thresh_padj <- 0.05
+          sig_thresh_lfc  <- 1
+          n_sig <- if (!is.null(init) && all(c("padj", "log2FoldChange") %in% colnames(init))) {
+            sum(!is.na(init$padj) & init$padj < sig_thresh_padj &
+                abs(init$log2FoldChange) > sig_thresh_lfc)
+          } else NA_integer_
+          list(
+            treatment_label   = cmp_spec$treatment_label   %||% "treatment",
+            control_label     = cmp_spec$control_label     %||% "control",
+            treatment_samples = cmp_spec$treatment_samples %||% character(0),
+            control_samples   = cmp_spec$control_samples   %||% character(0),
+            de_method         = cmp_spec$de_method         %||% "DESeq2",
+            method_params     = cmp_spec$method_params     %||% list(),
+            covariates        = cmp_spec$covariates        %||% character(0),
+            n_features_in     = nrow(count_mat),
+            n_sig_at_padj0.05_lfc1 = as.integer(n_sig)
+          )
+        })
+
+        enrichment_state <- if (exists("fgsea_gmt_state", inherits = FALSE)) {
+          fgsea_gmt_state()
+        } else NULL
+
+        list(
+          meta = list(
+            debrowser_version = utils::packageVersion("debrowser"),
+            r_version         = R.version.string,
+            timestamp         = Sys.time(),
+            session_info      = utils::capture.output(utils::sessionInfo())
+          ),
+          load = list(
+            source       = updata()$load()$data_source %||% NA_character_,
+            counts_path  = NA_character_,   # original upload name not preserved through
+            meta_path    = NA_character_,   # the load module today; minor, can refine later
+            n_features   = nrow(count_mat),
+            n_samples    = ncol(count_mat)
+          ),
+          filter = list(
+            method         = filter_method,
+            cutoff         = filter_cutoff,
+            min_samples    = filter_min_samples,
+            n_features_in  = nrow(updata()$load()$count),
+            n_features_out = nrow(count_mat)
+          ),
+          batch = list(
+            method           = batch_method,
+            batch_column     = if (is.null(batch_col) || identical(batch_col, "None")) NA_character_ else batch_col,
+            treatment_column = if (is.null(treat_col) || identical(treat_col, "None")) NA_character_ else treat_col
+          ),
+          comparisons = comparisons,
+          enrichment  = enrichment_state
+        )
+      })
+
+      exportMenuServer("export", state_react)
+
       .fgsea_id_col <- function(de) {
         if ("ID"   %in% names(de)) return("ID")
         if ("gene" %in% names(de)) return("gene")
