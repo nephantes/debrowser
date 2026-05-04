@@ -582,7 +582,12 @@ deServer <- function(input, output, session) {
             treatment_column = if (is.null(treat_col) || identical(treat_col, "None")) NA_character_ else treat_col
           ),
           comparisons = comparisons,
-          enrichment  = enrichment_state
+          enrichment  = enrichment_state,
+          # E3.B: full filtered+batch-corrected matrix (all detected genes,
+          # all samples) and the sample metadata table -- consumed by the
+          # Sample Info / QC / PCA / All2All sections of the rich report.
+          full_counts = count_mat,
+          metadata    = batch()$BatchEffect()$meta
         )
       })
 
