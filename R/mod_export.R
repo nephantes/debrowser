@@ -1,0 +1,118 @@
+# R/mod_export.R
+#
+# Phase E3 - reproducibility export. Thin Shiny module exposing the
+# navbar Export dropdown plus two downloadHandlers (.R script and
+# .Rmd -> HTML render). Pure helpers (build_session_blocks, emit_r_script,
+# emit_rmd) live in R/fct_export_session.R.
+
+#' Export menu UI -- navbar dropdown.
+#'
+#' Mounted in the page_navbar after `nav_spacer()`. Two items:
+#'   - "R script"   downloads a runnable .R reproducibility script
+#'   - "Rmd -> HTML" renders an .Rmd to HTML (gated on rmarkdown)
+#'
+#' Items are disabled at the server level when DE has not yet been run; the
+#' UI emits the disabled-attribute via output bindings.
+#'
+#' @param id Module ID.
+#' @return bslib::nav_menu element.
+#' @export
+exportMenuUI <- function(id) {
+  ns <- shiny::NS(id)
+  bslib::nav_menu(
+    title = "Export",
+    align = "right",
+    bslib::nav_item(
+      shiny::downloadLink(ns("download_r"), "R script")
+    ),
+    bslib::nav_item(
+      shiny::downloadLink(ns("download_rmd"), "Rmd -> HTML")
+    )
+  )
+}
+
+#' Export menu server -- wires download handlers from a state reactive.
+#'
+#' @param id Module ID (matches [exportMenuUI()]).
+#' @param state_react reactive expression returning the plain-list state
+#'   snapshot consumed by [build_session_blocks()]. May return NULL when
+#'   no DE has run yet; both download handlers no-op (showNotification) in
+#'   that case.
+#' @return Invisibly NULL.
+#' @export
+exportMenuServer <- function(id, state_react) {
+  shiny::moduleServer(id, function(input, output, session) {
+
+    .guard <- function() {
+      st <- state_react()
+      if (is.null(st)) {
+        shiny::showNotification(
+          "Run a DE analysis before exporting.",
+          type = "warning"
+        )
+        return(NULL)
+      }
+      st
+    }
+
+    output$download_r <- shiny::downloadHandler(
+      filename = function() {
+        sprintf("debrowser_session_%s.R",
+                format(Sys.time(), "%Y%m%d_%H%M%S"))
+      },
+      content = function(file) {
+        st <- .guard()
+        if (is.null(st)) {
+          writeLines("# Run DE first.", file); return(invisible(NULL))
+        }
+        blocks <- build_session_blocks(st)
+        writeLines(emit_r_script(blocks), file)
+      }
+    )
+
+    output$download_rmd <- shiny::downloadHandler(
+      filename = function() {
+        sprintf("debrowser_session_%s.html",
+                format(Sys.time(), "%Y%m%d_%H%M%S"))
+      },
+      content = function(file) {
+        st <- .guard()
+        if (is.null(st)) {
+          writeLines("Run DE first.", file); return(invisible(NULL))
+        }
+        if (!requireNamespace("rmarkdown", quietly = TRUE)) {
+          shiny::showNotification(
+            "Install the 'rmarkdown' package to enable HTML export.",
+            type = "error"
+          )
+          writeLines("rmarkdown not installed.", file)
+          return(invisible(NULL))
+        }
+        blocks <- build_session_blocks(st)
+        rmd_lines <- emit_rmd(blocks)
+        rmd_path  <- tempfile(fileext = ".Rmd")
+        on.exit(unlink(rmd_path), add = TRUE)
+        writeLines(rmd_lines, rmd_path)
+        tryCatch({
+          rmarkdown::render(
+            input         = rmd_path,
+            output_file   = file,
+            output_format = "html_document",
+            quiet         = TRUE,
+            envir         = new.env(parent = globalenv())
+          )
+        }, error = function(e) {
+          shiny::showNotification(
+            sprintf("HTML render failed: %s. Downloading raw .Rmd instead.",
+                    conditionMessage(e)),
+            type = "error",
+            duration = 10
+          )
+          writeLines(rmd_lines, file)
+        })
+      }
+    )
+
+    invisible(NULL)
+  })
+}
