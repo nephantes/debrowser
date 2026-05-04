@@ -1,37 +1,43 @@
 # R/fct_methods_text.R
 #
-# E9-lite: per-step methods sentences consumed by emit_r_script() (header
-# comment block) and emit_rmd() (Methods paragraph). Phase E9 will upgrade
-# this to a citation-rich paragraph generator; the function name and
-# signature are stable.
-# Tested in tests/testthat/test-fct-methods-text.R.
+# Citation-rich per-step methods sentences (methods_sentences) and a
+# paragraph-level assembler (methods_paragraph) consumed by emit_r_script()
+# (header comment block) and emit_rmd() (Methods paragraph). Backed by
+# .method_refs registry; per-call package versions resolved by
+# .pkg_version_or_unknown(). Tested in tests/testthat/test-fct-methods-text.R.
 
-#' Per-step methods sentences (E9-lite).
+#' Per-step methods sentences with inline citations and version stamps.
 #'
 #' Returns a named character vector with one entry per pipeline step
 #' (`load, filter, batch, de, enrichment`). Each entry is one
 #' English sentence (or NA if the step did not run, e.g. `batch$method ==
-#' "none"`). Phase E9 will replace this with a paragraph-level generator
-#' producing citation-rich prose; until then both the `.R` script header
-#' and the `.Rmd` "Methods" section consume these per-step sentences.
+#' "none"`). Internal building block of [methods_paragraph()] which joins
+#' the non-NA entries into a single manuscript-ready paragraph.
 #'
 #' @param blocks Output of [build_session_blocks()].
 #' @return Named character vector of length 5.
 #' @keywords internal
 #' @noRd
 methods_sentences <- function(blocks) {
-  load_msg <- switch(blocks$load$source,
-    "demo1" = sprintf("Counts loaded from DEBrowser demo dataset 'Vernia et al.' (%d features x %d samples).",
-                     blocks$load$n_features, blocks$load$n_samples),
-    "demo2" = sprintf("Counts loaded from DEBrowser demo dataset 'Donnard et al.' (%d features x %d samples).",
-                     blocks$load$n_features, blocks$load$n_samples),
-    "json"  = sprintf("Counts loaded from JSON URL (%d features x %d samples).",
-                     blocks$load$n_features, blocks$load$n_samples),
-    "upload" = sprintf("Counts loaded from uploaded file '%s' (%d features x %d samples).",
-                      blocks$load$counts_path %||% "counts.tsv",
-                      blocks$load$n_features, blocks$load$n_samples)
+  # --- load (intro + data) ---
+  source_desc <- switch(blocks$load$source,
+    "demo1"  = "the DEBrowser demo dataset (Vernia et al.)",
+    "demo2"  = "the DEBrowser demo dataset (Donnard et al.)",
+    "json"   = "a remote JSON URL",
+    "upload" = "a user-uploaded TSV"
+  )
+  load_msg <- sprintf(
+    paste0("Differential expression analysis was performed using ",
+           "DEBrowser v%s (%s). ",
+           "Raw counts (%s features x %d samples) were loaded from %s."),
+    .pkg_version_or_unknown(.method_refs$debrowser$version_pkg),
+    .method_refs$debrowser$cite,
+    format(blocks$load$n_features, big.mark = ","),
+    blocks$load$n_samples,
+    source_desc
   )
 
+  # --- filter ---
   filter_method_label <- switch(blocks$filter$method,
     "Max"  = sprintf("Max value < %s", blocks$filter$cutoff),
     "Mean" = sprintf("Mean value < %s", blocks$filter$cutoff),
@@ -39,50 +45,91 @@ methods_sentences <- function(blocks) {
                     blocks$filter$cutoff, blocks$filter$min_samples)
   )
   filter_msg <- sprintf(
-    "Low-count features removed using filter (%s); %d of %d features retained.",
-    filter_method_label,
-    blocks$filter$n_features_out, blocks$filter$n_features_in
+    "Features were filtered using a %s cutoff (%s); %s of %s features retained.",
+    blocks$filter$method, filter_method_label,
+    format(blocks$filter$n_features_out, big.mark = ","),
+    format(blocks$filter$n_features_in,  big.mark = ",")
   )
 
+  # --- batch (NA when method=="none") ---
   batch_msg <- if (identical(blocks$batch$method, "none")) {
     NA_character_
   } else {
-    label <- switch(blocks$batch$method,
-      "Combat"    = "ComBat (sva package)",
-      "CombatSeq" = "ComBat-seq (sva package)",
-      "Harman"    = "Harman"
+    key <- switch(blocks$batch$method,
+      "Combat"    = "combat",
+      "CombatSeq" = "combat_seq",
+      "Harman"    = "harman"
     )
-    sprintf("Batch effects corrected with %s, batch column '%s', treatment column '%s'.",
-            label, blocks$batch$batch_column,
-            blocks$batch$treatment_column %||% "(none)")
+    entry <- .method_refs[[key]]
+    treat_clause <- if (is.null(blocks$batch$treatment_column) ||
+                        is.na(blocks$batch$treatment_column %||% NA)) {
+      ""
+    } else {
+      sprintf(" and `%s` as the biological covariate",
+              blocks$batch$treatment_column)
+    }
+    sprintf(
+      "Batch effects were corrected with %s v%s (%s), using `%s` as the batch covariate%s.",
+      entry$name, .pkg_version_or_unknown(entry$version_pkg), entry$cite,
+      blocks$batch$batch_column, treat_clause
+    )
   }
 
+  # --- de (one sentence per comparison, joined with single spaces) ---
   de_lines <- vapply(seq_along(blocks$de), function(i) {
     d <- blocks$de[[i]]
+    treat_label   <- gsub("`", "", d$treatment_label)
+    control_label <- gsub("`", "", d$control_label)
+    n_treat   <- length(d$treatment_samples)
+    n_control <- length(d$control_samples)
+    de_key <- switch(d$de_method,
+      "DESeq2" = "deseq2",
+      "EdgeR"  = "edger",
+      "Limma"  = "limma"
+    )
+    entry <- .method_refs[[de_key]]
     param_str <- paste(sprintf("%s=%s", names(d$method_params),
                                unlist(d$method_params)), collapse = ", ")
-    cov_str <- if (length(d$covariates) == 0L) "" else {
-      sprintf(", covariates=%s", paste(d$covariates, collapse = "|"))
-    }
-    sprintf("Comparison %d: '%s' vs '%s' tested with %s (%s%s); %d features significant at padj<0.05, |log2FC|>1.",
-            i, d$treatment_label, d$control_label, d$de_method,
-            param_str, cov_str, d$n_sig_at_padj0.05_lfc1)
+    sprintf(
+      paste0("`%s` (n=%d) versus `%s` (n=%d) was tested with %s v%s (%s) ",
+             "using %s; %s features were significant at adjusted p-value < 0.05 ",
+             "and |log2 fold change| > 1."),
+      treat_label, n_treat, control_label, n_control,
+      entry$name, .pkg_version_or_unknown(entry$version_pkg), entry$cite,
+      param_str,
+      format(d$n_sig_at_padj0.05_lfc1, big.mark = ",")
+    )
   }, character(1))
   de_msg <- paste(de_lines, collapse = " ")
 
+  # --- enrichment (NA when not loaded) ---
   enrichment_msg <- if (is.null(blocks$enrichment)) {
     NA_character_
   } else if (identical(blocks$enrichment$source, "msigdb")) {
     sub <- blocks$enrichment$msigdb$subcollection
     sub_part <- if (is.na(sub) || !nzchar(sub)) "" else sprintf(" / %s", sub)
-    sprintf("Gene set enrichment performed with fgsea against MSigDB %s / %s%s (%d gene sets).",
-            blocks$enrichment$msigdb$species,
-            blocks$enrichment$msigdb$collection,
-            sub_part, blocks$enrichment$n_pathways)
+    sprintf(
+      paste0("Gene set enrichment analysis was performed with fgsea v%s (%s) ",
+             "against the MSigDB %s %s%s collection v%s (%s) ",
+             "(n=%d gene sets, default fgsea parameters)."),
+      .pkg_version_or_unknown(.method_refs$fgsea$version_pkg),
+      .method_refs$fgsea$cite,
+      blocks$enrichment$msigdb$species,
+      blocks$enrichment$msigdb$collection, sub_part,
+      .pkg_version_or_unknown(.method_refs$msigdb$version_pkg),
+      .method_refs$msigdb$cite,
+      blocks$enrichment$n_pathways
+    )
   } else {
-    sprintf("Gene set enrichment performed with fgsea against gene sets from '%s' (%d sets).",
-            blocks$enrichment$manual_file %||% "uploaded .gmt",
-            blocks$enrichment$n_pathways)
+    sprintf(
+      paste0("Gene set enrichment analysis was performed with fgsea v%s (%s) ",
+             "against the uploaded gene set file '%s' ",
+             "(n=%d gene sets, default fgsea parameters)."),
+      .pkg_version_or_unknown(.method_refs$fgsea$version_pkg),
+      .method_refs$fgsea$cite,
+      blocks$enrichment$manual_file %||% "uploaded.gmt",
+      blocks$enrichment$n_pathways
+    )
   }
 
   c(load = load_msg, filter = filter_msg, batch = batch_msg,

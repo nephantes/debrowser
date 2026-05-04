@@ -9,7 +9,7 @@
     batch = list(method = "none", batch_column = NA_character_,
                  treatment_column = NA_character_),
     comparisons = list(list(
-      treatment_label = "treated", control_label = "control",
+      treatment_label = "exper", control_label = "control",
       treatment_samples = c("S1"), control_samples = c("S4"),
       de_method = "DESeq2",
       method_params = list(fitType = "parametric", betaPrior = FALSE,
@@ -21,40 +21,47 @@
   ))
 }
 
-test_that("methods_sentences returns a sentence per pipeline step", {
+test_that("methods_sentences returns a sentence per pipeline step with DEBrowser intro citation", {
   s <- methods_sentences(.fixture_blocks_minimal())
   expect_named(s, c("load", "filter", "batch", "de", "enrichment"))
-  expect_match(s["load"], "demo")
+  expect_match(s["load"], "Differential expression analysis was performed using DEBrowser v")
+  expect_match(s["load"], "Kucukural et al")
+  expect_match(s["load"], "demo dataset")
   expect_match(s["filter"], "Max")
   expect_equal(unname(s["batch"]), NA_character_)  # method=none -> no sentence
-  expect_match(s["de"], "DESeq2")
-  expect_match(s["de"], "treated")
-  expect_match(s["de"], "1247")
+  expect_match(s["de"], "DESeq2 v")
+  expect_match(s["de"], "Love et al")
+  expect_match(s["de"], "exper")  # treatment label from fixture
+  expect_match(s["de"], "1247|1,247")  # n_sig (with or without comma formatting)
   expect_equal(unname(s["enrichment"]), NA_character_)
 })
 
-test_that("methods_sentences includes batch sentence when method != none", {
+test_that("methods_sentences includes batch sentence with citation when method != none", {
   blocks <- .fixture_blocks_minimal()
   blocks$batch <- list(method = "Combat", batch_column = "batch",
                        treatment_column = "condition")
   s <- methods_sentences(blocks)
   expect_match(s["batch"], "ComBat")
+  expect_match(s["batch"], "Johnson et al")
   expect_match(s["batch"], "batch")
   expect_match(s["batch"], "condition")
 })
 
-test_that("methods_sentences enumerates multiple comparisons", {
+test_that("methods_sentences enumerates multiple comparisons each with citation", {
   blocks <- .fixture_blocks_minimal()
   blocks$de <- c(blocks$de, list(blocks$de[[1]]))  # duplicate, fine for prose
   blocks$de[[2]]$treatment_label <- "high_dose"
   blocks$de[[2]]$n_sig_at_padj0.05_lfc1 <- 892L
   s <- methods_sentences(blocks)
-  expect_match(s["de"], "treated")
+  expect_match(s["de"], "exper")
   expect_match(s["de"], "high_dose")
   expect_match(s["de"], "892")
+  # Per-comparison citations: "Love et al" should appear at least twice
+  matches <- gregexpr("Love et al", s["de"], fixed = TRUE)[[1]]
+  expect_true(length(matches) >= 2L)
 })
 
-test_that("methods_sentences includes enrichment when MSigDB loaded", {
+test_that("methods_sentences includes enrichment with fgsea + MSigDB citations when MSigDB loaded", {
   blocks <- .fixture_blocks_minimal()
   blocks$enrichment <- list(
     source = "msigdb", manual_file = NA_character_,
@@ -63,8 +70,10 @@ test_that("methods_sentences includes enrichment when MSigDB loaded", {
     n_pathways = 50L
   )
   s <- methods_sentences(blocks)
-  expect_match(s["enrichment"], "fgsea")
-  expect_match(s["enrichment"], "Homo sapiens")
+  expect_match(s["enrichment"], "fgsea v")
+  expect_match(s["enrichment"], "Korotkevich et al")
+  expect_match(s["enrichment"], "MSigDB Homo sapiens H")
+  expect_match(s["enrichment"], "Liberzon et al")
   expect_match(s["enrichment"], "50 gene sets")
 })
 
