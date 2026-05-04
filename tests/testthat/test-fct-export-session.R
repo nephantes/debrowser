@@ -98,7 +98,8 @@ test_that("sanitize_label handles empty and pure-punctuation input", {
 
 test_that("build_session_blocks returns the canonical block list", {
   blocks <- build_session_blocks(.fixture_state_demo_minimal())
-  expect_named(blocks, c("meta", "load", "filter", "batch", "de", "enrichment"))
+  expect_named(blocks, c("meta", "load", "filter", "batch", "de", "enrichment",
+                         "full_counts", "metadata"))
   expect_length(blocks$de, 1L)
   expect_null(blocks$enrichment)
 })

@@ -64,7 +64,13 @@ build_session_blocks <- function(state) {
     filter     = state$filter,
     batch      = state$batch,
     de         = de_blocks,
-    enrichment = state$enrichment
+    enrichment = state$enrichment,
+    # E3.B: full filtered+batch-corrected matrix and sample metadata,
+    # consumed by the rich-report sections (Sample Info / QC / PCA /
+    # All2All). Both may be NULL when state_react does not capture them
+    # (e.g. when a future caller passes an older-shape state).
+    full_counts = state$full_counts,
+    metadata    = state$metadata
   )
 }
 
