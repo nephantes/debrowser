@@ -89,7 +89,8 @@ enrichmentUI <- function(id) {
 #' @export
 enrichmentServer <- function(id, de_results) {
   shiny::moduleServer(id, function(input, output, session) {
-    pathways <- enrichmentGmtServer("gmt")
+    .gmt     <- enrichmentGmtServer("gmt")
+    pathways <- .gmt$pathways
 
     de_list <- shiny::reactive({
       x <- de_results()

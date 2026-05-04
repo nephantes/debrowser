@@ -496,7 +496,9 @@ deServer <- function(input, output, session) {
       # (panel3, formerly GO Term). Sidebar's GMT/MSigDB picker is
       # mounted here; a startGO + goplot=='fgseaGSEA' combo triggers a
       # run_gsea() pass per comparison.
-      fgsea_pathways <- enrichmentGmtServer("fgsea_gmt")
+      .fgsea_gmt        <- enrichmentGmtServer("fgsea_gmt")
+      fgsea_pathways    <- .fgsea_gmt$pathways
+      fgsea_gmt_state   <- .fgsea_gmt$state    # consumed by export module (Task 10)
       .fgsea_id_col <- function(de) {
         if ("ID"   %in% names(de)) return("ID")
         if ("gene" %in% names(de)) return("gene")

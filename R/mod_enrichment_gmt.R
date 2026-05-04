@@ -207,7 +207,36 @@ enrichmentGmtServer <- function(id) {
       }
     })
 
-    shiny::reactive({ pathways_val() })
+    state_react <- shiny::reactive({
+      src <- input$gmt_source %||% NA_character_
+      if (identical(src, "manual")) {
+        list(
+          source      = "manual",
+          manual_file = if (is.null(input$manual_gmt)) NA_character_ else input$manual_gmt$name,
+          msigdb      = NA,
+          n_pathways  = if (is.null(pathways_val())) 0L else length(pathways_val())
+        )
+      } else if (identical(src, "msigdb")) {
+        sub <- input$msigdb_subcollection %||% ""
+        list(
+          source      = "msigdb",
+          manual_file = NA_character_,
+          msigdb      = list(
+            species       = input$msigdb_species,
+            collection    = input$msigdb_collection,
+            subcollection = if (nzchar(trimws(sub))) trimws(sub) else NA_character_
+          ),
+          n_pathways  = if (is.null(pathways_val())) 0L else length(pathways_val())
+        )
+      } else {
+        NULL
+      }
+    })
+
+    list(
+      pathways = shiny::reactive({ pathways_val() }),
+      state    = state_react
+    )
   })
 }
 
