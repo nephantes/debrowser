@@ -120,3 +120,40 @@ test_that("build_session_blocks dedupes safe_label on collision", {
   expect_equal(blocks$de[[1]]$safe_label, "treated_vs_control")
   expect_equal(blocks$de[[2]]$safe_label, "treated_vs_control_2")
 })
+
+test_that("emit_r_script demo+DESeq2 minimal matches snapshot", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  expect_snapshot(cat(emit_r_script(blocks), sep = "\n"))
+})
+
+test_that("emit_r_script upload+CPM+Combat+2xDESeq2+MSigDB matches snapshot", {
+  blocks <- build_session_blocks(.fixture_state_full())
+  expect_snapshot(cat(emit_r_script(blocks), sep = "\n"))
+})
+
+test_that("emit_r_script upload variant uses read.table with EDIT THIS PATH", {
+  blocks <- build_session_blocks(.fixture_state_full())
+  out <- emit_r_script(blocks)
+  expect_true(any(grepl('read\\.table\\("YOUR_COUNTS', out)))
+  expect_true(any(grepl("EDIT THIS PATH", out, ignore.case = TRUE)))
+})
+
+test_that("emit_r_script demo variant uses system.file()", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out <- emit_r_script(blocks)
+  expect_true(any(grepl("system\\.file.*demodata\\.Rda", out)))
+})
+
+test_that("emit_r_script writes per-comparison TSVs with sanitized labels", {
+  blocks <- build_session_blocks(.fixture_state_full())
+  out <- emit_r_script(blocks)
+  expect_true(any(grepl("results_treated_vs_control\\.tsv", out)))
+  expect_true(any(grepl("results_high_dose_vs_control\\.tsv", out)))
+})
+
+test_that("emit_r_script omits batch and enrichment blocks when not configured", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out_str <- paste(emit_r_script(blocks), collapse = "\n")
+  expect_false(grepl("apply_batch_correction", out_str))
+  expect_false(grepl("run_gsea", out_str))
+})

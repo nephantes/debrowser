@@ -67,3 +67,220 @@ build_session_blocks <- function(state) {
     enrichment = state$enrichment
   )
 }
+
+#' Emit the .R reproducibility script as a character vector.
+#'
+#' One element per line. The caller (`exportMenuServer`'s downloadHandler)
+#' writes this to disk via `writeLines()`. The script calls only
+#' already-exported pure helpers so it has no Shiny dependency.
+#'
+#' Layout:
+#'   1. Comment header (timestamp, version, methods sentences, frozen
+#'      sessionInfo)
+#'   2. library(debrowser)
+#'   3. Load counts/metadata (system.file demo / read.table upload)
+#'   4. filter_low_counts(...) call
+#'   5. apply_batch_correction(...) call (omitted when method=="none")
+#'   6. One run_de(...) block per comparison
+#'   7. msigdb_pathways() / gmt_to_pathways() + run_gsea() block (omitted
+#'      when blocks$enrichment is NULL)
+#'   8. dir.create + write.table per comparison + GSEA TSV
+#'   9. sessionInfo() at run time
+#'
+#' @param blocks Output of [build_session_blocks()].
+#' @return character vector.
+#' @keywords internal
+#' @noRd
+emit_r_script <- function(blocks) {
+  m <- methods_sentences(blocks)
+  m_lines <- c(
+    sprintf("# - %s", m["load"]),
+    sprintf("# - %s", m["filter"]),
+    if (!is.na(m["batch"])) sprintf("# - %s", m["batch"]),
+    sprintf("# - %s", m["de"]),
+    if (!is.na(m["enrichment"])) sprintf("# - %s", m["enrichment"])
+  )
+
+  header <- c(
+    "# DEBrowser session export",
+    sprintf("# Generated %s by debrowser %s",
+            format(blocks$meta$timestamp, "%Y-%m-%d %H:%M:%S"),
+            blocks$meta$debrowser_version),
+    sprintf("# %s", blocks$meta$r_version),
+    "#",
+    "# Methods (E9-lite -- auto-generated, refine before publication):",
+    m_lines,
+    "#",
+    "# Frozen sessionInfo (at export time):",
+    paste0("# ", blocks$meta$session_info),
+    "",
+    "library(debrowser)",
+    ""
+  )
+
+  load_block <- if (identical(blocks$load$source, "upload")) {
+    counts_name <- blocks$load$counts_path %||% "YOUR_COUNTS.tsv"
+    meta_name   <- blocks$load$meta_path   %||% "YOUR_META.tsv"
+    c(
+      "# 1. Load counts and metadata --------------------------------------------------",
+      sprintf("# original upload: counts='%s', meta='%s'", counts_name, meta_name),
+      "# EDIT THIS PATH to point at your local copy of the file:",
+      'counts <- read.table("YOUR_COUNTS.tsv", sep = "\\t", header = TRUE,',
+      "                     row.names = 1, check.names = FALSE)",
+      'meta   <- read.table("YOUR_META.tsv",   sep = "\\t", header = TRUE,',
+      "                     row.names = 1, check.names = FALSE)",
+      ""
+    )
+  } else {
+    fixture <- if (identical(blocks$load$source, "demo2")) "demodata2.Rda" else "demodata.Rda"
+    c(
+      "# 1. Load counts and metadata --------------------------------------------------",
+      "demo_env <- new.env()",
+      sprintf('load(system.file("extdata", "demo", "%s", package = "debrowser"), envir = demo_env)',
+              fixture),
+      "counts <- demo_env$demodata",
+      "meta   <- demo_env$metadatatable",
+      ""
+    )
+  }
+
+  filter_call <- switch(blocks$filter$method,
+    "Max"  = sprintf('filtered <- filter_low_counts(counts, method = "max",  cutoff = %s)',
+                    blocks$filter$cutoff),
+    "Mean" = sprintf('filtered <- filter_low_counts(counts, method = "mean", cutoff = %s)',
+                    blocks$filter$cutoff),
+    "CPM"  = sprintf('filtered <- filter_low_counts(counts, method = "cpm",  cutoff = %s, min_samples = %d)',
+                    blocks$filter$cutoff, blocks$filter$min_samples)
+  )
+  filter_block <- c(
+    "# 2. Low-count filter ----------------------------------------------------------",
+    filter_call,
+    ""
+  )
+
+  batch_block <- if (identical(blocks$batch$method, "none")) {
+    c(
+      "# 3. Batch correction ----------------------------------------------------------",
+      "# (none configured)",
+      "corrected <- filtered",
+      ""
+    )
+  } else {
+    treat_arg <- if (is.na(blocks$batch$treatment_column %||% NA_character_)) {
+      "NULL"
+    } else {
+      sprintf('"%s"', blocks$batch$treatment_column)
+    }
+    c(
+      "# 3. Batch correction ----------------------------------------------------------",
+      "corrected <- apply_batch_correction(",
+      "  filtered, meta,",
+      sprintf('  method = "%s", batch_col = "%s", treatment_col = %s',
+              blocks$batch$method, blocks$batch$batch_column, treat_arg),
+      ")",
+      ""
+    )
+  }
+
+  de_blocks <- unlist(lapply(seq_along(blocks$de), function(i) {
+    d <- blocks$de[[i]]
+    cols_str  <- paste(sprintf('"%s"', c(d$treatment_samples, d$control_samples)),
+                       collapse = ", ")
+    conds_vec <- c(rep(d$cond_codes[1L], length(d$treatment_samples)),
+                   rep(d$cond_codes[2L], length(d$control_samples)))
+    conds_str <- paste(sprintf('"%s"', conds_vec), collapse = ", ")
+    cov_token <- if (length(d$covariates) == 0L) "NoCovariate" else {
+      paste(d$covariates, collapse = "|")
+    }
+    params_vec <- switch(d$de_method,
+      "DESeq2" = c(d$de_method, cov_token,
+                   d$method_params$fitType, as.character(d$method_params$betaPrior),
+                   d$method_params$testType, d$method_params$shrinkage),
+      "EdgeR"  = c(d$de_method, cov_token,
+                   d$method_params$edgeR_normfact, d$method_params$dispersion,
+                   d$method_params$edgeR_testType),
+      "Limma"  = c(d$de_method, cov_token,
+                   d$method_params$limma_normfact, d$method_params$limma_fitType,
+                   d$method_params$normBetween)
+    )
+    params_str <- paste(sprintf('"%s"', params_vec), collapse = ", ")
+    c(
+      sprintf("# --- Comparison %d: %s vs %s ---", i, d$treatment_label, d$control_label),
+      sprintf("cols_%d  <- c(%s)", i, cols_str),
+      sprintf("conds_%d <- c(%s)", i, conds_str),
+      sprintf("de%d <- run_de(", i),
+      sprintf('  method = "%s",', d$de_method),
+      sprintf("  counts = corrected, metadata = meta, columns = cols_%d, conds = conds_%d,",
+              i, i),
+      sprintf("  params = c(%s),", params_str),
+      "  return_dds = FALSE",
+      ")$res",
+      ""
+    )
+  }))
+  de_block <- c(
+    "# 4. Differential expression ---------------------------------------------------",
+    de_blocks
+  )
+
+  enrichment_block <- if (is.null(blocks$enrichment)) character(0) else {
+    setup <- if (identical(blocks$enrichment$source, "msigdb")) {
+      sub <- blocks$enrichment$msigdb$subcollection
+      sub_arg <- if (is.na(sub) || !nzchar(sub)) "NULL" else sprintf('"%s"', sub)
+      sprintf('pathways <- msigdb_pathways(species = "%s", collection = "%s", subcollection = %s)',
+              blocks$enrichment$msigdb$species,
+              blocks$enrichment$msigdb$collection, sub_arg)
+    } else {
+      gmt_name <- blocks$enrichment$manual_file %||% "YOUR_GMT.gmt"
+      c(
+        sprintf("# original upload: '%s' -- EDIT THIS PATH:", gmt_name),
+        sprintf('pathways <- gmt_to_pathways("%s")', gmt_name)
+      )
+    }
+    runs <- unlist(lapply(seq_along(blocks$de), function(i) {
+      sprintf("gsea_%d <- run_gsea(de%d, pathways = pathways)", i, i)
+    }))
+    c(
+      "# 5. Enrichment (GSEA) ---------------------------------------------------------",
+      setup,
+      runs,
+      ""
+    )
+  }
+
+  write_lines <- unlist(lapply(seq_along(blocks$de), function(i) {
+    d <- blocks$de[[i]]
+    base <- sprintf("debrowser_results/results_%s.tsv", d$safe_label)
+    line <- sprintf('write.table(de%d, "%s",', i, base)
+    c(line,
+      '            sep = "\\t", quote = FALSE, col.names = NA)')
+  }))
+  gsea_write_lines <- if (is.null(blocks$enrichment)) character(0) else {
+    unlist(lapply(seq_along(blocks$de), function(i) {
+      d <- blocks$de[[i]]
+      base <- sprintf("debrowser_results/gsea_%s.tsv", d$safe_label)
+      line <- sprintf('write.table(gsea_%d, "%s",', i, base)
+      c(line,
+        '            sep = "\\t", quote = FALSE, row.names = FALSE)')
+    }))
+  }
+  n_files <- length(blocks$de) +
+    (if (is.null(blocks$enrichment)) 0L else length(blocks$de))
+  results_block <- c(
+    "# 6. Write per-comparison result tables ----------------------------------------",
+    'dir.create("debrowser_results", showWarnings = FALSE)',
+    write_lines,
+    gsea_write_lines,
+    "",
+    sprintf('cat("Wrote %d result files to debrowser_results/\\n")', n_files),
+    ""
+  )
+
+  session_block <- c(
+    "# 7. Session info (run-time) ---------------------------------------------------",
+    "sessionInfo()"
+  )
+
+  c(header, load_block, filter_block, batch_block, de_block,
+    enrichment_block, results_block, session_block)
+}
