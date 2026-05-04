@@ -89,7 +89,7 @@ enrichmentUI <- function(id) {
 #'     the NES heatmap).
 #' @return invisible(NULL).
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   de <- data.frame(ID = paste0("G", 1:5),
 #'                    log2FoldChange = c(2, -1, 0, 3, -2),
 #'                    padj = c(0.01, 0.04, 0.5, 0.02, 0.03))
@@ -160,8 +160,9 @@ enrichmentServer <- function(id, de_results) {
 
     selected_pw <- shiny::reactive({
       sel <- input$results_table_rows_selected
-      shiny::req(length(sel) == 1L)
-      primary_result()$pathway[sel]
+      df  <- primary_result()
+      shiny::req(length(sel) == 1L, nrow(df) >= sel)
+      df$pathway[sel]
     })
 
     output$enrichment_plot <- shiny::renderPlot({
@@ -177,8 +178,10 @@ enrichmentServer <- function(id, de_results) {
 
     output$leading_edge <- shiny::renderText({
       sel <- input$results_table_rows_selected
-      shiny::req(length(sel) == 1L)
-      paste(primary_result()$leading_edge[[sel]], collapse = ", ")
+      df  <- primary_result()
+      shiny::req(length(sel) == 1L, nrow(df) >= sel,
+                 "leading_edge" %in% names(df))
+      paste(df$leading_edge[[sel]], collapse = ", ")
     })
   })
   invisible(NULL)

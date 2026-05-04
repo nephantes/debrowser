@@ -660,8 +660,9 @@ deServer <- function(input, output, session) {
 
       fgsea_selected_pw <- reactive({
         sel <- input$fgsea_results_table_rows_selected
-        req(length(sel) == 1L)
-        fgsea_primary_result()$pathway[sel]
+        df  <- fgsea_primary_result()
+        req(length(sel) == 1L, nrow(df) >= sel)
+        df$pathway[sel]
       })
 
       output$fgsea_enrichment_plot <- renderPlot({
@@ -678,8 +679,10 @@ deServer <- function(input, output, session) {
 
       output$fgsea_leading_edge <- renderText({
         sel <- input$fgsea_results_table_rows_selected
-        req(length(sel) == 1L)
-        paste(fgsea_primary_result()$leading_edge[[sel]], collapse = ", ")
+        df  <- fgsea_primary_result()
+        req(length(sel) == 1L, nrow(df) >= sel,
+            "leading_edge" %in% names(df))
+        paste(df$leading_edge[[sel]], collapse = ", ")
       })
       filt_data <- reactive({
         if (!is.null(init_data()) && !is.null(comparison()) && !is.null(input$padj)) {
