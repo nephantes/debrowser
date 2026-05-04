@@ -16,3 +16,9 @@ de_assert_count_matrix(x)
 Raises `de_error()` with one of: `"null_input"`, `"empty_matrix"`,
 `"non_numeric"`. Otherwise returns `x` invisibly.
 }
+\examples{
+m <- matrix(c(100L, 200L, 150L, 40L, 60L, 55L), nrow = 2)
+colnames(m) <- paste0("S", 1:3)
+rownames(m) <- c("GeneA", "GeneB")
+de_assert_count_matrix(m)
+}

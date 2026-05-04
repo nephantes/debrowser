@@ -8,6 +8,13 @@
 #' @param counts Numeric matrix or data.frame (genes x samples).
 #' @param method One of "TMM", "RLE", "upperquartile", "MRN", "none".
 #' @return Normalized numeric matrix with the same shape and dimnames.
+#' @examples
+#' m <- matrix(as.integer(c(100, 200, 150, 80, 250, 130,
+#'                          40,  60,  55, 30,  70,  45)),
+#'             nrow = 2, byrow = TRUE)
+#' colnames(m) <- paste0("S", 1:6)
+#' rownames(m) <- c("Gene1", "Gene2")
+#' normalize_counts(m, method = "TMM")
 #' @export
 normalize_counts <- function(counts, method = "TMM") {
   de_assert_count_matrix(counts)
@@ -45,6 +52,14 @@ normalize_counts <- function(counts, method = "TMM") {
 #' @param treatment_col Name of the treatment column in `metadata`. May be
 #'   NULL or "None" — only required for Harman.
 #' @return Corrected count matrix.
+#' @examples
+#' m <- matrix(as.integer(c(100, 200, 150, 80, 250, 130,
+#'                          40,  60,  55, 30,  70,  45)),
+#'             nrow = 2, byrow = TRUE)
+#' colnames(m) <- paste0("S", 1:6)
+#' rownames(m) <- c("Gene1", "Gene2")
+#' # method = "none" returns the matrix unchanged
+#' apply_batch_correction(m, metadata = NULL, method = "none")
 #' @export
 apply_batch_correction <- function(counts, metadata, method = "none",
                                    batch_col = NULL, treatment_col = NULL) {

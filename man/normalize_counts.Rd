@@ -20,3 +20,11 @@ Wraps `edgeR::calcNormFactors` + `edgeR::equalizeLibSizes` for
 TMM/RLE/upper-quartile, DESeq2's median-of-ratios for `"MRN"`, identity
 for `"none"`.
 }
+\examples{
+m <- matrix(as.integer(c(100, 200, 150, 80, 250, 130,
+                         40,  60,  55, 30,  70,  45)),
+            nrow = 2, byrow = TRUE)
+colnames(m) <- paste0("S", 1:6)
+rownames(m) <- c("Gene1", "Gene2")
+normalize_counts(m, method = "TMM")
+}

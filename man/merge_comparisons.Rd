@@ -21,3 +21,17 @@ Merged data.frame (samples + per-comparison foldChange/padj cols).
 Pure version of `getMergedComparison()`. The legacy version reads
 `input$norm_method`; this takes the same value off `params`.
 }
+\examples{
+init1 <- data.frame(
+  S1 = c(100L, 40L), S2 = c(200L, 60L),
+  S3 = c(10L, 150L), S4 = c(12L, 160L),
+  foldChange = c(10, 0.25), padj = c(0.01, 0.01),
+  row.names = c("GeneA", "GeneB")
+)
+dc <- list(list(
+  init_data = init1,
+  cols = c("S1", "S2", "S3", "S4"),
+  cond_names = c("Treat", "Ctrl")
+))
+merge_comparisons(dc, nc = 1, params = list(norm_method = "none"))
+}

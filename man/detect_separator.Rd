@@ -31,3 +31,11 @@ Counts files default to `min_score = 3` (3+ numeric columns is a strong
 signal). Metadata files have only 1-2 numeric columns typically; pass
 `min_score = 1` to keep the helper useful for them.
 }
+\examples{
+tmp <- tempfile(fileext = ".txt")
+writeLines(c("Gene\tS1\tS2\tS3",
+             "GeneA\t100\t200\t150",
+             "GeneB\t40\t60\t55"), tmp)
+detect_separator(tmp)
+unlink(tmp)
+}

@@ -17,3 +17,6 @@ A `shiny::tagList` with a control card (padj / |log2FC|),
 \description{
 UI for the Comparison Concordance top-level tab.
 }
+\examples{
+comparisonConcordanceUI("demo")
+}

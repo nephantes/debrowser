@@ -26,3 +26,17 @@ comparison between those two groups. Group identities come from
 matched on `comparison_labels(comparisons)`. When the same group
 pair appears in multiple comparisons, the last seen wins.
 }
+\examples{
+summary_df <- data.frame(
+  comparison = c("Treat vs Ctrl", "Drug vs Vehicle"),
+  n_up   = c(120L, 45L),
+  n_down = c(80L,  30L),
+  n_sig  = c(200L, 75L),
+  stringsAsFactors = FALSE
+)
+comparisons <- list(
+  list(cond_names = c("Treat", "Ctrl")),
+  list(cond_names = c("Drug", "Vehicle"))
+)
+plot_de_pairwise_heatmap(summary_df, comparisons)
+}

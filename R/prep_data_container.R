@@ -48,6 +48,31 @@ prep_comparison_inputs <- function(spec, comparison_idx = 1L) {
 #'   per comparison. `dds` is the fitted `DESeqDataSet` for DESeq2 runs and
 #'   NULL for edgeR/limma. Returns NULL if no comparison produced usable
 #'   results.
+#' @examples
+#' \donttest{
+#'   set.seed(42)
+#'   counts <- matrix(
+#'     as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+#'     nrow = 10, ncol = 6,
+#'     dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+#'   )
+#'   meta <- data.frame(
+#'     Sample    = paste0("S", 1:6),
+#'     Condition = c(rep("Ctrl", 3), rep("Treat", 3)),
+#'     stringsAsFactors = FALSE
+#'   )
+#'   spec <- list(list(
+#'     treatment_samples = paste0("S", 4:6),
+#'     control_samples   = paste0("S", 1:3),
+#'     treatment_label   = "Treat",
+#'     control_label     = "Ctrl",
+#'     de_method         = "EdgeR",
+#'     method_params     = list(),
+#'     covariates        = character(0),
+#'     meta_column       = NA_character_
+#'   ))
+#'   prepDataContainer(counts, meta, spec)
+#' }
 #' @export
 prepDataContainer <- function(data, metadata, comparisons_spec) {
   if (is.null(data) || length(comparisons_spec) == 0L) {

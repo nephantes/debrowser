@@ -19,3 +19,14 @@ data.frame of the top-N most-varied rows.
 \description{
 Compute the most-varied genes by coefficient of variation.
 }
+\examples{
+cols <- paste0("S", 1:6)
+df <- as.data.frame(matrix(
+  c(100, 200, 150, 80, 250, 130,
+    40,  60,  55, 30,  70,  45,
+    10,  10,  10, 10,  10,  10),
+  nrow = 3, byrow = TRUE,
+  dimnames = list(paste0("Gene", 1:3), cols)
+))
+get_most_varied(df, cols, list(top_n = 2, min_count = 0))
+}

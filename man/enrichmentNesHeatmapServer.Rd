@@ -18,3 +18,13 @@ invisible(NULL).
 \description{
 Server for the NES heatmap card.
 }
+\examples{
+\donttest{
+  shiny::shinyApp(
+    ui = enrichmentNesHeatmapUI("nes"),
+    server = function(input, output, session) {
+      enrichmentNesHeatmapServer("nes", shiny::reactive(list()))
+    }
+  )
+}
+}

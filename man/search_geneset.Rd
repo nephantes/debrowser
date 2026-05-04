@@ -17,3 +17,12 @@ Filtered data.frame; or `dat` unchanged if `geneset_area` is empty.
 \description{
 Search a data.frame's `ID` column for a gene-set list.
 }
+\examples{
+dat <- data.frame(
+  ID = c("BRCA1", "TP53", "MYC"),
+  padj = c(0.01, 0.02, 0.5),
+  stringsAsFactors = FALSE
+)
+# Empty search returns all rows:
+search_geneset(dat, params = list(geneset_area = ""))
+}

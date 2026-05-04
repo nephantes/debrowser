@@ -19,6 +19,18 @@
 #'   Default FALSE preserves the legacy data.frame-shaped contract.
 #' @return DESeqResults if `return_dds = FALSE`; otherwise
 #'   `list(res = DESeqResults, dds = DESeqDataSet)`.
+#' @examples
+#' \donttest{
+#' set.seed(42)
+#' counts <- matrix(
+#'   as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+#'   nrow = 10, ncol = 6,
+#'   dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+#' )
+#' conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+#' run_deseq2(counts, columns = colnames(counts), conds = conds,
+#'            params = list(test_type = "Wald", shrinkage = "None"))
+#' }
 #' @export
 run_deseq2 <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
                        params = list(), return_dds = FALSE) {
@@ -112,6 +124,15 @@ run_deseq2 <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
 #'   ("TMM"/"RLE"/"upperquartile"/"none"), dispersion (numeric or character
 #'   "common"/"trended"/"tagwise"/"auto"), test_type ("exactTest"/"glmLRT").
 #' @return data.frame with columns log2FoldChange, pvalue, padj, stat.
+#' @examples
+#' set.seed(42)
+#' counts <- matrix(
+#'   as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+#'   nrow = 10, ncol = 6,
+#'   dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+#' )
+#' conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+#' run_edger(counts, columns = colnames(counts), conds = conds)
 #' @export
 run_edger <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
                       params = list()) {
@@ -218,6 +239,15 @@ run_edger <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
 #' @param params Named list: covariates, norm_fact, fit_type ("ls"/"robust"),
 #'   norm_bet ("none"/"scale"/"quantile"/...).
 #' @return data.frame with columns log2FoldChange, pvalue, padj, stat.
+#' @examples
+#' set.seed(42)
+#' counts <- matrix(
+#'   as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+#'   nrow = 10, ncol = 6,
+#'   dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+#' )
+#' conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+#' run_limma(counts, columns = colnames(counts), conds = conds)
 #' @export
 run_limma <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
                       params = list()) {
@@ -286,6 +316,15 @@ run_limma <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
 #'   per-method result object is wrapped to `list(res = <obj>, dds = NULL)`
 #'   so downstream code can pattern-match a single shape.
 #' @return Method-specific result object.
+#' @examples
+#' set.seed(42)
+#' counts <- matrix(
+#'   as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+#'   nrow = 10, ncol = 6,
+#'   dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+#' )
+#' conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+#' run_de("EdgeR", counts, columns = colnames(counts), conds = conds)
 #' @export
 run_de <- function(method, counts, metadata = NULL, columns = NULL,
                    conds = NULL, params = list(), return_dds = FALSE) {

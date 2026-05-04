@@ -17,3 +17,6 @@ a `de_card` containing the wizard's static skeleton; comparison
 \description{
 Comparison-Selection wizard UI.
 }
+\examples{
+condSelectUI("demo")
+}

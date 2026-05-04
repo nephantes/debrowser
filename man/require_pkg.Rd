@@ -21,3 +21,7 @@ Used to gate features that depend on packages declared in
 `"missing_suggested_pkg"` that names the package and the feature that
 needs it, plus the install command.
 }
+\examples{
+# Returns TRUE invisibly when the package is present:
+require_pkg("stats", feature = "basic statistics")
+}

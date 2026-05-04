@@ -37,3 +37,15 @@ list(data, padj_colname, fold_colname).
 \description{
 Pure version of `getDataForTables()`.
 }
+\examples{
+init_data <- data.frame(
+  foldChange = c(5, 0.1, 1.0), padj = c(0.01, 0.01, 0.5),
+  Legend = c("Up", "Down", "NS"),
+  row.names = c("GeneA", "GeneB", "GeneC")
+)
+result <- get_table_data(
+  init_data = init_data,
+  params = list(dataset = "alldetected", geneset_area = "")
+)
+result[[1]]  # the data.frame
+}

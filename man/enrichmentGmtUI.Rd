@@ -18,3 +18,6 @@ MSigDB (loads on explicit "Load gene sets" click). A status line
 below the picker reports how many gene sets are currently loaded so
 the user has immediate feedback before pressing Submit.
 }
+\examples{
+enrichmentGmtUI("demo")
+}

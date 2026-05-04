@@ -22,3 +22,11 @@ Filtered count matrix (rows preserved by row order).
 \description{
 Filter low-count rows from a count matrix.
 }
+\examples{
+m <- matrix(c(1, 50, 100, 5, 80, 120,
+              1,  2,   3, 1,  2,   3),
+            nrow = 2, byrow = TRUE)
+colnames(m) <- paste0("S", 1:6)
+rownames(m) <- c("GeneA", "GeneB")
+filter_low_counts(m, method = "max", cutoff = 10)
+}

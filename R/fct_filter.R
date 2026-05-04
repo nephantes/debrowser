@@ -6,6 +6,13 @@
 #' @param min_samples For method="cpm": the row is kept if CPM > cutoff in
 #'   at least `min_samples` samples. Defaults to `ncol(counts) - 1`.
 #' @return Filtered count matrix (rows preserved by row order).
+#' @examples
+#' m <- matrix(c(1, 50, 100, 5, 80, 120,
+#'               1,  2,   3, 1,  2,   3),
+#'             nrow = 2, byrow = TRUE)
+#' colnames(m) <- paste0("S", 1:6)
+#' rownames(m) <- c("GeneA", "GeneB")
+#' filter_low_counts(m, method = "max", cutoff = 10)
 #' @export
 filter_low_counts <- function(counts, method = "max", cutoff = 10,
                               min_samples = NULL) {

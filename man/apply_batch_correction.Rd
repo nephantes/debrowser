@@ -31,3 +31,12 @@ Corrected count matrix.
 Pure function — no Shiny dependency. Accepts batch / treatment column
 names directly instead of pulling from a reactive `input` object.
 }
+\examples{
+m <- matrix(as.integer(c(100, 200, 150, 80, 250, 130,
+                         40,  60,  55, 30,  70,  45)),
+            nrow = 2, byrow = TRUE)
+colnames(m) <- paste0("S", 1:6)
+rownames(m) <- c("Gene1", "Gene2")
+# method = "none" returns the matrix unchanged
+apply_batch_correction(m, metadata = NULL, method = "none")
+}

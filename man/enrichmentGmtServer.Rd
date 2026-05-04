@@ -13,8 +13,8 @@ enrichmentGmtServer(id)
 Reactive expression yielding the parsed pathways list.
 }
 \description{
-Returns a reactive that yields a named list of gene-symbol vectors —
-the same shape \code{\link{gmt_to_pathways}} produces — or NULL until
+Returns a reactive that yields a named list of gene-symbol vectors -
+the same shape \code{\link{gmt_to_pathways}} produces - or NULL until
 the user has loaded a source.
 }
 \details{
@@ -23,4 +23,14 @@ observable independently of any downstream consumer (the previous
 eventReactive design was lazy and didn't fire until Submit). A small
 status output reports load success / failure / set count next to the
 picker.
+}
+\examples{
+\donttest{
+  shiny::shinyApp(
+    ui = enrichmentGmtUI("gmt"),
+    server = function(input, output, session) {
+      enrichmentGmtServer("gmt")
+    }
+  )
+}
 }

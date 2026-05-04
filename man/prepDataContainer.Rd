@@ -26,3 +26,29 @@ list of length `length(comparisons_spec)` with components
 \description{
 Run DE per comparison and return the downstream `dclist` payload.
 }
+\examples{
+\donttest{
+  set.seed(42)
+  counts <- matrix(
+    as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+    nrow = 10, ncol = 6,
+    dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+  )
+  meta <- data.frame(
+    Sample    = paste0("S", 1:6),
+    Condition = c(rep("Ctrl", 3), rep("Treat", 3)),
+    stringsAsFactors = FALSE
+  )
+  spec <- list(list(
+    treatment_samples = paste0("S", 4:6),
+    control_samples   = paste0("S", 1:3),
+    treatment_label   = "Treat",
+    control_label     = "Ctrl",
+    de_method         = "EdgeR",
+    method_params     = list(),
+    covariates        = character(0),
+    meta_column       = NA_character_
+  ))
+  prepDataContainer(counts, meta, spec)
+}
+}

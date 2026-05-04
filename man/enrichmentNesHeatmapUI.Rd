@@ -16,3 +16,6 @@ A `bslib::card`.
 Renders only when [enrichmentServer] passes more than one comparison's
 GSEA results.
 }
+\examples{
+enrichmentNesHeatmapUI("demo")
+}

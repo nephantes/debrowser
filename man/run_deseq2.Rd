@@ -42,3 +42,16 @@ No Shiny dependency. Errors are raised via [de_error()] with classes:
   - `too_few_columns`
   - `null_input`
 }
+\examples{
+\donttest{
+set.seed(42)
+counts <- matrix(
+  as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+  nrow = 10, ncol = 6,
+  dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+)
+conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+run_deseq2(counts, columns = colnames(counts), conds = conds,
+           params = list(test_type = "Wald", shrinkage = "None"))
+}
+}

@@ -19,3 +19,18 @@ list with `n_comparisons`, `start_de`, `is_ready`, `comparisons_spec`.
 \description{
 Comparison-Selection wizard server.
 }
+\examples{
+\donttest{
+  counts <- matrix(as.integer(c(100, 200, 10, 12, 40, 60)),
+                   nrow = 2,
+                   dimnames = list(c("G1", "G2"), paste0("S", 1:3)))
+  meta <- data.frame(Sample = paste0("S", 1:3),
+                     Condition = c("Ctrl", "Ctrl", "Treat"))
+  shiny::shinyApp(
+    ui = condSelectUI("cs"),
+    server = function(input, output, session) {
+      condSelectServer("cs", data = counts, metadata = meta)
+    }
+  )
+}
+}

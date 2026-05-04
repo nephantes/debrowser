@@ -11,6 +11,8 @@
 #' @return a `de_card` containing the wizard's static skeleton; comparison
 #'   panels are rendered dynamically by `condSelectServer` via
 #'   `uiOutput("comparison_panels")`.
+#' @examples
+#' condSelectUI("demo")
 #' @export
 condSelectUI <- function(id) {
   ns <- shiny::NS(id)
@@ -38,6 +40,20 @@ condSelectUI <- function(id) {
 #' @param metadata sample-metadata data.frame; first column is the sample id.
 #'
 #' @return list with `n_comparisons`, `start_de`, `is_ready`, `comparisons_spec`.
+#' @examples
+#' \donttest{
+#'   counts <- matrix(as.integer(c(100, 200, 10, 12, 40, 60)),
+#'                    nrow = 2,
+#'                    dimnames = list(c("G1", "G2"), paste0("S", 1:3)))
+#'   meta <- data.frame(Sample = paste0("S", 1:3),
+#'                      Condition = c("Ctrl", "Ctrl", "Treat"))
+#'   shiny::shinyApp(
+#'     ui = condSelectUI("cs"),
+#'     server = function(input, output, session) {
+#'       condSelectServer("cs", data = counts, metadata = meta)
+#'     }
+#'   )
+#' }
 #' @export
 condSelectServer <- function(id, data = NULL, metadata = NULL) {
   if (is.null(data)) return(NULL)

@@ -42,3 +42,13 @@ Method-specific result object.
 \description{
 Dispatch a DE run by method name.
 }
+\examples{
+set.seed(42)
+counts <- matrix(
+  as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+  nrow = 10, ncol = 6,
+  dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+)
+conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+run_de("EdgeR", counts, columns = colnames(counts), conds = conds)
+}

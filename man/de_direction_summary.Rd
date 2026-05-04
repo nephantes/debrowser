@@ -26,3 +26,16 @@ given padj / |log2FoldChange| cutoffs. Up = significant + log2FC > 0;
 Down = significant + log2FC < 0. NA padj / NA log2FoldChange are
 treated as not-significant.
 }
+\examples{
+de_list <- list(
+  comp1 = data.frame(
+    log2FoldChange = c(2, -1, 0, 3, -2),
+    padj = c(0.01, 0.04, 0.5, 0.02, 0.03)
+  ),
+  comp2 = data.frame(
+    log2FoldChange = c(1.5, -0.8, 0.2, 2.1, -1.5),
+    padj = c(0.02, 0.03, 0.6, 0.01, 0.04)
+  )
+)
+de_direction_summary(de_list, padj_cutoff = 0.05)
+}

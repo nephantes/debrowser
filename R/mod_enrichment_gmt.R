@@ -61,6 +61,8 @@
 #'
 #' @param id Module ID.
 #' @return Shiny tagList for inclusion in a `bslib::accordion_panel`.
+#' @examples
+#' enrichmentGmtUI("demo")
 #' @export
 enrichmentGmtUI <- function(id) {
   ns <- shiny::NS(id)
@@ -115,6 +117,15 @@ enrichmentGmtUI <- function(id) {
 #'
 #' @param id Module ID.
 #' @return Reactive expression yielding the parsed pathways list.
+#' @examples
+#' \donttest{
+#'   shiny::shinyApp(
+#'     ui = enrichmentGmtUI("gmt"),
+#'     server = function(input, output, session) {
+#'       enrichmentGmtServer("gmt")
+#'     }
+#'   )
+#' }
 #' @export
 enrichmentGmtServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {

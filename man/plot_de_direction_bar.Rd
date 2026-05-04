@@ -20,3 +20,13 @@ ggplot object.
 Up bars (red) extend right; down bars (blue) extend left from the
 zero line. Comparisons are ordered top-to-bottom by total DEG count.
 }
+\examples{
+summary <- data.frame(
+  comparison = c("Treat vs Ctrl", "Drug vs Vehicle"),
+  n_up   = c(120L, 45L),
+  n_down = c(80L,  30L),
+  n_sig  = c(200L, 75L),
+  stringsAsFactors = FALSE
+)
+plot_de_direction_bar(summary, subtitle = "padj <= 0.05")
+}

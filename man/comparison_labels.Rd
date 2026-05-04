@@ -22,3 +22,10 @@ same label, suffixes " (1)", " (2)", ... are appended in input order
 so `names()` of the final list stays unique. Comparisons missing
 `cond_names` fall back to "comparison_<index>".
 }
+\examples{
+comparisons <- list(
+  list(cond_names = c("Treat", "Ctrl")),
+  list(cond_names = c("Drug", "Vehicle"))
+)
+comparison_labels(comparisons)
+}

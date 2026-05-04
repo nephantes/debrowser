@@ -32,3 +32,12 @@ Subset data.frame.
 \description{
 Pick a subset of `rdata` based on the `dataset` filter param.
 }
+\examples{
+rdata <- data.frame(
+  foldChange = c(5, 0.1, 1.0),
+  padj = c(0.01, 0.01, 0.5),
+  Legend = c("Up", "Down", "NS"),
+  row.names = c("GeneA", "GeneB", "GeneC")
+)
+select_dataset(rdata, params = list(dataset = "alldetected"))
+}

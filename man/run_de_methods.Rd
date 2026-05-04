@@ -48,3 +48,14 @@ helpers can join by `ID` without per-method special-casing.
 DESeq2's native return is a `DESeqResults` object — coerced via
 `as.data.frame()`. edgeR / limma already return data.frames.
 }
+\examples{
+set.seed(42)
+counts <- matrix(
+  as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+  nrow = 10, ncol = 6,
+  dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+)
+conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+run_de_methods(counts, columns = colnames(counts), conds = conds,
+               methods = c("EdgeR", "Limma"))
+}

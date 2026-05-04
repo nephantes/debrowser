@@ -19,6 +19,18 @@
 #'   - `method_tab` (UI tab id; geneset overlay only applies on "panel1")
 #'   - `top_n`, `min_count` (only for `dataset == "most-varied"`)
 #' @return data.frame with added `x`, `y`, `Legend`, `Size` columns; or NULL.
+#' @examples
+#' cols <- c("S1", "S2", "S3", "S4")
+#' conds <- c("Cond1", "Cond1", "Cond2", "Cond2")
+#' fd <- data.frame(
+#'   S1 = c(100L, 5L), S2 = c(120L, 8L),
+#'   S3 = c(10L, 200L), S4 = c(12L, 220L),
+#'   foldChange = c(10, 0.05), padj = c(0.001, 0.001),
+#'   row.names = c("GeneA", "GeneB")
+#' )
+#' params <- list(padj_cutoff = 0.05, fold_cutoff = 2, dataset = "up+down",
+#'                compselect = 1, norm_method = "none")
+#' apply_de_filters(fd, cols, conds, params)
 #' @export
 apply_de_filters <- function(filt_data, cols, conds, params = list()) {
   if (is.null(filt_data) || is.null(params$padj_cutoff) ||
@@ -89,6 +101,16 @@ apply_de_filters <- function(filt_data, cols, conds, params = list()) {
 #' @param cols Character vector of sample column names.
 #' @param params Named list with `top_n` (int) and `min_count` (int).
 #' @return data.frame of the top-N most-varied rows.
+#' @examples
+#' cols <- paste0("S", 1:6)
+#' df <- as.data.frame(matrix(
+#'   c(100, 200, 150, 80, 250, 130,
+#'     40,  60,  55, 30,  70,  45,
+#'     10,  10,  10, 10,  10,  10),
+#'   nrow = 3, byrow = TRUE,
+#'   dimnames = list(paste0("Gene", 1:3), cols)
+#' ))
+#' get_most_varied(df, cols, list(top_n = 2, min_count = 0))
 #' @export
 get_most_varied <- function(datavar, cols, params = list()) {
   if (is.null(datavar)) {
@@ -117,6 +139,14 @@ get_most_varied <- function(datavar, cols, params = list()) {
 #' @param params Named list with `dataset` and (optionally) `selected_plot`,
 #'   `geneset_area`.
 #' @return Subset data.frame.
+#' @examples
+#' rdata <- data.frame(
+#'   foldChange = c(5, 0.1, 1.0),
+#'   padj = c(0.01, 0.01, 0.5),
+#'   Legend = c("Up", "Down", "NS"),
+#'   row.names = c("GeneA", "GeneB", "GeneC")
+#' )
+#' select_dataset(rdata, params = list(dataset = "alldetected"))
 #' @export
 select_dataset <- function(rdata, get_selected = NULL,
                            get_most_varied_data = NULL,
@@ -143,6 +173,14 @@ select_dataset <- function(rdata, get_selected = NULL,
 #' @param dat data.frame with an `ID` column (or first column treated as ID).
 #' @param params Named list with `geneset_area` (string of search terms).
 #' @return Filtered data.frame; or `dat` unchanged if `geneset_area` is empty.
+#' @examples
+#' dat <- data.frame(
+#'   ID = c("BRCA1", "TP53", "MYC"),
+#'   padj = c(0.01, 0.02, 0.5),
+#'   stringsAsFactors = FALSE
+#' )
+#' # Empty search returns all rows:
+#' search_geneset(dat, params = list(geneset_area = ""))
 #' @export
 search_geneset <- function(dat, params = list()) {
   if (is.null(dat)) {
@@ -164,6 +202,19 @@ search_geneset <- function(dat, params = list()) {
 #' @param nc Number of comparisons.
 #' @param params Named list with `norm_method`.
 #' @return Merged data.frame (samples + per-comparison foldChange/padj cols).
+#' @examples
+#' init1 <- data.frame(
+#'   S1 = c(100L, 40L), S2 = c(200L, 60L),
+#'   S3 = c(10L, 150L), S4 = c(12L, 160L),
+#'   foldChange = c(10, 0.25), padj = c(0.01, 0.01),
+#'   row.names = c("GeneA", "GeneB")
+#' )
+#' dc <- list(list(
+#'   init_data = init1,
+#'   cols = c("S1", "S2", "S3", "S4"),
+#'   cond_names = c("Treat", "Ctrl")
+#' ))
+#' merge_comparisons(dc, nc = 1, params = list(norm_method = "none"))
 #' @export
 merge_comparisons <- function(dc, nc, params = list()) {
   if (is.null(dc)) {
@@ -209,6 +260,20 @@ merge_comparisons <- function(dc, nc, params = list()) {
 #'
 #' @inheritParams merge_comparisons
 #' @return Merged data.frame with a `Legend` column (`"Sig"` / `"NS"`).
+#' @examples
+#' init1 <- data.frame(
+#'   S1 = c(100L, 40L), S2 = c(200L, 60L),
+#'   S3 = c(10L, 150L), S4 = c(12L, 160L),
+#'   foldChange = c(10, 0.25), padj = c(0.01, 0.01),
+#'   row.names = c("GeneA", "GeneB")
+#' )
+#' dc <- list(list(
+#'   init_data = init1,
+#'   cols = c("S1", "S2", "S3", "S4"),
+#'   cond_names = c("Treat", "Ctrl")
+#' ))
+#' params <- list(norm_method = "none", padj_cutoff = 0.05, fold_cutoff = 2)
+#' apply_merged_filters(dc, nc = 1, params = params)
 #' @export
 apply_merged_filters <- function(dc, nc, params = list()) {
   if (is.null(dc)) {
@@ -248,6 +313,17 @@ apply_merged_filters <- function(dc, nc, params = list()) {
 #' @param explained_data Unused; preserved for legacy signature parity.
 #' @param params Named list with `dataset`, `geneset_area`.
 #' @return list(data, padj_colname, fold_colname).
+#' @examples
+#' init_data <- data.frame(
+#'   foldChange = c(5, 0.1, 1.0), padj = c(0.01, 0.01, 0.5),
+#'   Legend = c("Up", "Down", "NS"),
+#'   row.names = c("GeneA", "GeneB", "GeneC")
+#' )
+#' result <- get_table_data(
+#'   init_data = init_data,
+#'   params = list(dataset = "alldetected", geneset_area = "")
+#' )
+#' result[[1]]  # the data.frame
 #' @export
 get_table_data <- function(init_data = NULL, filt_data = NULL,
                            selected = NULL, get_most_varied_data = NULL,

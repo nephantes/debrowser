@@ -21,3 +21,14 @@ Named list of character vectors of significant gene IDs.
 \description{
 Build per-method significant-gene sets.
 }
+\examples{
+de_list <- list(
+  EdgeR = data.frame(ID = paste0("G", 1:5),
+    log2FoldChange = c(2, -1, 0, 3, -2),
+    padj = c(0.01, 0.04, 0.5, 0.02, 0.03)),
+  Limma = data.frame(ID = paste0("G", 1:5),
+    log2FoldChange = c(1.8, -0.9, 0.1, 2.5, -1.8),
+    padj = c(0.02, 0.03, 0.6, 0.01, 0.04))
+)
+concordance_sets(de_list, padj_cutoff = 0.05)
+}

@@ -18,3 +18,8 @@ Downstream condSelect's existing "need >=2 conditions" validation
 will surface the requirement when the user proceeds — no new
 validation is added here.
 }
+\examples{
+counts <- data.frame(S1 = c(100, 40), S2 = c(200, 60), S3 = c(150, 55))
+rownames(counts) <- c("GeneA", "GeneB")
+make_default_metadata(counts)
+}

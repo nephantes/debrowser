@@ -23,6 +23,8 @@
 #' @return A `shiny::tagList` with a control card (padj / |log2FC|),
 #'   an UpSet card, a pairwise scatter card with x/y comparison
 #'   selectizes, and a concordance summary table card.
+#' @examples
+#' comparisonConcordanceUI("demo")
 #' @export
 comparisonConcordanceUI <- function(id) {
   ns <- shiny::NS(id)
@@ -99,6 +101,23 @@ comparisonConcordanceUI <- function(id) {
 #'   When NULL or missing cond_names, the heatmap card shows an
 #'   empty-state.
 #' @return invisible(NULL).
+#' @examples
+#' \donttest{
+#'   de <- list(
+#'     "Treat vs Ctrl" = data.frame(ID = paste0("G", 1:5),
+#'       log2FoldChange = c(2, -1, 0, 3, -2),
+#'       padj = c(0.01, 0.04, 0.5, 0.02, 0.03)),
+#'     "Drug vs Vehicle" = data.frame(ID = paste0("G", 1:5),
+#'       log2FoldChange = c(1.5, -0.8, 0.2, 2.1, -1.5),
+#'       padj = c(0.02, 0.03, 0.6, 0.01, 0.04))
+#'   )
+#'   shiny::shinyApp(
+#'     ui = comparisonConcordanceUI("cc"),
+#'     server = function(input, output, session) {
+#'       comparisonConcordanceServer("cc", shiny::reactive(de))
+#'     }
+#'   )
+#' }
 #' @export
 comparisonConcordanceServer <- function(id, de_results_react,
                                         comparisons_react = NULL) {

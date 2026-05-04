@@ -20,3 +20,13 @@ Invisibly NULL.
 \description{
 Export menu server -- wires download handlers from a state reactive.
 }
+\examples{
+\donttest{
+  shiny::shinyApp(
+    ui = bslib::page_navbar(exportMenuUI("exp")),
+    server = function(input, output, session) {
+      exportMenuServer("exp", shiny::reactive(NULL))
+    }
+  )
+}
+}

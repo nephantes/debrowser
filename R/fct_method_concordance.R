@@ -31,6 +31,16 @@
 #'   `length(methods)`. Methods that error out are dropped from the
 #'   returned list and a warning is signalled (not an error) so partial
 #'   results remain usable.
+#' @examples
+#' set.seed(42)
+#' counts <- matrix(
+#'   as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+#'   nrow = 10, ncol = 6,
+#'   dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+#' )
+#' conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+#' run_de_methods(counts, columns = colnames(counts), conds = conds,
+#'                methods = c("EdgeR", "Limma"))
 #' @export
 run_de_methods <- function(counts, metadata = NULL, columns = NULL,
                            conds = NULL,
@@ -70,6 +80,16 @@ run_de_methods <- function(counts, metadata = NULL, columns = NULL,
 #'   (default 0; pass 0.585 for |fold|>=1.5, 1 for |fold|>=2).
 #' @return Named list of character vectors of significant gene IDs.
 #'   Names match `names(de_list)`.
+#' @examples
+#' de_list <- list(
+#'   EdgeR = data.frame(ID = paste0("G", 1:5),
+#'     log2FoldChange = c(2, -1, 0, 3, -2),
+#'     padj = c(0.01, 0.04, 0.5, 0.02, 0.03)),
+#'   Limma = data.frame(ID = paste0("G", 1:5),
+#'     log2FoldChange = c(1.8, -0.9, 0.1, 2.5, -1.8),
+#'     padj = c(0.02, 0.03, 0.6, 0.01, 0.04))
+#' )
+#' concordance_sets(de_list, padj_cutoff = 0.05)
 #' @export
 concordance_sets <- function(de_list, padj_cutoff = 0.05, lfc_cutoff = 0) {
   if (length(de_list) == 0L) {
@@ -94,6 +114,16 @@ concordance_sets <- function(de_list, padj_cutoff = 0.05, lfc_cutoff = 0) {
 #'   `method1`, `method2`, `n_method1`, `n_method2`, `n_overlap`,
 #'   `jaccard`, `spearman_lfc`, `n_genes_compared`. Empty data.frame
 #'   (zero rows) when fewer than 2 methods are present.
+#' @examples
+#' de_list <- list(
+#'   EdgeR = data.frame(ID = paste0("G", 1:5),
+#'     log2FoldChange = c(2, -1, 0, 3, -2),
+#'     padj = c(0.01, 0.04, 0.5, 0.02, 0.03)),
+#'   Limma = data.frame(ID = paste0("G", 1:5),
+#'     log2FoldChange = c(1.8, -0.9, 0.1, 2.5, -1.8),
+#'     padj = c(0.02, 0.03, 0.6, 0.01, 0.04))
+#' )
+#' concordance_summary(de_list, padj_cutoff = 0.05)
 #' @export
 concordance_summary <- function(de_list, padj_cutoff = 0.05,
                                 lfc_cutoff = 0) {
@@ -146,6 +176,18 @@ concordance_summary <- function(de_list, padj_cutoff = 0.05,
 #' @return Result of `UpSetR::upset()` (a list with class `"upset"`).
 #'   When fewer than 2 methods produce non-empty sets, returns NULL
 #'   (caller should render an empty-state instead).
+#' @examples
+#' if (requireNamespace("UpSetR", quietly = TRUE)) {
+#'   de_list <- list(
+#'     EdgeR = data.frame(ID = paste0("G", 1:5),
+#'       log2FoldChange = c(2, -1, 0, 3, -2),
+#'       padj = c(0.01, 0.04, 0.5, 0.02, 0.03)),
+#'     Limma = data.frame(ID = paste0("G", 1:5),
+#'       log2FoldChange = c(1.8, -0.9, 0.1, 2.5, -1.8),
+#'       padj = c(0.02, 0.03, 0.6, 0.01, 0.04))
+#'   )
+#'   plot_method_upset(de_list)
+#' }
 #' @export
 plot_method_upset <- function(de_list, padj_cutoff = 0.05,
                               lfc_cutoff = 0) {
@@ -178,6 +220,16 @@ plot_method_upset <- function(de_list, padj_cutoff = 0.05,
 #'   minimum `ID` and `log2FoldChange` columns).
 #' @param id1,id2 Names present in `names(de_list)` to put on x and y.
 #' @return ggplot object.
+#' @examples
+#' de_list <- list(
+#'   EdgeR = data.frame(ID = paste0("G", 1:5),
+#'     log2FoldChange = c(2, -1, 0, 3, -2),
+#'     padj = c(0.01, 0.04, 0.5, 0.02, 0.03)),
+#'   Limma = data.frame(ID = paste0("G", 1:5),
+#'     log2FoldChange = c(1.8, -0.9, 0.1, 2.5, -1.8),
+#'     padj = c(0.02, 0.03, 0.6, 0.01, 0.04))
+#' )
+#' plot_method_scatter(de_list, id1 = "EdgeR", id2 = "Limma")
 #' @export
 plot_method_scatter <- function(de_list, id1, id2) {
   if (!all(c(id1, id2) %in% names(de_list))) {
@@ -241,6 +293,12 @@ plot_method_scatter <- function(de_list, id1, id2) {
 #'   `cond_names` character vector of length >= 2 (treatment first).
 #' @return Character vector of length `length(comparisons)`. Empty
 #'   character vector when input is empty.
+#' @examples
+#' comparisons <- list(
+#'   list(cond_names = c("Treat", "Ctrl")),
+#'   list(cond_names = c("Drug", "Vehicle"))
+#' )
+#' comparison_labels(comparisons)
 #' @export
 comparison_labels <- function(comparisons) {
   if (length(comparisons) == 0L) return(character(0))
@@ -277,6 +335,18 @@ comparison_labels <- function(comparisons) {
 #' @return data.frame with columns `comparison`, `n_up`, `n_down`,
 #'   `n_sig` (= `n_up + n_down`). One row per entry of `de_list`,
 #'   in input order.
+#' @examples
+#' de_list <- list(
+#'   comp1 = data.frame(
+#'     log2FoldChange = c(2, -1, 0, 3, -2),
+#'     padj = c(0.01, 0.04, 0.5, 0.02, 0.03)
+#'   ),
+#'   comp2 = data.frame(
+#'     log2FoldChange = c(1.5, -0.8, 0.2, 2.1, -1.5),
+#'     padj = c(0.02, 0.03, 0.6, 0.01, 0.04)
+#'   )
+#' )
+#' de_direction_summary(de_list, padj_cutoff = 0.05)
 #' @export
 de_direction_summary <- function(de_list, padj_cutoff = 0.05,
                                  lfc_cutoff = 0) {
@@ -310,6 +380,15 @@ de_direction_summary <- function(de_list, padj_cutoff = 0.05,
 #' @param subtitle Optional subtitle (typically a cutoff label like
 #'   "Threshold: padj <= 0.05").
 #' @return ggplot object.
+#' @examples
+#' summary <- data.frame(
+#'   comparison = c("Treat vs Ctrl", "Drug vs Vehicle"),
+#'   n_up   = c(120L, 45L),
+#'   n_down = c(80L,  30L),
+#'   n_sig  = c(200L, 75L),
+#'   stringsAsFactors = FALSE
+#' )
+#' plot_de_direction_bar(summary, subtitle = "padj <= 0.05")
 #' @export
 plot_de_direction_bar <- function(summary, subtitle = NULL) {
   if (is.null(summary) || nrow(summary) == 0L) {
@@ -365,6 +444,19 @@ plot_de_direction_bar <- function(summary, subtitle = NULL) {
 #'   order should mirror the `de_list` that produced `summary`.
 #' @param subtitle Optional subtitle (typically a cutoff label).
 #' @return ggplot object.
+#' @examples
+#' summary_df <- data.frame(
+#'   comparison = c("Treat vs Ctrl", "Drug vs Vehicle"),
+#'   n_up   = c(120L, 45L),
+#'   n_down = c(80L,  30L),
+#'   n_sig  = c(200L, 75L),
+#'   stringsAsFactors = FALSE
+#' )
+#' comparisons <- list(
+#'   list(cond_names = c("Treat", "Ctrl")),
+#'   list(cond_names = c("Drug", "Vehicle"))
+#' )
+#' plot_de_pairwise_heatmap(summary_df, comparisons)
 #' @export
 plot_de_pairwise_heatmap <- function(summary, comparisons,
                                      subtitle = NULL) {

@@ -22,6 +22,8 @@
 #'
 #' @param id Module ID.
 #' @return A `bslib::layout_sidebar` tagList.
+#' @examples
+#' enrichmentUI("demo")
 #' @export
 enrichmentUI <- function(id) {
   ns <- shiny::NS(id)
@@ -86,6 +88,18 @@ enrichmentUI <- function(id) {
 #'   - a named list of such data.frames (multi-comparison; enables
 #'     the NES heatmap).
 #' @return invisible(NULL).
+#' @examples
+#' \donttest{
+#'   de <- data.frame(ID = paste0("G", 1:5),
+#'                    log2FoldChange = c(2, -1, 0, 3, -2),
+#'                    padj = c(0.01, 0.04, 0.5, 0.02, 0.03))
+#'   shiny::shinyApp(
+#'     ui = enrichmentUI("e1"),
+#'     server = function(input, output, session) {
+#'       enrichmentServer("e1", shiny::reactive(de))
+#'     }
+#'   )
+#' }
 #' @export
 enrichmentServer <- function(id, de_results) {
   shiny::moduleServer(id, function(input, output, session) {

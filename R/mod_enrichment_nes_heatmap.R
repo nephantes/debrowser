@@ -11,6 +11,8 @@
 #'
 #' @param id Module ID.
 #' @return A `bslib::card`.
+#' @examples
+#' enrichmentNesHeatmapUI("demo")
 #' @export
 enrichmentNesHeatmapUI <- function(id) {
   ns <- shiny::NS(id)
@@ -43,6 +45,15 @@ enrichmentNesHeatmapUI <- function(id) {
 #' @param results_by_comparison Reactive yielding a named list of
 #'   \code{\link{run_gsea}} outputs (one per comparison).
 #' @return invisible(NULL).
+#' @examples
+#' \donttest{
+#'   shiny::shinyApp(
+#'     ui = enrichmentNesHeatmapUI("nes"),
+#'     server = function(input, output, session) {
+#'       enrichmentNesHeatmapServer("nes", shiny::reactive(list()))
+#'     }
+#'   )
+#' }
 #' @export
 enrichmentNesHeatmapServer <- function(id, results_by_comparison) {
   shiny::moduleServer(id, function(input, output, session) {

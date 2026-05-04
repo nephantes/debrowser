@@ -33,3 +33,16 @@ data.frame with added `x`, `y`, `Legend`, `Size` columns; or NULL.
 Pure function — no Shiny dependency. Re-normalizes the count columns,
 computes per-condition x/y log10 means, and labels each row by cutoff.
 }
+\examples{
+cols <- c("S1", "S2", "S3", "S4")
+conds <- c("Cond1", "Cond1", "Cond2", "Cond2")
+fd <- data.frame(
+  S1 = c(100L, 5L), S2 = c(120L, 8L),
+  S3 = c(10L, 200L), S4 = c(12L, 220L),
+  foldChange = c(10, 0.05), padj = c(0.001, 0.001),
+  row.names = c("GeneA", "GeneB")
+)
+params <- list(padj_cutoff = 0.05, fold_cutoff = 2, dataset = "up+down",
+               compselect = 1, norm_method = "none")
+apply_de_filters(fd, cols, conds, params)
+}

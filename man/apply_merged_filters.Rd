@@ -20,3 +20,18 @@ Merged data.frame with a `Legend` column (`"Sig"` / `"NS"`).
 \description{
 Pure version of `applyFiltersToMergedComparison()`.
 }
+\examples{
+init1 <- data.frame(
+  S1 = c(100L, 40L), S2 = c(200L, 60L),
+  S3 = c(10L, 150L), S4 = c(12L, 160L),
+  foldChange = c(10, 0.25), padj = c(0.01, 0.01),
+  row.names = c("GeneA", "GeneB")
+)
+dc <- list(list(
+  init_data = init1,
+  cols = c("S1", "S2", "S3", "S4"),
+  cond_names = c("Treat", "Ctrl")
+))
+params <- list(norm_method = "none", padj_cutoff = 0.05, fold_cutoff = 2)
+apply_merged_filters(dc, nc = 1, params = params)
+}

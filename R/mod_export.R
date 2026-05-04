@@ -16,6 +16,8 @@
 #'
 #' @param id Module ID.
 #' @return bslib::nav_menu element.
+#' @examples
+#' exportMenuUI("demo")
 #' @export
 exportMenuUI <- function(id) {
   ns <- shiny::NS(id)
@@ -39,6 +41,15 @@ exportMenuUI <- function(id) {
 #'   no DE has run yet; both download handlers no-op (showNotification) in
 #'   that case.
 #' @return Invisibly NULL.
+#' @examples
+#' \donttest{
+#'   shiny::shinyApp(
+#'     ui = bslib::page_navbar(exportMenuUI("exp")),
+#'     server = function(input, output, session) {
+#'       exportMenuServer("exp", shiny::reactive(NULL))
+#'     }
+#'   )
+#' }
 #' @export
 exportMenuServer <- function(id, state_react) {
   shiny::moduleServer(id, function(input, output, session) {

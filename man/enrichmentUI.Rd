@@ -16,3 +16,6 @@ A `bslib::layout_sidebar` tagList.
 Lives next to the existing GO Term tab. E2 will fold GO Term into here
 as the ORA mode; E11 adds the "Compare methods" mode.
 }
+\examples{
+enrichmentUI("demo")
+}

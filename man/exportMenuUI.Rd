@@ -21,3 +21,6 @@ Mounted in the page_navbar after `nav_spacer()`. Two items:
 Items are disabled at the server level when DE has not yet been run; the
 UI emits the disabled-attribute via output bindings.
 }
+\examples{
+exportMenuUI("demo")
+}

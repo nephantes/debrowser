@@ -32,6 +32,9 @@ de_error <- function(message, class = character(), ...) {
 #' @param feature Short human description of the feature that requires it
 #'   (e.g. `"Harman batch correction"`).
 #' @return `TRUE` invisibly if available; otherwise raises.
+#' @examples
+#' # Returns TRUE invisibly when the package is present:
+#' require_pkg("stats", feature = "basic statistics")
 #' @export
 require_pkg <- function(pkg, feature = pkg) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
@@ -115,6 +118,11 @@ de_notify_info <- function(msg) {
 #'
 #' @param x Object to validate.
 #' @return `x` (invisibly) if valid.
+#' @examples
+#' m <- matrix(c(100L, 200L, 150L, 40L, 60L, 55L), nrow = 2)
+#' colnames(m) <- paste0("S", 1:3)
+#' rownames(m) <- c("GeneA", "GeneB")
+#' de_assert_count_matrix(m)
 #' @export
 de_assert_count_matrix <- function(x) {
   if (is.null(x)) {
@@ -142,6 +150,14 @@ de_assert_count_matrix <- function(x) {
 #' @return Named list with components: padj_cutoff, fold_cutoff, dataset,
 #'   compselect, norm_method, geneset_area, method_tab, min_count, top_n,
 #'   selected_plot.
+#' @examples
+#' fake_input <- list(
+#'   padj = 0.05, log2fc_cutoff = 1, dataset = "up+down",
+#'   compselect = 1, norm_method = "TMM", genesetarea = "",
+#'   methodtabs = "panel1", mincount = 10, topn = 500,
+#'   selectedplot = NULL
+#' )
+#' filter_params_from_input(fake_input)
 #' @export
 filter_params_from_input <- function(input) {
   list(

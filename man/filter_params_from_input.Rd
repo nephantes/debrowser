@@ -20,3 +20,12 @@ All A3b pure functions accept a named list of filter parameters. This
 helper bridges Shiny modules to those functions in a single place so the
 field-name mapping is documented and centralised.
 }
+\examples{
+fake_input <- list(
+  padj = 0.05, log2fc_cutoff = 1, dataset = "up+down",
+  compselect = 1, norm_method = "TMM", genesetarea = "",
+  methodtabs = "panel1", mincount = 10, topn = 500,
+  selectedplot = NULL
+)
+filter_params_from_input(fake_input)
+}

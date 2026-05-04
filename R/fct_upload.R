@@ -78,6 +78,13 @@ NULL
 #' @param min_score integer, minimum numeric-column count required to
 #'   accept a candidate delimiter.
 #' @return one of tab, comma, semicolon, or `NA_character_`.
+#' @examples
+#' tmp <- tempfile(fileext = ".txt")
+#' writeLines(c("Gene\tS1\tS2\tS3",
+#'              "GeneA\t100\t200\t150",
+#'              "GeneB\t40\t60\t55"), tmp)
+#' detect_separator(tmp)
+#' unlink(tmp)
 #' @export
 detect_separator <- function(path, sample_lines = 50L, min_score = 3L) {
   lines <- .read_head_lines(path, sample_lines)
@@ -98,6 +105,10 @@ detect_separator <- function(path, sample_lines = 50L, min_score = 3L) {
 #'
 #' @param counts data frame whose column names are the sample IDs.
 #' @return data frame with columns `Sample`, `Condition`, `Batch`.
+#' @examples
+#' counts <- data.frame(S1 = c(100, 40), S2 = c(200, 60), S3 = c(150, 55))
+#' rownames(counts) <- c("GeneA", "GeneB")
+#' make_default_metadata(counts)
 #' @export
 make_default_metadata <- function(counts) {
   samples <- colnames(counts)
