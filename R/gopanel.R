@@ -59,6 +59,18 @@ getGoPanel <- function() {
         bslib::card_header("Leading edge"),
         bslib::card_body(textOutput("fgsea_leading_edge"))
       ),
+      # Phase E12.A: AI interpretation panel for the selected pathway.
+      # Renders only when the master switch is on, a provider is
+      # configured, and (for non-Ollama providers) an API key exists.
+      conditionalPanel(
+        condition = "output.ai_panel_visibility === 'show'",
+        bslib::card(
+          bslib::card_header("AI interpretation"),
+          bslib::card_body(
+            debrowser::aiInterpretUI("ai_enrichment")
+          )
+        )
+      ),
       conditionalPanel(
         condition = "output.fgsea_show_heatmap == true",
         enrichmentNesHeatmapUI("fgsea_nes_heatmap")

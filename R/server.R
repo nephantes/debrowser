@@ -588,6 +588,10 @@ deServer <- function(input, output, session) {
 
       exportMenuServer("export", state_react)
 
+      # Phase E12.A: Settings dropdown wiring. Returns a reactive
+      # yielding the current settings list, consumed by gates below.
+      ai_settings <- debrowser::aiSettingsServer("ai_settings")
+
       .fgsea_id_col <- function(de) {
         if ("ID"   %in% names(de)) return("ID")
         if ("gene" %in% names(de)) return("gene")
@@ -684,6 +688,50 @@ deServer <- function(input, output, session) {
             "leading_edge" %in% names(df))
         paste(df$leading_edge[[sel]], collapse = ", ")
       })
+
+      # Phase E12.A: AI panel payload reactive. Produces the gene list
+      # (leading edge of the currently-selected pathway), per-gene stats
+      # from the primary DE result, and the enrichment context. NULL when
+      # no pathway is selected -- panel disables Ask in that case.
+      ai_enrichment_payload <- reactive({
+        sel <- input$fgsea_results_table_rows_selected
+        req(length(sel) == 1L)
+        pw_row     <- fgsea_primary_result()[sel, ]
+        leading    <- fgsea_primary_result()$leading_edge[[sel]]
+        primary_de <- de_results_list()[[1]]
+        id_col     <- .fgsea_id_col(primary_de)
+        stats_df   <- if (is.na(id_col)) NULL else {
+          keep <- as.character(primary_de[[id_col]]) %in% leading
+          data.frame(
+            gene_id        = as.character(primary_de[[id_col]][keep]),
+            log2FoldChange = primary_de$log2FoldChange[keep],
+            padj           = primary_de$padj[keep],
+            stringsAsFactors = FALSE
+          )
+        }
+        list(
+          genes      = leading,
+          stats      = stats_df,
+          enrichment = list(
+            term      = pw_row$pathway,
+            pvalue    = pw_row$padj,
+            n_overlap = length(leading)
+          )
+        )
+      })
+
+      # Phase E12.A: gate the AI card visibility from JS-side
+      # (conditionalPanel reads output$ai_panel_visibility).
+      output$ai_panel_visibility <- reactive({
+        s <- ai_settings()
+        if (.has_required_credentials(s)) "show" else "hide"
+      })
+      outputOptions(output, "ai_panel_visibility", suspendWhenHidden = FALSE)
+
+      debrowser::aiInterpretServer("ai_enrichment",
+                                   payload_react = ai_enrichment_payload,
+                                   settings_react = ai_settings)
+
       filt_data <- reactive({
         if (!is.null(init_data()) && !is.null(comparison()) && !is.null(input$padj)) {
           applyFilters(init_data(), cols(), conds(), input)
