@@ -286,6 +286,8 @@ deUI <- function(req = NULL) {
 
     debrowser::exportMenuUI("export"),
 
+    debrowser::aiSettingsUI("ai_settings"),
+
     bslib::nav_item(
       tags$button(
         id = "dark_mode_toggle",
