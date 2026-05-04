@@ -45,7 +45,11 @@ Run DE per comparison and return the downstream `dclist` payload.
     treatment_label   = "Treat",
     control_label     = "Ctrl",
     de_method         = "EdgeR",
-    method_params     = list(),
+    method_params     = list(
+      edgeR_normfact = "TMM",
+      dispersion     = "0",
+      edgeR_testType = "exactTest"
+    ),
     covariates        = character(0),
     meta_column       = NA_character_
   ))

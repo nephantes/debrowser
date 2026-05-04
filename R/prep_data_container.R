@@ -67,7 +67,11 @@ prep_comparison_inputs <- function(spec, comparison_idx = 1L) {
 #'     treatment_label   = "Treat",
 #'     control_label     = "Ctrl",
 #'     de_method         = "EdgeR",
-#'     method_params     = list(),
+#'     method_params     = list(
+#'       edgeR_normfact = "TMM",
+#'       dispersion     = "0",
+#'       edgeR_testType = "exactTest"
+#'     ),
 #'     covariates        = character(0),
 #'     meta_column       = NA_character_
 #'   ))
