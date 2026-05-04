@@ -307,12 +307,9 @@ emit_r_script <- function(blocks) {
 #' @keywords internal
 #' @noRd
 emit_rmd <- function(blocks) {
-  m <- methods_sentences(blocks)
-  prose_parts <- c(m["load"], m["filter"],
-                   if (!is.na(m["batch"])) m["batch"],
-                   m["de"],
-                   if (!is.na(m["enrichment"])) m["enrichment"])
-  prose <- paste(unname(prose_parts), collapse = " ")
+  # Phase E9: methods_paragraph() now does the per-step assembly,
+  # NA-dropping, and intro framing internally.
+  prose <- methods_paragraph(blocks)
 
   header <- c(
     "---",
