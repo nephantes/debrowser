@@ -88,3 +88,58 @@ test_that(".redact_payload errors on unknown privacy mode", {
     class = "ai_invalid_response"
   )
 })
+
+# --- .render_prompt tests ---
+
+test_that(".render_prompt substitutes basic whisker slots", {
+  testthat::skip_if_not_installed("whisker")
+  tmp <- tempfile(fileext = ".md")
+  on.exit(unlink(tmp), add = TRUE)
+  writeLines("Hello {{name}}, you have {{n_items}} items.", tmp)
+  out <- .render_prompt(tmp, list(name = "world", n_items = 3))
+  expect_equal(out, "Hello world, you have 3 items.")
+})
+
+test_that(".render_prompt expands {{#cond}}...{{/cond}} when truthy", {
+  testthat::skip_if_not_installed("whisker")
+  tmp <- tempfile(fileext = ".md")
+  on.exit(unlink(tmp), add = TRUE)
+  writeLines("Start{{#has_stats}} stats{{/has_stats}} end.", tmp)
+  expect_equal(
+    .render_prompt(tmp, list(has_stats = TRUE)),
+    "Start stats end."
+  )
+  expect_equal(
+    .render_prompt(tmp, list(has_stats = FALSE)),
+    "Start end."
+  )
+})
+
+test_that(".render_prompt errors on missing template file", {
+  expect_error(
+    .render_prompt("/nonexistent/path/template.md", list()),
+    class = "ai_invalid_response"
+  )
+})
+
+# --- .map_provider_error tests ---
+
+test_that(".map_provider_error maps 401 / unauthorized to ai_no_key", {
+  e <- simpleError("HTTP 401: Unauthorized — invalid API key")
+  expect_error(.map_provider_error(e), class = "ai_no_key")
+})
+
+test_that(".map_provider_error maps 429 / rate limit to ai_rate_limit", {
+  e <- simpleError("HTTP 429: Too Many Requests — rate limit exceeded")
+  expect_error(.map_provider_error(e), class = "ai_rate_limit")
+})
+
+test_that(".map_provider_error maps connection errors to ai_network", {
+  e <- simpleError("Could not resolve host: api.anthropic.com")
+  expect_error(.map_provider_error(e), class = "ai_network")
+})
+
+test_that(".map_provider_error maps unknown errors to ai_invalid_response", {
+  e <- simpleError("something completely unexpected happened")
+  expect_error(.map_provider_error(e), class = "ai_invalid_response")
+})

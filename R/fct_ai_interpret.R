@@ -68,3 +68,44 @@ ai_error <- function(message, class = NULL) {
   attr(out, "n_total")   <- n_total
   out
 }
+
+#' Render a whisker prompt template with the given slots.
+#'
+#' @param template_path chr(1). Path to a `.md` template file.
+#' @param slots list. Substitutions for `{{name}}` and `{{#section}}` syntax.
+#' @return chr(1). The rendered prompt.
+#' @keywords internal
+#' @noRd
+.render_prompt <- function(template_path, slots) {
+  if (!file.exists(template_path)) {
+    ai_error(sprintf("Prompt template not found: '%s'", template_path),
+             class = "ai_invalid_response")
+  }
+  require_pkg("whisker", "AI features")
+  raw <- paste(readLines(template_path, warn = FALSE), collapse = "\n")
+  whisker::whisker.render(raw, data = slots)
+}
+
+#' Translate an ellmer / HTTP error into a classed ai_error subclass.
+#'
+#' Inspects the error message for substring patterns and dispatches to
+#' the right subclass. Falls back to `ai_invalid_response` when nothing
+#' matches.
+#'
+#' @param e A condition (typically from a tryCatch around an ellmer call).
+#' @return Never returns; raises a classed `ai_error`.
+#' @keywords internal
+#' @noRd
+.map_provider_error <- function(e) {
+  msg <- conditionMessage(e)
+  lc  <- tolower(msg)
+  if (grepl("401|unauthor|api[_ -]?key|forbidden", lc)) {
+    ai_error(msg, class = "ai_no_key")
+  } else if (grepl("429|rate[ -]?limit|too many requests", lc)) {
+    ai_error(msg, class = "ai_rate_limit")
+  } else if (grepl("could not resolve|connection refused|timeout|timed out|unreachable", lc)) {
+    ai_error(msg, class = "ai_network")
+  } else {
+    ai_error(msg, class = "ai_invalid_response")
+  }
+}
