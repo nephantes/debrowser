@@ -196,6 +196,49 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E12.A — AI interpretation foundation
+
+* New top-right **Settings** dropdown in the navbar with an AI
+  configuration modal: master switch (off by default), provider
+  picker (Anthropic / OpenAI / Ollama), dynamic model lookup via
+  `ellmer::models_*`, encrypted API-key storage via the OS keychain
+  (`keyring` package), and a default privacy mode setting.
+* New **AI interpretation** card on the Enrichment tab below the
+  Leading Edge card. Renders only when the master switch is on, a
+  provider is configured, and (for non-Ollama providers) an API key
+  is present. v1 ships one question preset: "Summarize this gene
+  set's biology", attached to the currently-selected fgsea pathway's
+  leading-edge genes.
+* Privacy modes per call (default: Symbols only):
+  - **Symbols only** -- gene symbols of the leading edge.
+  - **+ Stats** -- also log2FoldChange and adjusted p-value per gene.
+  - **+ Stats + Enrichment** -- also the term name, p-value, and
+    overlap count of the selected pathway.
+  A "What will be sent?" disclosure shows the literal prompt body
+  (live preview) and a character count before the user clicks Ask.
+* New exported helpers in pure files: `ai_interpret(question, payload,
+  privacy_mode, provider_chat, top_n, template_dir)` (`R/fct_ai_interpret.R`),
+  `list_models(provider, api_key)` and `ai_chat(provider, model, api_key)`
+  (`R/fct_ai_providers.R`). Internal helpers cover settings I/O and
+  encrypted key storage (`R/fct_ai_settings.R`).
+* New error class hierarchy: `ai_error` extends `simpleError`; subclasses
+  `ai_no_key`, `ai_rate_limit`, `ai_network`, `ai_invalid_response`,
+  `ai_disabled`. The Shiny module maps each subclass to a friendly
+  notification with a recovery hint.
+* LLM responses are rendered as plain preformatted text (`tags$pre`);
+  no markdown parsing, no HTML execution, no automatic link
+  traversal -- defense against untrusted-content patterns in model
+  output.
+* Three new Suggests gated via `require_pkg`: `ellmer (>= 0.1.0)`,
+  `whisker`, `keyring`. R CMD check passes with all three uninstalled
+  -- the AI features are gracefully unavailable in that case.
+* AI is **disabled by default**. No network calls happen unless the
+  user explicitly enables AI features and configures a provider.
+* Phase E12.B will extend with the remaining 3 question presets
+  (reconcile enrichments, suggest follow-up experiments, draft methods
+  narrative) and 2 mount points (DE Analysis tab results, Comparison
+  Concordance summary).
+
 ### Phase E9 — Methods-paragraph autogen
 
 * Phase E3's Export dropdown now emits a single manuscript-ready methods
