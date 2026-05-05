@@ -285,3 +285,84 @@ test_that("emit_rmd embeds methods_paragraph as Methods prose with citations", {
   expect_match(out_str, "MSigDB Homo sapiens H")
   expect_match(out_str, "Liberzon et al")
 })
+
+# ---------------------------------------------------------------------------
+# emit_ipynb (Phase E3.B)
+# ---------------------------------------------------------------------------
+
+test_that("emit_ipynb returns chr(1) of valid JSON", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out <- emit_ipynb(blocks)
+  expect_type(out, "character")
+  expect_length(out, 1L)
+  expect_no_error(jsonlite::fromJSON(out, simplifyVector = FALSE))
+})
+
+test_that("emit_ipynb declares the R kernelspec (ir)", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  parsed <- jsonlite::fromJSON(emit_ipynb(blocks), simplifyVector = FALSE)
+  expect_equal(parsed$metadata$kernelspec$name, "ir")
+  expect_equal(parsed$metadata$kernelspec$language, "R")
+  expect_equal(parsed$nbformat, 4L)
+  expect_equal(parsed$nbformat_minor, 5L)
+})
+
+test_that("emit_ipynb cell stream alternates markdown and code cells", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  parsed <- jsonlite::fromJSON(emit_ipynb(blocks), simplifyVector = FALSE)
+  cells <- parsed$cells
+  cell_types <- vapply(cells, function(c) c$cell_type, character(1))
+  expect_true(all(cell_types %in% c("markdown", "code")))
+  # The stream should have at least one of each.
+  expect_true(any(cell_types == "markdown"))
+  expect_true(any(cell_types == "code"))
+})
+
+test_that("emit_ipynb code cells have empty outputs and null execution_count", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  parsed <- jsonlite::fromJSON(emit_ipynb(blocks), simplifyVector = FALSE)
+  code_cells <- Filter(function(c) c$cell_type == "code", parsed$cells)
+  expect_true(length(code_cells) > 0L)
+  for (cell in code_cells) {
+    expect_length(cell$outputs, 0L)
+    # `null` JSON deserializes to NULL in fromJSON
+    expect_true(is.null(cell$execution_count) ||
+                is.na(cell$execution_count))
+  }
+})
+
+test_that("emit_ipynb markdown cells include Methods + Sample Info + QC headings", {
+  blocks <- build_session_blocks(.fixture_state_full())
+  parsed <- jsonlite::fromJSON(emit_ipynb(blocks), simplifyVector = FALSE)
+  md_cells <- Filter(function(c) c$cell_type == "markdown", parsed$cells)
+  joined <- paste(unlist(lapply(md_cells, function(c) {
+    paste(unlist(c$source), collapse = "")
+  })), collapse = "\n")
+  expect_match(joined, "## Methods")
+  expect_match(joined, "## Sample Info")
+  expect_match(joined, "## Quality Control")
+  expect_match(joined, "## DESeq Analysis")
+  expect_match(joined, "## Session Info")
+})
+
+test_that("emit_ipynb code cells include the helper-source line", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  parsed <- jsonlite::fromJSON(emit_ipynb(blocks), simplifyVector = FALSE)
+  code_cells <- Filter(function(c) c$cell_type == "code", parsed$cells)
+  joined <- paste(unlist(lapply(code_cells, function(c) {
+    paste(unlist(c$source), collapse = "")
+  })), collapse = "\n")
+  expect_match(joined, "report_helpers\\.R")
+  expect_match(joined, "library\\(debrowser\\)")
+})
+
+test_that("emit_ipynb strips YAML front matter (no --- in cells)", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  parsed <- jsonlite::fromJSON(emit_ipynb(blocks), simplifyVector = FALSE)
+  joined <- paste(unlist(lapply(parsed$cells, function(c) {
+    paste(unlist(c$source), collapse = "")
+  })), collapse = "\n")
+  # The YAML title/output block should not appear in any cell source.
+  expect_false(grepl('title: "DEBrowser session report"', joined, fixed = TRUE))
+  expect_false(grepl("code_folding: hide", joined, fixed = TRUE))
+})

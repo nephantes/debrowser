@@ -673,3 +673,118 @@ emit_rmd <- function(blocks) {
     sample_info_chunk, qc_chunk, de_analysis_chunk,
     enrichment_chunk, session_chunk)
 }
+
+#' Emit the .ipynb (Jupyter notebook) reproducibility report as chr(1).
+#'
+#' Parses the [emit_rmd()] output line-stream into Jupyter cells: each
+#' fenced code chunk (```` ```{r ...} ... ``` ````) becomes one R-kernel
+#' code cell; everything between code chunks (the YAML header is skipped,
+#' prose / headings are kept) becomes markdown cells. Outputs are empty
+#' (`outputs: []`, `execution_count: null`) so the user can run cells in
+#' JupyterLab as a fresh interactive notebook.
+#'
+#' Kernelspec is fixed to `ir` (the IRkernel R kernel name).
+#'
+#' @param blocks Output of [build_session_blocks()].
+#' @return character(1). The serialized .ipynb JSON.
+#' @keywords internal
+#' @noRd
+emit_ipynb <- function(blocks) {
+  rmd <- emit_rmd(blocks)
+
+  # Strip the YAML front matter (between the first two `---` lines).
+  if (length(rmd) >= 2L && identical(rmd[1L], "---")) {
+    closer <- which(rmd == "---")[2L]
+    if (!is.na(closer)) rmd <- rmd[(closer + 1L):length(rmd)]
+  }
+
+  # Walk the line stream, switching between markdown and code-chunk
+  # accumulators. Code chunks are recognized by the opening ``` {r ...}
+  # line and closed by the next bare ``` line (no nesting in our emit).
+  cells <- list()
+  buf   <- character(0)
+  in_code <- FALSE
+
+  flush_markdown <- function() {
+    if (length(buf) == 0L) return(invisible())
+    # Drop trailing blank lines so cells render cleanly.
+    while (length(buf) > 0L && nzchar(trimws(buf[length(buf)])) == 0L) {
+      buf <<- buf[-length(buf)]
+    }
+    if (length(buf) == 0L) return(invisible())
+    cells[[length(cells) + 1L]] <<- list(
+      cell_type = "markdown",
+      metadata  = setNames(list(), character(0)),
+      source    = .ipynb_source(buf)
+    )
+    buf <<- character(0)
+  }
+
+  flush_code <- function() {
+    cells[[length(cells) + 1L]] <<- list(
+      cell_type       = "code",
+      metadata        = setNames(list(), character(0)),
+      execution_count = NA,
+      outputs         = list(),
+      source          = .ipynb_source(buf)
+    )
+    buf <<- character(0)
+  }
+
+  for (line in rmd) {
+    if (!in_code) {
+      if (grepl("^```\\{r[^}]*\\}", line)) {
+        flush_markdown()
+        in_code <- TRUE
+        # Drop the opening fence; the cell only carries chunk body lines.
+      } else {
+        buf <- c(buf, line)
+      }
+    } else {
+      if (grepl("^```\\s*$", line)) {
+        flush_code()
+        in_code <- FALSE
+      } else {
+        buf <- c(buf, line)
+      }
+    }
+  }
+  if (in_code) {
+    # Defensive: malformed emit; treat the trailing code as a code cell.
+    flush_code()
+  } else {
+    flush_markdown()
+  }
+
+  notebook <- list(
+    cells          = cells,
+    metadata       = list(
+      kernelspec   = list(name = "ir",
+                          display_name = "R",
+                          language = "R"),
+      language_info = list(name = "R",
+                           file_extension = ".r",
+                           mimetype = "text/x-r-source",
+                           pygments_lexer = "r",
+                           codemirror_mode = "r")
+    ),
+    nbformat       = 4L,
+    nbformat_minor = 5L
+  )
+
+  jsonlite::toJSON(notebook, auto_unbox = TRUE, pretty = 2,
+                   null = "null", na = "null")
+}
+
+# Internal: convert a chr vector of lines into Jupyter's `source` array
+# (each element ends with "\n" except the last, which is unterminated).
+#' @noRd
+.ipynb_source <- function(lines) {
+  if (length(lines) == 0L) return(list())
+  n <- length(lines)
+  out <- vector("list", n)
+  for (i in seq_len(n)) {
+    out[[i]] <- if (i < n) paste0(lines[i], "\n") else lines[i]
+  }
+  out
+}
