@@ -62,7 +62,7 @@ Imports:
     heatmaply,
     bslib (>= 0.7.0),
     htmltools
-RoxygenNote: 7.3.3
+RoxygenNote: 8.0.0
 Encoding: UTF-8
 Suggests: testthat (>= 3.2.0),
     rmarkdown,

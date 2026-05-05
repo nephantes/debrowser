@@ -12,54 +12,20 @@
 #' deServer
 #'
 #' @export
-#' @importFrom shiny actionButton actionLink addResourcePath column
-#'             conditionalPanel downloadButton downloadHandler
-#'             eventReactive fileInput fluidPage helpText isolate
-#'             mainPanel need numericInput observe observeEvent
-#'             outputOptions parseQueryString plotOutput radioButtons
-#'             reactive reactiveValues renderPlot renderUI runApp
-#'             selectInput shinyApp  shinyServer  shinyUI sidebarLayout
-#'             sidebarPanel sliderInput  stopApp  tabPanel tabsetPanel
-#'             textInput textOutput titlePanel uiOutput tags HTML
-#'             h4 img icon updateNumericInput updateTabsetPanel updateTextInput  validate
-#'             wellPanel checkboxInput br p checkboxGroupInput onRestore
-#'             reactiveValuesToList renderText onBookmark onBookmarked
-#'             updateQueryString enableBookmarking htmlOutput
-#'             onRestored NS reactiveVal withProgress tableOutput
-#'             selectizeInput fluidRow div renderPrint renderImage
-#'             verbatimTextOutput imageOutput renderTable incProgress
-#'             a h3 strong h2 withMathJax updateCheckboxInput
-#'             showNotification updateSelectInput moduleServer
-#'             showModal modalDialog modalButton tagList req
-#'             span updateRadioButtons
-#' @importFrom shinyjs show hide enable disable useShinyjs extendShinyjs
-#'             js inlineCSS onclick
-#' @importFrom DT datatable dataTableOutput renderDataTable formatStyle
-#'             styleInterval formatRound
-#' @importFrom ggplot2 aes geom_bar geom_point ggplot
-#'             labs scale_x_discrete scale_y_discrete ylab
-#'             autoplot theme_minimal theme geom_density
-#'             geom_text element_blank margin facet_grid
-#' @importFrom plotly renderPlotly plotlyOutput plot_ly add_bars event_data
-#'             hide_legend %>% group_by ggplotly config
+#' @importFrom shiny actionButton actionLink addResourcePath column conditionalPanel downloadButton downloadHandler eventReactive fileInput fluidPage helpText isolate mainPanel need numericInput observe observeEvent outputOptions parseQueryString plotOutput radioButtons reactive reactiveValues renderPlot renderUI runApp selectInput shinyApp shinyServer shinyUI sidebarLayout sidebarPanel sliderInput stopApp tabPanel tabsetPanel textInput textOutput titlePanel uiOutput tags HTML h4 img icon updateNumericInput updateTabsetPanel updateTextInput validate wellPanel checkboxInput br p checkboxGroupInput onRestore reactiveValuesToList renderText onBookmark onBookmarked updateQueryString enableBookmarking htmlOutput onRestored NS reactiveVal withProgress tableOutput selectizeInput fluidRow div renderPrint renderImage verbatimTextOutput imageOutput renderTable incProgress a h3 strong h2 withMathJax updateCheckboxInput showNotification updateSelectInput moduleServer showModal modalDialog modalButton tagList req span updateRadioButtons
+#' @importFrom shinyjs show hide enable disable useShinyjs extendShinyjs js inlineCSS onclick
+#' @importFrom DT datatable dataTableOutput renderDataTable formatStyle styleInterval formatRound
+#' @importFrom ggplot2 aes geom_bar geom_point ggplot labs scale_x_discrete scale_y_discrete ylab autoplot theme_minimal theme geom_density geom_text element_blank margin facet_grid
+#' @importFrom plotly renderPlotly plotlyOutput plot_ly add_bars event_data hide_legend %>% group_by ggplotly config
 #' @importFrom gplots heatmap.2 redblue bluered
 #' @importFrom igraph layout.kamada.kawai
 #' @importFrom grDevices dev.off pdf colorRampPalette
 #' @importFrom graphics barplot hist pairs par rect text plot
-#' @importFrom stats aggregate as.dist cor cor.test dist
-#'             hclust kmeans na.omit prcomp var sd model.matrix
-#'             p.adjust runif cov mahalanobis quantile as.dendrogram
-#'             density as.formula coef
-#' @importFrom utils read.csv read.table write.table update.packages
-#'             download.file read.delim data install.packages
-#'             packageDescription installed.packages modifyList
-#' @importMethodsFrom AnnotationDbi as.data.frame as.list colnames
-#'             exists sample subset head mappedkeys ncol nrow subset
-#'             keys mapIds select
+#' @importFrom stats aggregate as.dist cor cor.test dist hclust kmeans na.omit prcomp var sd model.matrix p.adjust runif cov mahalanobis quantile as.dendrogram density as.formula coef
+#' @importFrom utils read.csv read.table write.table update.packages download.file read.delim data install.packages packageDescription installed.packages modifyList
+#' @importMethodsFrom AnnotationDbi as.data.frame as.list colnames exists sample subset head mappedkeys ncol nrow subset keys mapIds select
 #' @importMethodsFrom GenomicRanges as.factor setdiff
-#' @importMethodsFrom IRanges as.matrix "colnames<-" mean
-#'             nchar paste rownames toupper unique which
-#'             as.matrix lapply "rownames<-" gsub
+#' @importMethodsFrom IRanges as.matrix "colnames<-" mean nchar paste rownames toupper unique which as.matrix lapply "rownames<-" gsub
 #' @importMethodsFrom S4Vectors eval grep grepl levels sapply t
 #' @importMethodsFrom SummarizedExperiment cbind order rbind
 #' @importFrom jsonlite fromJSON
@@ -68,10 +34,8 @@
 #' @importFrom annotate geneSymbols
 #' @importFrom reshape2 melt
 #' @importFrom clusterProfiler compareCluster enrichKEGG enrichGO gseGO bitr
-#' @importFrom DESeq2 DESeq DESeqDataSetFromMatrix results estimateSizeFactors
-#'             counts lfcShrink
-#' @importFrom edgeR calcNormFactors equalizeLibSizes DGEList glmLRT
-#'             exactTest estimateCommonDisp glmFit topTags
+#' @importFrom DESeq2 DESeq DESeqDataSetFromMatrix results estimateSizeFactors counts lfcShrink
+#' @importFrom edgeR calcNormFactors equalizeLibSizes DGEList glmLRT exactTest estimateCommonDisp glmFit topTags
 #' @importFrom limma lmFit voom eBayes topTable
 #' @importFrom sva ComBat
 #' @importFrom RCurl getURL
