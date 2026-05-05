@@ -27,7 +27,7 @@ list of length `length(comparisons_spec)` with components
 Run DE per comparison and return the downstream `dclist` payload.
 }
 \examples{
-\donttest{
+\dontrun{
   set.seed(42)
   counts <- matrix(
     as.integer(abs(rnorm(60, mean = 100, sd = 30))),
@@ -53,6 +53,8 @@ Run DE per comparison and return the downstream `dclist` payload.
     covariates        = character(0),
     meta_column       = NA_character_
   ))
+  ## prepDataContainer must run inside a Shiny session
+  ## (delegates to a moduleServer-based DE analysis module).
   prepDataContainer(counts, meta, spec)
 }
 }

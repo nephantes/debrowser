@@ -49,7 +49,7 @@ prep_comparison_inputs <- function(spec, comparison_idx = 1L) {
 #'   NULL for edgeR/limma. Returns NULL if no comparison produced usable
 #'   results.
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   set.seed(42)
 #'   counts <- matrix(
 #'     as.integer(abs(rnorm(60, mean = 100, sd = 30))),
@@ -75,6 +75,8 @@ prep_comparison_inputs <- function(spec, comparison_idx = 1L) {
 #'     covariates        = character(0),
 #'     meta_column       = NA_character_
 #'   ))
+#'   ## prepDataContainer must run inside a Shiny session
+#'   ## (delegates to a moduleServer-based DE analysis module).
 #'   prepDataContainer(counts, meta, spec)
 #' }
 #' @export
