@@ -71,6 +71,16 @@ deUI <- function(req = NULL) {
 
     header = tagList(
       shinyjs::useShinyjs(),
+      # Phase E3.B: Shiny custom-message handler used by the Export menu
+      # "View HTML in tab" item. exportMenuServer renders a report to a
+      # tempdir served via addResourcePath, then sends this message with
+      # the relative URL. Window.open in a new tab; ignored if the
+      # browser blocks pop-ups (user can use Download HTML instead).
+      tags$head(tags$script(HTML(
+        "Shiny.addCustomMessageHandler('debrowser_open_tab', function(msg) {
+           window.open(msg.url, '_blank');
+         });"
+      ))),
       shinyjs::inlineCSS("
         #loading-debrowser {
           position: absolute;

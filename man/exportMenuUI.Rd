@@ -13,9 +13,13 @@ exportMenuUI(id)
 bslib::nav_menu element.
 }
 \description{
-Mounted in the page_navbar after `nav_spacer()`. Three items:
+Mounted in the page_navbar after `nav_spacer()`. Six items:
   - "R script"           downloads a runnable .R reproducibility script
-  - "Rmd -> HTML"        renders an .Rmd to HTML (gated on rmarkdown)
+  - "Rmd source"         (E3.B) downloads the raw .Rmd body, no render
+  - "HTML"               renders an .Rmd to HTML (gated on rmarkdown)
+  - "View HTML in tab"   (E3.B) renders + opens in a new browser tab
+  - "Jupyter notebook"   (E3.B) downloads the same content as .ipynb
+                         with R-kernel code cells
   - "Copy methods text"  opens a modal with a manuscript-ready paragraph
                          (E9) plus a "Download as .txt" button
 }

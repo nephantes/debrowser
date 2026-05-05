@@ -10,9 +10,13 @@
 
 #' Export menu UI -- navbar dropdown.
 #'
-#' Mounted in the page_navbar after `nav_spacer()`. Three items:
+#' Mounted in the page_navbar after `nav_spacer()`. Six items:
 #'   - "R script"           downloads a runnable .R reproducibility script
-#'   - "Rmd -> HTML"        renders an .Rmd to HTML (gated on rmarkdown)
+#'   - "Rmd source"         (E3.B) downloads the raw .Rmd body, no render
+#'   - "HTML"               renders an .Rmd to HTML (gated on rmarkdown)
+#'   - "View HTML in tab"   (E3.B) renders + opens in a new browser tab
+#'   - "Jupyter notebook"   (E3.B) downloads the same content as .ipynb
+#'                          with R-kernel code cells
 #'   - "Copy methods text"  opens a modal with a manuscript-ready paragraph
 #'                          (E9) plus a "Download as .txt" button
 #'
@@ -33,7 +37,16 @@ exportMenuUI <- function(id) {
       shiny::downloadLink(ns("download_r"), "R script")
     ),
     bslib::nav_item(
-      shiny::downloadLink(ns("download_rmd"), "Rmd -> HTML")
+      shiny::downloadLink(ns("download_rmd_src"), "Rmd source")
+    ),
+    bslib::nav_item(
+      shiny::downloadLink(ns("download_rmd"), "HTML")
+    ),
+    bslib::nav_item(
+      shiny::actionLink(ns("view_html_tab"), "View HTML in tab")
+    ),
+    bslib::nav_item(
+      shiny::downloadLink(ns("download_ipynb"), "Jupyter notebook")
     ),
     bslib::nav_item(
       shiny::actionLink(ns("show_methods"), "Copy methods text")
@@ -194,6 +207,95 @@ exportMenuServer <- function(id, state_react) {
         blocks    <- build_session_blocks(st)
         paragraph <- methods_paragraph(blocks)
         writeLines(paragraph, file)
+      }
+    )
+
+    # ---- Phase E3.B: Download Rmd source -----------------------------------
+    # Writes the raw .Rmd body (no render). User can open in RStudio,
+    # edit, and Knit on their own machine.
+    output$download_rmd_src <- shiny::downloadHandler(
+      filename = function() {
+        sprintf("debrowser_session_%s.Rmd",
+                format(Sys.time(), "%Y%m%d_%H%M%S"))
+      },
+      content = function(file) {
+        st <- .guard()
+        if (is.null(st)) {
+          writeLines("# Run DE first.", file); return(invisible(NULL))
+        }
+        blocks <- build_session_blocks(st)
+        writeLines(emit_rmd(blocks), file)
+      }
+    )
+
+    # ---- Phase E3.B: View HTML in tab ---------------------------------------
+    # On click: render the Rmd to a tempdir, register that dir as a Shiny
+    # resource path, then send a custom message to the client to
+    # window.open() the rendered HTML in a new tab. The custom-message
+    # handler is registered once at module init via tags$script().
+    shiny::observeEvent(input$view_html_tab, {
+      st <- .guard()
+      if (is.null(st)) return()
+      if (!requireNamespace("rmarkdown", quietly = TRUE)) {
+        shiny::showNotification(
+          "Install the 'rmarkdown' package to enable HTML view.",
+          type = "error"
+        )
+        return()
+      }
+      blocks <- build_session_blocks(st)
+      rmd_lines <- emit_rmd(blocks)
+
+      html_dir <- file.path(tempdir(), "debrowser_reports")
+      if (!dir.exists(html_dir)) dir.create(html_dir, recursive = TRUE)
+      shiny::addResourcePath("debrowser_reports", html_dir)
+
+      ts <- format(Sys.time(), "%Y%m%d_%H%M%S")
+      rmd_path  <- tempfile(fileext = ".Rmd")
+      on.exit(unlink(rmd_path), add = TRUE)
+      writeLines(rmd_lines, rmd_path)
+
+      html_file <- file.path(html_dir, sprintf("report_%s.html", ts))
+      shiny::showNotification(
+        "Rendering report... this may take up to a minute.",
+        type = "message", duration = 5
+      )
+
+      tryCatch({
+        rmarkdown::render(
+          input         = rmd_path,
+          output_file   = html_file,
+          output_format = "html_document",
+          quiet         = TRUE,
+          envir         = new.env(parent = globalenv())
+        )
+        url <- sprintf("debrowser_reports/%s", basename(html_file))
+        session$sendCustomMessage(
+          "debrowser_open_tab", list(url = url)
+        )
+      }, error = function(e) {
+        shiny::showNotification(
+          sprintf("HTML render failed: %s", conditionMessage(e)),
+          type = "error", duration = 10
+        )
+      })
+    })
+
+    # ---- Phase E3.B: Download Jupyter notebook ------------------------------
+    output$download_ipynb <- shiny::downloadHandler(
+      filename = function() {
+        sprintf("debrowser_session_%s.ipynb",
+                format(Sys.time(), "%Y%m%d_%H%M%S"))
+      },
+      content = function(file) {
+        st <- .guard()
+        if (is.null(st)) {
+          writeLines('{"cells":[{"cell_type":"markdown","source":["Run DE first."]}],"nbformat":4,"nbformat_minor":5}',
+                     file)
+          return(invisible(NULL))
+        }
+        blocks <- build_session_blocks(st)
+        writeLines(emit_ipynb(blocks), file)
       }
     )
 
