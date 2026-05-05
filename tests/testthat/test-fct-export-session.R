@@ -212,16 +212,64 @@ test_that("emit_rmd full session matches snapshot", {
   expect_snapshot(cat(emit_rmd(blocks), sep = "\n"))
 })
 
-test_that("emit_rmd default chunk options set eval=FALSE", {
+test_that("emit_rmd default chunk options set eval=TRUE (E3.B)", {
+  # Phase E3.B reversed the eval default: chunks now run on render so the
+  # report includes actual plots from the demo path. For upload sessions
+  # the user must supply files; load chunks have EDIT THIS PATH comments.
   blocks <- build_session_blocks(.fixture_state_demo_minimal())
   out <- emit_rmd(blocks)
-  expect_true(any(grepl("knitr::opts_chunk\\$set\\(eval = FALSE", out)))
+  expect_true(any(grepl("knitr::opts_chunk\\$set\\(eval = TRUE", out)))
 })
 
-test_that("emit_rmd sessioninfo chunk overrides to eval=TRUE", {
+test_that("emit_rmd YAML enables code_folding: hide", {
   blocks <- build_session_blocks(.fixture_state_demo_minimal())
   out_str <- paste(emit_rmd(blocks), collapse = "\n")
-  expect_match(out_str, "\\{r sessioninfo, eval = TRUE")
+  expect_match(out_str, "code_folding: hide")
+})
+
+test_that("emit_rmd sources report_helpers.R from inst/templates", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out_str <- paste(emit_rmd(blocks), collapse = "\n")
+  expect_match(out_str,
+    'system\\.file\\("templates", "report_helpers\\.R", package = "debrowser"\\)')
+})
+
+test_that("emit_rmd has Sample Info section with DT::datatable", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out_str <- paste(emit_rmd(blocks), collapse = "\n")
+  expect_match(out_str, "## Sample Info")
+  expect_match(out_str, "DT::datatable\\(samples_df")
+})
+
+test_that("emit_rmd has Quality Control tabset with count_dist / all2all / pca", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out_str <- paste(emit_rmd(blocks), collapse = "\n")
+  expect_match(out_str, "## Quality Control \\{\\.tabset")
+  expect_match(out_str, "### Count distribution")
+  expect_match(out_str, "### Reproducibility \\(All2All\\)")
+  expect_match(out_str, "### PCA \\+ Scree")
+  expect_match(out_str, "count_distribution\\(corrected, samples_df")
+  expect_match(out_str, "all2all\\(corrected")
+  expect_match(out_str, "run_pca\\(corrected")
+})
+
+test_that("emit_rmd has DESeq Analysis tabset with per-comparison sub-tabs", {
+  blocks <- build_session_blocks(.fixture_state_full())
+  out_str <- paste(emit_rmd(blocks), collapse = "\n")
+  expect_match(out_str, "## DESeq Analysis \\{\\.tabset")
+  expect_match(out_str, "### treated vs control \\{\\.tabset\\}")
+  expect_match(out_str, "### high_dose vs control \\{\\.tabset\\}")
+  expect_match(out_str, "#### Results")
+  expect_match(out_str, "#### Volcano")
+  expect_match(out_str, "#### MA")
+  expect_match(out_str, "#### Heatmap")
+})
+
+test_that("emit_rmd Session Info is a tabset with Hide/Show", {
+  blocks <- build_session_blocks(.fixture_state_demo_minimal())
+  out_str <- paste(emit_rmd(blocks), collapse = "\n")
+  expect_match(out_str, "## Session Info \\{\\.tabset")
+  expect_match(out_str, "\\{r sessioninfo, echo = FALSE\\}")
 })
 
 test_that("emit_rmd embeds methods_paragraph as Methods prose with citations", {

@@ -159,14 +159,38 @@
       date: "2026-05-03 14:22:11"
       output:
         html_document:
+          code_folding: hide
           toc: true
           toc_float: true
           theme: cosmo
       ---
       
       ```{r setup, include = FALSE}
-      knitr::opts_chunk$set(eval = FALSE, echo = TRUE)
-      library(debrowser)
+      knitr::opts_chunk$set(eval = TRUE, echo = TRUE,
+                            warning = FALSE, message = FALSE)
+      ```
+      
+      ```{r load_libraries, include = FALSE}
+      suppressMessages({
+        library(dplyr)
+        library(ggplot2)
+        library(tidyr)
+        library(tibble)
+        library(rlang)
+        library(scales)
+        library(ggrepel)
+        library(DESeq2)
+        library(edgeR)
+        library(sva)
+        library(gplots)
+        library(DT)
+        library(htmltools)
+        library(debrowser)
+      })
+      ```
+      
+      ```{r load_helpers, include = FALSE}
+      source(system.file("templates", "report_helpers.R", package = "debrowser"))
       ```
       
       ## Methods
@@ -201,6 +225,10 @@
       
       *No batch correction was applied.*
       
+      ```{r batch_passthrough}
+      corrected <- filtered
+      ```
+      
       ### 4. Differential expression
       
       #### Comparison 1: exper vs control
@@ -214,11 +242,139 @@
         params = list(covariates = "NoCovariate", fit_type   = "parametric", beta_prior = FALSE, test_type  = "Wald", shrinkage  = "apeglm"),
         return_dds = FALSE
       )
+      # Stash for downstream sections (Results / Volcano / MA / Heatmap)
+      post_res_1 <- post_processing(
+        as.data.frame(de1) %>% tibble::rownames_to_column('feature'),
+        padj_significance_cutoff = 0.05,
+        fc_significance_cutoff   = 1,
+        num_labeled = Inf,
+        highlighted = character(0),
+        add_alias = FALSE,
+        apply_shrinkage = FALSE
+      )
       ```
       
-      ## Session info
+      ## Sample Info
       
-      ```{r sessioninfo, eval = TRUE, echo = FALSE}
+      ```{r sample_info}
+      # Normalize first column to 'sample_name' so the report helpers (which
+      # expect that column) can join consistently across demo/upload paths.
+      samples_df <- meta
+      if (!is.null(samples_df) && ncol(samples_df) > 0L &&
+          !'sample_name' %in% colnames(samples_df)) {
+        colnames(samples_df)[1] <- 'sample_name'
+      }
+      DT::datatable(samples_df, rownames = FALSE,
+                    options = list(pageLength = 10, dom = 'tip'))
+      ```
+      
+      ## Quality Control {.tabset .tabset-pills}
+      
+      ```{r qc_setup, include = FALSE}
+      # Choose grouping column for QC plots: prefer 'treatment', then
+      # 'condition', then 'group'; else fall back to first non-name column.
+      .find_group_col <- function(meta) {
+        cols <- colnames(meta)
+        for (c in c('treatment', 'condition', 'group')) {
+          if (c %in% cols) return(c)
+        }
+        non_sample <- setdiff(cols, 'sample_name')
+        if (length(non_sample) > 0L) return(non_sample[1L]) else cols[1L]
+      }
+      grp_col <- .find_group_col(samples_df)
+      ```
+      
+      ### Count distribution
+      
+      Histogram of average counts per feature, faceted by group.
+      The dashed vertical line is the low-count filter cutoff.
+      
+      ```{r count_dist}
+      count_distribution(corrected, samples_df, min_counts_per_event = 10, group_by = grp_col)
+      ```
+      
+      ### Reproducibility (All2All)
+      
+      Pairwise sample-sample comparison on all detected genes
+      (post-filter, post-batch matrix). Skipped when there are more
+      than 10 samples.
+      
+      ```{r all2all, fig.width = 8, fig.height = 8}
+      if (ncol(corrected) <= 10) {
+        all2all(corrected, cex = 1)
+      } else {
+        cat('More than 10 samples; skipping (use a sample subset to plot all2all).')
+      }
+      ```
+      
+      ### PCA + Scree
+      
+      PCA on all detected genes (post-filter, post-batch matrix), with
+      scree plot of variance explained per principal component.
+      
+      ```{r pca}
+      pca <- run_pca(corrected, transformation = 'Default')
+      print(pca_plot(pca, samples_df, color_by = grp_col))
+      print(scree_plot(pca))
+      ```
+      
+      ## DESeq Analysis {.tabset .tabset-pills}
+      
+      ### exper vs control {.tabset}
+      
+      #### Results
+      
+      ```{r results_1}
+      DT::datatable(post_res_1 %>%
+        dplyr::select(feature, baseMean, log2FoldChange, lfcSE,
+                      pvalue, padj, Direction) %>%
+        dplyr::arrange(padj),
+        rownames = FALSE,
+        extensions = 'Buttons',
+        options = list(pageLength = 10, dom = 'lftBipr',
+                       buttons = list(list(extend = 'csvHtml5',
+                                           filename = 'exper_vs_control_results',
+                                           extension = '.tsv',
+                                           fieldBoundary = '',
+                                           fieldSeparator = '\t')))) %>%
+        DT::formatRound(c('baseMean', 'log2FoldChange', 'lfcSE'), digits = 4) %>%
+        DT::formatSignif(c('pvalue', 'padj'), digits = 4) %>%
+        DT::formatStyle('Direction', target = 'row',
+          color = DT::styleEqual(c('No Change', 'Upregulated', 'Downregulated'),
+                                  c('black', 'firebrick', 'steelblue')))
+      ```
+      
+      #### Volcano
+      
+      ```{r volcano_1}
+      volcano_plot(post_res_1, padj_cutoff = 0.05, fc_cutoff = 1)
+      ```
+      
+      #### MA
+      
+      ```{r ma_1}
+      ma_plot(post_res_1, padj_cutoff = 0.05, fc_cutoff = 1)
+      ```
+      
+      #### Heatmap
+      
+      ```{r heatmap_1}
+      sig_features_1 <- (post_res_1 %>% dplyr::filter(Significant == 'Significant'))$feature
+      sig_subset_1 <- corrected[rownames(corrected) %in% sig_features_1, , drop = FALSE]
+      if (nrow(sig_subset_1) > 0) {
+        heatmap_plot(sig_subset_1)
+      } else {
+        cat('No significant features at padj < 0.05, |log2FC| > 1.')
+      }
+      ```
+      
+      ## Session Info {.tabset .tabset-pills}
+      
+      ### Hide
+      
+      ### Show
+      
+      ```{r sessioninfo, echo = FALSE}
       sessionInfo()
       ```
 
@@ -232,14 +388,38 @@
       date: "2026-05-03 14:22:11"
       output:
         html_document:
+          code_folding: hide
           toc: true
           toc_float: true
           theme: cosmo
       ---
       
       ```{r setup, include = FALSE}
-      knitr::opts_chunk$set(eval = FALSE, echo = TRUE)
-      library(debrowser)
+      knitr::opts_chunk$set(eval = TRUE, echo = TRUE,
+                            warning = FALSE, message = FALSE)
+      ```
+      
+      ```{r load_libraries, include = FALSE}
+      suppressMessages({
+        library(dplyr)
+        library(ggplot2)
+        library(tidyr)
+        library(tibble)
+        library(rlang)
+        library(scales)
+        library(ggrepel)
+        library(DESeq2)
+        library(edgeR)
+        library(sva)
+        library(gplots)
+        library(DT)
+        library(htmltools)
+        library(debrowser)
+      })
+      ```
+      
+      ```{r load_helpers, include = FALSE}
+      source(system.file("templates", "report_helpers.R", package = "debrowser"))
       ```
       
       ## Methods
@@ -294,6 +474,16 @@
         params = list(covariates = "NoCovariate", fit_type   = "parametric", beta_prior = FALSE, test_type  = "Wald", shrinkage  = "apeglm"),
         return_dds = FALSE
       )
+      # Stash for downstream sections (Results / Volcano / MA / Heatmap)
+      post_res_1 <- post_processing(
+        as.data.frame(de1) %>% tibble::rownames_to_column('feature'),
+        padj_significance_cutoff = 0.05,
+        fc_significance_cutoff   = 1,
+        num_labeled = Inf,
+        highlighted = character(0),
+        add_alias = FALSE,
+        apply_shrinkage = FALSE
+      )
       ```
       
       #### Comparison 2: high_dose vs control
@@ -307,9 +497,181 @@
         params = list(covariates = "NoCovariate", fit_type   = "parametric", beta_prior = FALSE, test_type  = "Wald", shrinkage  = "apeglm"),
         return_dds = FALSE
       )
+      # Stash for downstream sections (Results / Volcano / MA / Heatmap)
+      post_res_2 <- post_processing(
+        as.data.frame(de2) %>% tibble::rownames_to_column('feature'),
+        padj_significance_cutoff = 0.05,
+        fc_significance_cutoff   = 1,
+        num_labeled = Inf,
+        highlighted = character(0),
+        add_alias = FALSE,
+        apply_shrinkage = FALSE
+      )
       ```
       
-      ### 5. Enrichment (GSEA)
+      ## Sample Info
+      
+      ```{r sample_info}
+      # Normalize first column to 'sample_name' so the report helpers (which
+      # expect that column) can join consistently across demo/upload paths.
+      samples_df <- meta
+      if (!is.null(samples_df) && ncol(samples_df) > 0L &&
+          !'sample_name' %in% colnames(samples_df)) {
+        colnames(samples_df)[1] <- 'sample_name'
+      }
+      DT::datatable(samples_df, rownames = FALSE,
+                    options = list(pageLength = 10, dom = 'tip'))
+      ```
+      
+      ## Quality Control {.tabset .tabset-pills}
+      
+      ```{r qc_setup, include = FALSE}
+      # Choose grouping column for QC plots: prefer 'treatment', then
+      # 'condition', then 'group'; else fall back to first non-name column.
+      .find_group_col <- function(meta) {
+        cols <- colnames(meta)
+        for (c in c('treatment', 'condition', 'group')) {
+          if (c %in% cols) return(c)
+        }
+        non_sample <- setdiff(cols, 'sample_name')
+        if (length(non_sample) > 0L) return(non_sample[1L]) else cols[1L]
+      }
+      grp_col <- .find_group_col(samples_df)
+      ```
+      
+      ### Count distribution
+      
+      Histogram of average counts per feature, faceted by group.
+      The dashed vertical line is the low-count filter cutoff.
+      
+      ```{r count_dist}
+      count_distribution(corrected, samples_df, min_counts_per_event = 1, group_by = grp_col)
+      ```
+      
+      ### Reproducibility (All2All)
+      
+      Pairwise sample-sample comparison on all detected genes
+      (post-filter, post-batch matrix). Skipped when there are more
+      than 10 samples.
+      
+      ```{r all2all, fig.width = 8, fig.height = 8}
+      if (ncol(corrected) <= 10) {
+        all2all(corrected, cex = 1)
+      } else {
+        cat('More than 10 samples; skipping (use a sample subset to plot all2all).')
+      }
+      ```
+      
+      ### PCA + Scree
+      
+      PCA on all detected genes (post-filter, post-batch matrix), with
+      scree plot of variance explained per principal component.
+      
+      ```{r pca}
+      pca <- run_pca(corrected, transformation = 'Default')
+      print(pca_plot(pca, samples_df, color_by = grp_col))
+      print(scree_plot(pca))
+      ```
+      
+      ## DESeq Analysis {.tabset .tabset-pills}
+      
+      ### treated vs control {.tabset}
+      
+      #### Results
+      
+      ```{r results_1}
+      DT::datatable(post_res_1 %>%
+        dplyr::select(feature, baseMean, log2FoldChange, lfcSE,
+                      pvalue, padj, Direction) %>%
+        dplyr::arrange(padj),
+        rownames = FALSE,
+        extensions = 'Buttons',
+        options = list(pageLength = 10, dom = 'lftBipr',
+                       buttons = list(list(extend = 'csvHtml5',
+                                           filename = 'treated_vs_control_results',
+                                           extension = '.tsv',
+                                           fieldBoundary = '',
+                                           fieldSeparator = '\t')))) %>%
+        DT::formatRound(c('baseMean', 'log2FoldChange', 'lfcSE'), digits = 4) %>%
+        DT::formatSignif(c('pvalue', 'padj'), digits = 4) %>%
+        DT::formatStyle('Direction', target = 'row',
+          color = DT::styleEqual(c('No Change', 'Upregulated', 'Downregulated'),
+                                  c('black', 'firebrick', 'steelblue')))
+      ```
+      
+      #### Volcano
+      
+      ```{r volcano_1}
+      volcano_plot(post_res_1, padj_cutoff = 0.05, fc_cutoff = 1)
+      ```
+      
+      #### MA
+      
+      ```{r ma_1}
+      ma_plot(post_res_1, padj_cutoff = 0.05, fc_cutoff = 1)
+      ```
+      
+      #### Heatmap
+      
+      ```{r heatmap_1}
+      sig_features_1 <- (post_res_1 %>% dplyr::filter(Significant == 'Significant'))$feature
+      sig_subset_1 <- corrected[rownames(corrected) %in% sig_features_1, , drop = FALSE]
+      if (nrow(sig_subset_1) > 0) {
+        heatmap_plot(sig_subset_1)
+      } else {
+        cat('No significant features at padj < 0.05, |log2FC| > 1.')
+      }
+      ```
+      
+      ### high_dose vs control {.tabset}
+      
+      #### Results
+      
+      ```{r results_2}
+      DT::datatable(post_res_2 %>%
+        dplyr::select(feature, baseMean, log2FoldChange, lfcSE,
+                      pvalue, padj, Direction) %>%
+        dplyr::arrange(padj),
+        rownames = FALSE,
+        extensions = 'Buttons',
+        options = list(pageLength = 10, dom = 'lftBipr',
+                       buttons = list(list(extend = 'csvHtml5',
+                                           filename = 'high_dose_vs_control_results',
+                                           extension = '.tsv',
+                                           fieldBoundary = '',
+                                           fieldSeparator = '\t')))) %>%
+        DT::formatRound(c('baseMean', 'log2FoldChange', 'lfcSE'), digits = 4) %>%
+        DT::formatSignif(c('pvalue', 'padj'), digits = 4) %>%
+        DT::formatStyle('Direction', target = 'row',
+          color = DT::styleEqual(c('No Change', 'Upregulated', 'Downregulated'),
+                                  c('black', 'firebrick', 'steelblue')))
+      ```
+      
+      #### Volcano
+      
+      ```{r volcano_2}
+      volcano_plot(post_res_2, padj_cutoff = 0.05, fc_cutoff = 1)
+      ```
+      
+      #### MA
+      
+      ```{r ma_2}
+      ma_plot(post_res_2, padj_cutoff = 0.05, fc_cutoff = 1)
+      ```
+      
+      #### Heatmap
+      
+      ```{r heatmap_2}
+      sig_features_2 <- (post_res_2 %>% dplyr::filter(Significant == 'Significant'))$feature
+      sig_subset_2 <- corrected[rownames(corrected) %in% sig_features_2, , drop = FALSE]
+      if (nrow(sig_subset_2) > 0) {
+        heatmap_plot(sig_subset_2)
+      } else {
+        cat('No significant features at padj < 0.05, |log2FC| > 1.')
+      }
+      ```
+      
+      ## Enrichment (GSEA)
       
       ```{r enrichment}
       pathways <- msigdb_pathways(species = "Homo sapiens", collection = "H", subcollection = NULL)
@@ -317,9 +679,13 @@
       gsea_2 <- run_gsea(de2, pathways = pathways)
       ```
       
-      ## Session info
+      ## Session Info {.tabset .tabset-pills}
       
-      ```{r sessioninfo, eval = TRUE, echo = FALSE}
+      ### Hide
+      
+      ### Show
+      
+      ```{r sessioninfo, echo = FALSE}
       sessionInfo()
       ```
 
