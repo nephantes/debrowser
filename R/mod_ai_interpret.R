@@ -16,6 +16,8 @@
 #'
 #' @param id Module ID.
 #' @return tagList.
+#' @examples
+#' aiInterpretUI("ai")
 #' @export
 aiInterpretUI <- function(id) {
   ns <- shiny::NS(id)

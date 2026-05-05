@@ -18,7 +18,5 @@ a `plotly` bar of total counts per sample (with a CSV download button) and
 a one-line caption explaining the 2-SD outlier flag.
 }
 \examples{
-\dontrun{
 qcLibraryDepthUI("libraryDepth")
-}
 }

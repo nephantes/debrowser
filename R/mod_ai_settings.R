@@ -12,6 +12,8 @@
 #'
 #' @param id Module ID.
 #' @return bslib::nav_menu element.
+#' @examples
+#' aiSettingsUI("ai")
 #' @export
 aiSettingsUI <- function(id) {
   ns <- shiny::NS(id)

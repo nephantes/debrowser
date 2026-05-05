@@ -19,3 +19,6 @@ button, and response area. The card is meant to be wrapped in a
 parent's conditionalPanel so it only renders when settings are valid
 and analytical results exist.
 }
+\examples{
+aiInterpretUI("ai")
+}

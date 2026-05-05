@@ -18,7 +18,5 @@ UI factory for the Cook's-distance outlier-count QC card. The body is a
 empty-state alert when no fitted `DESeqDataSet` is available.
 }
 \examples{
-\dontrun{
 qcCooksUI("cooks")
-}
 }

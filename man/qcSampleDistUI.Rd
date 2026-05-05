@@ -17,7 +17,5 @@ UI factory for the sample-distance QC card. Renders a `de_card` containing
 a `heatmaply` heatmap and a caption explaining the distance metric.
 }
 \examples{
-\dontrun{
 qcSampleDistUI("sampleDist")
-}
 }

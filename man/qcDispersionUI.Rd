@@ -18,7 +18,5 @@ UI factory for the DESeq2 dispersion-estimates QC card. The body is a
 and an empty-state alert when no fitted `DESeqDataSet` is available.
 }
 \examples{
-\dontrun{
 qcDispersionUI("dispersion")
-}
 }

@@ -18,7 +18,5 @@ containing a `plotly` bar of detection percentage per sample plus a one-line
 caption.
 }
 \examples{
-\dontrun{
 qcDetectionRateUI("detectionRate")
-}
 }

@@ -18,7 +18,5 @@ UI factory for the size-factors-vs-library-size QC card. The body is a
 alert when no fitted `DESeqDataSet` is available.
 }
 \examples{
-\dontrun{
 qcSizeFactorsUI("sizeFactors")
-}
 }

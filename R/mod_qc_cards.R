@@ -18,9 +18,7 @@
 #' @param id character, namespace id
 #' @return a `bslib::card` tagList
 #' @examples
-#' \dontrun{
 #' qcLibraryDepthUI("libraryDepth")
-#' }
 #' @export
 qcLibraryDepthUI <- function(id) {
   ns <- NS(id)
@@ -127,9 +125,7 @@ debrowserqclibrarydepth <- function(id, counts = NULL, meta = NULL,
 #' @param id character, namespace id
 #' @return a `bslib::card` tagList
 #' @examples
-#' \dontrun{
 #' qcDetectionRateUI("detectionRate")
-#' }
 #' @export
 qcDetectionRateUI <- function(id) {
   ns <- NS(id)
@@ -212,9 +208,7 @@ debrowserqcdetectionrate <- function(id, counts = NULL) {
 #' @param id character, namespace id
 #' @return a `bslib::card` tagList
 #' @examples
-#' \dontrun{
 #' qcMtPctUI("mtPct")
-#' }
 #' @export
 qcMtPctUI <- function(id) {
   ns <- NS(id)
@@ -326,9 +320,7 @@ debrowserqcmtpct <- function(id, counts = NULL, threshold_pct = 5) {
 #' @param id character, namespace id
 #' @return a `bslib::card` tagList
 #' @examples
-#' \dontrun{
 #' qcSampleDistUI("sampleDist")
-#' }
 #' @export
 qcSampleDistUI <- function(id) {
   ns <- NS(id)
@@ -420,9 +412,7 @@ debrowserqcsampledist <- function(id, counts = NULL) {
 #' @param id character, namespace id
 #' @return a `bslib::card` tagList
 #' @examples
-#' \dontrun{
 #' qcDispersionUI("dispersion")
-#' }
 #' @export
 qcDispersionUI <- function(id) {
   ns <- NS(id)
@@ -486,9 +476,7 @@ debrowserqcdispersion <- function(id, dds = NULL) {
 #' @param id character, namespace id
 #' @return a `bslib::card` tagList
 #' @examples
-#' \dontrun{
 #' qcSizeFactorsUI("sizeFactors")
-#' }
 #' @export
 qcSizeFactorsUI <- function(id) {
   ns <- NS(id)
@@ -609,9 +597,7 @@ debrowserqcsizefactors <- function(id, dds = NULL,
 #' @param id character, namespace id
 #' @return a `bslib::card` tagList
 #' @examples
-#' \dontrun{
 #' qcCooksUI("cooks")
-#' }
 #' @export
 qcCooksUI <- function(id) {
   ns <- NS(id)

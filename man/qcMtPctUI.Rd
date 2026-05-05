@@ -18,7 +18,5 @@ UI factory for the mitochondrial-percentage QC card. The body is a
 when no MT genes are detected.
 }
 \examples{
-\dontrun{
 qcMtPctUI("mtPct")
-}
 }
