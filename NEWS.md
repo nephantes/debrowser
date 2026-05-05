@@ -196,6 +196,47 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   companion `cutOffSelectionServer(id)` wires preset observers
   for the namespaced widget.
 
+### Phase E3.B — Rich report generation + Jupyter + view-in-tab
+
+* **Export dropdown gains three new items**, bringing the total to six:
+  - **Rmd source** -- downloads the raw `.Rmd` body (no render).
+  - **View HTML in tab** -- renders the Rmd to a tempdir, registers it
+    as a Shiny resource path, and opens the rendered HTML in a new
+    browser tab via `Shiny.addCustomMessageHandler('debrowser_open_tab',...)`.
+  - **Jupyter notebook** -- downloads the same content as a `.ipynb`
+    file with R-kernel (`ir`) code cells; opens directly in JupyterLab.
+  The pre-existing `Rmd -> HTML` item is renamed to plain `HTML`
+  (it always meant "render and download"); the new `View HTML in tab`
+  is the in-browser counterpart.
+* **`emit_rmd()` now produces a manuscript-style report** mirroring a
+  reference Rmd contributed by a user (Haania mouse PA/DMSO study).
+  YAML uses `code_folding: hide` so chunks are collapsible in the
+  rendered HTML; setup chunk runs `eval = TRUE` so the report includes
+  actual plots when rendered. New sections (in order):
+  - Library + helper-source chunks
+  - `## Methods` (paragraph from Phase E9's `methods_paragraph()`)
+  - `## Pipeline` -- load, filter, batch, DE per comparison
+  - `## Sample Info` -- `DT::datatable` of metadata
+  - `## Quality Control {.tabset}` -- Count distribution / All2All /
+    PCA + Scree (all on the all-detected-genes matrix)
+  - `## DESeq Analysis {.tabset}` -- one tab per comparison with
+    sub-tabs Results / Volcano / MA / Heatmap
+  - `## Enrichment` (when configured)
+  - `## Session Info {.tabset}` -- Hide / Show
+* New pure helpers in `R/fct_export_session.R`: `emit_ipynb(blocks)`
+  parses `emit_rmd()` output and converts to `.ipynb` JSON cells.
+* New file: `inst/templates/report_helpers.R` (~534 lines) bundling
+  the report's plotting functions (`count_distribution`, `all2all`,
+  `run_pca`, `pca_plot`, `scree_plot`, `volcano_plot`, `ma_plot`,
+  `heatmap_plot`, `getNormalizedMatrix`, `post_processing`,
+  `add_alias`, `add_highlights`, `call_significance`). The emitted
+  Rmd / Jupyter / .R all `source()` this file from the installed
+  package so report styling stays in one place.
+* `state_react()` (in `R/server.R`) now surfaces `full_counts` (the
+  filter+batch-corrected matrix on all detected genes) and `metadata`
+  (the sample-info table) so the QC and Sample Info sections can
+  reference the same data DEBrowser sees.
+
 ### Phase E12.A — AI interpretation foundation
 
 * New top-right **Settings** dropdown in the navbar with an AI
