@@ -433,6 +433,15 @@ emit_rmd <- function(blocks) {
       "",
       "```{r batch_passthrough}",
       "corrected <- filtered",
+      "```",
+      "",
+      "```{r coerce_counts, include = FALSE}",
+      "# Defensive: downstream DESeq2 / edgeR / PCA helpers expect an",
+      "# integer count matrix. The demo/upload paths deliver data.frames,",
+      "# so coerce once here so every QC / DE Analysis section sees the",
+      "# same clean matrix shape.",
+      "if (!is.matrix(corrected)) corrected <- as.matrix(corrected)",
+      "storage.mode(corrected) <- 'integer'",
       "```", ""
     )
   } else {
@@ -448,7 +457,12 @@ emit_rmd <- function(blocks) {
       "  filtered, meta,",
       sprintf('  method = "%s", batch_col = "%s", treatment_col = %s',
               blocks$batch$method, blocks$batch$batch_column, treat_arg),
-      ")", "```", ""
+      ")", "```",
+      "",
+      "```{r coerce_counts, include = FALSE}",
+      "if (!is.matrix(corrected)) corrected <- as.matrix(corrected)",
+      "storage.mode(corrected) <- 'integer'",
+      "```", ""
     )
   }
 

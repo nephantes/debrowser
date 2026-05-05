@@ -229,6 +229,15 @@
       corrected <- filtered
       ```
       
+      ```{r coerce_counts, include = FALSE}
+      # Defensive: downstream DESeq2 / edgeR / PCA helpers expect an
+      # integer count matrix. The demo/upload paths deliver data.frames,
+      # so coerce once here so every QC / DE Analysis section sees the
+      # same clean matrix shape.
+      if (!is.matrix(corrected)) corrected <- as.matrix(corrected)
+      storage.mode(corrected) <- 'integer'
+      ```
+      
       ### 4. Differential expression
       
       #### Comparison 1: exper vs control
@@ -459,6 +468,11 @@
         filtered, meta,
         method = "Combat", batch_col = "batch", treatment_col = "condition"
       )
+      ```
+      
+      ```{r coerce_counts, include = FALSE}
+      if (!is.matrix(corrected)) corrected <- as.matrix(corrected)
+      storage.mode(corrected) <- 'integer'
       ```
       
       ### 4. Differential expression

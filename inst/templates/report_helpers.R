@@ -120,6 +120,18 @@ getNormalizedMatrix <- function(M = NULL, method = "TMM") {
 
 run_pca <- function(input, retx = TRUE, center = TRUE, scale = TRUE,
                     transformation = "Default", write_transform = FALSE) {
+  # Defensive coercion: vst() and rlog() dispatch on object class via
+  # sizeFactors(), which has no method for data.frame. The DEBrowser
+  # demo and upload paths can deliver `corrected` as a data.frame, so
+  # we always coerce to an integer matrix before downstream DESeq2
+  # transforms. This is a no-op for callers who already pass a matrix.
+  if (!is.matrix(input)) input <- as.matrix(input)
+  if (!is.integer(input)) {
+    input_int <- input
+    storage.mode(input_int) <- "integer"
+    if (!any(is.na(input_int))) input <- input_int
+  }
+
   if (transformation == "None") {
     keep <- subset(input, apply(input, 1, stats::var, na.rm = TRUE) > 0)
     return(stats::prcomp(t(keep), retx = retx, center = center, scale. = scale))
