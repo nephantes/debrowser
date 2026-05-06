@@ -47,6 +47,42 @@
 
 deServer <- function(input, output, session) {
   options(warn = -1)
+
+  # D2.3: server-side bookmarking. Bookmark dirs live under data_dir()
+  # so they share the Docker volume mount with the upload cache and
+  # users.sqlite (see Section 6 of the D2 spec). enableBookmarking is
+  # called inside deServer so it activates per-session — Shiny
+  # supports both module-level and app-level activation.
+  ensure_data_dir()
+  shiny::enableBookmarking("server")
+  options(shiny.bookmarkStore =
+            file.path(data_dir(), "shiny_bookmarks"))
+
+  # SECURITY-CRITICAL: never put AI keys / file-input handles /
+  # button counters into bookmark state. setBookmarkExclude is the
+  # primary mechanism; redact_for_bookmark() in R/fct_bookmark_state.R
+  # is the defense-in-depth pass.
+  setBookmarkExclude(c(
+    # AI namespace — entire E12.A inputs surface
+    "ai_settings-master_switch", "ai_settings-provider",
+    "ai_settings-model", "ai_settings-api_key",
+    "ai_settings-default_privacy", "ai_settings-save",
+    "ai_settings-test", "ai_settings-clear_key",
+    "ai_enrichment-ask", "ai_enrichment-response_text",
+    "ai_enrichment-outbound_preview",
+    # File-input handles (datapaths are per-session-tmp)
+    "load-countdata", "load-metadata",
+    "fgsea_gmt-gmt_file",
+    # Action-button counters (would re-fire side effects on restore)
+    "load-uploadFile", "load-demo", "load-demo2",
+    "lcf-Filter", "batcheffect-submitBatch",
+    "cs-startDE", "cs-add_btn", "cs-rm_btn",
+    "startDE", "Filter", "Batch", "goDE",
+    "goDEFromFilter", "goMain", "goQCplots",
+    "goQCplotsFromFilter", "resetsamples",
+    "startGO"
+  ))
+
   tryCatch(
     {
       if (!interactive()) {
