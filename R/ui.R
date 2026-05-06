@@ -297,8 +297,8 @@ deUI <- function(req = NULL) {
     debrowser::exportMenuUI("export"),
 
     bslib::nav_item(
-      shiny::bookmarkButton(label = "Bookmark",
-                            icon = shiny::icon("bookmark"))
+      shiny::actionButton("bookmark_share", "Bookmark",
+                          icon = shiny::icon("bookmark"))
     ),
 
     debrowser::aiSettingsUI("ai_settings"),

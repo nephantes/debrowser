@@ -135,14 +135,12 @@ deServer <- function(input, output, session) {
         }
       )
     }
-    showNotification(
-      tagList(
-        "Bookmarked. Share this URL: ",
-        tags$a(href = url, target = "_blank", url)
-      ),
-      duration = 12,
-      type = "message"
-    )
+    showModal(modalDialog(
+      title = "Bookmark created",
+      build_share_modal_ui(url, can_toggle = FALSE),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
   })
 
   onRestore(function(state) {
@@ -209,6 +207,10 @@ deServer <- function(input, output, session) {
   onRestored(function(state) {
     # No-op for D2.3. D2.4 (account UI) will use this to re-select
     # the bookmarked tab.
+  })
+
+  shiny::observeEvent(input$bookmark_share, {
+    session$doBookmark()
   })
 
   tryCatch(
