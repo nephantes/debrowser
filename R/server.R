@@ -83,6 +83,64 @@ deServer <- function(input, output, session) {
     "startGO"
   ))
 
+  onBookmark(function(state) {
+    # Stamp the package version so onRestore can do a compat check.
+    state$values$debrowser_version <-
+      as.character(utils::packageVersion("debrowser"))
+    # Resolve and stamp the user_id so onBookmarked can insert the
+    # ownership row even if the auth chain re-resolves later.
+    state$values$user_id <- current_user(session)
+  })
+
+  onBookmarked(function(url) {
+    # state_id is the last path segment of the bookmark URL.
+    # Shiny constructs URLs like:
+    #   <base>?_state_id_=<id>
+    state_id <- sub(".*_state_id_=", "", url)
+    if (!nzchar(state_id) || state_id == url) {
+      # URL has no _state_id_ — nothing to track. Surface anyway.
+      showNotification(paste("Bookmark URL:", url),
+                       duration = NULL, type = "message")
+      return()
+    }
+    user_id <- current_user(session)
+    if (is.na(user_id) || is.null(user_id)) user_id <- "local"
+    con <- tryCatch(user_db_connect(), error = function(e) NULL)
+    if (!is.null(con)) {
+      on.exit(DBI::dbDisconnect(con), add = TRUE)
+      # Idempotent: re-bookmarking with the same content yields a
+      # different state_id, so this is always an INSERT not an UPSERT.
+      # Use tryCatch because the user row may not exist yet in
+      # non-hosted mode (we only insert "local" lazily when bookmarked).
+      tryCatch(
+        user_db_bookmark_insert(con, state_id, user_id,
+                                visibility = "private",
+                                label = NA_character_),
+        error = function(e) {
+          # Auto-provision the implicit user row, then retry.
+          # The FK from bookmarks.user_id requires a users row.
+          tryCatch({
+            user_db_create_user(con, user_id,
+                                kind = if (identical(user_id, "local"))
+                                         "local" else "header")
+          }, error = function(e2) NULL)
+          tryCatch(user_db_bookmark_insert(con, state_id, user_id,
+                                           visibility = "private",
+                                           label = NA_character_),
+                   error = function(e3) NULL)
+        }
+      )
+    }
+    showNotification(
+      tagList(
+        "Bookmarked. Share this URL: ",
+        tags$a(href = url, target = "_blank", url)
+      ),
+      duration = 12,
+      type = "message"
+    )
+  })
+
   tryCatch(
     {
       if (!interactive()) {
