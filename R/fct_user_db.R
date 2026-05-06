@@ -119,3 +119,78 @@ user_db_delete_user <- function(con, user_id) {
   )
   invisible(NULL)
 }
+
+#' Insert a new bookmark row.
+#' @keywords internal
+#' @noRd
+user_db_bookmark_insert <- function(con, state_id, user_id,
+                                    visibility = "private",
+                                    label = NA_character_) {
+  DBI::dbExecute(con,
+    "INSERT INTO bookmarks
+       (state_id, user_id, visibility, label, created_at)
+     VALUES (?, ?, ?, ?, ?)",
+    params = list(state_id, user_id, visibility, label,
+                  as.integer(Sys.time()))
+  )
+  invisible(state_id)
+}
+
+#' @keywords internal
+#' @noRd
+user_db_bookmark_get <- function(con, state_id) {
+  rows <- DBI::dbGetQuery(con,
+    "SELECT state_id, user_id, visibility, label, created_at, last_opened
+       FROM bookmarks WHERE state_id = ?",
+    params = list(state_id)
+  )
+  if (nrow(rows) == 0L) return(NULL)
+  as.list(rows[1L, ])
+}
+
+#' @keywords internal
+#' @noRd
+user_db_bookmarks_for_user <- function(con, user_id) {
+  DBI::dbGetQuery(con,
+    "SELECT state_id, visibility, label, created_at, last_opened
+       FROM bookmarks WHERE user_id = ?
+      ORDER BY created_at DESC",
+    params = list(user_id)
+  )
+}
+
+#' @keywords internal
+#' @noRd
+user_db_bookmark_set_visibility <- function(con, state_id, visibility) {
+  DBI::dbExecute(con,
+    "UPDATE bookmarks SET visibility = ? WHERE state_id = ?",
+    params = list(visibility, state_id)
+  )
+  invisible(NULL)
+}
+
+#' @keywords internal
+#' @noRd
+user_db_bookmark_delete <- function(con, state_id) {
+  DBI::dbExecute(con,
+    "DELETE FROM bookmarks WHERE state_id = ?",
+    params = list(state_id)
+  )
+  invisible(NULL)
+}
+
+#' Authorization check used by the bookmark restore flow.
+#'
+#' Returns TRUE iff the bookmark exists AND (visibility = 'link' OR
+#' user_id matches the owner). Anonymous viewers (NULL user_id) can
+#' open 'link' bookmarks only.
+#'
+#' @keywords internal
+#' @noRd
+user_db_can_open <- function(con, state_id, user_id) {
+  bm <- user_db_bookmark_get(con, state_id)
+  if (is.null(bm)) return(FALSE)
+  if (identical(bm$visibility, "link")) return(TRUE)
+  if (is.null(user_id)) return(FALSE)
+  identical(bm$user_id, user_id)
+}

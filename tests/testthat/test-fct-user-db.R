@@ -83,3 +83,70 @@ test_that("users: kind constraint rejects bogus values", {
     )
   })
 })
+
+test_that("bookmarks CRUD: insert / get / list_for_user / set_visibility / delete", {
+  with_test_data_dir({
+    ensure_data_dir()
+    con <- user_db_connect()
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    user_db_create_user(con, "alice", "shinymanager")
+
+    user_db_bookmark_insert(con,
+      state_id = "abc123", user_id = "alice",
+      visibility = "private", label = "first run"
+    )
+    bm <- user_db_bookmark_get(con, "abc123")
+    expect_equal(bm$user_id, "alice")
+    expect_equal(bm$visibility, "private")
+    expect_equal(bm$label, "first run")
+    expect_true(!is.na(bm$created_at))
+
+    # list_for_user
+    user_db_bookmark_insert(con,
+      state_id = "def456", user_id = "alice", visibility = "link"
+    )
+    bms <- user_db_bookmarks_for_user(con, "alice")
+    expect_equal(nrow(bms), 2L)
+
+    # set_visibility
+    user_db_bookmark_set_visibility(con, "abc123", "link")
+    expect_equal(user_db_bookmark_get(con, "abc123")$visibility, "link")
+
+    # invalid visibility rejected
+    expect_error(
+      user_db_bookmark_set_visibility(con, "abc123", "bogus"),
+      regexp = "CHECK|constraint",
+      ignore.case = TRUE
+    )
+
+    # delete
+    user_db_bookmark_delete(con, "abc123")
+    expect_null(user_db_bookmark_get(con, "abc123"))
+
+    # deleting the user cascades to remaining bookmarks
+    user_db_delete_user(con, "alice")
+    expect_null(user_db_bookmark_get(con, "def456"))
+  })
+})
+
+test_that("user_db_can_open: private⇒owner-only, link⇒anyone", {
+  with_test_data_dir({
+    ensure_data_dir()
+    con <- user_db_connect()
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    user_db_create_user(con, "alice", "shinymanager")
+    user_db_create_user(con, "bob",   "shinymanager")
+    user_db_bookmark_insert(con, "priv1", "alice", "private")
+    user_db_bookmark_insert(con, "link1", "alice", "link")
+
+    expect_true(user_db_can_open(con, "priv1", "alice"))
+    expect_false(user_db_can_open(con, "priv1", "bob"))
+    expect_true(user_db_can_open(con, "link1", "alice"))
+    expect_true(user_db_can_open(con, "link1", "bob"))
+    # Anonymous (NULL user_id) can open link, not private:
+    expect_true(user_db_can_open(con, "link1", NULL))
+    expect_false(user_db_can_open(con, "priv1", NULL))
+    # Unknown bookmark always FALSE:
+    expect_false(user_db_can_open(con, "ghost", "alice"))
+  })
+})
