@@ -66,10 +66,12 @@ RoxygenNote: 8.0.0
 Encoding: UTF-8
 Suggests: testthat (>= 3.2.0),
     rmarkdown,
+    RSQLite,
     knitr,
     digest,
     shinytest2,
     chromote,
+    DBI,
     Harman,
     pathview,
     org.Mm.eg.db,
@@ -82,6 +84,7 @@ Suggests: testthat (>= 3.2.0),
     DOSE,
     ellmer (>= 0.1.0),
     keyring,
+    sodium (>= 1.2),
     whisker
 Config/testthat/edition: 3
 VignetteBuilder: knitr
