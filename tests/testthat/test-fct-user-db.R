@@ -248,3 +248,61 @@ test_that("upload_refs: inc / dec / orphans / cascade", {
     expect_equal(user_db_upload_ref_count(con, shaB, "alice"), 1L)
   })
 })
+
+test_that("master_key_path / load_or_init_master_key: 32 bytes, 0600, idempotent", {
+  skip_if_not_installed("sodium")
+  with_test_data_dir({
+    ensure_data_dir()
+    expect_equal(
+      normalizePath(master_key_path(), mustWork = FALSE),
+      normalizePath(file.path(data_dir(), ".master_key"), mustWork = FALSE)
+    )
+    k1 <- load_or_init_master_key()
+    expect_true(is.raw(k1))
+    expect_length(k1, 32L)
+    # Second call returns the same bytes (no rotation)
+    k2 <- load_or_init_master_key()
+    expect_identical(k1, k2)
+    if (.Platform$OS.type == "unix") {
+      mode <- file.info(master_key_path())$mode
+      # mode is an octmode; bit-test owner-only
+      expect_equal(as.character(mode), "600")
+    }
+  })
+})
+
+test_that("derive_user_key: deterministic per (master, user_id)", {
+  skip_if_not_installed("sodium")
+  with_test_data_dir({
+    ensure_data_dir()
+    m <- load_or_init_master_key()
+    k_alice_1 <- derive_user_key(m, "alice")
+    k_alice_2 <- derive_user_key(m, "alice")
+    k_bob     <- derive_user_key(m, "bob")
+    expect_identical(k_alice_1, k_alice_2)
+    expect_false(identical(k_alice_1, k_bob))
+    expect_length(k_alice_1, 32L)
+  })
+})
+
+test_that("encrypt_for_user / decrypt_for_user round-trip", {
+  skip_if_not_installed("sodium")
+  with_test_data_dir({
+    ensure_data_dir()
+    plain <- "sk-fake-1234567890"
+    blob <- encrypt_for_user("alice", plain)
+    expect_true(is.raw(blob))
+    expect_identical(decrypt_for_user("alice", blob), plain)
+    # Wrong user can't decrypt:
+    expect_error(decrypt_for_user("bob", blob))
+  })
+})
+
+test_that("encrypt_for_user: NULL plaintext => NULL blob; decrypt(NULL) => NA", {
+  skip_if_not_installed("sodium")
+  with_test_data_dir({
+    ensure_data_dir()
+    expect_null(encrypt_for_user("alice", NULL))
+    expect_true(is.na(decrypt_for_user("alice", NULL)))
+  })
+})

@@ -330,3 +330,73 @@ user_db_upload_orphans <- function(con) {
   on_disk <- grep("^[0-9a-f]{64}$", on_disk, value = TRUE)
   setdiff(on_disk, rows$sha256)
 }
+
+#' Absolute path of the server-side master secret file.
+#' @keywords internal
+#' @noRd
+master_key_path <- function() {
+  file.path(data_dir(), ".master_key")
+}
+
+#' Read the master key from disk; create it (32 random bytes, mode 0600)
+#' on first call. Idempotent thereafter.
+#' @keywords internal
+#' @noRd
+load_or_init_master_key <- function() {
+  p <- master_key_path()
+  if (file.exists(p)) {
+    return(readBin(p, what = "raw", n = 32L))
+  }
+  require_pkg("sodium", feature = "per-user AI key encryption")
+  k <- sodium::random(32L)
+  writeBin(k, p)
+  if (.Platform$OS.type == "unix") {
+    Sys.chmod(p, mode = "0600")
+  }
+  k
+}
+
+#' Derive a per-user 32-byte key from the master secret + user_id.
+#'
+#' BLAKE2b keyed hash; 32-byte output. Deterministic for the same
+#' (master, user_id), distinct across user_ids.
+#'
+#' @keywords internal
+#' @noRd
+derive_user_key <- function(master_key, user_id) {
+  require_pkg("sodium", feature = "per-user AI key encryption")
+  sodium::data_tag(charToRaw(as.character(user_id)),
+                   key = master_key)
+}
+
+#' Encrypt a plaintext string for a user. Returns NULL when input is NULL
+#' so callers can pass through "no key set".
+#' @keywords internal
+#' @noRd
+encrypt_for_user <- function(user_id, plaintext) {
+  if (is.null(plaintext) || (length(plaintext) == 1L && is.na(plaintext))) {
+    return(NULL)
+  }
+  require_pkg("sodium", feature = "per-user AI key encryption")
+  k <- derive_user_key(load_or_init_master_key(), user_id)
+  nonce <- sodium::random(24L)
+  ct <- sodium::data_encrypt(charToRaw(plaintext), key = k, nonce = nonce)
+  c(nonce, ct)  # nonce || ciphertext, both raw
+}
+
+#' Decrypt a blob produced by [encrypt_for_user()] for the same user.
+#' NULL or NA input => NA output. Wrong user => error.
+#' @keywords internal
+#' @noRd
+decrypt_for_user <- function(user_id, blob) {
+  if (is.null(blob)) return(NA_character_)
+  if (length(blob) == 1L && is.raw(blob) && all(blob == as.raw(0))) {
+    return(NA_character_)
+  }
+  if (length(blob) < 25L) return(NA_character_)
+  require_pkg("sodium", feature = "per-user AI key encryption")
+  k <- derive_user_key(load_or_init_master_key(), user_id)
+  nonce <- blob[1:24]
+  ct    <- blob[-(1:24)]
+  rawToChar(sodium::data_decrypt(ct, key = k, nonce = nonce))
+}
