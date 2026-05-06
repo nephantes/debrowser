@@ -95,3 +95,18 @@ test_that("serialize/restore: identical uploads collapse to one blob", {
     expect_equal(user_db_upload_ref_count(con, s1$count_sha, "alice"), 2L)
   })
 })
+
+test_that("serialize_load_state: refuses json source with classed condition", {
+  with_test_data_dir({
+    ensure_data_dir()
+    con <- user_db_connect()
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    user_db_create_user(con, "alice", "shinymanager")
+    store <- content_hash_store()
+    loaded <- list(count = NULL, meta = NULL, data_source = "json")
+    expect_error(
+      serialize_load_state(loaded, store, con, "alice"),
+      class = "bookmark_unsupported"
+    )
+  })
+})

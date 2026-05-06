@@ -297,13 +297,24 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     if (is.null(con)) return()
     on.exit(DBI::dbDisconnect(con), add = TRUE)
     store <- content_hash_store()
-    state$values$load <- list(
-      state = serialize_load_state(
-        list(count = ldata$count, meta = ldata$meta,
-             data_source = ldata$data_source),
-        store, con, user_id
+    tryCatch({
+      state$values$load <- list(
+        state = serialize_load_state(
+          list(count = ldata$count, meta = ldata$meta,
+               data_source = ldata$data_source),
+          store, con, user_id
+        )
       )
-    )
+    },
+    bookmark_unsupported = function(cond) {
+      shiny::showNotification(
+        cond$message,
+        type = "warning",
+        duration = 8
+      )
+      # Mark state so the user knows the bookmark is unusable.
+      state$values$load <- list(state = list(data_source = "unsupported"))
+    })
   })
 
   shiny::onRestore(function(state) {

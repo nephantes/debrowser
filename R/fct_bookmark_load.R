@@ -25,6 +25,19 @@ serialize_load_state <- function(loaded, store, con, user_id) {
   if (is.null(loaded)) return(NULL)
   src <- if (is.null(loaded$data_source)) "upload" else loaded$data_source
   if (!identical(src, "upload")) {
+    if (identical(src, "json")) {
+      cond <- structure(
+        class = c("bookmark_unsupported", "error", "condition"),
+        list(
+          message = paste(
+            "JSON-URL sessions cannot be bookmarked.",
+            "Use Export > Reproducibility script for a permanent record."
+          ),
+          data_source = src
+        )
+      )
+      stop(cond)
+    }
     return(list(data_source = src, count_sha = NULL, meta_sha = NULL))
   }
   count_path <- tempfile(fileext = ".tsv")
