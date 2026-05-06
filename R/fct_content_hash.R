@@ -5,18 +5,17 @@
 # the original file. Identical uploads from any user collapse to one
 # blob.
 #
-# Refcounting (which user owns which SHA, and gc of orphans) lands in
-# Task 11 once the user_db tables exist. The closures below DO NOT
-# expose unref/gc yet — those return NULL stubs that Task 11 wires.
+# Refcounting is live: put(path, user_id, con) increments the per-user
+# refcount via user_db_upload_ref_inc; unref(sha, user_id, con)
+# decrements it; gc(con) removes blobs with no remaining refs.
 
 #' Construct a content-addressed file store.
 #'
 #' @param dir Absolute directory path. Defaults to
 #'   `file.path(data_dir(), "uploads")`. Must already exist (caller
 #'   should have run [ensure_data_dir()]).
-#' @return A list of closures: `put(path)`, `path(sha)`, `exists(sha)`,
-#'   `list()`. `unref(sha, user_id)` and `gc()` are present but
-#'   no-ops in D2.1 (Task 11 wires them).
+#' @return A list of closures: `put(path, user_id, con)`, `path(sha)`,
+#'   `exists(sha)`, `list()`, `unref(sha, user_id, con)`, `gc(con)`.
 #' @keywords internal
 #' @noRd
 content_hash_store <- function(dir = file.path(data_dir(), "uploads")) {
@@ -27,7 +26,7 @@ content_hash_store <- function(dir = file.path(data_dir(), "uploads")) {
     ))
   }
 
-  put <- function(path) {
+  put <- function(path, user_id = NULL, con = NULL) {
     if (!file.exists(path)) {
       stop(sprintf("content_hash_store$put: source file '%s' does not exist.",
                    path))
@@ -43,7 +42,23 @@ content_hash_store <- function(dir = file.path(data_dir(), "uploads")) {
         ))
       }
     }
+    if (!is.null(user_id) && !is.null(con)) {
+      user_db_upload_ref_inc(con, sha, user_id)
+    }
     sha
+  }
+
+  unref <- function(sha, user_id, con) {
+    user_db_upload_ref_dec(con, sha, user_id)
+    invisible(NULL)
+  }
+
+  gc <- function(con) {
+    orphans <- user_db_upload_orphans(con)
+    for (o in orphans) {
+      file.remove(file.path(dir, o))
+    }
+    invisible(orphans)
   }
 
   list(
@@ -52,11 +67,9 @@ content_hash_store <- function(dir = file.path(data_dir(), "uploads")) {
     exists = function(sha) file.exists(file.path(dir, sha)),
     list   = function() {
       files <- list.files(dir, full.names = FALSE)
-      # Only well-formed SHA-256 hex names belong to the store; ignore
-      # accidental cohabitation (.gitkeep, leftover .meta sidecars, etc.)
       grep("^[0-9a-f]{64}$", files, value = TRUE)
     },
-    unref  = function(sha, user_id) invisible(NULL),  # Task 11
-    gc     = function()              invisible(NULL)   # Task 11
+    unref  = unref,
+    gc     = gc
   )
 }
