@@ -63,19 +63,23 @@ deServer <- function(input, output, session) {
   # primary mechanism; redact_for_bookmark() in R/fct_bookmark_state.R
   # is the defense-in-depth pass.
   setBookmarkExclude(c(
-    # AI namespace — entire E12.A inputs surface
-    "ai_settings-master_switch", "ai_settings-provider",
+    # AI namespace — entire E12.A inputs surface. Audited against
+    # actual ns() IDs in mod_ai_settings.R + mod_ai_interpret.R.
+    "ai_settings-enabled", "ai_settings-provider",
     "ai_settings-model", "ai_settings-api_key",
-    "ai_settings-default_privacy", "ai_settings-save",
-    "ai_settings-test", "ai_settings-clear_key",
-    "ai_enrichment-ask", "ai_enrichment-response_text",
-    "ai_enrichment-outbound_preview",
+    "ai_settings-default_privacy", "ai_settings-save_settings",
+    "ai_settings-test_provider", "ai_settings-refresh_models",
+    "ai_settings-open_ai_modal",
+    "ai_enrichment-ask", "ai_enrichment-question",
+    "ai_enrichment-privacy", "ai_enrichment-top_n",
     # File-input handles (datapaths are per-session-tmp)
     "load-countdata", "load-metadata",
-    "fgsea_gmt-gmt_file",
-    # Action-button counters (would re-fire side effects on restore)
+    "fgsea_gmt-manual_gmt",
+    # Action-button counters (would re-fire side effects on restore).
+    # Module-namespaced IDs first; deServer top-level IDs after.
     "load-uploadFile", "load-demo", "load-demo2",
-    "lcf-Filter", "batcheffect-submitBatch",
+    "lcf-submitLCF", "batcheffect-submitBatchEffect",
+    "fgsea_gmt-msigdb_load",
     "cs-startDE", "cs-add_btn", "cs-rm_btn",
     "startDE", "Filter", "Batch", "goDE",
     "goDEFromFilter", "goMain", "goQCplots",

@@ -41,13 +41,17 @@ test_that("expected setBookmarkExclude entries are present in server.R", {
   }
   src <- readLines(here)
   text <- paste(src, collapse = "\n")
+  # IDs audited 2026-05-06 against actual ns() calls in each module.
   required <- c(
     "ai_settings-api_key",
-    "ai_enrichment-response_text",
+    "ai_settings-enabled",
+    "ai_enrichment-ask",
     "load-countdata",
     "load-metadata",
-    "fgsea_gmt-gmt_file",
+    "fgsea_gmt-manual_gmt",
     "load-uploadFile",
+    "lcf-submitLCF",
+    "batcheffect-submitBatchEffect",
     "cs-startDE"
   )
   for (r in required) {
