@@ -1,4 +1,5 @@
 test_that("startDEBrowser: hosted=TRUE sets options and calls ensure_data_dir", {
+  skip_if_not_installed("mockery")
   with_test_data_dir({
     captured <- list()
     mockery::stub(startDEBrowser, "runApp",
@@ -17,6 +18,7 @@ test_that("startDEBrowser: hosted=TRUE sets options and calls ensure_data_dir", 
 })
 
 test_that("startDEBrowser: hosted=FALSE produces local_anonymous chain", {
+  skip_if_not_installed("mockery")
   with_test_data_dir({
     mockery::stub(startDEBrowser, "runApp", function(app, ...) invisible(NULL))
     mockery::stub(startDEBrowser, "interactive", function() TRUE)
@@ -30,6 +32,7 @@ test_that("startDEBrowser: hosted=FALSE produces local_anonymous chain", {
 })
 
 test_that("startDEBrowser: defaults are hosted=FALSE, trusted_proxies=character(0)", {
+  skip_if_not_installed("mockery")
   with_test_data_dir({
     mockery::stub(startDEBrowser, "runApp", function(app, ...) invisible(NULL))
     mockery::stub(startDEBrowser, "interactive", function() TRUE)

@@ -48,7 +48,14 @@ startDEBrowser <- function(hosted = FALSE,
     # downstream modules; the chain is consulted by current_user(session)
     # at every Shiny session start. ensure_data_dir() makes data_dir()
     # ready for users.sqlite (D2.1) before any module touches it.
-    options(debrowser.hosted = isTRUE(hosted))
+    #
+    # Precedence: explicit `hosted=` arg > getOption("debrowser.hosted")
+    # > DEBROWSER_HOSTED env var. We only stamp the option when the
+    # caller passed an explicit value, so a deployment relying on
+    # `DEBROWSER_HOSTED=1` keeps working with `startDEBrowser()` (no args).
+    if (!missing(hosted)) {
+      options(debrowser.hosted = isTRUE(hosted))
+    }
     ensure_data_dir()
     options(debrowser.auth_chain =
               build_auth_chain(trusted_proxies = trusted_proxies))
