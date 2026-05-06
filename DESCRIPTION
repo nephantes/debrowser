@@ -85,7 +85,8 @@ Suggests: testthat (>= 3.2.0),
     ellmer (>= 0.1.0),
     keyring,
     sodium (>= 1.2),
-    whisker
+    whisker,
+    withr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/UMMS-Biocore/debrowser

@@ -60,17 +60,3 @@ ensure_data_dir <- function(path = data_dir()) {
   invisible(path)
 }
 
-#' Scope a temporary data_dir for the duration of `code`.
-#'
-#' Test helper. Sets `getOption("debrowser.data_dir")` to a fresh
-#' tempdir and unsets it on exit. Does NOT touch `DEBROWSER_DATA_DIR`
-#' env (tests may want to assert env-precedence behavior).
-#'
-#' @keywords internal
-#' @noRd
-with_test_data_dir <- function(code) {
-  tmp <- tempfile("debrowser-test-data-")
-  dir.create(tmp, recursive = TRUE)
-  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
-  withr::with_options(list(debrowser.data_dir = tmp), code)
-}
