@@ -4,7 +4,19 @@
 \alias{startDEBrowser}
 \title{startDEBrowser}
 \usage{
-startDEBrowser()
+startDEBrowser(hosted = FALSE, trusted_proxies = character(0))
+}
+\arguments{
+\item{hosted}{Logical. When TRUE, enables hosted-mode behaviors:
+auth-provider chain, per-user AI settings (D2.6), bookmark
+ownership enforcement (D2.3+). Default FALSE preserves the
+single-user desktop launch experience. May also be set via
+the `DEBROWSER_HOSTED` env var.}
+
+\item{trusted_proxies}{Character vector of proxy IPs and CIDR
+networks (e.g. `c("127.0.0.1", "10.0.0.0/8")`) whose
+`X-Forwarded-User` header is trusted as the authenticated user.
+Only used when `hosted = TRUE`. Empty by default.}
 }
 \value{
 the app
@@ -16,6 +28,10 @@ Starts the DEBrowser to be able to run interactively.
 \code{startDEBrowser}
 }
 \examples{
+\dontrun{
 startDEBrowser()
+startDEBrowser(hosted = TRUE,
+               trusted_proxies = c("127.0.0.1", "10.0.0.0/8"))
+}
 
 }
