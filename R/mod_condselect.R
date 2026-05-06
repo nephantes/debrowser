@@ -482,6 +482,23 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
       shinyjs::toggleState(id = "startDE", condition = is_ready())
     })
 
+    # D2.3: bookmark-side save of the structured comparisons_spec.
+    # Restore is intentionally NOT wired here — the comparisons rv is a
+    # reactiveValues-of-reactiveValues structure that's tricky to
+    # recreate from a flat spec. D2.4 adds the live restore logic that
+    # walks the saved spec and replays the per-comparison add flow.
+    # For D2.3, the spec is saved so D2.4 has data to work with; the
+    # user manually re-selects samples on restore.
+    shiny::onBookmark(function(state) {
+      spec <- tryCatch(comparisons_spec(),
+                       error = function(e) NULL,
+                       warning = function(w) NULL)
+      if (!is.null(spec) && length(spec) > 0L) {
+        state$values$cs <- list(comparisons_spec = spec)
+      }
+    })
+    # Note: onRestore deliberately not wired in D2.3 — see comment above.
+
     list(
       n_comparisons    = n_comparisons,
       start_de         = shiny::reactive(input$startDE),
