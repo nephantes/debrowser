@@ -284,6 +284,67 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
   observe({
     getSampleDetails(output, "uploadSummary", "sampleDetails", loadeddata())
   })
+
+  # D2.3: module-level bookmark/restore for content-hash uploads.
+  # The module's `ldata` reactiveValues holds count/meta/data_source;
+  # serialize_load_state() round-trips them through content_hash_store
+  # so bookmarks reference uploads by SHA, not file bytes.
+  shiny::onBookmark(function(state) {
+    if (is.null(ldata$count)) return()
+    user_id <- shiny::isolate(current_user(session))
+    if (is.na(user_id) || is.null(user_id)) user_id <- "local"
+    con <- tryCatch(user_db_connect(), error = function(e) NULL)
+    if (is.null(con)) return()
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    store <- content_hash_store()
+    state$values$load <- list(
+      state = serialize_load_state(
+        list(count = ldata$count, meta = ldata$meta,
+             data_source = ldata$data_source),
+        store, con, user_id
+      )
+    )
+  })
+
+  shiny::onRestore(function(state) {
+    s <- state$values$load$state
+    if (is.null(s)) return()
+    store <- content_hash_store()
+    paths <- restore_load_state(s, store)
+    if (is.null(paths)) return()
+    if (identical(paths$data_source, "upload")) {
+      counttable <- as.data.frame(read.delim(
+        paths$count_path, header = TRUE,
+        sep = "\t", row.names = 1, strip.white = TRUE,
+        check.names = FALSE
+      ))
+      metadatatable <- as.data.frame(read.delim(
+        paths$meta_path, header = TRUE,
+        sep = "\t", strip.white = TRUE
+      ))
+      ldata$count <- counttable
+      ldata$meta  <- metadatatable
+      ldata$data_source <- "upload"
+    } else if (identical(paths$data_source, "demo1")) {
+      demoEnv <- new.env()
+      load(system.file("extdata", "demo", "demodata.Rda",
+                       package = "debrowser"), envir = demoEnv)
+      ldata$count <- demoEnv$demodata
+      ldata$meta  <- demoEnv$metadatatable
+      ldata$data_source <- "demo1"
+    } else if (identical(paths$data_source, "demo2")) {
+      demoEnv <- new.env()
+      load(system.file("extdata", "demo", "demodata2.Rda",
+                       package = "debrowser"), envir = demoEnv)
+      ldata$count <- demoEnv$demodata
+      ldata$meta  <- demoEnv$metadatatable
+      ldata$data_source <- "demo2"
+    }
+    # data_source == "json": defer to the existing observe() in the
+    # module; URL params are still in session$clientData and the json
+    # branch will re-fire naturally.
+  })
+
   list(load = loadeddata)
   })
 }
