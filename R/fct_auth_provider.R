@@ -67,3 +67,74 @@ new_auth_provider <- function(name,
 is_auth_provider <- function(x) {
   inherits(x, "debrowser_auth_provider")
 }
+
+#' Compose multiple auth providers into one.
+#'
+#' Walks providers in argument order. `identify` returns the first
+#' non-NULL `user_id`. `wrap_app` composes the providers' wrappers
+#' inside-out (first arg is OUTERMOST, last is innermost) — so for a
+#' chain `auth_chain(outer, inner)`, the rendered app is
+#' `outer$wrap_app(inner$wrap_app(app))`. `logout` fans out to every
+#' provider. `user_info` returns the first non-empty result.
+#'
+#' @param ... `auth_provider` objects (constructed via
+#'   [new_auth_provider()]).
+#' @return A meta-`auth_provider`.
+#' @keywords internal
+#' @noRd
+auth_chain <- function(...) {
+  providers <- list(...)
+  for (p in providers) {
+    if (!is_auth_provider(p)) {
+      stop("auth_chain: every argument must be an auth_provider; got ",
+           paste(class(p), collapse = "/"))
+    }
+  }
+  if (length(providers) == 0L) {
+    stop("auth_chain: at least one auth_provider is required.")
+  }
+
+  identify <- function(session) {
+    for (p in providers) {
+      uid <- tryCatch(p$identify(session),
+                      error = function(e) NULL)
+      if (!is.null(uid)) return(uid)
+    }
+    NULL
+  }
+
+  wrap_app <- function(app) {
+    # Inside-out: last provider wraps first, first provider wraps last.
+    for (p in rev(providers)) {
+      app <- p$wrap_app(app)
+    }
+    app
+  }
+
+  logout <- function(session) {
+    for (p in providers) {
+      tryCatch(p$logout(session), error = function(e) NULL)
+    }
+    invisible(NULL)
+  }
+
+  user_info <- function(user_id) {
+    for (p in providers) {
+      info <- tryCatch(p$user_info(user_id),
+                       error = function(e) list())
+      if (length(info) > 0L) return(info)
+    }
+    list()
+  }
+
+  names <- vapply(providers, `[[`, character(1), "name")
+  chain_name <- sprintf("chain[%s]", paste(names, collapse = ","))
+
+  new_auth_provider(
+    name = chain_name,
+    identify = identify,
+    wrap_app = wrap_app,
+    logout = logout,
+    user_info = user_info
+  )
+}
