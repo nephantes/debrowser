@@ -259,3 +259,74 @@ user_db_ai_settings_clear <- function(con, user_id) {
   )
   invisible(NULL)
 }
+
+#' Increment (or insert) the (sha, user_id) refcount.
+#' @keywords internal
+#' @noRd
+user_db_upload_ref_inc <- function(con, sha256, user_id) {
+  DBI::dbExecute(con,
+    "INSERT INTO upload_refs (sha256, user_id, refcount)
+     VALUES (?, ?, 1)
+     ON CONFLICT(sha256, user_id)
+       DO UPDATE SET refcount = refcount + 1",
+    params = list(sha256, user_id)
+  )
+  invisible(NULL)
+}
+
+#' Decrement the (sha, user_id) refcount. Deletes the row when it hits
+#' zero. Returns the new refcount (0 ⇒ row deleted).
+#' @keywords internal
+#' @noRd
+user_db_upload_ref_dec <- function(con, sha256, user_id) {
+  DBI::dbWithTransaction(con, {
+    DBI::dbExecute(con,
+      "UPDATE upload_refs SET refcount = refcount - 1
+        WHERE sha256 = ? AND user_id = ?",
+      params = list(sha256, user_id)
+    )
+    rows <- DBI::dbGetQuery(con,
+      "SELECT refcount FROM upload_refs
+        WHERE sha256 = ? AND user_id = ?",
+      params = list(sha256, user_id)
+    )
+    new <- if (nrow(rows) == 0L) 0L else as.integer(rows$refcount[[1]])
+    if (new <= 0L) {
+      DBI::dbExecute(con,
+        "DELETE FROM upload_refs WHERE sha256 = ? AND user_id = ?",
+        params = list(sha256, user_id)
+      )
+      0L
+    } else {
+      new
+    }
+  })
+}
+
+#' Current refcount for (sha, user_id), or 0L if absent.
+#' @keywords internal
+#' @noRd
+user_db_upload_ref_count <- function(con, sha256, user_id) {
+  rows <- DBI::dbGetQuery(con,
+    "SELECT refcount FROM upload_refs
+      WHERE sha256 = ? AND user_id = ?",
+    params = list(sha256, user_id)
+  )
+  if (nrow(rows) == 0L) return(0L)
+  as.integer(rows$refcount[[1]])
+}
+
+#' SHA-256 list with no remaining (sha, user_id) refs across any user.
+#' Used by content_hash_store$gc() to delete orphan blobs.
+#' @keywords internal
+#' @noRd
+user_db_upload_orphans <- function(con) {
+  # All SHAs the store thinks exist but for which upload_refs has no
+  # remaining row, i.e. SHAs only known to the filesystem.
+  rows <- DBI::dbGetQuery(con,
+    "SELECT DISTINCT sha256 FROM upload_refs"
+  )
+  on_disk <- list.files(file.path(data_dir(), "uploads"))
+  on_disk <- grep("^[0-9a-f]{64}$", on_disk, value = TRUE)
+  setdiff(on_disk, rows$sha256)
+}

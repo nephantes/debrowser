@@ -196,3 +196,55 @@ test_that("ai_settings CRUD: upsert / get / clear, cascade on user delete", {
     expect_null(user_db_ai_settings_get(con, "alice"))
   })
 })
+
+test_that("upload_refs: inc / dec / orphans / cascade", {
+  with_test_data_dir({
+    ensure_data_dir()
+    con <- user_db_connect()
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    user_db_create_user(con, "alice", "shinymanager")
+    user_db_create_user(con, "bob",   "shinymanager")
+
+    # Use real 64-char hex SHAs so upload_orphans() regex filter passes
+    shaA <- strrep("a", 64)
+    shaB <- strrep("b", 64)
+    shaC <- strrep("c", 64)
+    # Touch empty blobs so upload_orphans() sees them on disk
+    uploads <- file.path(data_dir(), "uploads")
+    file.create(file.path(uploads, shaA))
+    file.create(file.path(uploads, shaB))
+    file.create(file.path(uploads, shaC))
+
+    # First inc creates a row at refcount=1
+    user_db_upload_ref_inc(con, shaA, "alice")
+    user_db_upload_ref_inc(con, shaA, "alice")  # alice now at 2
+    user_db_upload_ref_inc(con, shaA, "bob")    # bob at 1
+    user_db_upload_ref_inc(con, shaB, "alice")  # alice has 2 SHAs
+
+    # Counts
+    expect_equal(user_db_upload_ref_count(con, shaA, "alice"), 2L)
+    expect_equal(user_db_upload_ref_count(con, shaA, "bob"),   1L)
+    expect_equal(user_db_upload_ref_count(con, shaB, "alice"), 1L)
+
+    # Dec: returns the new refcount; row deleted on 0
+    expect_equal(user_db_upload_ref_dec(con, shaA, "alice"), 1L)
+    expect_equal(user_db_upload_ref_dec(con, shaA, "alice"), 0L)
+    expect_equal(user_db_upload_ref_count(con, shaA, "alice"), 0L)
+
+    # shaA still has bob's row -> not an orphan
+    orphans <- user_db_upload_orphans(con)
+    expect_false(shaA %in% orphans)
+
+    # Drop bob's last ref to shaA -> shaA becomes an orphan
+    user_db_upload_ref_dec(con, shaA, "bob")
+    orphans <- user_db_upload_orphans(con)
+    expect_true(shaA %in% orphans)
+    expect_false(shaB %in% orphans)
+
+    # Cascade: deleting bob doesn't break alice's shaB row
+    user_db_upload_ref_inc(con, shaC, "bob")
+    user_db_delete_user(con, "bob")
+    expect_equal(user_db_upload_ref_count(con, shaC, "bob"), 0L)
+    expect_equal(user_db_upload_ref_count(con, shaB, "alice"), 1L)
+  })
+})
