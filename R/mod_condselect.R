@@ -497,7 +497,32 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
         state$values$cs <- list(comparisons_spec = spec)
       }
     })
-    # Note: onRestore deliberately not wired in D2.3 — see comment above.
+
+    # D2.4: live restore. Walks the saved spec into the per-comparison
+    # reactiveValues structure and registers card observers so the UI
+    # cards re-render. Built on top of D2.3's save-side hook above.
+    shiny::onRestore(function(state) {
+      saved <- state$values$cs$comparisons_spec
+      restored <- tryCatch(
+        restore_comparisons_spec(saved),
+        error = function(e) NULL
+      )
+      if (length(restored) == 0L) return()
+
+      # Replace the existing initial comparisons rv (created at line ~429
+      # by new_comparison(1L)) with the restored set.
+      for (key in names(restored)) {
+        comparisons[[key]] <- shiny::reactiveValues()
+        for (fld in names(restored[[key]])) {
+          comparisons[[key]][[fld]] <- restored[[key]][[fld]]
+        }
+        i <- as.integer(key)
+        if (!is.na(i)) install_card_observers(i)
+      }
+
+      # Keep n_comparisons in sync with the restored count.
+      n_comparisons(length(restored))
+    })
 
     list(
       n_comparisons    = n_comparisons,
