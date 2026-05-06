@@ -141,6 +141,72 @@ deServer <- function(input, output, session) {
     )
   })
 
+  onRestore(function(state) {
+    # Authorization gate. Unknown / private-non-owner bookmarks
+    # raise `bookmark_denied`; surface and abort.
+    url_query <- shiny::parseQueryString(
+      session$clientData$url_search %||% "")
+    state_id <- url_query[["_state_id_"]]
+    if (is.null(state_id) || !nzchar(state_id)) return(invisible())
+    viewer <- current_user(session)
+    if (is.na(viewer)) viewer <- NULL
+    con <- tryCatch(user_db_connect(), error = function(e) NULL)
+    if (!is.null(con)) {
+      on.exit(DBI::dbDisconnect(con), add = TRUE)
+      tryCatch(
+        bookmark_authorize(con, state_id, viewer),
+        bookmark_denied = function(cond) {
+          showModal(modalDialog(
+            title = "Bookmark not accessible",
+            tagList(
+              div(class = "alert alert-warning",
+                  cond$message),
+              div("Ask the owner to share the link or enable ",
+                  tags$em("Shared via link"), " mode.")
+            ),
+            easyClose = TRUE,
+            footer = modalButton("OK")
+          ))
+          # Hard-stop restore by clearing state values so downstream
+          # observers see no useful state.
+          state$values <- list()
+          state$input  <- list()
+          return()
+        }
+      )
+    }
+
+    # Version compatibility check.
+    saved <- state$values$debrowser_version
+    current <- as.character(utils::packageVersion("debrowser"))
+    compat <- is_safe_to_restore(saved, current)
+    if (!identical(compat, "safe")) {
+      showModal(modalDialog(
+        title = if (compat == "warn") "Bookmark from a different minor version"
+                else "Bookmark from a different major version",
+        tagList(
+          div(class = "alert alert-warning",
+              sprintf("This bookmark was made with debrowser %s; you're running %s.",
+                      saved %||% "(unknown)", current)),
+          div("The session will still attempt to restore. Some panels may behave unexpectedly.")
+        ),
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+
+    # Defense-in-depth redaction. setBookmarkExclude SHOULD have
+    # already removed AI inputs; this strips anything that slipped
+    # through (e.g. a future module that forgot to exclude its key).
+    state$values <- redact_for_bookmark(state$values)
+    state$input  <- redact_for_bookmark(state$input)
+  })
+
+  onRestored(function(state) {
+    # No-op for D2.3. D2.4 (account UI) will use this to re-select
+    # the bookmarked tab.
+  })
+
   tryCatch(
     {
       if (!interactive()) {
