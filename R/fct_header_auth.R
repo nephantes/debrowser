@@ -22,10 +22,17 @@ header_auth_provider <- function(trusted_proxies = character(0)) {
   trusted_proxies <- trusted_proxies[nzchar(trusted_proxies)]
 
   identify <- function(session) {
-    # Task 6 wires the body. Stub here so the provider is a valid
-    # auth_provider object after Task 5; tests that only need the
-    # constructor + IP helper pass without identify being functional.
-    NULL
+    if (is.null(session) || is.null(session$request)) return(NULL)
+    req <- session$request
+    remote <- req$REMOTE_ADDR
+    if (is.null(remote) || !is_trusted_proxy_ip(remote, trusted_proxies)) {
+      return(NULL)
+    }
+    raw_user <- req$HTTP_X_FORWARDED_USER
+    if (is.null(raw_user)) return(NULL)
+    user <- trimws(as.character(raw_user))
+    if (!nzchar(user)) return(NULL)
+    user
   }
 
   new_auth_provider(

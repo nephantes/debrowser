@@ -55,3 +55,53 @@ test_that("is_trusted_proxy_ip: malformed IP returns FALSE (no error)", {
 test_that("is_trusted_proxy_ip: empty allowlist returns FALSE", {
   expect_false(is_trusted_proxy_ip("127.0.0.1", character(0)))
 })
+
+make_fake_session <- function(remote_addr = "10.0.0.5", forwarded_user = "alice") {
+  list(request = list(
+    REMOTE_ADDR = remote_addr,
+    HTTP_X_FORWARDED_USER = forwarded_user
+  ))
+}
+
+test_that("header_auth_provider$identify: trusted IP + header => user_id", {
+  skip_if_not_installed("ipaddress")
+  p <- header_auth_provider(trusted_proxies = c("10.0.0.0/8"))
+  expect_equal(p$identify(make_fake_session("10.0.0.5", "alice")), "alice")
+})
+
+test_that("header_auth_provider$identify: untrusted IP => NULL", {
+  skip_if_not_installed("ipaddress")
+  p <- header_auth_provider(trusted_proxies = c("10.0.0.0/8"))
+  expect_null(p$identify(make_fake_session("8.8.8.8", "alice")))
+})
+
+test_that("header_auth_provider$identify: trusted IP but no header => NULL", {
+  skip_if_not_installed("ipaddress")
+  p <- header_auth_provider(trusted_proxies = c("10.0.0.0/8"))
+  expect_null(p$identify(make_fake_session("10.0.0.5", "")))
+  expect_null(p$identify(make_fake_session("10.0.0.5", NULL)))
+  # missing field entirely
+  s <- list(request = list(REMOTE_ADDR = "10.0.0.5"))
+  expect_null(p$identify(s))
+})
+
+test_that("header_auth_provider$identify: NULL session / missing request => NULL", {
+  skip_if_not_installed("ipaddress")
+  p <- header_auth_provider(trusted_proxies = c("10.0.0.0/8"))
+  expect_null(p$identify(NULL))
+  expect_null(p$identify(list()))
+  expect_null(p$identify(list(request = NULL)))
+})
+
+test_that("header_auth_provider$identify: empty allowlist => NULL even with header", {
+  skip_if_not_installed("ipaddress")
+  p <- header_auth_provider(trusted_proxies = character(0))
+  expect_null(p$identify(make_fake_session("127.0.0.1", "alice")))
+})
+
+test_that("header_auth_provider$identify: trims whitespace and rejects whitespace-only headers", {
+  skip_if_not_installed("ipaddress")
+  p <- header_auth_provider(trusted_proxies = c("127.0.0.1"))
+  expect_equal(p$identify(make_fake_session("127.0.0.1", "  alice  ")), "alice")
+  expect_null(p$identify(make_fake_session("127.0.0.1", "   ")))
+})
