@@ -150,3 +150,49 @@ test_that("user_db_can_open: private⇒owner-only, link⇒anyone", {
     expect_false(user_db_can_open(con, "ghost", "alice"))
   })
 })
+
+test_that("ai_settings CRUD: upsert / get / clear, cascade on user delete", {
+  with_test_data_dir({
+    ensure_data_dir()
+    con <- user_db_connect()
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    user_db_create_user(con, "alice", "shinymanager")
+
+    # Initial get returns NULL
+    expect_null(user_db_ai_settings_get(con, "alice"))
+
+    # Upsert
+    user_db_ai_settings_upsert(con, "alice",
+      provider = "anthropic", model = "claude-sonnet-4-6",
+      api_key_enc = as.raw(c(0x01, 0x02)), default_privacy = "symbols",
+      master_switch = TRUE
+    )
+    s <- user_db_ai_settings_get(con, "alice")
+    expect_equal(s$provider, "anthropic")
+    expect_equal(s$model, "claude-sonnet-4-6")
+    expect_identical(s$api_key_enc, as.raw(c(0x01, 0x02)))
+    expect_equal(s$default_privacy, "symbols")
+    expect_true(as.logical(s$master_switch))
+
+    # Update via re-upsert
+    user_db_ai_settings_upsert(con, "alice", provider = "openai",
+      model = "gpt-4o", master_switch = FALSE
+    )
+    s2 <- user_db_ai_settings_get(con, "alice")
+    expect_equal(s2$provider, "openai")
+    expect_equal(s2$model, "gpt-4o")
+    expect_false(as.logical(s2$master_switch))
+
+    # Clear
+    user_db_ai_settings_clear(con, "alice")
+    expect_null(user_db_ai_settings_get(con, "alice"))
+
+    # Cascade
+    user_db_ai_settings_upsert(con, "alice", provider = "openai",
+      model = "gpt-4o", master_switch = TRUE
+    )
+    user_db_delete_user(con, "alice")
+    user_db_create_user(con, "alice", "shinymanager")  # re-create same id
+    expect_null(user_db_ai_settings_get(con, "alice"))
+  })
+})

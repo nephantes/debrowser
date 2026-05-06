@@ -194,3 +194,68 @@ user_db_can_open <- function(con, state_id, user_id) {
   if (is.null(user_id)) return(FALSE)
   identical(bm$user_id, user_id)
 }
+
+#' Insert or update a row in `ai_settings` for `user_id`.
+#'
+#' Uses INSERT…ON CONFLICT(user_id) DO UPDATE for atomic upsert. Any
+#' parameter left at its default (`NULL` or formals-default) is written
+#' verbatim — the caller controls whether to clear or preserve fields.
+#' Use [user_db_ai_settings_clear()] to delete the row entirely.
+#'
+#' @param api_key_enc raw vector of sodium-encrypted bytes, or NULL.
+#' @keywords internal
+#' @noRd
+user_db_ai_settings_upsert <- function(con, user_id,
+                                       provider = NA_character_,
+                                       model = NA_character_,
+                                       api_key_enc = NULL,
+                                       default_privacy = NA_character_,
+                                       master_switch = FALSE) {
+  api_key_blob <- if (is.null(api_key_enc)) NA else list(api_key_enc)
+  DBI::dbExecute(con,
+    "INSERT INTO ai_settings
+       (user_id, provider, model, api_key_enc, default_privacy,
+        master_switch, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(user_id) DO UPDATE SET
+       provider        = excluded.provider,
+       model           = excluded.model,
+       api_key_enc     = excluded.api_key_enc,
+       default_privacy = excluded.default_privacy,
+       master_switch   = excluded.master_switch,
+       updated_at      = excluded.updated_at",
+    params = list(user_id, provider, model, api_key_blob,
+                  default_privacy, as.integer(isTRUE(master_switch)),
+                  as.integer(Sys.time()))
+  )
+  invisible(NULL)
+}
+
+#' @keywords internal
+#' @noRd
+user_db_ai_settings_get <- function(con, user_id) {
+  rows <- DBI::dbGetQuery(con,
+    "SELECT provider, model, api_key_enc, default_privacy,
+            master_switch, updated_at
+       FROM ai_settings WHERE user_id = ?",
+    params = list(user_id)
+  )
+  if (nrow(rows) == 0L) return(NULL)
+  out <- as.list(rows[1L, ])
+  # RSQLite returns BLOB columns as a list of raw vectors; unwrap so
+  # callers see a single raw vector per row.
+  if (is.list(out$api_key_enc) && length(out$api_key_enc) == 1L) {
+    out$api_key_enc <- out$api_key_enc[[1]]
+  }
+  out
+}
+
+#' @keywords internal
+#' @noRd
+user_db_ai_settings_clear <- function(con, user_id) {
+  DBI::dbExecute(con,
+    "DELETE FROM ai_settings WHERE user_id = ?",
+    params = list(user_id)
+  )
+  invisible(NULL)
+}
