@@ -59,3 +59,63 @@ user_db_migrate <- function(con) {
   }
   invisible(NULL)
 }
+
+#' Insert a new row into `users`. Errors on duplicate user_id or
+#' invalid `kind`.
+#'
+#' @param con Open `SQLiteConnection`.
+#' @param user_id Unique string id (shinymanager username, OIDC sub,
+#'   header value, or "local").
+#' @param kind One of `c("shinymanager","oidc","header","local")`.
+#' @param email,display_name,hashed_pw Optional metadata.
+#' @keywords internal
+#' @noRd
+user_db_create_user <- function(con, user_id, kind,
+                                email = NA_character_,
+                                display_name = NA_character_,
+                                hashed_pw = NA_character_) {
+  DBI::dbExecute(con,
+    "INSERT INTO users
+      (user_id, kind, email, display_name, hashed_pw, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)",
+    params = list(user_id, kind, email, display_name, hashed_pw,
+                  as.integer(Sys.time()))
+  )
+  invisible(user_id)
+}
+
+#' Fetch one row from `users` by user_id, or NULL.
+#' @keywords internal
+#' @noRd
+user_db_get_user <- function(con, user_id) {
+  rows <- DBI::dbGetQuery(con,
+    "SELECT user_id, kind, email, display_name, hashed_pw,
+            created_at, last_login
+       FROM users WHERE user_id = ?",
+    params = list(user_id)
+  )
+  if (nrow(rows) == 0L) return(NULL)
+  as.list(rows[1L, ])
+}
+
+#' Stamp `last_login = now`.
+#' @keywords internal
+#' @noRd
+user_db_update_login <- function(con, user_id) {
+  DBI::dbExecute(con,
+    "UPDATE users SET last_login = ? WHERE user_id = ?",
+    params = list(as.integer(Sys.time()), user_id)
+  )
+  invisible(NULL)
+}
+
+#' Delete a user (cascades to ai_settings, bookmarks, upload_refs).
+#' @keywords internal
+#' @noRd
+user_db_delete_user <- function(con, user_id) {
+  DBI::dbExecute(con,
+    "DELETE FROM users WHERE user_id = ?",
+    params = list(user_id)
+  )
+  invisible(NULL)
+}
