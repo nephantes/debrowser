@@ -105,3 +105,31 @@ test_that("header_auth_provider$identify: trims whitespace and rejects whitespac
   expect_equal(p$identify(make_fake_session("127.0.0.1", "  alice  ")), "alice")
   expect_null(p$identify(make_fake_session("127.0.0.1", "   ")))
 })
+
+test_that("header_auth_provider: user_info reports kind='header'", {
+  skip_if_not_installed("ipaddress")
+  p <- header_auth_provider(trusted_proxies = c("127.0.0.1"))
+  info <- p$user_info("alice")
+  expect_equal(info$kind, "header")
+  expect_equal(info$display_name, "alice")
+  expect_true(is.na(info$email))
+})
+
+test_that("header_auth_provider: user_info handles NULL/NA user_id", {
+  skip_if_not_installed("ipaddress")
+  p <- header_auth_provider(trusted_proxies = c("127.0.0.1"))
+  expect_equal(p$user_info(NULL)$display_name, NA_character_)
+  expect_equal(p$user_info(NA)$display_name, NA_character_)
+  expect_equal(p$user_info("")$display_name, NA_character_)
+})
+
+test_that("auth_chain consults header_auth's user_info before local_anonymous", {
+  skip_if_not_installed("ipaddress")
+  chain <- auth_chain(
+    header_auth_provider(trusted_proxies = c("127.0.0.1")),
+    local_anonymous_provider()
+  )
+  info <- chain$user_info("bob")
+  expect_equal(info$kind, "header")
+  expect_equal(info$display_name, "bob")
+})

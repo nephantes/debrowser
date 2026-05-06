@@ -37,7 +37,18 @@ header_auth_provider <- function(trusted_proxies = character(0)) {
 
   new_auth_provider(
     name = "header_auth",
-    identify = identify
+    identify = identify,
+    user_info = function(user_id) {
+      if (is.null(user_id) || length(user_id) != 1L ||
+          is.na(user_id) || !nzchar(user_id)) {
+        return(list(kind = "header",
+                    display_name = NA_character_,
+                    email = NA_character_))
+      }
+      list(kind = "header",
+           display_name = as.character(user_id),
+           email = NA_character_)
+    }
   )
 }
 
