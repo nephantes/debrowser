@@ -48,15 +48,10 @@
 deServer <- function(input, output, session) {
   options(warn = -1)
 
-  # D2.3: server-side bookmarking. Bookmark dirs live under data_dir()
-  # so they share the Docker volume mount with the upload cache and
-  # users.sqlite (see Section 6 of the D2 spec). enableBookmarking is
-  # called inside deServer so it activates per-session — Shiny
-  # supports both module-level and app-level activation.
-  ensure_data_dir()
-  shiny::enableBookmarking("server")
-  options(shiny.bookmarkStore =
-            file.path(data_dir(), "shiny_bookmarks"))
+  # D2.3: enableBookmarking + options(shiny.bookmarkStore) MOVED to
+  # startShiny.R — they must be set BEFORE shinyApp() is constructed,
+  # not per-session, or Shiny writes bookmarks to the cwd instead of
+  # data_dir(). setBookmarkExclude is per-session and stays here.
 
   # SECURITY-CRITICAL: never put AI keys / file-input handles /
   # button counters into bookmark state. setBookmarkExclude is the

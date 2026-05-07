@@ -57,6 +57,15 @@ startDEBrowser <- function(hosted = FALSE,
       options(debrowser.hosted = isTRUE(hosted))
     }
     ensure_data_dir()
+
+    # D2.3 fix: enableBookmarking + bookmark-store path MUST be set
+    # BEFORE shinyApp() is constructed — Shiny captures the bookmark
+    # path at app-init time, not per-session. Setting these inside
+    # deServer (where they previously lived) was a no-op for the
+    # path, so bookmarks landed in the cwd instead of data_dir().
+    options(shiny.bookmarkStore =
+              file.path(data_dir(), "shiny_bookmarks"))
+    shiny::enableBookmarking("server")
     # D2.5: capture the chain locally so we can both (a) stash it in the
     # option for current_user() to consume per-session and (b) invoke
     # its wrap_app to install shinymanager::secure_app over deUI when
