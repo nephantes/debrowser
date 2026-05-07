@@ -22,8 +22,17 @@ build_auth_chain <- function(trusted_proxies = character(0)) {
   if (!hosted_mode()) {
     return(local_anonymous_provider())
   }
+  if (length(trusted_proxies) > 0L) {
+    return(auth_chain(
+      header_auth_provider(trusted_proxies = trusted_proxies),
+      local_anonymous_provider()
+    ))
+  }
+  # Hosted, no proxies => shinymanager provides the login wall.
   auth_chain(
-    header_auth_provider(trusted_proxies = trusted_proxies),
+    shinymanager_auth_provider(
+      check_credentials_fn = shinymanager_check_credentials_fn()
+    ),
     local_anonymous_provider()
   )
 }
@@ -59,4 +68,15 @@ current_user <- function(session,
   if (is.null(uid)) uid <- "local"   # safety floor — should never hit
   ud$debrowser_auth$user_id <- uid
   uid
+}
+
+#' Clear the per-session user_id memoization. Called after logout so
+#' the next current_user(session) re-resolves the auth chain (which
+#' should now return NULL from shinymanager and fall through).
+#' @keywords internal
+#' @noRd
+invalidate_user_cache <- function(session) {
+  if (is.null(session) || is.null(session$userData)) return(invisible(NULL))
+  session$userData$debrowser_auth <- NULL
+  invisible(NULL)
 }

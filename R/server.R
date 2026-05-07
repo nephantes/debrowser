@@ -727,6 +727,8 @@ deServer <- function(input, output, session) {
       # yielding the current settings list, consumed by gates below.
       ai_settings <- debrowser::aiSettingsServer("ai_settings")
 
+      debrowser::accountDropdownServer("account")
+
       .fgsea_id_col <- function(de) {
         if ("ID"   %in% names(de)) return("ID")
         if ("gene" %in% names(de)) return("gene")

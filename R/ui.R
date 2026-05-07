@@ -303,6 +303,8 @@ deUI <- function(req = NULL) {
 
     debrowser::aiSettingsUI("ai_settings"),
 
+    debrowser::accountDropdownUI("account"),
+
     bslib::nav_item(
       tags$button(
         id = "dark_mode_toggle",
