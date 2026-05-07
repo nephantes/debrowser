@@ -130,7 +130,7 @@ accountDropdownServer <- function(id) {
       session$reload()
     })
 
-    # My Bookmarks — modal listing the current user's saved bookmarks.
+    # My Bookmarks - modal listing the current user's saved bookmarks.
     shiny::observeEvent(input$my_bookmarks, {
       uid <- current_user(session)
       if (is.na(uid) || identical(uid, "local")) return()
@@ -166,7 +166,7 @@ accountDropdownServer <- function(id) {
               label_txt <- r$label
               if (is.na(label_txt) || !nzchar(label_txt)) {
                 label_txt <- paste0("(unnamed: ",
-                                    substr(state_id, 1, 8), "…)")
+                                    substr(state_id, 1, 8), "...)")
               }
               created <- format(
                 as.POSIXct(r$created_at, origin = "1970-01-01"),
@@ -196,7 +196,7 @@ accountDropdownServer <- function(id) {
       ))
     })
 
-    # Delete-button observer — uses a single observer that watches
+    # Delete-button observer - uses a single observer that watches
     # input names matching the delete_* pattern. Less elegant than
     # individual observers but doesn't leak handlers per modal open.
     shiny::observe({

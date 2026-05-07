@@ -97,7 +97,17 @@ deServer <- function(input, output, session) {
     # managed by server-side togglePanels() / nav_select() observers
     # after data is loaded, so restoring them from bookmark input is
     # both redundant and timing-unsafe.
-    "methodtabs", "DataPrep"
+    "methodtabs", "DataPrep",
+    # D2.5 fix: shinymanager-owned login inputs. These belong to the
+    # login form mounted by `secure_app` and must NOT be bookmarked,
+    # otherwise on restore shinymanager re-binds a second copy and we
+    # get "Duplicate input ID - shinymanager_language: 2 inputs", and
+    # the login form re-renders on top of the restored session.
+    "auth-user_id", "auth-user_pwd", "auth-go_auth",
+    "auth-keep_logged", "auth-resetpwd", "auth-cancel_resetpwd",
+    "shinymanager_language", "shinymanager_loglout",
+    "shinymanager_admin", "shinymanager_pwd_three",
+    "shinymanager_where"
   ))
 
   # D2.5 fix: shinymanager requires BOTH secure_app (UI wrap) AND
@@ -201,6 +211,16 @@ deServer <- function(input, output, session) {
   # modal instance instead of registering N observers (one per bookmark).
   active_share_state_id <- shiny::reactiveVal(NULL)
 
+  # D2.5 fix Bug C: DE auto-replay on bookmark restore. The bookmark
+  # protocol saves `input$*` and `values$*` but NOT the DE result
+  # container `dc()` — so a freshly-restored session lands on Data Prep
+  # with no plots until the user clicks through Filter -> Batch -> goDE
+  # -> Submit again. Auto-replay closes that gap: when onRestore detects
+  # a saved comparisons_spec, this rv holds it; an observer below
+  # fast-forwards the wizard (Filter -> setBatch -> condSelect -> DE)
+  # programmatically once the data has finished loading.
+  pending_de_replay <- shiny::reactiveVal(NULL)
+
   onBookmarked(function(url) {
     # state_id is the last path segment of the bookmark URL.
     # Shiny constructs URLs like:
@@ -292,6 +312,41 @@ deServer <- function(input, output, session) {
   }, ignoreInit = TRUE)
 
   onRestore(function(state) {
+    # D2.5 unconditional restore-side hygiene. Everything in this block
+    # MUST run on every onRestore call (including post-auth shinymanager
+    # sessions whose URL keeps `?token=...` for the entire session).
+    # Earlier versions of this file gated the cs-cs capture and
+    # redact_for_bookmark behind the `token=` early-return below — that
+    # silently skipped DE auto-replay for hosted-mode users.
+
+    # CRITICAL: assign back. state$input / state$values are LISTS in
+    # production (subagent E2E confirmed `class=list, length=279`),
+    # NOT environments as earlier comments claimed. The list branch of
+    # both helpers returns a NEW filtered list — discarding the return
+    # value (the previous bug) made these calls no-ops.
+    if (!is.null(state$input)) {
+      state$input <- strip_unrestorable_inputs(state$input)
+      state$input <- redact_for_bookmark(state$input)
+    }
+    if (!is.null(state$values)) {
+      state$values <- redact_for_bookmark(state$values)
+    }
+
+    # D2.5 Bug C: capture restored comparisons_spec for DE auto-replay.
+    # Done HERE (before the token guard) so it runs in the post-auth
+    # shinymanager session that actually applies the restored state.
+    # state$values[["cs-cs"]] is what mod_condselect's onBookmark wrote
+    # (Shiny namespaces module values as "<parent_ns>-<module_id>").
+    # We capture the spec at top level so the auto-replay observer
+    # downstream can call prepDataContainer directly without depending
+    # on the cs module being mounted at restore time.
+    cs_state <- tryCatch(state$values[["cs-cs"]],
+                         error = function(e) NULL)
+    if (!is.null(cs_state) && !is.null(cs_state$comparisons_spec) &&
+        length(cs_state$comparisons_spec) > 0L) {
+      pending_de_replay(cs_state$comparisons_spec)
+    }
+
     # Authorization gate. Unknown / private-non-owner bookmarks
     # raise `bookmark_denied`; surface and abort.
     url_query <- shiny::parseQueryString(
@@ -299,15 +354,36 @@ deServer <- function(input, output, session) {
     state_id <- url_query[["_state_id_"]]
     if (is.null(state_id) || !nzchar(state_id)) return(invisible())
 
-    # D2.5 fix: when shinymanager's auth is mid-flight (URL carries a
-    # `token=...` parameter), our `current_user(session)` still reads
-    # "local" because secure_server hasn't yet populated res_auth$user.
-    # Without this guard, the gate would deny the bookmark and clear
-    # state — racing against shinymanager's own auth completion.
-    # secure_server is the authoritative auth boundary; if its token
-    # is invalid the user never gets past the login wall, so it's safe
-    # to skip the secondary gate here.
+    # D2.5 fix: when shinymanager has issued a session token, defer the
+    # authz check. Two cases share this URL shape:
+    #   (a) auth IS mid-flight — secure_server hasn't populated res_auth$user
+    #       yet, so current_user() reads "local" and authz would wrongly deny.
+    #   (b) auth completed — shinymanager keeps `token=...` in the URL for
+    #       the whole post-auth session lifetime.
+    # Either way, secure_server is the authoritative auth boundary: if the
+    # token is invalid the user never gets past the login wall. So skipping
+    # the secondary authz gate when a token is present is safe in both cases.
     if (!is.null(url_query[["token"]]) && nzchar(url_query[["token"]])) {
+      # Still do the version-compat check — it's user-facing UX, not a
+      # security boundary.
+      saved <- state$values$debrowser_version
+      current <- as.character(utils::packageVersion("debrowser"))
+      compat <- is_safe_to_restore(saved, current)
+      if (!identical(compat, "safe")) {
+        showModal(modalDialog(
+          title = if (compat == "warn")
+            "Bookmark from a different minor version"
+          else "Bookmark from a different major version",
+          tagList(
+            div(class = "alert alert-warning",
+                sprintf("This bookmark was made with debrowser %s; you're running %s.",
+                        saved %||% "(unknown)", current)),
+            div("The session will still attempt to restore. Some panels may behave unexpectedly.")
+          ),
+          easyClose = TRUE,
+          footer = modalButton("OK")
+        ))
+      }
       return(invisible())
     }
 
@@ -330,18 +406,24 @@ deServer <- function(input, output, session) {
             easyClose = TRUE,
             footer = modalButton("OK")
           ))
-          # Hard-stop restore by clearing state environments so
-          # downstream observers see no useful state. state$values /
-          # state$input are environments; clear in place via rm() —
-          # reassigning to list() doesn't stick.
+          # Hard-stop restore by clearing state. Branch on type because
+          # state$values / state$input are LISTS in production but env
+          # in some test paths — list reassignment via state$X <- list()
+          # works for both, while rm() only works on env.
           if (is.environment(state$values)) {
             rm(list = ls(state$values, all.names = TRUE),
                envir = state$values)
+          } else {
+            state$values <- list()
           }
           if (is.environment(state$input)) {
             rm(list = ls(state$input, all.names = TRUE),
                envir = state$input)
+          } else {
+            state$input <- list()
           }
+          # Also clear the replay flag we may have just set above.
+          pending_de_replay(NULL)
           return()
         }
       )
@@ -365,14 +447,6 @@ deServer <- function(input, output, session) {
         footer = modalButton("OK")
       ))
     }
-
-    # Defense-in-depth redaction. setBookmarkExclude SHOULD have
-    # already removed AI inputs; this strips anything that slipped
-    # through (e.g. a future module that forgot to exclude its key).
-    # state$values and state$input are environments — redact_for_bookmark
-    # mutates in place and returns the same env, so we discard the return.
-    redact_for_bookmark(state$values)
-    redact_for_bookmark(state$input)
   })
 
   onRestored(function(state) {
@@ -434,12 +508,88 @@ deServer <- function(input, output, session) {
       batch <- reactiveVal()
       sel <- reactiveVal()
       dc <- reactiveVal()
+      # D2.5 fix Bug C: hoisted up from below so the auto-replay observer
+      # below can flip buttonValues$startDE without forward-reference issues.
+      buttonValues <- reactiveValues(
+        goQCplots = FALSE, goDE = FALSE,
+        startDE = FALSE
+      )
       compsel <- reactive({
         cp <- 1
         if (!is.null(input$compselect_dataprep)) {
           cp <- input$compselect_dataprep
         }
         cp
+      })
+
+      # D2.5 fix Bug C: DE auto-replay state machine.
+      # When onRestore captured a comparisons_spec into pending_de_replay,
+      # this observer fast-forwards the wizard programmatically once the
+      # data has loaded. Each reactive flush moves one step forward:
+      #   updata loaded -> filtd built -> batch built -> sel built ->
+      #   sel()$comparisons_spec available -> prepDataContainer -> dc set
+      # When dc is populated, we navigate to Main Plots.
+      #
+      # The observer guards against re-firing by clearing pending_de_replay
+      # only after dc is set; intermediate steps return without clearing
+      # so subsequent reactive flushes can advance.
+      observe({
+        spec_to_replay <- pending_de_replay()
+        if (is.null(spec_to_replay) || length(spec_to_replay) == 0L) {
+          return()
+        }
+        # Wait for data load (mod_dataLoad onRestore branch sets ldata).
+        load_d <- tryCatch(updata()$load(), error = function(e) NULL)
+        if (is.null(load_d) || is.null(load_d$count)) return()
+        # Step 1: ensure filtd. The lcf module reads its own bookmarked
+        # cutoff via setBookmarkExclude-NOT-applied input keys; defaults
+        # are fine if no bookmark.
+        if (is.null(filtd())) {
+          filtd(debrowserlowcountfilter("lcf", updata()$load()))
+          return()
+        }
+        fd <- tryCatch(filtd()$filter(), error = function(e) NULL)
+        if (is.null(fd) || is.null(fd$count)) return()
+        # Step 2: skip batch effect (use raw filtered data).
+        if (is.null(batch())) {
+          batch(setBatch(filtd()))
+          return()
+        }
+        bd <- tryCatch(batch()$BatchEffect(), error = function(e) NULL)
+        if (is.null(bd) || is.null(bd$count)) return()
+        # Step 3: build sel via condSelectServer (so the cs module
+        # mounts and its onRestore can populate comparisons_spec from
+        # state$values$cs).
+        if (is.null(sel())) {
+          sel(condSelectServer("cs", bd$count, bd$meta))
+          choicecounter$nc <- sel()$n_comparisons()
+          return()
+        }
+        # Step 4: run DE with the restored spec. Prefer the module's
+        # live spec (so the cards reflect what's running); fall back to
+        # the spec we captured at top-level if the module spec is empty.
+        module_spec <- tryCatch(sel()$comparisons_spec(),
+                                error = function(e) NULL)
+        spec <- if (length(module_spec) > 0L) module_spec else spec_to_replay
+        if (length(spec) == 0L) return()
+        # Consume the replay flag so this branch runs exactly once.
+        pending_de_replay(NULL)
+        dc_res <- tryCatch(
+          prepDataContainer(bd$count, bd$meta, spec),
+          error = function(e) NULL
+        )
+        if (!is.null(dc_res)) {
+          dc(dc_res)
+          progress$upload     <- "done"
+          progress$filter     <- "done"
+          progress$batch      <- "skipped"
+          progress$condselect <- "done"
+          progress$de         <- "done"
+          buttonValues$startDE <- TRUE
+          togglePanels(1, c(0, 1, 2, 3, 4), session)
+          bslib::nav_select("methodtabs", selected = "panel1",
+                            session = session)
+        }
       })
 
       # B1.16: wizard reveal moved entirely to UI-side conditionalPanels
@@ -680,10 +830,7 @@ deServer <- function(input, output, session) {
           condmsg()
         }
       })
-      buttonValues <- reactiveValues(
-        goQCplots = FALSE, goDE = FALSE,
-        startDE = FALSE
-      )
+      # D2.5 fix Bug C: buttonValues hoisted to declaration block above.
       output$dataready <- reactive({
         query <- parseQueryString(session$clientData$url_search)
         jsonobj <- query$jsonobject

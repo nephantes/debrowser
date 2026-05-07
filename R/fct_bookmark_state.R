@@ -26,9 +26,8 @@ redact_for_bookmark <- function(values) {
   drop_mask <- grepl("^ai_", nm) |
                grepl("api_key", nm, ignore.case = TRUE)
   if (is.environment(values)) {
-    # Shiny passes state$values / state$input as environments in
-    # onRestore; subset-with-logical doesn't work on those. Remove
-    # the matching keys in place.
+    # In some test contexts state$values / state$input are passed as
+    # environments. Mutate in place via rm() and return the same env.
     drop_names <- nm[drop_mask]
     for (k in drop_names) {
       if (exists(k, envir = values, inherits = FALSE)) {
@@ -37,7 +36,52 @@ redact_for_bookmark <- function(values) {
     }
     return(values)
   }
+  # Production path: state$values / state$input are LISTS in onRestore
+  # (subagent E2E confirmed `class=list, length=279`). The CALLER MUST
+  # assign the return value back: `state$X <- redact_for_bookmark(state$X)`.
   values[!drop_mask]
+}
+
+#' Drop input keys that must not be replayed on restore.
+#'
+#' D2.5 fix for restore-side breakage caused by:
+#'   1. bslib `page_navbar` / `navset_hidden` ids ("methodtabs", "DataPrep").
+#'      Shiny replays bookmarked tab selections via `updateTabsetPanel`-style
+#'      messages, which bslib does NOT implement. The client throws
+#'      "There is no tabsetPanel with id equal to 'methodtabs'" repeatedly.
+#'   2. shinymanager's own login-form inputs ("auth-user_id", "auth-user_pwd",
+#'      "shinymanager_language", etc.). These belong to the login UI that
+#'      shinymanager mounts BEFORE secure_app swaps to the wrapped UI; if
+#'      they're replayed, shinymanager re-binds a second copy and we get
+#'      "Duplicate input ID was found - shinymanager_language".
+#'
+#' Belt-and-suspenders with `setBookmarkExclude` in deServer: the exclude
+#' list prevents future bookmarks from saving these keys; this restore-side
+#' filter handles bookmarks created BEFORE the exclude list was extended.
+#'
+#' @param input Environment or list (state$input passed to onRestore).
+#' @return `input` with the offending keys removed in place; same object.
+#' @keywords internal
+#' @noRd
+strip_unrestorable_inputs <- function(input) {
+  if (length(input) == 0L) return(input)
+  nm <- names(input)
+  if (is.null(nm)) return(input)
+  drop_mask <- nm %in% c("methodtabs", "DataPrep") |
+               grepl("^auth-", nm) |
+               grepl("^shinymanager_", nm)
+  if (is.environment(input)) {
+    drop_names <- nm[drop_mask]
+    for (k in drop_names) {
+      if (exists(k, envir = input, inherits = FALSE)) {
+        rm(list = k, envir = input)
+      }
+    }
+    return(input)
+  }
+  # Production path (onRestore passes state$input as LIST): caller MUST
+  # assign return value back, otherwise this is a no-op.
+  input[!drop_mask]
 }
 
 #' Compatibility classification for a bookmark restore.

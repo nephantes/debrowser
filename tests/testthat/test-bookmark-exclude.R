@@ -56,10 +56,152 @@ test_that("expected setBookmarkExclude entries are present in server.R", {
     # D2.5 fix: bslib page_navbar / navset_hidden tab selections must be
     # excluded to prevent JS "There is no tabsetPanel" errors during restore.
     "methodtabs",
-    "DataPrep"
+    "DataPrep",
+    # D2.5 fix Bug B: shinymanager-owned login form inputs must not be
+    # bookmarked, otherwise the login UI re-binds duplicates on restore.
+    "auth-user_id", "auth-user_pwd", "auth-go_auth",
+    "shinymanager_language"
   )
   for (r in required) {
     expect_true(grepl(r, text, fixed = TRUE),
                 info = sprintf("setBookmarkExclude must include '%s'", r))
   }
+})
+
+# D2.5 fix Bug A: restore-side filter for inputs that break Shiny's
+# updateTabsetPanel-style replay (bslib navs) and shinymanager's own
+# login UI (which gets re-bound and triggers duplicate-input errors).
+test_that("strip_unrestorable_inputs drops bslib + shinymanager keys", {
+  fake_input <- list(
+    methodtabs = "panel1",                  # bslib page_navbar
+    DataPrep = "Upload",                    # bslib navset_hidden
+    `auth-user_id` = "alice",               # shinymanager
+    `auth-user_pwd` = "secret",             # shinymanager
+    `auth-go_auth` = 1L,                    # shinymanager
+    shinymanager_language = "en",           # shinymanager
+    shinymanager_loglout = 0L,              # shinymanager
+    shinymanager_where = "x",               # shinymanager
+    keep_me = "yes",                        # NOT touched
+    `load-data_source` = "demo1",           # NOT touched
+    `cs-startDE` = 0L                       # NOT touched
+  )
+  cleaned <- strip_unrestorable_inputs(fake_input)
+
+  # Must be removed
+  for (k in c("methodtabs", "DataPrep",
+              "auth-user_id", "auth-user_pwd", "auth-go_auth",
+              "shinymanager_language", "shinymanager_loglout",
+              "shinymanager_where")) {
+    expect_false(k %in% names(cleaned),
+                 info = sprintf("strip_unrestorable_inputs must drop '%s'", k))
+  }
+
+  # Must be kept (these are how DE auto-replay reconstructs the session)
+  for (k in c("keep_me", "load-data_source", "cs-startDE")) {
+    expect_true(k %in% names(cleaned),
+                info = sprintf("strip_unrestorable_inputs must keep '%s'", k))
+  }
+})
+
+test_that("strip_unrestorable_inputs is no-op on empty/NULL", {
+  expect_equal(strip_unrestorable_inputs(list()), list())
+  expect_null(strip_unrestorable_inputs(NULL))
+})
+
+test_that("strip_unrestorable_inputs mutates env in place", {
+  e <- new.env(parent = emptyenv())
+  e$methodtabs <- "panel1"
+  e$keep_me <- "yes"
+  out <- strip_unrestorable_inputs(e)
+  expect_identical(out, e)              # same env returned
+  expect_false(exists("methodtabs", envir = e, inherits = FALSE))
+  expect_true(exists("keep_me", envir = e, inherits = FALSE))
+})
+
+# CRITICAL regression: in production, Shiny passes state$input to
+# onRestore as a LIST (subagent E2E confirmed length=279, class=list),
+# despite older code comments claiming env. The list branch returns
+# a NEW filtered list; the caller MUST assign it back. Earlier the
+# call site was `strip_unrestorable_inputs(state$input)` (return
+# discarded), which silently no-op'd in production. The deServer
+# onRestore now does `state$input <- strip_unrestorable_inputs(...)`.
+test_that("strip_unrestorable_inputs returns a new filtered list", {
+  fake_input <- list(methodtabs = "panel1", keep_me = "x")
+  out <- strip_unrestorable_inputs(fake_input)
+  # Verify caller could assign back and observe the strip
+  expect_false("methodtabs" %in% names(out))
+  expect_true("keep_me" %in% names(out))
+  # Original list is NOT mutated (R copy-on-write semantics for lists)
+  expect_true("methodtabs" %in% names(fake_input))
+})
+
+test_that("redact_for_bookmark returns a new filtered list", {
+  fake_values <- list(
+    `ai_settings-api_key` = "sk-secret",
+    SOME_API_KEY = "leak",
+    foo = "kept"
+  )
+  out <- redact_for_bookmark(fake_values)
+  expect_false("ai_settings-api_key" %in% names(out))
+  expect_false("SOME_API_KEY" %in% names(out))
+  expect_true("foo" %in% names(out))
+  # Caller-must-assign-back contract documented; original unchanged.
+  expect_true("ai_settings-api_key" %in% names(fake_values))
+})
+
+# Regression: the deServer onRestore must assign the strip helpers'
+# return values back to state$input (the previous bug). Search the
+# source for the assignment patterns to keep the contract enforced.
+test_that("deServer onRestore assigns strip/redact return values back to state", {
+  here <- testthat::test_path("..", "..", "R", "server.R")
+  if (!file.exists(here)) {
+    here <- system.file("R", "server.R", package = "debrowser")
+  }
+  if (!file.exists(here) || nchar(here) == 0) {
+    skip("server.R not in expected path")
+  }
+  src <- paste(readLines(here), collapse = "\n")
+  expect_true(grepl(
+    "state\\$input\\s*<-\\s*strip_unrestorable_inputs\\(state\\$input\\)",
+    src),
+    info = "deServer onRestore must assign strip_unrestorable_inputs return back"
+  )
+  expect_true(grepl(
+    "state\\$input\\s*<-\\s*redact_for_bookmark\\(state\\$input\\)",
+    src),
+    info = "deServer onRestore must assign redact_for_bookmark return back for state$input"
+  )
+  expect_true(grepl(
+    "state\\$values\\s*<-\\s*redact_for_bookmark\\(state\\$values\\)",
+    src),
+    info = "deServer onRestore must assign redact_for_bookmark return back for state$values"
+  )
+})
+
+# Regression: pending_de_replay capture must run BEFORE the token-guard
+# early-return so that hosted-mode (shinymanager) sessions — which keep
+# `?token=...` in the URL for the entire post-auth lifetime — still
+# trigger DE auto-replay.
+test_that("onRestore captures pending_de_replay before the token guard", {
+  here <- testthat::test_path("..", "..", "R", "server.R")
+  if (!file.exists(here)) {
+    here <- system.file("R", "server.R", package = "debrowser")
+  }
+  if (!file.exists(here) || nchar(here) == 0) {
+    skip("server.R not in expected path")
+  }
+  src <- readLines(here)
+  text <- paste(src, collapse = "\n")
+  # Find positions
+  capture_pos <- regexpr("pending_de_replay\\(cs_state\\$comparisons_spec\\)", text)
+  guard_pos <- regexpr(
+    "url_query\\[\\[\"token\"\\]\\]\\)\\s*&&\\s*nzchar\\(url_query\\[\\[\"token\"\\]\\]\\)",
+    text
+  )
+  expect_true(capture_pos > 0,
+              info = "must call pending_de_replay(cs_state$comparisons_spec)")
+  expect_true(guard_pos > 0,
+              info = "must have token-guard")
+  expect_true(capture_pos < guard_pos,
+              info = "capture must come before the token-guard early-return")
 })
