@@ -766,7 +766,14 @@ deServer <- function(input, output, session) {
       updata(debrowserdataload("load", "Filter"))
 
       observe({
-        bslib::nav_select("DataPrep", "Upload", session = session)
+        # D2.5 noise fix: skip pre-auth (Token A). The DataPrep navset
+        # is inside deUI which isn't mounted while shinymanager's
+        # login wall is showing -- the nav_select message would error
+        # client-side. Post-auth (Token B) shinymanager triggers a
+        # session reload and this observe re-fires.
+        if (auth_complete(session)) {
+          bslib::nav_select("DataPrep", "Upload", session = session)
+        }
 
         # B2a: when counts arrive, mark upload done and unlock filter.
         # Also auto-show the QC tab (panel2) so users can inspect raw
@@ -1061,9 +1068,15 @@ deServer <- function(input, output, session) {
         de_results_react  = de_results_list,
         comparisons_react = dc
       )
-      bslib::nav_hide("methodtabs", target = "panel_cc",
-                      session = session)
+      # D2.5 noise fix: only manipulate the methodtabs nav after the
+      # shinymanager login wall has cleared (Token B). Pre-auth the
+      # panel doesn't exist yet and the message would error in console.
+      if (auth_complete(session)) {
+        bslib::nav_hide("methodtabs", target = "panel_cc",
+                        session = session)
+      }
       observe({
+        if (!auth_complete(session)) return()
         d <- de_results_list()
         if (!is.null(d) && length(d) >= 2L) {
           bslib::nav_show("methodtabs", target = "panel_cc",

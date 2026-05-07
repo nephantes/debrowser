@@ -87,3 +87,43 @@ invalidate_user_cache <- function(session) {
   session$userData$debrowser_auth <- NULL
   invisible(NULL)
 }
+
+#' Has the user passed the shinymanager login wall yet?
+#'
+#' D2.5 noise fix: when shinymanager wraps the app via `secure_app`,
+#' Shiny invokes `deServer` for the SAME session in two phases:
+#'   - Token A (pre-auth): the login form is mounted; the wrapped UI
+#'     (deUI) is hidden. Calls to `togglePanels` / `bslib::nav_select`
+#'     for the `"methodtabs"` panel error client-side because that
+#'     panel only exists inside deUI, which isn't in the DOM yet.
+#'     This produces the "There is no tabsetPanel with id equal to
+#'     'methodtabs'" + "Duplicate input ID - shinymanager_language"
+#'     console errors users see on every fresh login.
+#'   - Token B (post-auth): shinymanager has appended `?token=...`
+#'     to the URL; the wrapped UI is now mounted; nav messages work.
+#'
+#' This helper returns FALSE in Token A (any non-hosted session is
+#' implicitly Token B since there's no login wall) so callers can
+#' skip pre-auth UI mutations.
+#'
+#' @param session The Shiny session object.
+#' @return TRUE iff we are NOT in the shinymanager pre-auth phase.
+#' @keywords internal
+#' @noRd
+auth_complete <- function(session) {
+  # Non-hosted mode never has a login wall.
+  if (!hosted_mode()) return(TRUE)
+  # When trusted-proxy mode is active, header_auth_provider is the
+  # boundary and we proceed at session start (no pre-auth phase).
+  if (length(getOption("debrowser.trusted_proxies",
+                       character(0))) > 0L) {
+    return(TRUE)
+  }
+  # Hosted + no proxies => shinymanager. Inspect the URL: shinymanager
+  # appends `?token=...` after a successful login, BEFORE swapping in
+  # the wrapped UI. Pre-auth requests have no token.
+  q <- tryCatch(session$clientData$url_search,
+                error = function(e) NULL)
+  if (is.null(q)) return(FALSE)
+  isTRUE(grepl("token=", as.character(q), fixed = TRUE))
+}

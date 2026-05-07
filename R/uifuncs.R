@@ -581,6 +581,15 @@ togglePanels <- function(num = NULL, nums = NULL, session = NULL) {
   if (is.null(num)) {
     return(NULL)
   }
+  # D2.5 noise fix: skip nav_show/hide/select messages when the
+  # shinymanager login wall is still mounted (pre-auth Token A) --
+  # the methodtabs panel doesn't exist in the DOM yet, so every
+  # message would error client-side with "There is no tabsetPanel
+  # with id equal to 'methodtabs'". The post-auth session reload
+  # (Token B) re-runs deServer and we'll fire these calls then.
+  if (!is.null(session) && !auth_complete(session)) {
+    return(invisible())
+  }
   # E2.5: panel3 (formerly "GO Term") is now the consolidated
   # Enrichment tab; panel5 was removed. Only panels 0..4 remain.
   for (i in 0:4) {

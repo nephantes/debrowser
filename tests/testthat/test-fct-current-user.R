@@ -10,6 +10,48 @@ make_fake_session_with_userdata <- function(remote_addr = "10.0.0.5",
   )
 }
 
+# D2.5 noise-fix helper. Discriminates the pre-auth shinymanager
+# session (Token A, no `?token=` in the URL) from the post-auth
+# session (Token B). UI-mutation calls in deServer are gated on this
+# so the methodtabs panel updates don't fire while shinymanager's
+# login wall is showing (and the panel doesn't exist client-side).
+test_that("auth_complete: non-hosted always TRUE", {
+  withr::with_options(list(debrowser.hosted = FALSE), {
+    s <- list(clientData = list(url_search = ""))
+    expect_true(auth_complete(s))
+    s2 <- list(clientData = list(url_search = "?token=abc"))
+    expect_true(auth_complete(s2))
+  })
+})
+
+test_that("auth_complete: hosted+trusted_proxies always TRUE (no login wall)", {
+  withr::with_options(list(debrowser.hosted = TRUE,
+                           debrowser.trusted_proxies = c("10.0.0.0/8")), {
+    s <- list(clientData = list(url_search = ""))
+    expect_true(auth_complete(s))
+  })
+})
+
+test_that("auth_complete: hosted+shinymanager FALSE pre-auth", {
+  withr::with_options(list(debrowser.hosted = TRUE,
+                           debrowser.trusted_proxies = character(0)), {
+    s <- list(clientData = list(url_search = ""))
+    expect_false(auth_complete(s))
+    s2 <- list(clientData = list(url_search = "?_state_id_=foo"))
+    expect_false(auth_complete(s2))
+  })
+})
+
+test_that("auth_complete: hosted+shinymanager TRUE post-auth (token in URL)", {
+  withr::with_options(list(debrowser.hosted = TRUE,
+                           debrowser.trusted_proxies = character(0)), {
+    s <- list(clientData = list(url_search = "?token=abc123"))
+    expect_true(auth_complete(s))
+    s2 <- list(clientData = list(url_search = "?_state_id_=foo&token=abc123"))
+    expect_true(auth_complete(s2))
+  })
+})
+
 test_that("build_auth_chain: non-hosted returns just local_anonymous", {
   withr::with_options(list(debrowser.hosted = FALSE), {
     withr::with_envvar(c(DEBROWSER_HOSTED = ""), {
