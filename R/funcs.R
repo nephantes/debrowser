@@ -446,14 +446,19 @@ getHelpButton <- function(name = NULL, link = NULL) {
   if (is.null(name)) {
     return(NULL)
   }
-  btn <- actionButtonDE(paste0("info_", name), "",
-    icon = "info",
-    styleclass = "info", size = "small"
-  )
-
+  # D2.5 cleanup: previously rendered an actionButtonDE inside an <a>
+  # tag, both with id="info_<name>". Multiple call sites of
+  # getHelpButton("method", ...) (uifuncs.R + mod_condselect.R) produced
+  # duplicate-id warnings on every UI render. The button click was
+  # also never observable because it's wrapped in <a href="...">. So
+  # collapsed to a plain styled link with no Shiny input id.
   HTML(paste0(
-    "<a id=\"info_", name, "\" href=\"", link, "\" target=\"_blank\">",
-    btn, "</a>"
+    "<a href=\"", link, "\" target=\"_blank\" ",
+    "class=\"btn btn-info btn-xs\" ",
+    "title=\"Help: ", name, "\" ",
+    "style=\"margin-left: 4px; padding: 2px 8px;\">",
+    "<i class=\"fa fa-info\"></i>",
+    "</a>"
   ))
 }
 
