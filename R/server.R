@@ -79,7 +79,16 @@ deServer <- function(input, output, session) {
     "startDE", "Filter", "Batch", "goDE",
     "goDEFromFilter", "goMain", "goQCplots",
     "goQCplotsFromFilter", "resetsamples",
-    "startGO"
+    "startGO",
+    # D2.5 fix: the Bookmark navbar button must not round-trip its
+    # click-count or restoring a bookmark fires session$doBookmark()
+    # on session start, creating a NEW bookmark instead of restoring.
+    "bookmark_share",
+    # account dropdown buttons — same pattern, prevents login/signup
+    # observers from re-firing on restore.
+    "account-signup_link", "account-signout",
+    "account-signup_submit", "account-my_bookmarks",
+    "open_signup_from_login", "login_signup_submit"
   ))
 
   # D2.5 fix: shinymanager requires BOTH secure_app (UI wrap) AND
@@ -259,6 +268,20 @@ deServer <- function(input, output, session) {
     )
   }, ignoreInit = TRUE)
 
+  # Auto-save label edits in the share modal. Debounced so we don't
+  # write a row to the DB on every keystroke.
+  shiny::observeEvent(input$bookmark_share_label, {
+    state_id <- active_share_state_id()
+    if (is.null(state_id) || !nzchar(state_id)) return()
+    con <- tryCatch(user_db_connect(), error = function(e) NULL)
+    if (is.null(con)) return()
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    tryCatch(
+      user_db_bookmark_set_label(con, state_id, input$bookmark_share_label),
+      error = function(e) NULL
+    )
+  }, ignoreInit = TRUE)
+
   onRestore(function(state) {
     # Authorization gate. Unknown / private-non-owner bookmarks
     # raise `bookmark_denied`; surface and abort.
@@ -350,7 +373,7 @@ deServer <- function(input, output, session) {
 
   shiny::observeEvent(input$bookmark_share, {
     session$doBookmark()
-  })
+  }, ignoreInit = TRUE)  # critical: prevents auto-bookmark on restore
 
   tryCatch(
     {

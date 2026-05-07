@@ -17,12 +17,25 @@
 #' @noRd
 build_share_modal_ui <- function(url,
                                  can_toggle = FALSE,
-                                 current_visibility = "private") {
+                                 current_visibility = "private",
+                                 current_label = NA_character_) {
   shiny::tagList(
     shiny::div(
       class = "alert alert-success",
       "Bookmark created. Anyone with this URL who can see this bookmark may open it."
     ),
+    shiny::textInput(
+      inputId = "bookmark_share_label",
+      label   = "Name (optional)",
+      value   = if (is.null(current_label) || is.na(current_label))
+                  "" else as.character(current_label),
+      placeholder = "e.g. \"DESeq2 with apeglm shrinkage\""
+    ),
+    shiny::div(
+      class = "text-muted small",
+      "Saves automatically. Visible only in your My Bookmarks list."
+    ),
+    shiny::tags$hr(),
     shiny::tags$label("Share URL"),
     shiny::tags$input(
       type = "text", class = "form-control", readonly = NA,

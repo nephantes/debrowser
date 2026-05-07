@@ -47,10 +47,16 @@ accountDropdownServer <- function(id) {
                           "Sign up",
                           icon = shiny::icon("user-plus"))
       } else {
-        # Signed in: show Sign out only.
-        shiny::actionLink(session$ns("signout"),
-                          "Sign out",
-                          icon = shiny::icon("sign-out-alt"))
+        # Signed in: show My Bookmarks + Sign out.
+        shiny::tagList(
+          shiny::actionLink(session$ns("my_bookmarks"),
+                            "My Bookmarks",
+                            icon = shiny::icon("bookmark")),
+          shiny::tags$br(),
+          shiny::actionLink(session$ns("signout"),
+                            "Sign out",
+                            icon = shiny::icon("sign-out-alt"))
+        )
       }
     })
 
@@ -122,6 +128,109 @@ accountDropdownServer <- function(id) {
       chain <- getOption("debrowser.auth_chain")
       if (!is.null(chain)) chain$logout(session)
       session$reload()
+    })
+
+    # My Bookmarks — modal listing the current user's saved bookmarks.
+    shiny::observeEvent(input$my_bookmarks, {
+      uid <- current_user(session)
+      if (is.na(uid) || identical(uid, "local")) return()
+      con <- tryCatch(user_db_connect(), error = function(e) NULL)
+      if (is.null(con)) {
+        shiny::showNotification("User database is unavailable.",
+                                type = "error", duration = 6)
+        return()
+      }
+      on.exit(DBI::dbDisconnect(con), add = TRUE)
+      rows <- tryCatch(user_db_bookmarks_for_user(con, uid),
+                       error = function(e) data.frame())
+      shiny::showModal(shiny::modalDialog(
+        title = "My Bookmarks",
+        size = "l",
+        easyClose = TRUE,
+        if (NROW(rows) == 0L) {
+          shiny::div(class = "text-muted",
+                     "You don't have any bookmarks yet.")
+        } else {
+          # Build a table with one row per bookmark.
+          shiny::tags$table(
+            class = "table table-sm",
+            shiny::tags$thead(shiny::tags$tr(
+              shiny::tags$th("Name"),
+              shiny::tags$th("Visibility"),
+              shiny::tags$th("Created"),
+              shiny::tags$th("")
+            )),
+            shiny::tags$tbody(lapply(seq_len(NROW(rows)), function(i) {
+              r <- rows[i, , drop = FALSE]
+              state_id <- as.character(r$state_id)
+              label_txt <- r$label
+              if (is.na(label_txt) || !nzchar(label_txt)) {
+                label_txt <- paste0("(unnamed: ",
+                                    substr(state_id, 1, 8), "…)")
+              }
+              created <- format(
+                as.POSIXct(r$created_at, origin = "1970-01-01"),
+                "%Y-%m-%d %H:%M")
+              vis_label <- if (identical(r$visibility, "link"))
+                "Shared via link" else "Private"
+              # Bookmark URLs are relative to the app root; we just
+              # anchor with the query string.
+              href <- paste0("?_state_id_=", state_id)
+              shiny::tags$tr(
+                shiny::tags$td(shiny::tags$a(
+                  href = href, label_txt
+                )),
+                shiny::tags$td(vis_label),
+                shiny::tags$td(created),
+                shiny::tags$td(shiny::actionButton(
+                  inputId = session$ns(paste0("delete_", state_id)),
+                  label = NULL, icon = shiny::icon("trash"),
+                  class = "btn-sm btn-link text-danger",
+                  title = "Delete bookmark"
+                ))
+              )
+            }))
+          )
+        },
+        footer = shiny::modalButton("Close")
+      ))
+    })
+
+    # Delete-button observer — uses a single observer that watches
+    # input names matching the delete_* pattern. Less elegant than
+    # individual observers but doesn't leak handlers per modal open.
+    shiny::observe({
+      # Iterate input names; this is a reactive dependency.
+      nm <- names(input)
+      del_inputs <- grep("^delete_", nm, value = TRUE)
+      lapply(del_inputs, function(in_name) {
+        clicks <- input[[in_name]]
+        if (is.null(clicks) || clicks == 0L) return()
+        # state_id is everything after "delete_"
+        sid <- sub("^delete_", "", in_name)
+        # Idempotency: only act when the click count was bumped THIS turn.
+        prev_key <- paste0("__last_click_", in_name)
+        prev <- session$userData[[prev_key]]
+        if (!is.null(prev) && prev == clicks) return()
+        session$userData[[prev_key]] <- clicks
+        # Confirm + delete.
+        con2 <- tryCatch(user_db_connect(), error = function(e) NULL)
+        if (is.null(con2)) return()
+        on.exit(DBI::dbDisconnect(con2), add = TRUE)
+        tryCatch(
+          user_db_bookmark_delete(con2, sid),
+          error = function(e) NULL
+        )
+        # Also remove the on-disk bookmark dir.
+        bm_dir <- file.path(data_dir(), "shiny_bookmarks", sid)
+        if (dir.exists(bm_dir)) unlink(bm_dir, recursive = TRUE)
+        shiny::showNotification(
+          paste("Deleted bookmark", substr(sid, 1, 8)),
+          type = "message", duration = 4
+        )
+        # Re-render the list by re-firing the my_bookmarks click.
+        shiny::removeModal()
+      })
     })
   })
 }

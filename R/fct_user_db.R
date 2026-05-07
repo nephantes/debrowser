@@ -169,6 +169,24 @@ user_db_bookmark_set_visibility <- function(con, state_id, visibility) {
   invisible(NULL)
 }
 
+#' Set the user-facing name on a bookmark row. Empty string is stored
+#' as NA so downstream queries can filter "unnamed" bookmarks cleanly.
+#' @keywords internal
+#' @noRd
+user_db_bookmark_set_label <- function(con, state_id, label) {
+  if (is.null(label)) label <- NA_character_
+  if (length(label) != 1L) label <- NA_character_
+  if (!is.na(label) && !nzchar(trimws(as.character(label)))) {
+    label <- NA_character_
+  }
+  if (!is.na(label)) label <- trimws(as.character(label))
+  DBI::dbExecute(con,
+    "UPDATE bookmarks SET label = ? WHERE state_id = ?",
+    params = list(label, state_id)
+  )
+  invisible(NULL)
+}
+
 #' @keywords internal
 #' @noRd
 user_db_bookmark_delete <- function(con, state_id) {
