@@ -471,8 +471,16 @@ deServer <- function(input, output, session) {
         bslib::nav_select("DataPrep", "DEAnalysis", session = session)
       }, ignoreInit = TRUE)
 
+      # D2.3 fix: debrowserdataload MUST be called synchronously here,
+      # before the first reactive flush, so that session$makeScope("load")
+      # registers its onRestore bridge on the parent session BEFORE
+      # Shiny's high-priority (priority=1e6) restore observe fires.
+      # If called inside observe() (priority 0), the restore observe runs
+      # first and the dataLoad module's onRestore callback is never invoked,
+      # resulting in an empty app after bookmark restore.
+      updata(debrowserdataload("load", "Filter"))
+
       observe({
-        updata(debrowserdataload("load", "Filter"))
         bslib::nav_select("DataPrep", "Upload", session = session)
 
         # B2a: when counts arrive, mark upload done and unlock filter.
