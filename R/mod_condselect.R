@@ -38,7 +38,13 @@ condSelectUI <- function(id) {
 #' @param id module namespace id (must match the id passed to `condSelectUI`).
 #' @param data count matrix.
 #' @param metadata sample-metadata data.frame; first column is the sample id.
-#'
+#' @param initial_spec Optional saved comparisons_spec to populate the
+#'   wizard with on mount. When the module is created during an active
+#'   bookmark restore, the module's own `onRestore` hook handles this;
+#'   when the module is created LATER (e.g. by the D2.5 DE auto-replay
+#'   state machine in deServer, after the active-restore window has
+#'   closed), pass the captured spec here so the per-comparison
+#'   reactiveValues and UI cards reflect the restored state.
 #' @return list with `n_comparisons`, `start_de`, `is_ready`, `comparisons_spec`.
 #' @examples
 #' \dontrun{
@@ -55,7 +61,8 @@ condSelectUI <- function(id) {
 #'   )
 #' }
 #' @export
-condSelectServer <- function(id, data = NULL, metadata = NULL) {
+condSelectServer <- function(id, data = NULL, metadata = NULL,
+                             initial_spec = NULL) {
   if (is.null(data)) return(NULL)
 
   shiny::moduleServer(id, function(input, output, session) {
@@ -430,6 +437,44 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
     n_comparisons(1L)
     install_card_observers(1L)
 
+    # D2.5 fix: spec-application helper. Used by BOTH the module's own
+    # onRestore (active-restore window) AND the `initial_spec` constructor
+    # path (post-restore, e.g. DE auto-replay in deServer that mounts this
+    # module after Shiny's restore phase has already finished). Both paths
+    # need to: (1) replace card 1's empty NA rv with the saved values,
+    # (2) install card 2..N observers, (3) sync n_comparisons.
+    #
+    # Idempotent under "double init" caveats:
+    # - card 1 observers were ALREADY installed by `install_card_observers(1L)`
+    #   above; we MUST NOT re-install them here, or the renderUI for
+    #   per-card UI elements duplicates and you get "duplicate input ID"
+    #   warnings + a wedged card render.
+    apply_spec <- function(saved) {
+      restored <- tryCatch(
+        restore_comparisons_spec(saved),
+        error = function(e) NULL
+      )
+      if (length(restored) == 0L) return()
+      for (key in names(restored)) {
+        comparisons[[key]] <- shiny::reactiveValues()
+        for (fld in names(restored[[key]])) {
+          comparisons[[key]][[fld]] <- restored[[key]][[fld]]
+        }
+        i <- as.integer(key)
+        if (is.na(i)) next
+        if (i > 1L) install_card_observers(i)
+      }
+      n_comparisons(length(restored))
+    }
+
+    # If the caller passed `initial_spec` (auto-replay path), apply it
+    # immediately. This runs at module mount time, BEFORE the first
+    # reactive flush, so the comparison cards render with the restored
+    # values on first paint instead of flashing the empty initial state.
+    if (!is.null(initial_spec) && length(initial_spec) > 0L) {
+      apply_spec(initial_spec)
+    }
+
     # --- Add / remove observers ------------------------------------------
 
     shiny::observeEvent(input$add_btn, {
@@ -501,36 +546,10 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
     # D2.4: live restore. Walks the saved spec into the per-comparison
     # reactiveValues structure and registers card observers so the UI
     # cards re-render. Built on top of D2.3's save-side hook above.
+    # D2.5 refactor: shares the apply_spec helper above with the
+    # initial_spec constructor path so both pathways behave identically.
     shiny::onRestore(function(state) {
-      saved <- state$values$cs$comparisons_spec
-      restored <- tryCatch(
-        restore_comparisons_spec(saved),
-        error = function(e) NULL
-      )
-      if (length(restored) == 0L) return()
-
-      # Replace the existing initial comparisons rv (created at line ~429
-      # by new_comparison(1L)) with the restored set. Observers reference
-      # comparisons[[key]] lazily, so the existing card-1 observers from
-      # init will see the new rv values without re-installation.
-      # CRITICAL: install_card_observers is called per-card; if we call
-      # it for card 1 (which init already installed), we double-register
-      # observers AND duplicate the per-card UI elements (renderUI for
-      # treatment_level_ui etc.), which produces duplicate-input-id
-      # warnings and breaks the page render.
-      for (key in names(restored)) {
-        comparisons[[key]] <- shiny::reactiveValues()
-        for (fld in names(restored[[key]])) {
-          comparisons[[key]][[fld]] <- restored[[key]][[fld]]
-        }
-        i <- as.integer(key)
-        if (is.na(i)) next
-        # Init only installed card 1; restore installs cards 2..N.
-        if (i > 1L) install_card_observers(i)
-      }
-
-      # Keep n_comparisons in sync with the restored count.
-      n_comparisons(length(restored))
+      apply_spec(state$values$cs$comparisons_spec)
     })
 
     list(

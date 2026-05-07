@@ -4,7 +4,7 @@
 \alias{condSelectServer}
 \title{Comparison-Selection wizard server.}
 \usage{
-condSelectServer(id, data = NULL, metadata = NULL)
+condSelectServer(id, data = NULL, metadata = NULL, initial_spec = NULL)
 }
 \arguments{
 \item{id}{module namespace id (must match the id passed to `condSelectUI`).}
@@ -12,6 +12,14 @@ condSelectServer(id, data = NULL, metadata = NULL)
 \item{data}{count matrix.}
 
 \item{metadata}{sample-metadata data.frame; first column is the sample id.}
+
+\item{initial_spec}{Optional saved comparisons_spec to populate the
+wizard with on mount. When the module is created during an active
+bookmark restore, the module's own `onRestore` hook handles this;
+when the module is created LATER (e.g. by the D2.5 DE auto-replay
+state machine in deServer, after the active-restore window has
+closed), pass the captured spec here so the per-comparison
+reactiveValues and UI cards reflect the restored state.}
 }
 \value{
 list with `n_comparisons`, `start_de`, `is_ready`, `comparisons_spec`.

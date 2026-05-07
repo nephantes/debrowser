@@ -527,58 +527,113 @@ deServer <- function(input, output, session) {
       # this observer fast-forwards the wizard programmatically once the
       # data has loaded. Each reactive flush moves one step forward:
       #   updata loaded -> filtd built -> batch built -> sel built ->
-      #   sel()$comparisons_spec available -> prepDataContainer -> dc set
-      # When dc is populated, we navigate to Main Plots.
+      #   prepDataContainer with spec_to_replay -> dc set -> Main Plots.
       #
       # The observer guards against re-firing by clearing pending_de_replay
       # only after dc is set; intermediate steps return without clearing
       # so subsequent reactive flushes can advance.
+      #
+      # Diagnostic: each transition emits a message() so the R console
+      # shows the auto-replay progress. Search server logs for "[D2.5
+      # auto-replay]" to trace.
+      .ar_logged <- shiny::reactiveValues(
+        seen_replay = FALSE, seen_data = FALSE,
+        seen_filt = FALSE, seen_batch = FALSE, seen_sel = FALSE
+      )
       observe({
         spec_to_replay <- pending_de_replay()
         if (is.null(spec_to_replay) || length(spec_to_replay) == 0L) {
           return()
         }
+        if (!isTRUE(.ar_logged$seen_replay)) {
+          message(sprintf("[D2.5 auto-replay] pending_de_replay set; %d comparison(s) to restore",
+                          length(spec_to_replay)))
+          .ar_logged$seen_replay <- TRUE
+        }
         # Wait for data load (mod_dataLoad onRestore branch sets ldata).
         load_d <- tryCatch(updata()$load(), error = function(e) NULL)
         if (is.null(load_d) || is.null(load_d$count)) return()
-        # Step 1: ensure filtd. The lcf module reads its own bookmarked
-        # cutoff via setBookmarkExclude-NOT-applied input keys; defaults
-        # are fine if no bookmark.
+        if (!isTRUE(.ar_logged$seen_data)) {
+          message(sprintf("[D2.5 auto-replay] data loaded: %d genes x %d samples (source=%s)",
+                          nrow(load_d$count), ncol(load_d$count),
+                          load_d$data_source %||% "?"))
+          .ar_logged$seen_data <- TRUE
+        }
+        # Step 1: build the lcf module (auto-applies default Max<10 filter
+        # via the B3.5 init_done observe inside debrowserlowcountfilter).
         if (is.null(filtd())) {
+          message("[D2.5 auto-replay] step 1: mounting lcf module")
           filtd(debrowserlowcountfilter("lcf", updata()$load()))
           return()
         }
         fd <- tryCatch(filtd()$filter(), error = function(e) NULL)
         if (is.null(fd) || is.null(fd$count)) return()
-        # Step 2: skip batch effect (use raw filtered data).
+        if (!isTRUE(.ar_logged$seen_filt)) {
+          message(sprintf("[D2.5 auto-replay] filter done: %d genes after filter",
+                          nrow(fd$count)))
+          .ar_logged$seen_filt <- TRUE
+        }
+        # Step 2: skip batch effect, pass filtered data straight through.
         if (is.null(batch())) {
+          message("[D2.5 auto-replay] step 2: setBatch (skip batch effect)")
           batch(setBatch(filtd()))
           return()
         }
         bd <- tryCatch(batch()$BatchEffect(), error = function(e) NULL)
         if (is.null(bd) || is.null(bd$count)) return()
-        # Step 3: build sel via condSelectServer (so the cs module
-        # mounts and its onRestore can populate comparisons_spec from
-        # state$values$cs).
+        if (!isTRUE(.ar_logged$seen_batch)) {
+          message("[D2.5 auto-replay] batch ready")
+          .ar_logged$seen_batch <- TRUE
+        }
+        # Step 3: build sel by mounting condSelectServer with the
+        # captured spec as `initial_spec`. This is the key fix: Shiny's
+        # built-in module-onRestore mechanism is INACTIVE by the time
+        # this observer fires (the active-restore window closed during
+        # session init). Passing the spec explicitly via initial_spec
+        # bypasses that mechanism and populates the cs module's
+        # `comparisons` reactiveValues directly so the wizard cards
+        # render with the restored treatment/control selections.
         if (is.null(sel())) {
-          sel(condSelectServer("cs", bd$count, bd$meta))
+          message(sprintf("[D2.5 auto-replay] step 3: mounting condSelect with %d initial spec(s)",
+                          length(spec_to_replay)))
+          sel(condSelectServer("cs", bd$count, bd$meta,
+                               initial_spec = spec_to_replay))
           choicecounter$nc <- sel()$n_comparisons()
           return()
         }
-        # Step 4: run DE with the restored spec. Prefer the module's
-        # live spec (so the cards reflect what's running); fall back to
-        # the spec we captured at top-level if the module spec is empty.
-        module_spec <- tryCatch(sel()$comparisons_spec(),
-                                error = function(e) NULL)
-        spec <- if (length(module_spec) > 0L) module_spec else spec_to_replay
-        if (length(spec) == 0L) return()
-        # Consume the replay flag so this branch runs exactly once.
+        if (!isTRUE(.ar_logged$seen_sel)) {
+          message("[D2.5 auto-replay] sel ready")
+          .ar_logged$seen_sel <- TRUE
+        }
+        # Step 4: run DE with the captured spec.
+        # IMPORTANT: use spec_to_replay directly, NOT sel()$comparisons_spec().
+        # The module's snapshot_spec() round-trip can lose info (de_method
+        # default fallback, NA fields) and there is no guarantee the
+        # comparisons rv has finished settling at this exact reactive
+        # flush. spec_to_replay is the authoritative captured-from-bookmark
+        # value; using it directly is deterministic and matches what
+        # mod_condselect's onRestore would have applied if it had fired.
+        message(sprintf("[D2.5 auto-replay] step 4: prepDataContainer with %d spec(s)",
+                        length(spec_to_replay)))
+        # Consume the replay flag FIRST so any error inside prepDataContainer
+        # doesn't leave the state machine looping forever.
         pending_de_replay(NULL)
         dc_res <- tryCatch(
-          prepDataContainer(bd$count, bd$meta, spec),
-          error = function(e) NULL
+          prepDataContainer(bd$count, bd$meta, spec_to_replay),
+          error = function(e) {
+            message(sprintf("[D2.5 auto-replay] prepDataContainer FAILED: %s",
+                            conditionMessage(e)))
+            shiny::showNotification(
+              sprintf("Auto-replay of bookmarked DE failed: %s",
+                      conditionMessage(e)),
+              type = "error", duration = 12
+            )
+            NULL
+          }
         )
         if (!is.null(dc_res)) {
+          message(sprintf("[D2.5 auto-replay] DE complete: dc has %d entries",
+                          length(dc_res)))
           dc(dc_res)
           progress$upload     <- "done"
           progress$filter     <- "done"
@@ -589,6 +644,10 @@ deServer <- function(input, output, session) {
           togglePanels(1, c(0, 1, 2, 3, 4), session)
           bslib::nav_select("methodtabs", selected = "panel1",
                             session = session)
+          shiny::showNotification(
+            "Bookmarked analysis restored. DE results are in Main Plots.",
+            type = "message", duration = 8
+          )
         }
       })
 
