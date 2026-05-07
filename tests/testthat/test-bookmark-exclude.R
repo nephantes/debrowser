@@ -178,6 +178,83 @@ test_that("deServer onRestore assigns strip/redact return values back to state",
   )
 })
 
+# D2.5 Issue 1: deServer onBookmark must snapshot dc() into
+# state$values$dc_data so the restored session can plug DE results
+# directly without re-running DESeq2 / EdgeR / Limma.
+test_that("deServer onBookmark snapshots dc() into state$values$dc_data", {
+  here <- testthat::test_path("..", "..", "R", "server.R")
+  if (!file.exists(here)) {
+    here <- system.file("R", "server.R", package = "debrowser")
+  }
+  if (!file.exists(here) || nchar(here) == 0) {
+    skip("server.R not in expected path")
+  }
+  src <- paste(readLines(here), collapse = "\n")
+  expect_true(grepl("state\\$values\\$dc_data\\s*<-\\s*current_dc", src),
+              info = "deServer onBookmark must save current_dc to state$values$dc_data")
+  expect_true(grepl("isolate\\(dc\\(\\)\\)", src),
+              info = "deServer onBookmark must use shiny::isolate(dc()) to snapshot")
+})
+
+# D2.5 Issue 1: deServer onRestore must capture state$values$dc_data
+# into pending_dc_restore so the auto-replay observer can use it
+# instead of running DE.
+test_that("deServer onRestore captures dc_data into pending_dc_restore", {
+  here <- testthat::test_path("..", "..", "R", "server.R")
+  if (!file.exists(here)) {
+    here <- system.file("R", "server.R", package = "debrowser")
+  }
+  if (!file.exists(here) || nchar(here) == 0) {
+    skip("server.R not in expected path")
+  }
+  src <- paste(readLines(here), collapse = "\n")
+  expect_true(grepl("pending_dc_restore\\(saved_dc\\)", src),
+              info = "deServer onRestore must call pending_dc_restore(saved_dc)")
+  expect_true(grepl("state\\$values\\$dc_data", src),
+              info = "deServer onRestore must read state$values$dc_data")
+})
+
+# D2.5 Issue 1: auto-replay observer FAST PATH must short-circuit
+# when cached_dc is non-NULL (no prepDataContainer call).
+test_that("auto-replay observer has FAST PATH that uses cached dc directly", {
+  here <- testthat::test_path("..", "..", "R", "server.R")
+  if (!file.exists(here)) {
+    here <- system.file("R", "server.R", package = "debrowser")
+  }
+  if (!file.exists(here) || nchar(here) == 0) {
+    skip("server.R not in expected path")
+  }
+  src <- paste(readLines(here), collapse = "\n")
+  expect_true(grepl("FAST PATH", src),
+              info = "auto-replay observer must have a FAST PATH branch for cached dc")
+  expect_true(grepl("dc_res <- cached_dc", src),
+              info = "FAST PATH must assign cached_dc to dc_res (no prepDataContainer call)")
+})
+
+# D2.5 Issue 2: shinymanager session timeout must be set high enough
+# that users don't get bounced mid-analysis. Originally tried
+# `cookie_validity = 7L` for cross-restart persistence, but
+# shinymanager 1.0.410 doesn't accept that parameter -- passing it is
+# a fatal "unused argument" error that blocks login entirely. Until
+# upstream support lands, the inactivity timeout is the lever we have.
+test_that("secure_server uses a long inactivity timeout (no cookie_validity)", {
+  here <- testthat::test_path("..", "..", "R", "server.R")
+  if (!file.exists(here)) {
+    here <- system.file("R", "server.R", package = "debrowser")
+  }
+  if (!file.exists(here) || nchar(here) == 0) {
+    skip("server.R not in expected path")
+  }
+  src <- paste(readLines(here), collapse = "\n")
+  # MUST NOT pass cookie_validity — shinymanager 1.0.410 errors on it.
+  expect_false(grepl("cookie_validity\\s*=", src),
+               info = "secure_server must NOT pass cookie_validity (unsupported by shinymanager 1.0.410)")
+  # MUST set a long timeout — the only knob shinymanager exposes for keeping
+  # the user logged in within a single browser session.
+  expect_true(grepl("timeout\\s*=\\s*60\\s*\\*\\s*24", src),
+              info = "secure_server should set a multi-day timeout in minutes")
+})
+
 # Regression: pending_de_replay capture must run BEFORE the token-guard
 # early-return so that hosted-mode (shinymanager) sessions — which keep
 # `?token=...` in the URL for the entire post-auth lifetime — still

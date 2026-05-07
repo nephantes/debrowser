@@ -38,24 +38,50 @@ accountDropdownServer <- function(id) {
     })
 
     # Menu items swap based on login state.
+    # D2.5 fix: bslib::nav_menu wraps these in a Bootstrap dropdown
+    # whose width defaults to ~10em -- wide enough for "Sign out" alone,
+    # but "My Bookmarks" with its icon overflows on the LEFT (cropped
+    # by the dropdown's right alignment). Inline CSS bumps the
+    # min-width and ensures each link renders as a proper block-level
+    # dropdown item with consistent padding. white-space:nowrap
+    # prevents mid-word wrap of "My Bookmarks".
     output$menu_items <- shiny::renderUI({
       shiny::invalidateLater(2000, session)
       uid <- current_user(session)
+      style_css <- paste(
+        ".de-account-menu { min-width: 200px; padding: 4px 0; }",
+        ".de-account-menu a.action-button {",
+        "  display: block; padding: 6px 16px;",
+        "  white-space: nowrap; text-decoration: none;",
+        "}",
+        ".de-account-menu a.action-button:hover {",
+        "  background-color: rgba(0,0,0,0.05);",
+        "}",
+        ".de-account-menu a.action-button > i.fa { margin-right: 8px; }",
+        sep = " "
+      )
       if (is.na(uid) || identical(uid, "local")) {
-        # Not signed in: show Sign up only.
-        shiny::actionLink(session$ns("signup_link"),
-                          "Sign up",
-                          icon = shiny::icon("user-plus"))
-      } else {
-        # Signed in: show My Bookmarks + Sign out.
         shiny::tagList(
-          shiny::actionLink(session$ns("my_bookmarks"),
-                            "My Bookmarks",
-                            icon = shiny::icon("bookmark")),
-          shiny::tags$br(),
-          shiny::actionLink(session$ns("signout"),
-                            "Sign out",
-                            icon = shiny::icon("sign-out-alt"))
+          shiny::tags$style(shiny::HTML(style_css)),
+          shiny::div(
+            class = "de-account-menu",
+            shiny::actionLink(session$ns("signup_link"),
+                              "Sign up",
+                              icon = shiny::icon("user-plus"))
+          )
+        )
+      } else {
+        shiny::tagList(
+          shiny::tags$style(shiny::HTML(style_css)),
+          shiny::div(
+            class = "de-account-menu",
+            shiny::actionLink(session$ns("my_bookmarks"),
+                              "My Bookmarks",
+                              icon = shiny::icon("bookmark")),
+            shiny::actionLink(session$ns("signout"),
+                              "Sign out",
+                              icon = shiny::icon("sign-out-alt"))
+          )
         )
       }
     })

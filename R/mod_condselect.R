@@ -528,7 +528,7 @@ condSelectServer <- function(id, data = NULL, metadata = NULL,
     })
 
     # D2.3: bookmark-side save of the structured comparisons_spec.
-    # Restore is intentionally NOT wired here — the comparisons rv is a
+    # Restore is intentionally NOT wired here -- the comparisons rv is a
     # reactiveValues-of-reactiveValues structure that's tricky to
     # recreate from a flat spec. D2.4 adds the live restore logic that
     # walks the saved spec and replays the per-comparison add flow.

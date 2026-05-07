@@ -11,6 +11,11 @@
 #'   networks (e.g. `c("127.0.0.1", "10.0.0.0/8")`) whose
 #'   `X-Forwarded-User` header is trusted as the authenticated user.
 #'   Only used when `hosted = TRUE`. Empty by default.
+#' @param port Integer TCP port to bind. Default `3838` matches the
+#'   shiny-server convention so bookmark URLs stay stable across
+#'   restarts (essential for `?_state_id_=...` links the user copies
+#'   from the share modal). Pass `NULL` to let Shiny pick a random
+#'   free port (legacy behavior).
 #'
 #' @note \code{startDEBrowser}
 #' @return the app
@@ -25,7 +30,8 @@
 #' @export
 #'
 startDEBrowser <- function(hosted = FALSE,
-                           trusted_proxies = character(0)) {
+                           trusted_proxies = character(0),
+                           port = 3838) {
   if (interactive()) {
     # the upload file size limit is 30MB
     options(
@@ -59,11 +65,11 @@ startDEBrowser <- function(hosted = FALSE,
     ensure_data_dir()
 
     # D2.3 / D2.5 fix: enableBookmarking + bookmark-store path MUST be
-    # set BEFORE shinyApp() is constructed — Shiny captures the bookmark
+    # set BEFORE shinyApp() is constructed -- Shiny captures the bookmark
     # path at app-init time, not per-session.
     #
     # ROOT CAUSE (D2.5 audit): Shiny's save/load path is NOT controlled by
-    # the bookmarkStore shinyOption value — that option only holds the store
+    # the bookmarkStore shinyOption value -- that option only holds the store
     # TYPE ("server", "url", or "disable"). The actual directory is derived
     # from getShinyOption("appDir", default = getwd()), which is captured by
     # captureAppOptions() as getwd() at shinyApp() construction time and
@@ -73,7 +79,7 @@ startDEBrowser <- function(hosted = FALSE,
     # called enableBookmarking("server") which OVERWROTE it with "server".
     # The net effect was that saves and loads both fell through to the
     # loadInterfaceLocal / saveInterfaceLocal defaults using getwd(), not
-    # data_dir() — so bookmarks landed in the working directory instead of
+    # data_dir() -- so bookmarks landed in the working directory instead of
     # the user's data directory, and restores failed with "Bookmarked state
     # directory does not exist."
     #
@@ -114,7 +120,13 @@ startDEBrowser <- function(hosted = FALSE,
       ui = chain$wrap_app(deUI),
       server = shinyServer(deServer)
     )
-    runApp(app)
+    # `port = NULL` lets Shiny pick a free port (legacy); explicit
+    # integer pins the port for stable bookmark URLs.
+    if (is.null(port)) {
+      runApp(app)
+    } else {
+      runApp(app, port = as.integer(port))
+    }
   }
 }
 

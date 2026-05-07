@@ -83,3 +83,53 @@ test_that("startDEBrowser: defaults are hosted=FALSE, trusted_proxies=character(
     expect_false(isTRUE(getOption("debrowser.hosted")))
   })
 })
+
+# D2.5 fix Issue 3: port=3838 default for stable bookmark URLs.
+test_that("startDEBrowser: port default is 3838 and forwarded to runApp", {
+  skip_if_not_installed("mockery")
+  with_test_data_dir({
+    captured_port <- NULL
+    mockery::stub(startDEBrowser, "runApp",
+                  function(app, port = NULL, ...) {
+                    captured_port <<- port
+                    invisible(NULL)
+                  })
+    mockery::stub(startDEBrowser, "interactive", function() TRUE)
+
+    startDEBrowser()
+    expect_equal(captured_port, 3838L)
+  })
+})
+
+test_that("startDEBrowser: explicit port is forwarded to runApp", {
+  skip_if_not_installed("mockery")
+  with_test_data_dir({
+    captured_port <- NULL
+    mockery::stub(startDEBrowser, "runApp",
+                  function(app, port = NULL, ...) {
+                    captured_port <<- port
+                    invisible(NULL)
+                  })
+    mockery::stub(startDEBrowser, "interactive", function() TRUE)
+
+    startDEBrowser(port = 4242)
+    expect_equal(captured_port, 4242L)
+  })
+})
+
+test_that("startDEBrowser: port = NULL uses runApp without explicit port (legacy)", {
+  skip_if_not_installed("mockery")
+  with_test_data_dir({
+    saw_explicit_port <- NULL
+    mockery::stub(startDEBrowser, "runApp",
+                  function(app, ...) {
+                    args <- list(...)
+                    saw_explicit_port <<- "port" %in% names(args)
+                    invisible(NULL)
+                  })
+    mockery::stub(startDEBrowser, "interactive", function() TRUE)
+
+    startDEBrowser(port = NULL)
+    expect_false(isTRUE(saw_explicit_port))
+  })
+})

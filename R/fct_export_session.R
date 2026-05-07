@@ -598,6 +598,16 @@ emit_rmd <- function(blocks) {
   )
 
   # ---- DESeq Analysis tabset (per-comparison) ----
+  # D2.5 fix Issue 5: previously hard-coded `dplyr::select(... baseMean,
+  # lfcSE ...)` failed for EdgeR/Limma which lacked those columns
+  # ("Can't select columns that don't exist. x Column `baseMean`
+  # doesn't exist."). Two-pronged fix:
+  #   (1) run_edger / run_limma now produce a `baseMean` column (from
+  #       2^logCPM and 2^AveExpr respectively) -- see R/fct_de_methods.R.
+  #   (2) emit `dplyr::any_of()` so any column missing from a future
+  #       DE method is silently dropped instead of erroring. lfcSE
+  #       remains DESeq2-only so it's left in the union list and
+  #       any_of() handles its absence.
   de_results_chunks <- unlist(lapply(seq_along(blocks$de), function(i) {
     d <- blocks$de[[i]]
     tab_label <- sprintf("%s vs %s", d$treatment_label, d$control_label)
@@ -606,8 +616,9 @@ emit_rmd <- function(blocks) {
       "#### Results", "",
       sprintf("```{r results_%d}", i),
       sprintf("DT::datatable(post_res_%d %%>%%", i),
-      "  dplyr::select(feature, baseMean, log2FoldChange, lfcSE,",
-      "                pvalue, padj, Direction) %>%",
+      "  dplyr::select(dplyr::any_of(c('feature', 'baseMean',",
+      "                                 'log2FoldChange', 'lfcSE',",
+      "                                 'pvalue', 'padj', 'Direction'))) %>%",
       "  dplyr::arrange(padj),",
       "  rownames = FALSE,",
       "  extensions = 'Buttons',",
@@ -618,7 +629,9 @@ emit_rmd <- function(blocks) {
                      "                                     fieldBoundary = '',\n",
                      "                                     fieldSeparator = '\\t')))) %%>%%"),
               d$safe_label),
-      "  DT::formatRound(c('baseMean', 'log2FoldChange', 'lfcSE'), digits = 4) %>%",
+      sprintf(paste0("  DT::formatRound(intersect(c('baseMean', 'log2FoldChange', 'lfcSE'),\n",
+                     "                            colnames(post_res_%d)), digits = 4) %%>%%"),
+              i),
       "  DT::formatSignif(c('pvalue', 'padj'), digits = 4) %>%",
       "  DT::formatStyle('Direction', target = 'row',",
       "    color = DT::styleEqual(c('No Change', 'Upregulated', 'Downregulated'),",

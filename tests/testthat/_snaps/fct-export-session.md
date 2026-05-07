@@ -335,8 +335,9 @@
       
       ```{r results_1}
       DT::datatable(post_res_1 %>%
-        dplyr::select(feature, baseMean, log2FoldChange, lfcSE,
-                      pvalue, padj, Direction) %>%
+        dplyr::select(dplyr::any_of(c('feature', 'baseMean',
+                                       'log2FoldChange', 'lfcSE',
+                                       'pvalue', 'padj', 'Direction'))) %>%
         dplyr::arrange(padj),
         rownames = FALSE,
         extensions = 'Buttons',
@@ -346,7 +347,8 @@
                                            extension = '.tsv',
                                            fieldBoundary = '',
                                            fieldSeparator = '\t')))) %>%
-        DT::formatRound(c('baseMean', 'log2FoldChange', 'lfcSE'), digits = 4) %>%
+        DT::formatRound(intersect(c('baseMean', 'log2FoldChange', 'lfcSE'),
+                                  colnames(post_res_1)), digits = 4) %>%
         DT::formatSignif(c('pvalue', 'padj'), digits = 4) %>%
         DT::formatStyle('Direction', target = 'row',
           color = DT::styleEqual(c('No Change', 'Upregulated', 'Downregulated'),
@@ -595,8 +597,9 @@
       
       ```{r results_1}
       DT::datatable(post_res_1 %>%
-        dplyr::select(feature, baseMean, log2FoldChange, lfcSE,
-                      pvalue, padj, Direction) %>%
+        dplyr::select(dplyr::any_of(c('feature', 'baseMean',
+                                       'log2FoldChange', 'lfcSE',
+                                       'pvalue', 'padj', 'Direction'))) %>%
         dplyr::arrange(padj),
         rownames = FALSE,
         extensions = 'Buttons',
@@ -606,7 +609,8 @@
                                            extension = '.tsv',
                                            fieldBoundary = '',
                                            fieldSeparator = '\t')))) %>%
-        DT::formatRound(c('baseMean', 'log2FoldChange', 'lfcSE'), digits = 4) %>%
+        DT::formatRound(intersect(c('baseMean', 'log2FoldChange', 'lfcSE'),
+                                  colnames(post_res_1)), digits = 4) %>%
         DT::formatSignif(c('pvalue', 'padj'), digits = 4) %>%
         DT::formatStyle('Direction', target = 'row',
           color = DT::styleEqual(c('No Change', 'Upregulated', 'Downregulated'),
@@ -643,8 +647,9 @@
       
       ```{r results_2}
       DT::datatable(post_res_2 %>%
-        dplyr::select(feature, baseMean, log2FoldChange, lfcSE,
-                      pvalue, padj, Direction) %>%
+        dplyr::select(dplyr::any_of(c('feature', 'baseMean',
+                                       'log2FoldChange', 'lfcSE',
+                                       'pvalue', 'padj', 'Direction'))) %>%
         dplyr::arrange(padj),
         rownames = FALSE,
         extensions = 'Buttons',
@@ -654,7 +659,8 @@
                                            extension = '.tsv',
                                            fieldBoundary = '',
                                            fieldSeparator = '\t')))) %>%
-        DT::formatRound(c('baseMean', 'log2FoldChange', 'lfcSE'), digits = 4) %>%
+        DT::formatRound(intersect(c('baseMean', 'log2FoldChange', 'lfcSE'),
+                                  colnames(post_res_2)), digits = 4) %>%
         DT::formatSignif(c('pvalue', 'padj'), digits = 4) %>%
         DT::formatStyle('Direction', target = 'row',
           color = DT::styleEqual(c('No Change', 'Upregulated', 'Downregulated'),

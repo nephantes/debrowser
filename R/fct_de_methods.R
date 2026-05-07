@@ -223,7 +223,18 @@ run_edger <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
   # log2FoldChange by ~44% and the derived linear `foldChange = 2^...` by
   # even more. Fixed: use `logFC` directly so all three DE methods produce
   # consistent log2-scale fold changes that downstream filters can compare.
+  # D2.5 fix Issue 5: include `baseMean` so EdgeR results plug into the
+  # same Rmd report template (MA plot x-axis, formatRound) and DEBrowser
+  # MA / scatter plots that DESeq2 results do. edgeR's `logCPM` is the
+  # natural per-gene mean-expression metric; we use 2^logCPM to put it
+  # on a comparable linear scale to DESeq2's normalized-count baseMean.
+  base_mean <- if (!is.null(de_com$table$logCPM)) {
+    2 ^ de_com$table$logCPM
+  } else {
+    rowMeans(filtd)
+  }
   res <- data.frame(
+    baseMean       = base_mean,
     log2FoldChange = de_com$table$logFC,
     pvalue         = de_com$table$PValue,
     padj           = padj,
@@ -272,7 +283,7 @@ run_limma <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
 
   # Note: legacy code did `names(filtd) <- des` which produced the
   # "Repeated column names found in count matrix" warning. We intentionally
-  # do NOT do that here — the names are unused downstream and removing the
+  # do NOT do that here -- the names are unused downstream and removing the
   # rename does not change result values (verified by snapshot equality).
 
   if (!identical(covariates, "NoCovariate")) {
@@ -296,7 +307,17 @@ run_limma <- function(counts, metadata = NULL, columns = NULL, conds = NULL,
 
   options(digits = 4)
   tab <- limma::topTable(fit, coef = 2, number = dim(fit)[1], genelist = fit$genes$NAME)
+  # D2.5 fix Issue 5: include `baseMean` so Limma results have parity
+  # with DESeq2's column set in the Rmd report (MA plot x-axis,
+  # formatRound). limma's `AveExpr` is mean log2-expression after voom
+  # normalization; we use 2^AveExpr to put it on a linear scale.
+  base_mean <- if (!is.null(tab$AveExpr)) {
+    2 ^ tab$AveExpr
+  } else {
+    rowMeans(filtd)
+  }
   res <- data.frame(
+    baseMean       = base_mean,
     log2FoldChange = tab$logFC,
     pvalue         = tab$P.Value,
     padj           = tab$adj.P.Val,

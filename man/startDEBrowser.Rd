@@ -4,7 +4,7 @@
 \alias{startDEBrowser}
 \title{startDEBrowser}
 \usage{
-startDEBrowser(hosted = FALSE, trusted_proxies = character(0))
+startDEBrowser(hosted = FALSE, trusted_proxies = character(0), port = 3838)
 }
 \arguments{
 \item{hosted}{Logical. When TRUE, enables hosted-mode behaviors:
@@ -17,6 +17,12 @@ the `DEBROWSER_HOSTED` env var.}
 networks (e.g. `c("127.0.0.1", "10.0.0.0/8")`) whose
 `X-Forwarded-User` header is trusted as the authenticated user.
 Only used when `hosted = TRUE`. Empty by default.}
+
+\item{port}{Integer TCP port to bind. Default `3838` matches the
+shiny-server convention so bookmark URLs stay stable across
+restarts (essential for `?_state_id_=...` links the user copies
+from the share modal). Pass `NULL` to let Shiny pick a random
+free port (legacy behavior).}
 }
 \value{
 the app

@@ -49,7 +49,7 @@ deServer <- function(input, output, session) {
   options(warn = -1)
 
   # D2.3: enableBookmarking + options(shiny.bookmarkStore) MOVED to
-  # startShiny.R — they must be set BEFORE shinyApp() is constructed,
+  # startShiny.R -- they must be set BEFORE shinyApp() is constructed,
   # not per-session, or Shiny writes bookmarks to the cwd instead of
   # data_dir(). setBookmarkExclude is per-session and stays here.
 
@@ -58,7 +58,7 @@ deServer <- function(input, output, session) {
   # primary mechanism; redact_for_bookmark() in R/fct_bookmark_state.R
   # is the defense-in-depth pass.
   setBookmarkExclude(c(
-    # AI namespace — entire E12.A inputs surface. Audited against
+    # AI namespace -- entire E12.A inputs surface. Audited against
     # actual ns() IDs in mod_ai_settings.R + mod_ai_interpret.R.
     "ai_settings-enabled", "ai_settings-provider",
     "ai_settings-model", "ai_settings-api_key",
@@ -84,7 +84,7 @@ deServer <- function(input, output, session) {
     # click-count or restoring a bookmark fires session$doBookmark()
     # on session start, creating a NEW bookmark instead of restoring.
     "bookmark_share",
-    # account dropdown buttons — same pattern, prevents login/signup
+    # account dropdown buttons -- same pattern, prevents login/signup
     # observers from re-firing on restore.
     "account-signup_link", "account-signout",
     "account-signup_submit", "account-my_bookmarks",
@@ -119,10 +119,26 @@ deServer <- function(input, output, session) {
   if (hosted_mode() &&
       length(getOption("debrowser.trusted_proxies", character(0))) == 0L &&
       requireNamespace("shinymanager", quietly = TRUE)) {
+    # D2.5 fix: shinymanager session lifetime.
+    # `timeout` is the inactivity-logout window in MINUTES. We set a
+    # full week so users don't get bounced back to the login wall
+    # mid-analysis. `keep_token = TRUE` preserves the
+    # `?_state_id_=...` URL during the auth round-trip so bookmark
+    # restore continues to work in the post-auth session.
+    #
+    # NOTE on persistent cross-restart cookies: shinymanager 1.0.410
+    # (the version we depend on) does NOT expose a `cookie_validity`
+    # parameter on `secure_server` — passing one is a fatal
+    # "unused argument" error that blocks login entirely. Until
+    # upstream shinymanager ships native persistent-cookie support
+    # (or DEBrowser implements its own remember-me cookie layer in
+    # D2.6+), the user is required to re-authenticate after closing
+    # the browser. Within a single browser session, the long timeout
+    # below keeps them logged in.
     res_auth <- shinymanager::secure_server(
       check_credentials = shinymanager_check_credentials_fn(),
-      keep_token = TRUE,        # preserve `?_state_id_=...` for bookmark restore
-      timeout = 60 * 24 * 7      # minutes; 7 days "keep me logged in"
+      keep_token        = TRUE,
+      timeout           = 60 * 24 * 7    # 7 days of in-session inactivity
     )
     session$userData$shinymanager_res_auth <- res_auth
     # Clear stale auth cache when the authenticated user changes
@@ -203,6 +219,26 @@ deServer <- function(input, output, session) {
     # Resolve and stamp the user_id so onBookmarked can insert the
     # ownership row even if the auth chain re-resolves later.
     state$values$user_id <- current_user(session)
+
+    # D2.5 fix Issue 1: snapshot the DE result container `dc()` so the
+    # restored session shows DE results IMMEDIATELY without re-running
+    # DESeq2 / EdgeR / Limma. Previously the bookmark only captured
+    # `comparisons_spec` and the auto-replay observer re-ran DE from
+    # scratch on every restore -- a 30-60s wait for medium datasets and
+    # a 5+ minute wait for large ones. Snapshotting dc() here makes
+    # restore as fast as `loadRDS` of the cached results.
+    #
+    # `dc()` is a list of comparison containers, each with:
+    #   conds, cols, cond_names, init_data (DESeq2 result frame),
+    #   demethod_params, dds (DESeq2 DESeqDataSet S4 object).
+    # All elements are saveRDS-friendly. dds is the heaviest (~1-10MB
+    # for typical data) but is needed by post-DE QC cards (Dispersion,
+    # SizeFactors, Cook's) so we preserve it.
+    current_dc <- tryCatch(shiny::isolate(dc()),
+                           error = function(e) NULL)
+    if (!is.null(current_dc) && length(current_dc) > 0L) {
+      state$values$dc_data <- current_dc
+    }
   })
 
   # D2.5 fix: track the most-recently-created bookmark's state_id so
@@ -213,13 +249,18 @@ deServer <- function(input, output, session) {
 
   # D2.5 fix Bug C: DE auto-replay on bookmark restore. The bookmark
   # protocol saves `input$*` and `values$*` but NOT the DE result
-  # container `dc()` — so a freshly-restored session lands on Data Prep
+  # container `dc()` -- so a freshly-restored session lands on Data Prep
   # with no plots until the user clicks through Filter -> Batch -> goDE
   # -> Submit again. Auto-replay closes that gap: when onRestore detects
   # a saved comparisons_spec, this rv holds it; an observer below
   # fast-forwards the wizard (Filter -> setBatch -> condSelect -> DE)
   # programmatically once the data has finished loading.
   pending_de_replay <- shiny::reactiveVal(NULL)
+  # D2.5 fix Issue 1: cached dc() captured by onBookmark. When non-NULL,
+  # the auto-replay observer SKIPS prepDataContainer entirely and
+  # plugs the saved dc straight into `dc(<cached>)` -- restoring DE
+  # results without recomputing DESeq2 / EdgeR / Limma.
+  pending_dc_restore <- shiny::reactiveVal(NULL)
 
   onBookmarked(function(url) {
     # state_id is the last path segment of the bookmark URL.
@@ -227,7 +268,7 @@ deServer <- function(input, output, session) {
     #   <base>?_state_id_=<id>
     state_id <- sub(".*_state_id_=", "", url)
     if (!nzchar(state_id) || state_id == url) {
-      # URL has no _state_id_ — nothing to track. Surface anyway.
+      # URL has no _state_id_ -- nothing to track. Surface anyway.
       showNotification(paste("Bookmark URL:", url),
                        duration = NULL, type = "message")
       return()
@@ -316,13 +357,13 @@ deServer <- function(input, output, session) {
     # MUST run on every onRestore call (including post-auth shinymanager
     # sessions whose URL keeps `?token=...` for the entire session).
     # Earlier versions of this file gated the cs-cs capture and
-    # redact_for_bookmark behind the `token=` early-return below — that
+    # redact_for_bookmark behind the `token=` early-return below -- that
     # silently skipped DE auto-replay for hosted-mode users.
 
     # CRITICAL: assign back. state$input / state$values are LISTS in
     # production (subagent E2E confirmed `class=list, length=279`),
     # NOT environments as earlier comments claimed. The list branch of
-    # both helpers returns a NEW filtered list — discarding the return
+    # both helpers returns a NEW filtered list -- discarding the return
     # value (the previous bug) made these calls no-ops.
     if (!is.null(state$input)) {
       state$input <- strip_unrestorable_inputs(state$input)
@@ -346,6 +387,14 @@ deServer <- function(input, output, session) {
         length(cs_state$comparisons_spec) > 0L) {
       pending_de_replay(cs_state$comparisons_spec)
     }
+    # D2.5 Issue 1: capture cached dc() for direct restore. When
+    # present, the auto-replay observer skips the prepDataContainer
+    # call and plugs this straight into `dc()`.
+    saved_dc <- tryCatch(state$values$dc_data,
+                         error = function(e) NULL)
+    if (!is.null(saved_dc) && length(saved_dc) > 0L) {
+      pending_dc_restore(saved_dc)
+    }
 
     # Authorization gate. Unknown / private-non-owner bookmarks
     # raise `bookmark_denied`; surface and abort.
@@ -356,15 +405,15 @@ deServer <- function(input, output, session) {
 
     # D2.5 fix: when shinymanager has issued a session token, defer the
     # authz check. Two cases share this URL shape:
-    #   (a) auth IS mid-flight — secure_server hasn't populated res_auth$user
+    #   (a) auth IS mid-flight -- secure_server hasn't populated res_auth$user
     #       yet, so current_user() reads "local" and authz would wrongly deny.
-    #   (b) auth completed — shinymanager keeps `token=...` in the URL for
+    #   (b) auth completed -- shinymanager keeps `token=...` in the URL for
     #       the whole post-auth session lifetime.
     # Either way, secure_server is the authoritative auth boundary: if the
     # token is invalid the user never gets past the login wall. So skipping
     # the secondary authz gate when a token is present is safe in both cases.
     if (!is.null(url_query[["token"]]) && nzchar(url_query[["token"]])) {
-      # Still do the version-compat check — it's user-facing UX, not a
+      # Still do the version-compat check -- it's user-facing UX, not a
       # security boundary.
       saved <- state$values$debrowser_version
       current <- as.character(utils::packageVersion("debrowser"))
@@ -408,7 +457,7 @@ deServer <- function(input, output, session) {
           ))
           # Hard-stop restore by clearing state. Branch on type because
           # state$values / state$input are LISTS in production but env
-          # in some test paths — list reassignment via state$X <- list()
+          # in some test paths -- list reassignment via state$X <- list()
           # works for both, while rm() only works on env.
           if (is.environment(state$values)) {
             rm(list = ls(state$values, all.names = TRUE),
@@ -542,12 +591,20 @@ deServer <- function(input, output, session) {
       )
       observe({
         spec_to_replay <- pending_de_replay()
-        if (is.null(spec_to_replay) || length(spec_to_replay) == 0L) {
+        cached_dc      <- pending_dc_restore()
+        # No replay needed unless one of the two replay flags is set.
+        if ((is.null(spec_to_replay) || length(spec_to_replay) == 0L) &&
+            is.null(cached_dc)) {
           return()
         }
         if (!isTRUE(.ar_logged$seen_replay)) {
-          message(sprintf("[D2.5 auto-replay] pending_de_replay set; %d comparison(s) to restore",
-                          length(spec_to_replay)))
+          if (!is.null(cached_dc)) {
+            message(sprintf("[D2.5 auto-replay] cached dc available (%d comparison(s)); will plug directly without re-running DE",
+                            length(cached_dc)))
+          } else {
+            message(sprintf("[D2.5 auto-replay] pending_de_replay set; %d comparison(s) to restore (DE WILL re-run)",
+                            length(spec_to_replay)))
+          }
           .ar_logged$seen_replay <- TRUE
         }
         # Wait for data load (mod_dataLoad onRestore branch sets ldata).
@@ -605,34 +662,44 @@ deServer <- function(input, output, session) {
           message("[D2.5 auto-replay] sel ready")
           .ar_logged$seen_sel <- TRUE
         }
-        # Step 4: run DE with the captured spec.
-        # IMPORTANT: use spec_to_replay directly, NOT sel()$comparisons_spec().
-        # The module's snapshot_spec() round-trip can lose info (de_method
-        # default fallback, NA fields) and there is no guarantee the
-        # comparisons rv has finished settling at this exact reactive
-        # flush. spec_to_replay is the authoritative captured-from-bookmark
-        # value; using it directly is deterministic and matches what
-        # mod_condselect's onRestore would have applied if it had fired.
-        message(sprintf("[D2.5 auto-replay] step 4: prepDataContainer with %d spec(s)",
-                        length(spec_to_replay)))
-        # Consume the replay flag FIRST so any error inside prepDataContainer
-        # doesn't leave the state machine looping forever.
-        pending_de_replay(NULL)
-        dc_res <- tryCatch(
-          prepDataContainer(bd$count, bd$meta, spec_to_replay),
-          error = function(e) {
-            message(sprintf("[D2.5 auto-replay] prepDataContainer FAILED: %s",
-                            conditionMessage(e)))
-            shiny::showNotification(
-              sprintf("Auto-replay of bookmarked DE failed: %s",
-                      conditionMessage(e)),
-              type = "error", duration = 12
-            )
-            NULL
-          }
-        )
+        # Step 4: populate dc(). Two paths:
+        #   FAST PATH (Issue 1 fix): if onRestore captured a saved
+        #     dc_data from the bookmark, plug it directly into dc().
+        #     This is the normal path post-fix -- no DE recomputation,
+        #     restore is instantaneous.
+        #   FALLBACK: if cached_dc is missing (e.g. bookmark was made
+        #     before Issue 1 was introduced, or dc_data failed to
+        #     deserialize), re-run DE with the captured spec_to_replay.
+        dc_res <- NULL
+        if (!is.null(cached_dc)) {
+          message(sprintf("[D2.5 auto-replay] step 4 FAST PATH: plugging cached dc (%d entries) -- no DE re-run",
+                          length(cached_dc)))
+          # Consume both flags; we're done.
+          pending_dc_restore(NULL)
+          pending_de_replay(NULL)
+          dc_res <- cached_dc
+        } else {
+          message(sprintf("[D2.5 auto-replay] step 4 FALLBACK: prepDataContainer with %d spec(s)",
+                          length(spec_to_replay)))
+          # Consume the replay flag FIRST so any error inside
+          # prepDataContainer doesn't loop forever.
+          pending_de_replay(NULL)
+          dc_res <- tryCatch(
+            prepDataContainer(bd$count, bd$meta, spec_to_replay),
+            error = function(e) {
+              message(sprintf("[D2.5 auto-replay] prepDataContainer FAILED: %s",
+                              conditionMessage(e)))
+              shiny::showNotification(
+                sprintf("Auto-replay of bookmarked DE failed: %s",
+                        conditionMessage(e)),
+                type = "error", duration = 12
+              )
+              NULL
+            }
+          )
+        }
         if (!is.null(dc_res)) {
-          message(sprintf("[D2.5 auto-replay] DE complete: dc has %d entries",
+          message(sprintf("[D2.5 auto-replay] DE container ready: dc has %d entries",
                           length(dc_res)))
           dc(dc_res)
           progress$upload     <- "done"

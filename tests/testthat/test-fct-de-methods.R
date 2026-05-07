@@ -62,6 +62,53 @@ test_that("run_edger() with structured params matches the legacy edgeR golden ha
   expect_snapshot_value(stable_hash(res), style = "json2")
 })
 
+test_that("run_edger() includes baseMean column for Rmd report parity (Issue 5)", {
+  # D2.5 fix Issue 5: the Rmd report template selects `baseMean` for
+  # the Results table and uses it as the MA-plot x-axis. Before this
+  # fix, run_edger() returned only log2FoldChange / pvalue / padj /
+  # stat — Rmd render failed with "Column `baseMean` doesn't exist."
+  # Now run_edger() derives baseMean from edgeR's logCPM (or rowMeans
+  # fallback) so EdgeR results plug into the same template.
+  skip_on_cran()
+  skip_if_not_installed("edgeR")
+
+  set.seed(1L)
+  counts <- matrix(
+    as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+    nrow = 10, ncol = 6,
+    dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+  )
+  conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+
+  res <- run_edger(counts, columns = colnames(counts), conds = conds)
+  expect_true("baseMean" %in% colnames(res),
+              info = "run_edger must produce baseMean for Rmd parity")
+  expect_true(all(res$baseMean > 0),
+              info = "baseMean (=2^logCPM) must be positive")
+  expect_equal(nrow(res), 10L)
+})
+
+test_that("run_limma() includes baseMean column for Rmd report parity (Issue 5)", {
+  skip_on_cran()
+  skip_if_not_installed("limma")
+  skip_if_not_installed("edgeR")
+
+  set.seed(42L)
+  counts <- matrix(
+    as.integer(abs(rnorm(60, mean = 100, sd = 30))),
+    nrow = 10, ncol = 6,
+    dimnames = list(paste0("G", 1:10), paste0("S", 1:6))
+  )
+  conds <- c("Cond1", "Cond1", "Cond1", "Cond2", "Cond2", "Cond2")
+
+  res <- run_limma(counts, columns = colnames(counts), conds = conds)
+  expect_true("baseMean" %in% colnames(res),
+              info = "run_limma must produce baseMean for Rmd parity")
+  expect_true(all(res$baseMean > 0),
+              info = "baseMean (=2^AveExpr) must be positive")
+  expect_equal(nrow(res), 10L)
+})
+
 test_that("run_edger() returns log2FoldChange in log2 scale and aligned with input gene order", {
   # Regression for two B2.5 followup bugs in run_edger's exactTest branch:
   #   (1) `logFC / log(2)` inflated reported log2FoldChange by 1/log(2) ~= 1.44.
