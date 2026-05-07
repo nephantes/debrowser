@@ -57,13 +57,19 @@ startDEBrowser <- function(hosted = FALSE,
       options(debrowser.hosted = isTRUE(hosted))
     }
     ensure_data_dir()
-    options(debrowser.auth_chain =
-              build_auth_chain(trusted_proxies = trusted_proxies))
+    # D2.5: capture the chain locally so we can both (a) stash it in the
+    # option for current_user() to consume per-session and (b) invoke
+    # its wrap_app to install shinymanager::secure_app over deUI when
+    # hosted-no-proxies mode is active. Without the wrap_app call, the
+    # login wall never appears even when shinymanager_auth_provider is
+    # in the chain.
+    chain <- build_auth_chain(trusted_proxies = trusted_proxies)
+    options(debrowser.auth_chain = chain)
 
     environment(deServer) <- environment()
 
     app <- shinyApp(
-      ui = deUI,
+      ui = chain$wrap_app(deUI),
       server = shinyServer(deServer)
     )
     runApp(app)
