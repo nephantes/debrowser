@@ -52,7 +52,11 @@ test_that("expected setBookmarkExclude entries are present in server.R", {
     "load-uploadFile",
     "lcf-submitLCF",
     "batcheffect-submitBatchEffect",
-    "cs-startDE"
+    "cs-startDE",
+    # D2.5 fix: bslib page_navbar / navset_hidden tab selections must be
+    # excluded to prevent JS "There is no tabsetPanel" errors during restore.
+    "methodtabs",
+    "DataPrep"
   )
   for (r in required) {
     expect_true(grepl(r, text, fixed = TRUE),

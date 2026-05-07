@@ -62,15 +62,43 @@ startDEBrowser <- function(hosted = FALSE,
     # set BEFORE shinyApp() is constructed — Shiny captures the bookmark
     # path at app-init time, not per-session.
     #
-    # CRITICAL: Shiny reads the path via getShinyOption("bookmarkStore"),
-    # which is a SEPARATE namespace from base R's options(). The earlier
-    # `options(shiny.bookmarkStore = ...)` was a SILENT NO-OP — Shiny
-    # never read it and fell back to the "shiny_bookmarks/" default
-    # relative to cwd. Use shinyOptions(bookmarkStore = ...) instead.
-    shiny::shinyOptions(
-      bookmarkStore = file.path(data_dir(), "shiny_bookmarks")
-    )
+    # ROOT CAUSE (D2.5 audit): Shiny's save/load path is NOT controlled by
+    # the bookmarkStore shinyOption value — that option only holds the store
+    # TYPE ("server", "url", or "disable"). The actual directory is derived
+    # from getShinyOption("appDir", default = getwd()), which is captured by
+    # captureAppOptions() as getwd() at shinyApp() construction time and
+    # cannot be overridden via shinyOptions(bookmarkStore = <path>).
+    #
+    # The previous code set bookmarkStore to a path string, then immediately
+    # called enableBookmarking("server") which OVERWROTE it with "server".
+    # The net effect was that saves and loads both fell through to the
+    # loadInterfaceLocal / saveInterfaceLocal defaults using getwd(), not
+    # data_dir() — so bookmarks landed in the working directory instead of
+    # the user's data directory, and restores failed with "Bookmarked state
+    # directory does not exist."
+    #
+    # FIX: set save.interface and load.interface shinyOptions to custom
+    # closures that use data_dir(). These keys are NOT captured or reset by
+    # captureAppOptions(), so they persist across the full app lifecycle and
+    # are consulted FIRST by both saveShinySaveState() and
+    # RestoreContext$loadStateQueryString() before falling through to the
+    # default local-file implementations.
     shiny::enableBookmarking("server")
+    local({
+      bm_dir <- file.path(data_dir(), "shiny_bookmarks")
+      shiny::shinyOptions(
+        save.interface = function(id, callback) {
+          state_dir <- file.path(bm_dir, id)
+          if (!dir.exists(state_dir)) {
+            dir.create(state_dir, recursive = TRUE, showWarnings = FALSE)
+          }
+          callback(state_dir)
+        },
+        load.interface = function(id, callback) {
+          callback(file.path(bm_dir, id))
+        }
+      )
+    })
     # D2.5: capture the chain locally so we can both (a) stash it in the
     # option for current_user() to consume per-session and (b) invoke
     # its wrap_app to install shinymanager::secure_app over deUI when

@@ -88,7 +88,16 @@ deServer <- function(input, output, session) {
     # observers from re-firing on restore.
     "account-signup_link", "account-signout",
     "account-signup_submit", "account-my_bookmarks",
-    "open_signup_from_login", "login_signup_submit"
+    "open_signup_from_login", "login_signup_submit",
+    # D2.5 fix: bslib page_navbar / navset_hidden tab selections.
+    # Shiny's built-in input-restore sends these as client-side input
+    # updates BEFORE the DOM is fully ready, which causes the JS
+    # shiny-change-tab-visibility handler to throw "There is no
+    # tabsetPanel with id equal to 'methodtabs'". Tab state is
+    # managed by server-side togglePanels() / nav_select() observers
+    # after data is loaded, so restoring them from bookmark input is
+    # both redundant and timing-unsafe.
+    "methodtabs", "DataPrep"
   ))
 
   # D2.5 fix: shinymanager requires BOTH secure_app (UI wrap) AND
