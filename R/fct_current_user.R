@@ -63,7 +63,14 @@ current_user <- function(session,
     ud$debrowser_auth <- list()
   }
   cached <- ud$debrowser_auth$user_id
-  if (!is.null(cached)) return(cached)
+  if (!is.null(cached)) {
+    # In hosted mode, never cache "local" as final — it means the chain
+    # fell through (no auth yet). Re-resolve so we pick up the user as
+    # soon as shinymanager / OIDC populates res_auth.
+    if (!hosted_mode() || !identical(cached, "local")) {
+      return(cached)
+    }
+  }
   uid <- chain$identify(session)
   if (is.null(uid)) uid <- "local"   # safety floor — should never hit
   ud$debrowser_auth$user_id <- uid

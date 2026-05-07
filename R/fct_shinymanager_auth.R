@@ -22,6 +22,21 @@ shinymanager_auth_provider <- function(
 
   identify <- function(session) {
     if (is.null(session) || is.null(session$userData)) return(NULL)
+    # Preferred path: deServer wired secure_server() and stashed the
+    # returned reactiveValues here (D2.5 fix). secure_server populates
+    # res_auth$user via an observer when shinymanager's login token is
+    # validated, so reading it gives the live authenticated user.
+    res_auth <- session$userData$shinymanager_res_auth
+    if (!is.null(res_auth)) {
+      u <- tryCatch(shiny::isolate(res_auth$user),
+                    error = function(e) NULL)
+      if (!is.null(u) && length(u) == 1L && nzchar(as.character(u))) {
+        return(as.character(u))
+      }
+    }
+    # Legacy / fallback path: test scaffolding writes
+    # session$userData$user directly. Keep it working for unit tests
+    # that don't spin up secure_server.
     u <- session$userData$user
     if (is.null(u) || is.null(u$user)) return(NULL)
     as.character(u$user)

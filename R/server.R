@@ -87,6 +87,29 @@ deServer <- function(input, output, session) {
     "startGO"
   ))
 
+  # D2.5 fix: shinymanager requires BOTH secure_app (UI wrap) AND
+  # secure_server (server handler). Without secure_server, the login
+  # form has no submit handler. Wire it here in hosted-no-proxies mode.
+  # The returned reactiveValues holds the authenticated user info; we
+  # stash it in session$userData so shinymanager_auth_provider$identify
+  # can read it.
+  if (hosted_mode() &&
+      length(getOption("debrowser.trusted_proxies", character(0))) == 0L &&
+      requireNamespace("shinymanager", quietly = TRUE)) {
+    res_auth <- shinymanager::secure_server(
+      check_credentials = shinymanager_check_credentials_fn(),
+      keep_token = TRUE  # preserve `?_state_id_=...` for bookmark restore
+    )
+    session$userData$shinymanager_res_auth <- res_auth
+    # Clear stale auth cache when the authenticated user changes
+    # (login/logout flips res_auth$user). This unmemoizes
+    # current_user(session) so the navbar reflects the live state.
+    shiny::observe({
+      u <- res_auth$user
+      invalidate_user_cache(session)
+    })
+  }
+
   onBookmark(function(state) {
     # Stamp the package version so onRestore can do a compat check.
     state$values$debrowser_version <-

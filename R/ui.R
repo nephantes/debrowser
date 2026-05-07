@@ -303,7 +303,12 @@ deUI <- function(req = NULL) {
 
     debrowser::aiSettingsUI("ai_settings"),
 
-    debrowser::accountDropdownUI("account"),
+    # D2.5: account dropdown only surfaces in hosted mode (the only
+    # mode where signup/signin/signout are meaningful). Non-hosted
+    # desktop launches don't have real users to manage. Returning
+    # `if (FALSE) X` => NULL is filtered by bslib::page_navbar's
+    # do.call(..., list_drop_nulls).
+    if (hosted_mode()) debrowser::accountDropdownUI("account"),
 
     bslib::nav_item(
       tags$button(
