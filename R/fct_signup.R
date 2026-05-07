@@ -55,3 +55,67 @@ signup_user <- function(con, user_id, email, password) {
                       hashed_pw = hashed)
   invisible(user_id)
 }
+
+#' Create a debrowser user from the R console.
+#'
+#' Opens \code{users.sqlite}, writes a new \code{kind = "shinymanager"} row,
+#' and closes the connection. Use this to bootstrap the first user when
+#' running \code{startDEBrowser(hosted = TRUE)} for the first time, since
+#' the in-app signup modal lives behind the login wall and is unreachable
+#' until you have an account.
+#'
+#' @param user_id Username for login.
+#' @param password Plaintext password (will be hashed via libsodium argon2id).
+#' @param email Optional email. Default \code{NA_character_}.
+#' @return The created user_id, invisibly.
+#' @examples
+#' \dontrun{
+#' create_debrowser_user("alice", "hunter2!", "alice@example.com")
+#' startDEBrowser(hosted = TRUE)  # then log in as alice / hunter2!
+#' }
+#' @export
+create_debrowser_user <- function(user_id, password,
+                                  email = NA_character_) {
+  err <- validate_signup_input(user_id, email, password, password)
+  if (!is.null(err)) stop(err)
+  con <- user_db_connect()
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  signup_user(con, user_id = user_id, email = email,
+              password = password)
+}
+
+#' Reset a debrowser user's password from the R console.
+#'
+#' Updates the \code{hashed_pw} column for an existing user. Useful when
+#' the password is forgotten and there is no admin UI yet.
+#'
+#' @param user_id Username.
+#' @param new_password New plaintext password (hashed before storage).
+#' @return TRUE on success; errors if the user does not exist.
+#' @examples
+#' \dontrun{
+#' reset_debrowser_password("alice", "newhunter2!")
+#' }
+#' @export
+reset_debrowser_password <- function(user_id, new_password) {
+  if (is.null(user_id) || !nzchar(user_id)) {
+    stop("reset_debrowser_password: user_id is required.")
+  }
+  if (is.null(new_password) || nchar(new_password) < 8L) {
+    stop("reset_debrowser_password: password must be at least 8 chars.")
+  }
+  con <- user_db_connect()
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  row <- user_db_get_user(con, user_id)
+  if (is.null(row)) {
+    stop(sprintf("reset_debrowser_password: no user '%s'.", user_id))
+  }
+  hashed <- hash_password(new_password)
+  if (is.null(hashed)) {
+    stop("reset_debrowser_password: password hashing failed.")
+  }
+  DBI::dbExecute(con,
+    "UPDATE users SET hashed_pw = ? WHERE user_id = ?",
+    params = list(hashed, user_id))
+  invisible(TRUE)
+}
