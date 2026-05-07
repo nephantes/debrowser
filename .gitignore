@@ -16,3 +16,4 @@ debrowser.BiocCheck/
 *.tar.gz
 Rplots.pdf
 **/Rplots.pdf
+shiny_bookmarks/
