@@ -49,7 +49,24 @@ shinymanager_auth_provider <- function(
       # local_anonymous_provider in this case.
       return(app)
     }
-    shinymanager::secure_app(app, check_credentials = check_credentials_fn)
+    # head_auth surfaces a Sign-up link ABOVE the login form so users
+    # who land on a shared bookmark URL can create an account without
+    # admin help. The link is wired by an observer in deServer.
+    shinymanager::secure_app(
+      app,
+      check_credentials = check_credentials_fn,
+      head_auth = shiny::tagList(
+        shiny::div(
+          style = "text-align: center; padding: 12px 0; ",
+          shiny::tags$span("Don't have an account? "),
+          shiny::actionLink(
+            inputId = "open_signup_from_login",
+            label = "Sign up",
+            icon = shiny::icon("user-plus")
+          )
+        )
+      )
+    )
   }
 
   logout <- function(session) {

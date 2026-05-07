@@ -98,7 +98,8 @@ deServer <- function(input, output, session) {
       requireNamespace("shinymanager", quietly = TRUE)) {
     res_auth <- shinymanager::secure_server(
       check_credentials = shinymanager_check_credentials_fn(),
-      keep_token = TRUE  # preserve `?_state_id_=...` for bookmark restore
+      keep_token = TRUE,        # preserve `?_state_id_=...` for bookmark restore
+      timeout = 60 * 24 * 7      # minutes; 7 days "keep me logged in"
     )
     session$userData$shinymanager_res_auth <- res_auth
     # Clear stale auth cache when the authenticated user changes
@@ -108,6 +109,68 @@ deServer <- function(input, output, session) {
       u <- res_auth$user
       invalidate_user_cache(session)
     })
+
+    # Sign-up flow accessible from the login screen (head_auth on
+    # secure_app surfaces a "Sign up" link). Observers fire even while
+    # the user is unauthenticated because the login screen is part of
+    # the same Shiny session.
+    shiny::observeEvent(input$open_signup_from_login, {
+      shiny::showModal(shiny::modalDialog(
+        title = "Sign up",
+        shiny::tagList(
+          shiny::textInput("login_signup_user", "Username"),
+          shiny::textInput("login_signup_email", "Email (optional)"),
+          shiny::passwordInput("login_signup_pw",
+                               "Password (8+ chars)"),
+          shiny::passwordInput("login_signup_pw2", "Confirm password")
+        ),
+        footer = shiny::tagList(
+          shiny::modalButton("Cancel"),
+          shiny::actionButton("login_signup_submit",
+                              "Create account",
+                              class = "btn-primary")
+        )
+      ))
+    }, ignoreInit = TRUE)
+
+    shiny::observeEvent(input$login_signup_submit, {
+      err <- validate_signup_input(
+        user_id = input$login_signup_user,
+        email = input$login_signup_email,
+        password = input$login_signup_pw,
+        password_confirm = input$login_signup_pw2
+      )
+      if (!is.null(err)) {
+        shiny::showNotification(err, type = "error", duration = 6)
+        return()
+      }
+      con2 <- tryCatch(user_db_connect(), error = function(e) NULL)
+      if (is.null(con2)) {
+        shiny::showNotification("User database is unavailable.",
+                                type = "error", duration = 6)
+        return()
+      }
+      on.exit(DBI::dbDisconnect(con2), add = TRUE)
+      ok <- tryCatch({
+        signup_user(con2, input$login_signup_user,
+                    input$login_signup_email,
+                    input$login_signup_pw)
+        TRUE
+      }, error = function(e) {
+        shiny::showNotification(
+          paste("Signup failed:", conditionMessage(e)),
+          type = "error", duration = 8
+        )
+        FALSE
+      })
+      if (isTRUE(ok)) {
+        shiny::removeModal()
+        shiny::showNotification(
+          "Account created. Please sign in with your credentials.",
+          type = "message", duration = 8
+        )
+      }
+    }, ignoreInit = TRUE)
   }
 
   onBookmark(function(state) {
@@ -118,6 +181,12 @@ deServer <- function(input, output, session) {
     # ownership row even if the auth chain re-resolves later.
     state$values$user_id <- current_user(session)
   })
+
+  # D2.5 fix: track the most-recently-created bookmark's state_id so
+  # the share modal's visibility radio can update its row in users.sqlite.
+  # A reactiveVal lets a single deServer-level observer drive every
+  # modal instance instead of registering N observers (one per bookmark).
+  active_share_state_id <- shiny::reactiveVal(NULL)
 
   onBookmarked(function(url) {
     # state_id is the last path segment of the bookmark URL.
@@ -158,13 +227,42 @@ deServer <- function(input, output, session) {
         }
       )
     }
+    # Remember the state_id for the visibility-toggle observer below.
+    active_share_state_id(state_id)
+    # In hosted mode, expose the visibility toggle so users can mark
+    # bookmarks as link-shareable for recipients to open after signup.
     showModal(modalDialog(
       title = "Bookmark created",
-      build_share_modal_ui(url, can_toggle = FALSE),
+      build_share_modal_ui(url,
+                           can_toggle = hosted_mode(),
+                           current_visibility = "private"),
       easyClose = TRUE,
       footer = modalButton("Close")
     ))
   })
+
+  # Auto-save visibility radio changes to users.sqlite. Fires whenever
+  # the user toggles Private <-> Shared via link in the share modal.
+  shiny::observeEvent(input$bookmark_share_visibility, {
+    state_id <- active_share_state_id()
+    if (is.null(state_id) || !nzchar(state_id)) return()
+    new_vis <- input$bookmark_share_visibility
+    if (!new_vis %in% c("private", "link")) return()
+    con <- tryCatch(user_db_connect(), error = function(e) NULL)
+    if (is.null(con)) return()
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    tryCatch(
+      user_db_bookmark_set_visibility(con, state_id, new_vis),
+      error = function(e) NULL
+    )
+    showNotification(
+      sprintf("Bookmark visibility set to %s.",
+              if (identical(new_vis, "link"))
+                "Shared via link" else "Private"),
+      type = "message",
+      duration = 4
+    )
+  }, ignoreInit = TRUE)
 
   onRestore(function(state) {
     # Authorization gate. Unknown / private-non-owner bookmarks
@@ -173,6 +271,19 @@ deServer <- function(input, output, session) {
       session$clientData$url_search %||% "")
     state_id <- url_query[["_state_id_"]]
     if (is.null(state_id) || !nzchar(state_id)) return(invisible())
+
+    # D2.5 fix: when shinymanager's auth is mid-flight (URL carries a
+    # `token=...` parameter), our `current_user(session)` still reads
+    # "local" because secure_server hasn't yet populated res_auth$user.
+    # Without this guard, the gate would deny the bookmark and clear
+    # state — racing against shinymanager's own auth completion.
+    # secure_server is the authoritative auth boundary; if its token
+    # is invalid the user never gets past the login wall, so it's safe
+    # to skip the secondary gate here.
+    if (!is.null(url_query[["token"]]) && nzchar(url_query[["token"]])) {
+      return(invisible())
+    }
+
     viewer <- current_user(session)
     if (is.na(viewer)) viewer <- NULL
     con <- tryCatch(user_db_connect(), error = function(e) NULL)

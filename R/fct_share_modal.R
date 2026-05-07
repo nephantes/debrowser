@@ -34,6 +34,7 @@ build_share_modal_ui <- function(url,
       "Open in new tab"
     ),
     if (isTRUE(can_toggle)) {
+      vis <- match.arg(current_visibility, c("private", "link"))
       shiny::tagList(
         shiny::tags$hr(),
         shiny::radioButtons(
@@ -41,12 +42,16 @@ build_share_modal_ui <- function(url,
           label   = "Visibility",
           choices = c("Private (only me)" = "private",
                       "Shared via link"   = "link"),
-          selected = current_visibility,
+          selected = vis,
           inline = TRUE
         ),
         shiny::div(
           class = "text-muted small",
-          "Toggle takes effect when you click Save."
+          paste0(
+            "Private: only you can open this URL after logging in. ",
+            "Shared via link: anyone with the URL can open it after ",
+            "signing up and logging in. Changes save automatically."
+          )
         )
       )
     }

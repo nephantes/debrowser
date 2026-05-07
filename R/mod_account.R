@@ -11,16 +11,14 @@
 #' @export
 accountDropdownUI <- function(id) {
   ns <- shiny::NS(id)
+  # Sign up vs Sign out are rendered server-side via uiOutput so the
+  # set of menu items can swap on login/logout. When logged in we
+  # only show Sign out; when anonymous we only show Sign up.
   bslib::nav_menu(
     title = shiny::uiOutput(ns("label"), inline = TRUE),
     icon = shiny::icon("user"),
     align = "right",
-    bslib::nav_item(shiny::actionLink(ns("signup_link"),
-                                      "Sign up",
-                                      icon = shiny::icon("user-plus"))),
-    bslib::nav_item(shiny::actionLink(ns("signout"),
-                                      "Sign out",
-                                      icon = shiny::icon("sign-out-alt")))
+    bslib::nav_item(shiny::uiOutput(ns("menu_items")))
   )
 }
 
@@ -36,6 +34,23 @@ accountDropdownServer <- function(id) {
         shiny::tags$span("Not signed in")
       } else {
         shiny::tags$span(paste0("@", uid))
+      }
+    })
+
+    # Menu items swap based on login state.
+    output$menu_items <- shiny::renderUI({
+      shiny::invalidateLater(2000, session)
+      uid <- current_user(session)
+      if (is.na(uid) || identical(uid, "local")) {
+        # Not signed in: show Sign up only.
+        shiny::actionLink(session$ns("signup_link"),
+                          "Sign up",
+                          icon = shiny::icon("user-plus"))
+      } else {
+        # Signed in: show Sign out only.
+        shiny::actionLink(session$ns("signout"),
+                          "Sign out",
+                          icon = shiny::icon("sign-out-alt"))
       }
     })
 
