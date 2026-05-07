@@ -51,6 +51,27 @@ test_that("redact_for_bookmark: returns named list even when input has no sensit
   expect_equal(redacted, values)
 })
 
+test_that("redact_for_bookmark: handles environments by mutating in place", {
+  # Shiny passes state$values / state$input as environments in onRestore.
+  e <- new.env()
+  e$`ai_settings-api_key` <- "sk-secret"
+  e$`ai_enrichment-question` <- "what is this?"
+  e$foo <- 1L
+  e$bar <- 2L
+
+  redacted <- redact_for_bookmark(e)
+  expect_identical(redacted, e)  # same env, mutated in place
+  expect_false("ai_settings-api_key" %in% ls(e))
+  expect_false("ai_enrichment-question" %in% ls(e))
+  expect_true(all(c("foo", "bar") %in% ls(e)))
+})
+
+test_that("redact_for_bookmark: empty environment passes through unchanged", {
+  e <- new.env()
+  redact_for_bookmark(e)
+  expect_equal(length(ls(e)), 0L)
+})
+
 test_that("bookmark_authorize: TRUE for owner-of-private", {
   with_test_data_dir({
     ensure_data_dir()

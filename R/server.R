@@ -298,10 +298,18 @@ deServer <- function(input, output, session) {
             easyClose = TRUE,
             footer = modalButton("OK")
           ))
-          # Hard-stop restore by clearing state values so downstream
-          # observers see no useful state.
-          state$values <- list()
-          state$input  <- list()
+          # Hard-stop restore by clearing state environments so
+          # downstream observers see no useful state. state$values /
+          # state$input are environments; clear in place via rm() —
+          # reassigning to list() doesn't stick.
+          if (is.environment(state$values)) {
+            rm(list = ls(state$values, all.names = TRUE),
+               envir = state$values)
+          }
+          if (is.environment(state$input)) {
+            rm(list = ls(state$input, all.names = TRUE),
+               envir = state$input)
+          }
           return()
         }
       )
@@ -329,8 +337,10 @@ deServer <- function(input, output, session) {
     # Defense-in-depth redaction. setBookmarkExclude SHOULD have
     # already removed AI inputs; this strips anything that slipped
     # through (e.g. a future module that forgot to exclude its key).
-    state$values <- redact_for_bookmark(state$values)
-    state$input  <- redact_for_bookmark(state$input)
+    # state$values and state$input are environments — redact_for_bookmark
+    # mutates in place and returns the same env, so we discard the return.
+    redact_for_bookmark(state$values)
+    redact_for_bookmark(state$input)
   })
 
   onRestored(function(state) {

@@ -23,9 +23,21 @@ redact_for_bookmark <- function(values) {
   if (length(values) == 0L) return(values)
   nm <- names(values)
   if (is.null(nm)) return(values)
-  drop <- grepl("^ai_", nm) |
-          grepl("api_key", nm, ignore.case = TRUE)
-  values[!drop]
+  drop_mask <- grepl("^ai_", nm) |
+               grepl("api_key", nm, ignore.case = TRUE)
+  if (is.environment(values)) {
+    # Shiny passes state$values / state$input as environments in
+    # onRestore; subset-with-logical doesn't work on those. Remove
+    # the matching keys in place.
+    drop_names <- nm[drop_mask]
+    for (k in drop_names) {
+      if (exists(k, envir = values, inherits = FALSE)) {
+        rm(list = k, envir = values)
+      }
+    }
+    return(values)
+  }
+  values[!drop_mask]
 }
 
 #' Compatibility classification for a bookmark restore.
