@@ -510,14 +510,23 @@ condSelectServer <- function(id, data = NULL, metadata = NULL) {
       if (length(restored) == 0L) return()
 
       # Replace the existing initial comparisons rv (created at line ~429
-      # by new_comparison(1L)) with the restored set.
+      # by new_comparison(1L)) with the restored set. Observers reference
+      # comparisons[[key]] lazily, so the existing card-1 observers from
+      # init will see the new rv values without re-installation.
+      # CRITICAL: install_card_observers is called per-card; if we call
+      # it for card 1 (which init already installed), we double-register
+      # observers AND duplicate the per-card UI elements (renderUI for
+      # treatment_level_ui etc.), which produces duplicate-input-id
+      # warnings and breaks the page render.
       for (key in names(restored)) {
         comparisons[[key]] <- shiny::reactiveValues()
         for (fld in names(restored[[key]])) {
           comparisons[[key]][[fld]] <- restored[[key]][[fld]]
         }
         i <- as.integer(key)
-        if (!is.na(i)) install_card_observers(i)
+        if (is.na(i)) next
+        # Init only installed card 1; restore installs cards 2..N.
+        if (i > 1L) install_card_observers(i)
       }
 
       # Keep n_comparisons in sync with the restored count.
