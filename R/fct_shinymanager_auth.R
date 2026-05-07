@@ -64,3 +64,48 @@ shinymanager_auth_provider <- function(
     user_info = user_info
   )
 }
+
+#' Construct the check_credentials function passed to
+#' [shinymanager::secure_app()].
+#'
+#' Consults `users.sqlite` (D2.1) — only rows with `kind = 'shinymanager'`
+#' may authenticate via this path. OIDC/header users authenticate
+#' through their respective providers' identify().
+#'
+#' @param db_path Optional override of the user_db path. Defaults to
+#'   `user_db_path()`. Useful for tests.
+#' @return A function `function(user, password)` returning a list with
+#'   `result` (TRUE/FALSE) per shinymanager's contract.
+#' @keywords internal
+#' @noRd
+shinymanager_check_credentials_fn <- function(db_path = NULL) {
+  function(user, password) {
+    deny <- list(result = FALSE)
+    if (is.null(user) || is.null(password)) return(deny)
+    if (!nzchar(user) || !nzchar(password)) return(deny)
+
+    con <- tryCatch(
+      {
+        if (is.null(db_path)) user_db_connect() else {
+          require_pkg("RSQLite", feature = "user database")
+          c <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+          DBI::dbExecute(c, "PRAGMA foreign_keys = ON")
+          user_db_migrate(c)
+          c
+        }
+      },
+      error = function(e) NULL
+    )
+    if (is.null(con)) return(deny)
+    on.exit(DBI::dbDisconnect(con), add = TRUE)
+
+    row <- tryCatch(user_db_get_user(con, user), error = function(e) NULL)
+    if (is.null(row)) return(deny)
+    if (!identical(row$kind, "shinymanager")) return(deny)
+    if (!verify_password(password, row$hashed_pw)) return(deny)
+
+    user_db_update_login(con, user)
+    list(result = TRUE,
+         user_info = list(user = user))
+  }
+}

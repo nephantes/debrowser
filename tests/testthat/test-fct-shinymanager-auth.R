@@ -37,3 +37,55 @@ test_that("shinymanager_auth_provider: wrap_app callable", {
   result <- tryCatch(p$wrap_app("APP"), error = function(e) NULL)
   expect_true(!is.null(result))
 })
+
+test_that("shinymanager_check_credentials_fn: valid creds => result=TRUE", {
+  skip_if_not_installed("sodium")
+  with_test_data_dir({
+    ensure_data_dir()
+    con <- user_db_connect()
+    user_db_create_user(con, "alice", "shinymanager",
+                        hashed_pw = hash_password("hunter2"))
+    DBI::dbDisconnect(con)
+
+    f <- shinymanager_check_credentials_fn()
+    res <- f("alice", "hunter2")
+    expect_true(isTRUE(res$result))
+    expect_equal(res$user_info$user, "alice")
+  })
+})
+
+test_that("shinymanager_check_credentials_fn: wrong password => result=FALSE", {
+  skip_if_not_installed("sodium")
+  with_test_data_dir({
+    ensure_data_dir()
+    con <- user_db_connect()
+    user_db_create_user(con, "alice", "shinymanager",
+                        hashed_pw = hash_password("hunter2"))
+    DBI::dbDisconnect(con)
+
+    f <- shinymanager_check_credentials_fn()
+    expect_false(isTRUE(f("alice", "wrong")$result))
+  })
+})
+
+test_that("shinymanager_check_credentials_fn: unknown user => result=FALSE", {
+  skip_if_not_installed("sodium")
+  with_test_data_dir({
+    ensure_data_dir()
+    f <- shinymanager_check_credentials_fn()
+    expect_false(isTRUE(f("ghost", "any")$result))
+  })
+})
+
+test_that("shinymanager_check_credentials_fn: rejects non-shinymanager kind", {
+  skip_if_not_installed("sodium")
+  with_test_data_dir({
+    ensure_data_dir()
+    con <- user_db_connect()
+    user_db_create_user(con, "alice", "header")
+    DBI::dbDisconnect(con)
+
+    f <- shinymanager_check_credentials_fn()
+    expect_false(isTRUE(f("alice", "any")$result))
+  })
+})
