@@ -6,6 +6,9 @@
 \usage{
 accountDropdownServer(id)
 }
+\arguments{
+\item{id}{Shiny module namespace id.}
+}
 \description{
 Server: wires the dropdown to current_user, signup modal, signout.
 }

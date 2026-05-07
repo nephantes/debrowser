@@ -7,6 +7,7 @@
 # D2.6 will add a "My Bookmarks" entry to this dropdown.
 
 #' UI: navbar account dropdown.
+#' @param id Shiny module namespace id.
 #' @export
 accountDropdownUI <- function(id) {
   ns <- shiny::NS(id)
@@ -24,6 +25,7 @@ accountDropdownUI <- function(id) {
 }
 
 #' Server: wires the dropdown to current_user, signup modal, signout.
+#' @param id Shiny module namespace id.
 #' @export
 accountDropdownServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {

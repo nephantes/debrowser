@@ -6,6 +6,9 @@
 \usage{
 accountDropdownUI(id)
 }
+\arguments{
+\item{id}{Shiny module namespace id.}
+}
 \description{
 UI: navbar account dropdown.
 }
