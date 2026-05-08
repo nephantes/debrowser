@@ -599,10 +599,10 @@ deServer <- function(input, output, session) {
         }
         if (!isTRUE(.ar_logged$seen_replay)) {
           if (!is.null(cached_dc)) {
-            message(sprintf("[D2.5 auto-replay] cached dc available (%d comparison(s)); will plug directly without re-running DE",
+            message(sprintf("[D2.5 restore] cached dc available (%d comparison(s)); will plug directly without re-running DE",
                             length(cached_dc)))
           } else {
-            message(sprintf("[D2.5 auto-replay] pending_de_replay set; %d comparison(s) to restore (DE WILL re-run)",
+            message(sprintf("[D2.5 restore] pending_de_replay set; %d comparison(s) to restore (DE WILL re-run)",
                             length(spec_to_replay)))
           }
           .ar_logged$seen_replay <- TRUE
@@ -611,7 +611,7 @@ deServer <- function(input, output, session) {
         load_d <- tryCatch(updata()$load(), error = function(e) NULL)
         if (is.null(load_d) || is.null(load_d$count)) return()
         if (!isTRUE(.ar_logged$seen_data)) {
-          message(sprintf("[D2.5 auto-replay] data loaded: %d genes x %d samples (source=%s)",
+          message(sprintf("[D2.5 restore] data loaded: %d genes x %d samples (source=%s)",
                           nrow(load_d$count), ncol(load_d$count),
                           load_d$data_source %||% "?"))
           .ar_logged$seen_data <- TRUE
@@ -619,27 +619,27 @@ deServer <- function(input, output, session) {
         # Step 1: build the lcf module (auto-applies default Max<10 filter
         # via the B3.5 init_done observe inside debrowserlowcountfilter).
         if (is.null(filtd())) {
-          message("[D2.5 auto-replay] step 1: mounting lcf module")
+          message("[D2.5 restore] step 1: mounting lcf module")
           filtd(debrowserlowcountfilter("lcf", updata()$load()))
           return()
         }
         fd <- tryCatch(filtd()$filter(), error = function(e) NULL)
         if (is.null(fd) || is.null(fd$count)) return()
         if (!isTRUE(.ar_logged$seen_filt)) {
-          message(sprintf("[D2.5 auto-replay] filter done: %d genes after filter",
+          message(sprintf("[D2.5 restore] filter done: %d genes after filter",
                           nrow(fd$count)))
           .ar_logged$seen_filt <- TRUE
         }
         # Step 2: skip batch effect, pass filtered data straight through.
         if (is.null(batch())) {
-          message("[D2.5 auto-replay] step 2: setBatch (skip batch effect)")
+          message("[D2.5 restore] step 2: setBatch (skip batch effect)")
           batch(setBatch(filtd()))
           return()
         }
         bd <- tryCatch(batch()$BatchEffect(), error = function(e) NULL)
         if (is.null(bd) || is.null(bd$count)) return()
         if (!isTRUE(.ar_logged$seen_batch)) {
-          message("[D2.5 auto-replay] batch ready")
+          message("[D2.5 restore] batch ready")
           .ar_logged$seen_batch <- TRUE
         }
         # Step 3: build sel by mounting condSelectServer with the
@@ -651,7 +651,7 @@ deServer <- function(input, output, session) {
         # `comparisons` reactiveValues directly so the wizard cards
         # render with the restored treatment/control selections.
         if (is.null(sel())) {
-          message(sprintf("[D2.5 auto-replay] step 3: mounting condSelect with %d initial spec(s)",
+          message(sprintf("[D2.5 restore] step 3: mounting condSelect with %d initial spec(s)",
                           length(spec_to_replay)))
           sel(condSelectServer("cs", bd$count, bd$meta,
                                initial_spec = spec_to_replay))
@@ -659,7 +659,7 @@ deServer <- function(input, output, session) {
           return()
         }
         if (!isTRUE(.ar_logged$seen_sel)) {
-          message("[D2.5 auto-replay] sel ready")
+          message("[D2.5 restore] sel ready")
           .ar_logged$seen_sel <- TRUE
         }
         # Step 4: populate dc(). Two paths:
@@ -672,14 +672,14 @@ deServer <- function(input, output, session) {
         #     deserialize), re-run DE with the captured spec_to_replay.
         dc_res <- NULL
         if (!is.null(cached_dc)) {
-          message(sprintf("[D2.5 auto-replay] step 4 FAST PATH: plugging cached dc (%d entries) -- no DE re-run",
+          message(sprintf("[D2.5 restore] step 4 FAST PATH: plugging cached dc (%d entries) -- no DE re-run",
                           length(cached_dc)))
           # Consume both flags; we're done.
           pending_dc_restore(NULL)
           pending_de_replay(NULL)
           dc_res <- cached_dc
         } else {
-          message(sprintf("[D2.5 auto-replay] step 4 FALLBACK: prepDataContainer with %d spec(s)",
+          message(sprintf("[D2.5 restore] step 4 FALLBACK: prepDataContainer with %d spec(s)",
                           length(spec_to_replay)))
           # Consume the replay flag FIRST so any error inside
           # prepDataContainer doesn't loop forever.
@@ -687,7 +687,7 @@ deServer <- function(input, output, session) {
           dc_res <- tryCatch(
             prepDataContainer(bd$count, bd$meta, spec_to_replay),
             error = function(e) {
-              message(sprintf("[D2.5 auto-replay] prepDataContainer FAILED: %s",
+              message(sprintf("[D2.5 restore] prepDataContainer FAILED: %s",
                               conditionMessage(e)))
               shiny::showNotification(
                 sprintf("Auto-replay of bookmarked DE failed: %s",
@@ -699,7 +699,7 @@ deServer <- function(input, output, session) {
           )
         }
         if (!is.null(dc_res)) {
-          message(sprintf("[D2.5 auto-replay] DE container ready: dc has %d entries",
+          message(sprintf("[D2.5 restore] DE container ready: dc has %d entries",
                           length(dc_res)))
           dc(dc_res)
           progress$upload     <- "done"
