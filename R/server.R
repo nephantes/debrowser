@@ -262,6 +262,14 @@ deServer <- function(input, output, session) {
   # results without recomputing DESeq2 / EdgeR / Limma.
   pending_dc_restore <- shiny::reactiveVal(NULL)
 
+  # D2.5 fix: in-flight flag for the Bookmark navbar button. dc_data
+  # serialization is slow (several seconds for typical data); without
+  # this, users clicked the button multiple times during the save and
+  # got duplicate bookmarks at the same timepoint. Reset by the
+  # onBookmarked handler below. Hoisted up here so onBookmarked can
+  # see the symbol.
+  .bookmark_in_progress <- shiny::reactiveVal(FALSE)
+
   onBookmarked(function(url) {
     # state_id is the last path segment of the bookmark URL.
     # Shiny constructs URLs like:
@@ -271,6 +279,11 @@ deServer <- function(input, output, session) {
       # URL has no _state_id_ -- nothing to track. Surface anyway.
       showNotification(paste("Bookmark URL:", url),
                        duration = NULL, type = "message")
+      # D2.5 fix: clear in-flight flag on early return too.
+      shiny::removeNotification("debrowser_bookmark_progress")
+      tryCatch(shinyjs::enable("bookmark_share"),
+               error = function(e) NULL)
+      .bookmark_in_progress(FALSE)
       return()
     }
     user_id <- current_user(session)
@@ -313,6 +326,12 @@ deServer <- function(input, output, session) {
       easyClose = TRUE,
       footer = modalButton("Close")
     ))
+    # D2.5 fix: clear the in-flight flag NOW (modal up = save done) so
+    # the user can take a second bookmark if they want.
+    shiny::removeNotification("debrowser_bookmark_progress")
+    tryCatch(shinyjs::enable("bookmark_share"),
+             error = function(e) NULL)
+    .bookmark_in_progress(FALSE)
   })
 
   # Auto-save visibility radio changes to users.sqlite. Fires whenever
@@ -503,7 +522,37 @@ deServer <- function(input, output, session) {
     # the bookmarked tab.
   })
 
+  # D2.5 fix: serializing dc() (Issue 1) makes the bookmark save take
+  # several seconds for non-trivial datasets (the DESeqDataSet S4 inside
+  # dc is large). Without UI feedback the user thought the button broke,
+  # clicked multiple times, and got 3 duplicate bookmarks at the same
+  # timepoint. Three guards prevent that:
+  #   1. .bookmark_in_progress reactiveVal short-circuits subsequent
+  #      clicks while one save is in flight.
+  #   2. shinyjs::disable greys out the button visually.
+  #   3. A persistent notification ("Saving bookmark...") tells the
+  #      user the click was received.
+  # All three are reset by the onBookmarked callback above (when the
+  # share modal opens), guaranteeing the button comes back even on the
+  # error/no-state_id path.
   shiny::observeEvent(input$bookmark_share, {
+    if (isTRUE(.bookmark_in_progress())) {
+      shiny::showNotification(
+        "A bookmark save is already in progress -- please wait.",
+        type = "warning",
+        duration = 4
+      )
+      return()
+    }
+    .bookmark_in_progress(TRUE)
+    tryCatch(shinyjs::disable("bookmark_share"),
+             error = function(e) NULL)
+    shiny::showNotification(
+      "Saving bookmark... (this can take several seconds for large analyses)",
+      id = "debrowser_bookmark_progress",
+      type = "default",
+      duration = NULL
+    )
     session$doBookmark()
   }, ignoreInit = TRUE)  # critical: prevents auto-bookmark on restore
 
