@@ -38,50 +38,44 @@ accountDropdownServer <- function(id) {
     })
 
     # Menu items swap based on login state.
-    # D2.5 fix: bslib::nav_menu wraps these in a Bootstrap dropdown
-    # whose width defaults to ~10em -- wide enough for "Sign out" alone,
-    # but "My Bookmarks" with its icon overflows on the LEFT (cropped
-    # by the dropdown's right alignment). Inline CSS bumps the
-    # min-width and ensures each link renders as a proper block-level
-    # dropdown item with consistent padding. white-space:nowrap
-    # prevents mid-word wrap of "My Bookmarks".
+    # D2.5 fix: render each action as a Bootstrap `.dropdown-item` so
+    # it inherits the navbar's native menu styling (color, padding,
+    # hover, no-underline, dark-theme aware) instead of looking like
+    # an underlined cyan hyperlink. The wrapper carries min-width so
+    # "My Bookmarks" doesn't get clipped on the left.
     output$menu_items <- shiny::renderUI({
       shiny::invalidateLater(2000, session)
       uid <- current_user(session)
       style_css <- paste(
         ".de-account-menu { min-width: 200px; padding: 4px 0; }",
-        ".de-account-menu a.action-button {",
-        "  display: block; padding: 6px 16px;",
-        "  white-space: nowrap; text-decoration: none;",
+        ".de-account-menu .dropdown-item {",
+        "  white-space: nowrap; text-decoration: none !important;",
         "}",
-        ".de-account-menu a.action-button:hover {",
-        "  background-color: rgba(0,0,0,0.05);",
-        "}",
-        ".de-account-menu a.action-button > i.fa { margin-right: 8px; }",
+        ".de-account-menu .dropdown-item .fa,",
+        ".de-account-menu .dropdown-item .fas,",
+        ".de-account-menu .dropdown-item .far,",
+        ".de-account-menu .dropdown-item svg { margin-right: 8px; }",
         sep = " "
       )
+      mk_item <- function(input_id, label, icon_name) {
+        shiny::actionLink(
+          inputId = session$ns(input_id),
+          label   = shiny::tagList(shiny::icon(icon_name), " ", label),
+          class   = "dropdown-item"
+        )
+      }
       if (is.na(uid) || identical(uid, "local")) {
         shiny::tagList(
           shiny::tags$style(shiny::HTML(style_css)),
-          shiny::div(
-            class = "de-account-menu",
-            shiny::actionLink(session$ns("signup_link"),
-                              "Sign up",
-                              icon = shiny::icon("user-plus"))
-          )
+          shiny::div(class = "de-account-menu",
+                     mk_item("signup_link", "Sign up", "user-plus"))
         )
       } else {
         shiny::tagList(
           shiny::tags$style(shiny::HTML(style_css)),
-          shiny::div(
-            class = "de-account-menu",
-            shiny::actionLink(session$ns("my_bookmarks"),
-                              "My Bookmarks",
-                              icon = shiny::icon("bookmark")),
-            shiny::actionLink(session$ns("signout"),
-                              "Sign out",
-                              icon = shiny::icon("sign-out-alt"))
-          )
+          shiny::div(class = "de-account-menu",
+                     mk_item("my_bookmarks", "My Bookmarks", "bookmark"),
+                     mk_item("signout",      "Sign out",     "sign-out-alt"))
         )
       }
     })
