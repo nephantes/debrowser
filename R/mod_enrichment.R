@@ -167,13 +167,15 @@ enrichmentServer <- function(id, de_results) {
 
     output$enrichment_plot <- shiny::renderPlot({
       shiny::req(selected_pw(), pathways(), de_list())
-      df <- de_list()[[1]]
-      id_col <- .enrichment_id_col(df)
-      stats <- df$log2FoldChange
-      names(stats) <- as.character(df[[id_col]])
-      stats <- sort(stats[is.finite(stats)], decreasing = TRUE)
-      fgsea::plotEnrichment(pathways()[[selected_pw()]], stats) +
-        ggplot2::labs(title = selected_pw())
+      shiny::withProgress(message = "Drawing enrichment plot", style = "notification", value = 0.1, {
+        df <- de_list()[[1]]
+        id_col <- .enrichment_id_col(df)
+        stats <- df$log2FoldChange
+        names(stats) <- as.character(df[[id_col]])
+        stats <- sort(stats[is.finite(stats)], decreasing = TRUE)
+        fgsea::plotEnrichment(pathways()[[selected_pw()]], stats) +
+          ggplot2::labs(title = selected_pw())
+      })
     })
 
     output$leading_edge <- shiny::renderText({

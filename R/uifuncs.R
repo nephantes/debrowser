@@ -1,3 +1,128 @@
+#' de_nav_chip
+#'
+#' B3.2 helper. Renders an HTML title for `bslib::nav_panel(title = ...)`
+#' that consists of a small numbered chip + the panel name. Matches the
+#' mockup header pattern (numbered tabs like in aidrift.geniohub.com).
+#' Optionally accepts a `de_progress_label()`-style progress-pill marker
+#' so the Data Prep tab keeps its workflow checkmark behavior.
+#'
+#' @param num integer/character — the chip number (1..N)
+#' @param label character — the tab label
+#' @param progress_pill optional progress pill key (e.g. `"data_prep"`)
+#' @return an `htmltools::HTML` blob suitable for `nav_panel(title = ...)`
+#' @examples
+#' x <- de_nav_chip(1, "Data Prep")
+#' @export
+de_nav_chip <- function(num, label, progress_pill = NULL) {
+  inner <- paste0(
+    "<span class='de-nav-chip-num'>", num, "</span>",
+    "<span class='de-nav-chip-label'>",
+    htmltools::htmlEscape(label),
+    "</span>"
+  )
+  if (!is.null(progress_pill)) {
+    # Wrap in the existing progress-pill machinery so the Data Prep tab
+    # still gets its tick / locked / done state.
+    inner <- paste0(
+      inner,
+      "<span class='de-progress-icon' data-progress-pill='",
+      progress_pill, "'></span>"
+    )
+  }
+  htmltools::HTML(paste0(
+    "<span class='de-nav-chip'>", inner, "</span>"
+  ))
+}
+
+#' de_eyebrow
+#'
+#' B3 helper. Renders a small numbered chip + eyebrow label above a panel
+#' headline. The CSS for `.de-eyebrow` and `.de-eyebrow-chip` lives in
+#' inst/extdata/www/debrowser.css and is dormant until the redesign layer
+#' is toggled on via `data-debrowser-redesign="1"` on `<html>`.
+#'
+#' @param num character / numeric — the chip number (1..N)
+#' @param label character — the eyebrow text
+#' @return an `htmltools::tag` (`<div class="de-eyebrow">`).
+#' @examples
+#' x <- de_eyebrow(1, "Upload & configure")
+#' @export
+de_eyebrow <- function(num, label) {
+  htmltools::tags$div(
+    class = "de-eyebrow",
+    htmltools::tags$span(class = "de-eyebrow-chip", num),
+    label
+  )
+}
+
+#' de_headline
+#'
+#' B3 helper. Page-level headline rendered just under the eyebrow.
+#'
+#' @param text character — the headline text
+#' @return an `htmltools::tag` (`<h2 class="de-headline">`).
+#' @examples
+#' x <- de_headline("Bring your counts & metadata in.")
+#' @export
+de_headline <- function(text) {
+  htmltools::tags$h2(class = "de-headline", text)
+}
+
+#' de_stat_strip
+#'
+#' B3 helper. Renders a compact pill-shaped strip of stats (counts of
+#' samples / genes / conditions / current method) just under the headline.
+#' Each item is built with `de_stat()`.
+#'
+#' @param ... `de_stat()` items
+#' @return an `htmltools::tag` (`<div class="de-stat-strip">`).
+#' @examples
+#' x <- de_stat_strip(de_stat("6", "samples"), de_stat("30,739", "genes"))
+#' @export
+de_stat_strip <- function(...) {
+  htmltools::tags$div(class = "de-stat-strip", ...)
+}
+
+#' de_stat
+#'
+#' B3 helper. Single stat inside a `de_stat_strip()`.
+#'
+#' @param value character — the value (e.g. "6")
+#' @param label character — the trailing label (e.g. "samples")
+#' @param color CSS color — the dot color (default cyan)
+#' @return an `htmltools::tag` (`<span>` with a dot + value + label).
+#' @examples
+#' x <- de_stat("6", "samples", color = "var(--de-cyan)")
+#' @export
+de_stat <- function(value, label, color = "var(--de-cyan)") {
+  htmltools::tags$span(
+    htmltools::tags$span(class = "de-stat-dot",
+                         style = sprintf("background:%s", color)),
+    htmltools::tags$b(value), " ", label
+  )
+}
+
+#' de_workbar
+#'
+#' B3 helper. Small breadcrumb / toolbar row that sits above a tab's
+#' headline. Accepts a current-tab label and optional trailing actions.
+#'
+#' @param crumb character — current tab label, shown bold
+#' @param ... trailing tags (e.g. `actionButton`s)
+#' @return an `htmltools::tag` (`<div class="de-workbar">`).
+#' @examples
+#' x <- de_workbar("Data Prep")
+#' @export
+de_workbar <- function(crumb, ...) {
+  htmltools::tags$div(
+    class = "de-workbar",
+    htmltools::tags$div(class = "de-crumbs",
+                        "Workspace · ", htmltools::tags$b(crumb)),
+    htmltools::tags$div(class = "spacer"),
+    ...
+  )
+}
+
 #' getLeftMenu
 #'
 #' Generates the left menu for for plots within the DEBrowser.

@@ -73,14 +73,18 @@ debrowserpcaplot <- function(id, pcadata = NULL, metadata = NULL) {
     ))
   })
   output$pca1 <- renderPlotly({
-    p <- qcplots()$plot1
-    p$elementId <- NULL
-    p
+    withProgress(message = "Drawing PCA plot", style = "notification", value = 0.1, {
+      p <- qcplots()$plot1
+      p$elementId <- NULL
+      p
+    })
   })
   output$pca2 <- renderPlotly({
-    p <- qcplots()$plot2
-    p$elementId <- NULL
-    p
+    withProgress(message = "Drawing PCA loadings", style = "notification", value = 0.1, {
+      p <- qcplots()$plot2
+      p$elementId <- NULL
+      p
+    })
   })
   output$colorShapeSelect <- renderUI({
     getColorShapeSelection(metadata, input, session)

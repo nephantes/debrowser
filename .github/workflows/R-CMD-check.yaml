@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install package deps
-        # Match the pattern used by coverage.yaml + bioc-check.yaml: stay on
+        # Match the pattern used by coverage.yaml: stay on
         # remotes::install_deps inside the bioconductor docker image, which
         # already provides the system libraries r-lib/actions would
         # otherwise try (and fail) to install via add-apt-repository.

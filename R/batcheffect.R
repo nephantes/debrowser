@@ -24,26 +24,52 @@ debrowserbatcheffect <- function(id, ldata = NULL) {
     if (is.null(ldata$count)) {
       return(NULL)
     }
+    # B3.32 — Top-level safety net: any unhandled error inside
+    # normalization / batch-correction is surfaced as a friendly toast
+    # so the observer (and the page) keeps working. The inner
+    # correctCombat / correctHarman calls also tryCatch their own
+    # ComBat/Harman failures; this is the belt-and-suspenders layer.
+    tryCatch({
+      countData <- ldata$count
+      withProgress(message = "Normalization",
+                   detail = "Normalization", value = NULL, {
+        if (input$norm_method != "none") {
+          countData <- tryCatch(
+            getNormalizedMatrix(ldata$count, method = input$norm_method),
+            error = function(e) {
+              de_notify_error(paste0(
+                "Normalization (", input$norm_method,
+                ") failed: ", conditionMessage(e),
+                " — try a different method."
+              ))
+              NULL
+            }
+          )
+        }
+      })
+      if (is.null(countData)) return(NULL)
 
-    countData <- ldata$count
-    withProgress(message = "Normalization", detail = "Normalization", value = NULL, {
-      if (input$norm_method != "none") {
-        countData <- getNormalizedMatrix(ldata$count, method = input$norm_method)
+      withProgress(message = "Batch Effect Correction",
+                   detail = "Adjusting the Data", value = NULL, {
+        if (input$batchmethod == "CombatSeq" | input$batchmethod == "Combat") {
+          batchdata$count <- correctCombat(input, countData, ldata$meta,
+                                           method = input$batchmethod)
+        } else if (input$batchmethod == "Harman") {
+          batchdata$count <- correctHarman(input, countData, ldata$meta)
+        } else {
+          batchdata$count <- countData
+        }
+      })
+      if (is.null(batchdata$count)) {
+        return(NULL)
       }
+      batchdata$meta <- ldata$meta
+    }, error = function(e) {
+      de_notify_error(paste0(
+        "Batch effect step failed: ", conditionMessage(e),
+        " — adjust your settings and click Submit again."
+      ))
     })
-    withProgress(message = "Batch Effect Correction", detail = "Adjusting the Data", value = NULL, {
-      if (input$batchmethod == "CombatSeq" | input$batchmethod == "Combat") {
-        batchdata$count <- correctCombat(input, countData, ldata$meta, method = input$batchmethod)
-      } else if (input$batchmethod == "Harman") {
-        batchdata$count <- correctHarman(input, countData, ldata$meta)
-      } else {
-        batchdata$count <- countData
-      }
-    })
-    if (is.null(batchdata$count)) {
-      return(NULL)
-    }
-    batchdata$meta <- ldata$meta
   })
 
   output$batchfields <- renderUI({
@@ -115,10 +141,26 @@ batchEffectUI <- function(id) {
           ),
           de_card(
             title = "Options",
-            normalizationMethods(id),
-            batchMethod(id),
-            uiOutput(ns("batchfields")),
-            actionButtonDE(ns("submitBatchEffect"), label = "Submit", styleclass = "primary")
+            # B3.31 — Mirror the Filter card pattern: form on top,
+            # next-step CTAs INSIDE the same card stacked under Submit.
+            div(
+              class = "de-batch-card-content",
+              div(
+                class = "de-batch-form",
+                normalizationMethods(id),
+                batchMethod(id),
+                uiOutput(ns("batchfields")),
+                actionButtonDE(ns("submitBatchEffect"), label = "Submit", styleclass = "primary")
+              ),
+              conditionalPanel(
+                condition = paste0("input['", ns("submitBatchEffect"), "']"),
+                div(
+                  class = "de-batch-cta-stack",
+                  actionButtonDE("goDE", "Go to DE Analysis", styleclass = "primary"),
+                  actionButtonDE("goQCplots", "Go to QC plots", styleclass = "primary")
+                )
+              )
+            )
           ),
           tagList(
             div(
@@ -128,11 +170,6 @@ batchEffectUI <- function(id) {
             ),
             uiOutput(ns("afterbatchtable"))
           )
-        ),
-        conditionalPanel(
-          condition = paste0("input['", ns("submitBatchEffect"), "']"),
-          actionButtonDE("goDE", "Go to DE Analysis", styleclass = "primary"),
-          actionButtonDE("goQCplots", "Go to QC plots", styleclass = "primary")
         )
       ),
       bslib::card(
@@ -269,9 +306,23 @@ correctCombat <- function(input = NULL, idata = NULL, metadata = NULL,
   } else {
     NULL
   }
-  apply_batch_correction(idata, metadata,
-    method = method,
-    batch_col = input$batch, treatment_col = treatment_col
+  # B3.32 — sva::ComBat / ComBat_seq throws on confounded covariates,
+  # singular models, etc. Catch and surface as a friendly notification
+  # instead of letting the observer die and the page freeze.
+  tryCatch(
+    apply_batch_correction(idata, metadata,
+      method = method,
+      batch_col = input$batch, treatment_col = treatment_col
+    ),
+    error = function(e) {
+      de_notify_error(paste0(
+        "Batch correction (", method, ") could not run: ",
+        conditionMessage(e),
+        " — try a different batch column, drop confounded covariates, ",
+        "or pick a different correction method."
+      ))
+      NULL
+    }
   )
 }
 
@@ -296,8 +347,22 @@ correctHarman <- function(input = NULL, idata = NULL, metadata = NULL) {
     )
     return(NULL)
   }
-  apply_batch_correction(idata, metadata,
-    method = "Harman",
-    batch_col = input$batch, treatment_col = input$treatment
+  # B3.32 — Harman::harman throws on bad batch/treatment configurations
+  # (e.g. only one batch level, or batch perfectly confounds treatment).
+  # Catch and surface as a friendly notification instead of crashing.
+  tryCatch(
+    apply_batch_correction(idata, metadata,
+      method = "Harman",
+      batch_col = input$batch, treatment_col = input$treatment
+    ),
+    error = function(e) {
+      de_notify_error(paste0(
+        "Harman correction could not run: ",
+        conditionMessage(e),
+        " — verify your batch and treatment fields are valid (more than ",
+        "one level, not perfectly confounded), then try again."
+      ))
+      NULL
+    }
   )
 }

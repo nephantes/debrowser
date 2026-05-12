@@ -39,7 +39,7 @@ progress_message <- function(key, state) {
 compute_pill_class <- function(state) {
   switch(state,
     "done"    = "de-pill-done",
-    "skipped" = "de-pill-done",
+    "skipped" = "de-pill-skipped",  # B3.17: skipped is its own visual state
     "locked"  = "de-pill-locked",
     ""
   )

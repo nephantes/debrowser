@@ -378,15 +378,17 @@ debrowserqcsampledist <- function(id, counts = NULL) {
     })
 
     output$plot <- plotly::renderPlotly({
-      dist_mat <- dist_react()
-      p <- heatmaply::heatmaply(
-        dist_mat,
-        Rowv = TRUE,
-        Colv = TRUE,
-        dendrogram = "both"
-      )
-      p$elementId <- NULL
-      p
+      withProgress(message = "Drawing sample distance heatmap", style = "notification", value = 0.1, {
+        dist_mat <- dist_react()
+        p <- heatmaply::heatmaply(
+          dist_mat,
+          Rowv = TRUE,
+          Colv = TRUE,
+          dendrogram = "both"
+        )
+        p$elementId <- NULL
+        p
+      })
     })
 
     output$dl <- downloadHandler(
@@ -457,7 +459,9 @@ debrowserqcdispersion <- function(id, dds = NULL) {
     })
     output$plot <- renderPlot({
       req(dds)
-      DESeq2::plotDispEsts(dds)
+      withProgress(message = "Drawing dispersion plot", style = "notification", value = 0.1, {
+        DESeq2::plotDispEsts(dds)
+      })
     })
   })
   invisible(NULL)
@@ -656,32 +660,34 @@ debrowserqccooks <- function(id, dds = NULL,
       }
     })
     output$plot <- plotly::renderPlotly({
-      df <- df_react()
-      df$sample <- factor(df$sample, levels = df$sample)
-      thr <- attr(df, "threshold")
-      subtitle <- if (is.finite(thr)) {
-        sprintf("Threshold: %.3f", thr)
-      } else {
-        "Threshold: n/a"
-      }
-      p <- plotly::plot_ly(
-        df, x = ~sample, y = ~n_high_cooks, type = "bar",
-        marker = list(color = "#4F81BD"),
-        hovertext = ~sprintf("%d / %d genes (%.2f%%)",
-                             n_high_cooks, total_genes, high_cooks_pct),
-        hoverinfo = "text"
-      ) |>
-        plotly::layout(
-          xaxis = list(title = "", categoryorder = "array",
-                       categoryarray = as.character(df$sample)),
-          yaxis = list(title = "High-Cook genes"),
-          annotations = list(list(
-            text = subtitle, x = 1, y = 1.06, xref = "paper", yref = "paper",
-            xanchor = "right", showarrow = FALSE
-          ))
-        )
-      p$elementId <- NULL
-      p
+      withProgress(message = "Drawing Cook's distance plot", style = "notification", value = 0.1, {
+        df <- df_react()
+        df$sample <- factor(df$sample, levels = df$sample)
+        thr <- attr(df, "threshold")
+        subtitle <- if (is.finite(thr)) {
+          sprintf("Threshold: %.3f", thr)
+        } else {
+          "Threshold: n/a"
+        }
+        p <- plotly::plot_ly(
+          df, x = ~sample, y = ~n_high_cooks, type = "bar",
+          marker = list(color = "#4F81BD"),
+          hovertext = ~sprintf("%d / %d genes (%.2f%%)",
+                               n_high_cooks, total_genes, high_cooks_pct),
+          hoverinfo = "text"
+        ) |>
+          plotly::layout(
+            xaxis = list(title = "", categoryorder = "array",
+                         categoryarray = as.character(df$sample)),
+            yaxis = list(title = "High-Cook genes"),
+            annotations = list(list(
+              text = subtitle, x = 1, y = 1.06, xref = "paper", yref = "paper",
+              xanchor = "right", showarrow = FALSE
+            ))
+          )
+        p$elementId <- NULL
+        p
+      })
     })
     output$dl <- downloadHandler(
       filename = function() "cooks_outliers.csv",

@@ -19,7 +19,9 @@ debrowserIQRplot <- function(id, data = NULL) {
   }
   moduleServer(id, function(input, output, session) {
     output$IQR <- renderPlotly({
-      getIQRPlot(data, input)
+      withProgress(message = "Drawing IQR plot", style = "notification", value = 0.1, {
+        getIQRPlot(data, input)
+      })
     })
     output$IQRUI <- renderUI({
       de_card(

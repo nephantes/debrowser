@@ -37,7 +37,9 @@ debrowserdensityplot <- function(id, data = NULL) {
   }
   moduleServer(id, function(input, output, session) {
     output$Density <- renderPlotly({
-      getDensityPlot(data, input)
+      withProgress(message = "Drawing density plot", style = "notification", value = 0.1, {
+        getDensityPlot(data, input)
+      })
     })
     output$DensityUI <- renderUI({
       de_card(

@@ -20,7 +20,9 @@ debrowserall2all <- function(id, data = NULL, cex = 2) {
   }
   moduleServer(id, function(input, output, session) {
     output$all2allplot <- renderPlot({
-      all2all(data, cex)
+      withProgress(message = "Drawing All2All plot", style = "notification", value = 0.1, {
+        all2all(data, cex)
+      })
     })
     output$all2allUI <- renderUI({
       de_card(

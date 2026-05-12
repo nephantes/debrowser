@@ -155,38 +155,44 @@ comparisonConcordanceServer <- function(id, de_results_react,
     })
 
     output$deg_bar <- shiny::renderPlot({
-      s <- direction_summary()
-      shiny::validate(shiny::need(
-        sum(s$n_sig) > 0L,
-        "No significant genes at the chosen cutoffs. Loosen padj or |log2FC|."
-      ))
-      plot_de_direction_bar(s, subtitle = cutoff_subtitle())
+      shiny::withProgress(message = "Drawing DEG bar plot", style = "notification", value = 0.1, {
+        s <- direction_summary()
+        shiny::validate(shiny::need(
+          sum(s$n_sig) > 0L,
+          "No significant genes at the chosen cutoffs. Loosen padj or |log2FC|."
+        ))
+        plot_de_direction_bar(s, subtitle = cutoff_subtitle())
+      })
     })
 
     output$deg_heatmap <- shiny::renderPlot({
-      s <- direction_summary()
-      shiny::validate(shiny::need(
-        !is.null(comparisons_react),
-        "Pairwise DEG heatmap requires comparison metadata; the controller did not pass comparisons_react."
-      ))
-      comps <- comparisons_react()
-      shiny::validate(shiny::need(
-        length(comps) > 0L,
-        "No comparisons available."
-      ))
-      plot_de_pairwise_heatmap(s, comps, subtitle = cutoff_subtitle())
+      shiny::withProgress(message = "Drawing pairwise DEG heatmap", style = "notification", value = 0.1, {
+        s <- direction_summary()
+        shiny::validate(shiny::need(
+          !is.null(comparisons_react),
+          "Pairwise DEG heatmap requires comparison metadata; the controller did not pass comparisons_react."
+        ))
+        comps <- comparisons_react()
+        shiny::validate(shiny::need(
+          length(comps) > 0L,
+          "No comparisons available."
+        ))
+        plot_de_pairwise_heatmap(s, comps, subtitle = cutoff_subtitle())
+      })
     })
 
     output$upset <- shiny::renderPlot({
-      d <- de_list()
-      shiny::req(length(d) >= 2L)
-      p <- plot_method_upset(d, padj_cutoff = input$padj,
-                             lfc_cutoff = input$lfc)
-      shiny::validate(shiny::need(
-        !is.null(p),
-        "Fewer than 2 comparisons produced a non-empty significant set at the chosen cutoffs. Loosen padj or |log2FC|."
-      ))
-      print(p)
+      shiny::withProgress(message = "Drawing UpSet plot", style = "notification", value = 0.1, {
+        d <- de_list()
+        shiny::req(length(d) >= 2L)
+        p <- plot_method_upset(d, padj_cutoff = input$padj,
+                               lfc_cutoff = input$lfc)
+        shiny::validate(shiny::need(
+          !is.null(p),
+          "Fewer than 2 comparisons produced a non-empty significant set at the chosen cutoffs. Loosen padj or |log2FC|."
+        ))
+        print(p)
+      })
     })
 
     output$scatter_x_ui <- shiny::renderUI({
@@ -203,13 +209,15 @@ comparisonConcordanceServer <- function(id, de_results_react,
                          selected = names(d)[min(2L, length(d))])
     })
     output$scatter <- shiny::renderPlot({
-      d <- de_list()
-      shiny::req(d, input$scatter_x, input$scatter_y)
-      shiny::validate(shiny::need(
-        input$scatter_x != input$scatter_y,
-        "Pick two different comparisons."
-      ))
-      plot_method_scatter(d, input$scatter_x, input$scatter_y)
+      shiny::withProgress(message = "Drawing pairwise scatter", style = "notification", value = 0.1, {
+        d <- de_list()
+        shiny::req(d, input$scatter_x, input$scatter_y)
+        shiny::validate(shiny::need(
+          input$scatter_x != input$scatter_y,
+          "Pick two different comparisons."
+        ))
+        plot_method_scatter(d, input$scatter_x, input$scatter_y)
+      })
     })
 
     output$summary <- DT::renderDT({

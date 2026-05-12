@@ -42,7 +42,9 @@ debrowserboxmainplot <- function(id, data = NULL, cols = NULL, conds = NULL,
   }
   moduleServer(id, function(input, output, session) {
     output$BoxMain <- renderPlotly({
-      getBoxMainPlot(data, cols, conds, cond_names, key, title = "", input)
+      withProgress(message = "Drawing box plot", style = "notification", value = 0.1, {
+        getBoxMainPlot(data, cols, conds, cond_names, key, title = "", input)
+      })
     })
 
     output$BoxMainUI <- renderUI({

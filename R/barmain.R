@@ -32,7 +32,9 @@ debrowserbarmainplot <- function(id, data = NULL, cols = NULL, conds = NULL,
       )
     })
     output$BarMain <- renderPlotly({
-      getBarMainPlot(data, cols, conds, cond_names, key, title = "", input = input)
+      withProgress(message = "Drawing bar plot", style = "notification", value = 0.1, {
+        getBarMainPlot(data, cols, conds, cond_names, key, title = "", input = input)
+      })
     })
   })
 }

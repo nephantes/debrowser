@@ -17,3 +17,14 @@ debrowser.BiocCheck/
 Rplots.pdf
 **/Rplots.pdf
 shiny_bookmarks/
+
+# B3 redesign — local dev launch script (no install, hot-reload via
+# pkgload::load_all()). Not part of the installable package.
+run_styled_3839.R
+
+# Claude Code working directory.
+.claude/
+
+# Sandbox-prepared one-shot commit helpers (deleted after push).
+.commit-msg.txt
+.commit-and-push.sh

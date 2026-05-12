@@ -128,9 +128,25 @@ deUI <- function(req = NULL) {
           )
         ),
         tags$script(src = "www/dropzone.js"),
+        # B3: redesign layer is opt-in via `data-debrowser-redesign` on <html>.
+        # The CSS file ships with everything dormant until this attribute is
+        # set, so existing users see no change. We turn it on by default
+        # here (can be disabled with ?redesign=0 in the URL).
+        tags$script(htmltools::HTML(
+          "(function(){
+             var u = new URL(window.location.href);
+             if (u.searchParams.get('redesign') !== '0') {
+               document.documentElement.setAttribute('data-debrowser-redesign','1');
+             }
+           })();"
+        )),
+        # B3: Inter is loaded by bslib; JetBrains Mono is added for tables.
+        tags$link(rel = "stylesheet",
+                  href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"),
         # Wires the navbar preset picker → cookie + reload (see de_theme.R).
         de_preset_js(),
         # Dark-mode toggle: flips data-bs-theme on <html> on click.
+        # Plus B3.2: keyboard shortcuts 1-6 (switch tabs), T (toggle theme).
         tags$script(htmltools::HTML(
           "document.addEventListener('click', function(e) {
              var btn = e.target.closest && e.target.closest('#dark_mode_toggle');
@@ -138,7 +154,80 @@ deUI <- function(req = NULL) {
              var html = document.documentElement;
              var current = html.getAttribute('data-bs-theme');
              html.setAttribute('data-bs-theme', current === 'dark' ? 'light' : 'dark');
+           });
+
+           // Keyboard shortcuts — ignore when focus is in an input/select/textarea
+           document.addEventListener('keydown', function(e) {
+             var t = e.target;
+             if (!t) return;
+             var tag = (t.tagName || '').toUpperCase();
+             if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+             if (t.isContentEditable) return;
+             if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+             // Number keys → switch top-level tabs (panel0..panel5)
+             var n = parseInt(e.key, 10);
+             if (n >= 1 && n <= 6) {
+               var panels = ['panel0','panel1','panel2','panel_cc','panel3','panel4'];
+               var target = panels[n - 1];
+               if (target) {
+                 var sel = document.querySelector(\"a[data-value='\" + target + \"']\");
+                 if (sel) sel.click();
+               }
+             }
+             // T toggles theme
+             if (e.key === 't' || e.key === 'T') {
+               var html = document.documentElement;
+               var cur = html.getAttribute('data-bs-theme');
+               html.setAttribute('data-bs-theme', cur === 'dark' ? 'light' : 'dark');
+             }
            });"
+        )),
+        # Footer keyboard-shortcut hint pill (matches mockup's bottom-right)
+        tags$div(
+          class = "de-foot-hint",
+          tags$span(class = "kbd", "T"),
+          " light/dark · ",
+          tags$span(class = "kbd", "1–6"),
+          " tabs"
+        ),
+        # B3.29 — Middle-truncate long sidebar checkbox / radio labels so
+        # they fit on one line. Stores original text in data-de-orig and
+        # mirrors it into title= so hover shows the full string.
+        tags$script(htmltools::HTML(
+          "(function(){
+             function midTrunc(s, n){
+               if (s.length <= n) return s;
+               var k1 = Math.ceil((n - 3) / 2);
+               var k2 = Math.floor((n - 3) / 2);
+               return s.slice(0, k1) + '...' + s.slice(-k2);
+             }
+             function processLabels(){
+               // Sidebar checkboxes / radios: each option label has a child span
+               var sel = '.bslib-sidebar-layout .checkbox label > span,' +
+                         '.bslib-sidebar-layout .radio label > span,' +
+                         '.bslib-sidebar-layout .form-check-label';
+               document.querySelectorAll(sel).forEach(function(span){
+                 // Skip group-header labels (they don't carry an input sibling)
+                 var orig = span.dataset.deOrig || span.textContent.trim();
+                 if (!orig) return;
+                 // Estimate available width: sidebar is ~240 px minus checkbox+padding (~46 px)
+                 // ~22 chars at 12 px Inter ~ fits in 200 px. Use 24 as the threshold.
+                 var maxLen = 24;
+                 if (orig.length <= maxLen) return;
+                 if (!span.dataset.deOrig) span.dataset.deOrig = orig;
+                 var truncated = midTrunc(orig, maxLen);
+                 if (span.textContent !== truncated) {
+                   span.textContent = truncated;
+                   span.title = orig;
+                 }
+               });
+             }
+             $(document).on('shiny:value shiny:bound shiny:inputchanged',
+                            function(){ setTimeout(processLabels, 50); });
+             setTimeout(processLabels, 500);
+             setTimeout(processLabels, 1500);
+           })();"
         ))
       ),
       debrowser::getJSLine(),
@@ -157,38 +246,198 @@ deUI <- function(req = NULL) {
       # asked for the sidebar location).
       conditionalPanel(
         condition = "input.methodtabs == 'panel0'",
+        # B3.11 — wizard pipeline + DEMOS + SETTINGS sections, matching
+        # the mockup pixel-by-pixel. Each step = [num] [dot] [label].
+        # State on dot only (mint=done, cyan=active, gray=pending).
+        tags$h6("Pipeline", class = "side-title"),
         tags$div(
-          class = "wizard-step-list list-group list-group-flush",
-          actionLink("nav_DataPrep_Intro",       "Quick Start Guide",
-                     class = "list-group-item list-group-item-action"),
-          actionLink("nav_DataPrep_Upload",      de_progress_label("Upload", "upload"),
-                     class = "list-group-item list-group-item-action",
-                     `data-progress-pill` = "upload"),
-          conditionalPanel(
-            condition = "input.Filter",
-            actionLink("nav_DataPrep_Filter",      de_progress_label("Filter", "filter"),
-                       class = "list-group-item list-group-item-action",
-                       `data-progress-pill` = "filter")
-          ),
-          conditionalPanel(
-            condition = "input.Batch",
-            actionLink("nav_DataPrep_BatchEffect", de_progress_label("BatchEffect", "batch"),
-                       class = "list-group-item list-group-item-action",
-                       `data-progress-pill` = "batch")
-          ),
-          conditionalPanel(
-            condition = "input.goDE || input.goDEFromFilter",
-            actionLink("nav_DataPrep_CondSelect",  de_progress_label("CondSelect", "condselect"),
-                       class = "list-group-item list-group-item-action",
-                       `data-progress-pill` = "condselect")
-          ),
-          conditionalPanel(
-            condition = "input.startDE || input['cs-startDE']",
-            actionLink("nav_DataPrep_DEAnalysis",  de_progress_label("DE Analysis", "de"),
-                       class = "list-group-item list-group-item-action",
-                       `data-progress-pill` = "de")
-          )
+          class = "wizard-step-list",
+          local({
+            mk_step <- function(input_id, num, label, pill = NULL, requires = NULL,
+                                locked = FALSE) {
+              attrs <- list(
+                inputId = input_id,
+                class   = paste("wiz-step",
+                                if (locked) "de-pill-locked" else NULL),
+                `data-progress-pill` = pill,
+                `data-requires`      = requires,
+                `data-step`          = num
+              )
+              content <- htmltools::tagList(
+                htmltools::tags$span(class = "wiz-step-num", num),
+                htmltools::tags$span(class = "wiz-step-dot"),
+                htmltools::tags$span(class = "wiz-step-label", label)
+              )
+              do.call(actionLink, c(list(label = content), attrs))
+            }
+            htmltools::tagList(
+              mk_step("nav_DataPrep_Intro",       "01", "Quick start"),
+              mk_step("nav_DataPrep_Upload",      "02", "Upload data",
+                      pill = "upload"),
+              mk_step("nav_DataPrep_Filter",      "03", "Filter & normalize",
+                      pill = "filter",     locked = TRUE,
+                      requires = "input.Filter"),
+              mk_step("nav_DataPrep_BatchEffect", "04", "Batch effect",
+                      pill = "batch",      locked = TRUE,
+                      requires = "input.Batch"),
+              mk_step("nav_DataPrep_CondSelect",  "05", "Comparison",
+                      pill = "condselect", locked = TRUE,
+                      requires = "input.goDE || input.goDEFromFilter"),
+              mk_step("nav_DataPrep_DEAnalysis",  "06", "DE analysis",
+                      pill = "de",         locked = TRUE,
+                      requires = "input.startDE || input['cs-startDE']")
+            )
+          })
         ),
+
+        # DEMOS — simple two-column row (prefix + label).
+        tags$h6("Demos", class = "side-title"),
+        tags$div(class = "de-side-list",
+          tags$a(class = "de-side-list-item", href = "#",
+                 onclick = "document.querySelector('#load-demo')?.click(); return false;",
+                 tags$span(class = "de-side-list-prefix", "▸"),
+                 "Vernia et al."),
+          tags$a(class = "de-side-list-item", href = "#",
+                 onclick = "document.querySelector('#load-demo2')?.click(); return false;",
+                 tags$span(class = "de-side-list-prefix", "▸"),
+                 "Donnard et al.")
+        ),
+
+        # SETTINGS — simple two-column row
+        tags$h6("Settings", class = "side-title"),
+        tags$div(class = "de-side-list",
+          tags$a(class = "de-side-list-item", href = "#",
+                 onclick = "document.querySelector('#dark_mode_toggle')?.click(); return false;",
+                 tags$span(class = "de-side-list-prefix", "⚙"),
+                 "Theme & layout"),
+          tags$a(class = "de-side-list-item", href = "#",
+                 onclick = "alert('Shortcuts:\\n1-6 → switch tabs\\nT → toggle theme'); return false;",
+                 tags$span(class = "de-side-list-prefix", "⌘"),
+                 "Keyboard shortcuts")
+        ),
+
+        # B3.21 — Permanent safety net for green-dot persistence.
+        # The Shiny addCustomMessageHandler pathway was unreliable in our
+        # observed sessions (the registered handler didn't run for every
+        # 'debrowser-progress' broadcast). This direct WebSocket listener
+        # intercepts the same messages and applies de-pill-done / -locked
+        # / -skipped to the matching wiz-step. Once de-pill-done is set on
+        # a step it is never demoted except by an explicit 'locked' state
+        # (the re-upload reset path).
+        tags$script(htmltools::HTML(
+          "$(document).on('shiny:connected', function(){
+             try {
+               var ws = Shiny.shinyapp.$socket;
+               if (ws && !ws._deWsListener) {
+                 ws.addEventListener('message', function(ev){
+                   try {
+                     var d = JSON.parse(ev.data);
+                     if (!d.custom || !d.custom['debrowser-progress']) return;
+                     var m = d.custom['debrowser-progress'];
+                     // Defer so we run AFTER whatever Shiny's own handler does
+                     setTimeout(function(){
+                       var el = document.querySelector('a[data-progress-pill=\"' + m.key + '\"]');
+                       if (!el) return;
+                       var wasDone = el.classList.contains('de-pill-done');
+                       if (m.state === 'done') {
+                         el.classList.remove('de-pill-locked','de-pill-skipped');
+                         el.classList.add('de-pill-done');
+                       } else if (m.state === 'locked') {
+                         // Locked is the re-upload reset path: clear done.
+                         el.classList.remove('de-pill-done','de-pill-skipped');
+                         el.classList.add('de-pill-locked');
+                       } else if (m.state === 'skipped') {
+                         if (!wasDone) {
+                           el.classList.remove('de-pill-locked');
+                           el.classList.add('de-pill-skipped');
+                         }
+                       } else {
+                         // pending / blank — leave done alone
+                         if (!wasDone) {
+                           el.classList.remove('de-pill-locked','de-pill-skipped');
+                         }
+                       }
+                     }, 60);
+                   } catch(e){}
+                 });
+                 ws._deWsListener = true;
+               }
+             } catch(e){}
+           });"
+        )),
+
+        # Active-step observer: read input.DataPrep (current navset_hidden
+        # value) and add .active to the matching wiz-step.
+        # B3.19 — Also enforces the locking rule: once a step is .de-pill-done
+        # it stays unlockable even if its data-requires input briefly goes
+        # falsy. Previously every shiny:inputchanged fire would re-add
+        # .de-pill-locked to completed steps, dimming them under the green dot.
+        tags$script(htmltools::HTML(
+          "function deUpdateActiveStep(){
+             try {
+               var v = Shiny.shinyapp ? Shiny.shinyapp.$inputValues : {};
+               var map = {
+                 'Intro':       '#nav_DataPrep_Intro',
+                 'Upload':      '#nav_DataPrep_Upload',
+                 'Filter':      '#nav_DataPrep_Filter',
+                 'BatchEffect': '#nav_DataPrep_BatchEffect',
+                 'CondSelect':  '#nav_DataPrep_CondSelect',
+                 'DEAnalysis':  '#nav_DataPrep_DEAnalysis'
+               };
+               $('.wiz-step').removeClass('active');
+               var key = v && v.DataPrep;
+               if (key && map[key]) $(map[key]).addClass('active');
+
+               // Re-evaluate locked state for gated steps, but NEVER
+               // re-lock a step that has already been completed.
+               $('.wiz-step[data-requires]').each(function(){
+                 var $el = $(this);
+                 if ($el.hasClass('de-pill-done')) {
+                   $el.removeClass('de-pill-locked');
+                   return;
+                 }
+                 try {
+                   var expr = $el.attr('data-requires');
+                   var ok = false;
+                   if (expr === 'input.Filter')             ok = !!v.Filter;
+                   else if (expr === 'input.Batch')         ok = !!v.Batch;
+                   else if (expr.indexOf('goDE')   >= 0)    ok = !!v.goDE || !!v.goDEFromFilter;
+                   else if (expr.indexOf('startDE')>= 0)    ok = !!v.startDE || !!v['cs-startDE'];
+                   if (ok) $el.removeClass('de-pill-locked');
+                   else    $el.addClass('de-pill-locked');
+                 } catch(err){}
+               });
+             } catch(e){}
+           }
+           $(document).on('shiny:inputchanged shiny:value shiny:connected',
+                          deUpdateActiveStep);
+           setTimeout(deUpdateActiveStep, 200);
+           setTimeout(deUpdateActiveStep, 800);"
+        )),
+        # JS to unlock steps as their gating inputs become truthy
+        tags$script(htmltools::HTML(
+          "$(document).on('shiny:inputchanged shiny:value', function(e){
+             $('.wizard-step-list [data-requires]').each(function(){
+               try {
+                 var expr = $(this).data('requires');
+                 // Map the inputs by name (Shiny.shinyapp.$inputValues uses
+                 // bracketed access). Evaluating arbitrary expressions
+                 // safely is tricky, so we hard-code the supported keys.
+                 var v  = Shiny.shinyapp.$inputValues;
+                 var ok = false;
+                 if (expr === 'input.Filter')            ok = !!v.Filter;
+                 else if (expr === 'input.Batch')        ok = !!v.Batch;
+                 else if (expr.indexOf('goDE') >= 0)     ok = !!v.goDE || !!v.goDEFromFilter;
+                 else if (expr.indexOf('startDE') >= 0)  ok = !!v.startDE || !!v['cs-startDE'];
+                 if (ok) {
+                   $(this).removeClass('de-pill-locked');
+                 } else {
+                   $(this).addClass('de-pill-locked');
+                 }
+               } catch(err) {}
+             });
+           });"
+        )),
         conditionalPanel(
           condition = "input.DataPrep == 'DEAnalysis'",
           tags$hr(),
@@ -215,7 +464,39 @@ deUI <- function(req = NULL) {
     ),
 
     bslib::nav_panel(
-      title = de_progress_label("Data Prep", "data_prep"), value = "panel0",
+      title = de_nav_chip(1, "Data Prep", progress_pill = "data_prep"), value = "panel0",
+      # B3: per-step eyebrow + headline. Each sub-step shows its own pair via
+      # conditionalPanel so the user always knows where they are.
+      conditionalPanel(
+        condition = "input.DataPrep == 'Intro'",
+        de_eyebrow(1, "Quick Start Guide"),
+        de_headline("Welcome to DEBrowser.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'Upload'",
+        de_eyebrow(1, "Upload & configure"),
+        de_headline("Bring your counts & metadata in.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'Filter'",
+        de_eyebrow(2, "Filter & normalize"),
+        de_headline("Trim the noise before you model.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'BatchEffect'",
+        de_eyebrow(3, "Batch effect"),
+        de_headline("Correct for technical confounders.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'CondSelect'",
+        de_eyebrow(4, "Comparison selection"),
+        de_headline("Pick the contrast you care about.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'DEAnalysis'",
+        de_eyebrow(5, "Differential expression"),
+        de_headline("Pick a contrast, see what moves.")
+      ),
       bslib::navset_hidden(
         id = "DataPrep",
         bslib::nav_panel(
@@ -264,13 +545,17 @@ deUI <- function(req = NULL) {
     ),
 
     bslib::nav_panel(
-      title = "Main Plots", value = "panel1",
+      title = de_nav_chip(2, "Main Plots"), value = "panel1",
+      de_eyebrow(2, "Main plots"),
+      de_headline("Volcano, MA, scatter — at a glance."),
       uiOutput("mainmsgs"),
       uiOutput("mainpanel")
     ),
 
     bslib::nav_panel(
-      title = "QC Plots", value = "panel2",
+      title = de_nav_chip(3, "QC Plots"), value = "panel2",
+      de_eyebrow(3, "Quality control"),
+      de_headline("Are your samples behaving themselves?"),
       uiOutput("qcpanel")
     ),
 
@@ -278,17 +563,23 @@ deUI <- function(req = NULL) {
     # between QC Plots and Enrichment. Hidden at startup; shown by an
     # observer in R/server.R when length(de_results_list()) >= 2.
     bslib::nav_panel(
-      title = "Comparison Concordance", value = "panel_cc",
+      title = de_nav_chip(4, "Concordance"), value = "panel_cc",
+      de_eyebrow(4, "Cross-contrast"),
+      de_headline("Where do the two stories agree?"),
       debrowser::comparisonConcordanceUI("comparison_concordance")
     ),
 
     bslib::nav_panel(
-      title = "Enrichment", value = "panel3",
+      title = de_nav_chip(5, "Enrichment"), value = "panel3",
+      de_eyebrow(5, "Pathways & signatures"),
+      de_headline("What story is the list telling?"),
       uiOutput("gopanel")
     ),
 
     bslib::nav_panel(
-      title = "Tables", value = "panel4",
+      title = de_nav_chip(6, "Tables"), value = "panel4",
+      de_eyebrow(6, "Browse & export"),
+      de_headline("All your results, one compact table."),
       DT::dataTableOutput("tables")
     ),
 

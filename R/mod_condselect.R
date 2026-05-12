@@ -16,18 +16,38 @@
 #' @export
 condSelectUI <- function(id) {
   ns <- shiny::NS(id)
-  de_card(
-    title = "Comparison Selection",
-    shiny::uiOutput(ns("comparison_panels")),
-    shiny::fluidRow(
-      shiny::column(
-        12,
-        actionButtonDE(ns("add_btn"), "Add another comparison",
-                       styleclass = "primary"),
+  shiny::tagList(
+    # B3.25 — Sticky workbar at the top of the Comparison page so the
+    # primary "Start DE" CTA is always visible. Add/Remove are also
+    # reachable here without scrolling. Help icon on the far right.
+    shiny::tags$div(
+      class = "de-cs-workbar",
+      shiny::tags$div(class = "de-cs-workbar-left",
+        shiny::tags$span(class = "de-cs-workbar-hint",
+                         "Define your contrast(s), then start DE.")),
+      shiny::tags$div(class = "spacer", style = "flex:1"),
+      shiny::tags$div(class = "de-cs-workbar-actions",
         actionButtonDE(ns("rm_btn"), "Remove last", styleclass = "primary"),
-        getHelpButton("method",
-                      "http://debrowser.readthedocs.io/en/master/deseq/deseq.html"),
+        actionButtonDE(ns("add_btn"), "Add comparison",
+                       styleclass = "primary"),
         actionButtonDE(ns("startDE"), "Start DE", styleclass = "primary")
+      )
+    ),
+    de_card(
+      title = "Comparison Selection",
+      shiny::uiOutput(ns("comparison_panels")),
+      # B3.25 — also keep the bottom buttons (some users will scroll
+      # down to use them); they stay rendered so server-side bindings
+      # don't break, but the workbar above carries the primary CTA.
+      shiny::fluidRow(
+        shiny::column(
+          12,
+          shiny::tags$div(
+            class = "de-cs-bottom-actions",
+            getHelpButton("method",
+                          "http://debrowser.readthedocs.io/en/master/deseq/deseq.html")
+          )
+        )
       )
     )
   )
@@ -494,15 +514,55 @@ condSelectServer <- function(id, data = NULL, metadata = NULL,
 
     # --- Render comparison panels ----------------------------------------
 
+    # B3.27 — Currently-selected comparison tab. Tracked in a reactiveVal
+    # so that re-renders (rare, only on add/remove) can preserve the
+    # active tab — and so we can auto-switch to the freshly-added one.
+    current_tab <- shiny::reactiveVal(NULL)
+    shiny::observeEvent(input$comp_tabs, {
+      current_tab(input$comp_tabs)
+    }, ignoreInit = TRUE)
+
     output$comparison_panels <- shiny::renderUI({
+      # Only n_comparisons() (add/remove) should re-trigger this UI.
+      # Everything else lives behind isolate() so typing in a label
+      # input doesn't blow away the whole tabset and reset to tab #1.
       n <- n_comparisons()
       if (n < 1L) return(NULL)
-      shiny::tagList(
-        lapply(seq_len(n), function(i) {
-          comparisonCardUI(ns, i, comparisons[[as.character(i)]], data, metadata)
+      shiny::isolate({
+        # B3.26 — When more than one comparison exists, render them as
+        # navigable TABS instead of stacking vertically. Single comparison:
+        # render directly (no tab chrome) so the page stays clean.
+        if (n == 1L) {
+          return(comparisonCardUI(ns, 1L,
+                                  comparisons[["1"]], data, metadata))
+        }
+        panels <- lapply(seq_len(n), function(i) {
+          bslib::nav_panel(
+            title = paste("Comparison", i),
+            value = paste0("comp_", i),
+            comparisonCardUI(ns, i, comparisons[[as.character(i)]], data, metadata)
+          )
         })
-      )
+        # Preserve the user's active tab across re-renders. If the saved
+        # tab no longer exists (rm_btn), fall back to the last tab.
+        sel <- current_tab()
+        valid_values <- paste0("comp_", seq_len(n))
+        if (is.null(sel) || !sel %in% valid_values) {
+          sel <- paste0("comp_", n)   # default to most recently added
+        }
+        tabs <- do.call(
+          bslib::navset_underline,
+          c(panels, list(id = ns("comp_tabs"), selected = sel))
+        )
+        shiny::tags$div(class = "de-comparison-tabs", tabs)
+      })
     })
+
+    # When the user clicks "Add comparison", auto-switch to the new tab
+    # so they land on it instead of staying on Comparison 1.
+    shiny::observeEvent(input$add_btn, {
+      current_tab(paste0("comp_", n_comparisons()))
+    }, ignoreInit = TRUE)
 
     # --- Public reactives ------------------------------------------------
 

@@ -285,6 +285,33 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     getSampleDetails(output, "uploadSummary", "sampleDetails", loadeddata())
   })
 
+  # B3.7 — stat strip pill: samples · genes · conditions
+  output$statStrip <- renderUI({
+    d <- loadeddata()
+    if (is.null(d) || is.null(d$count)) return(NULL)
+    n_samples <- ncol(d$count)
+    n_genes   <- nrow(d$count)
+    n_cond    <- if (!is.null(d$meta) && ncol(d$meta) >= 2) {
+      length(unique(d$meta[, 2]))
+    } else {
+      NA
+    }
+    fmt <- function(x) format(x, big.mark = ",", scientific = FALSE)
+    div(class = "de-stat-strip",
+      span(span(class = "de-stat-dot",
+                style = "background:var(--de-cyan)"),
+           tags$b(fmt(n_samples)), " samples"),
+      span(span(class = "de-stat-dot",
+                style = "background:var(--de-violet)"),
+           tags$b(fmt(n_genes)), " genes"),
+      if (!is.na(n_cond)) {
+        span(span(class = "de-stat-dot",
+                  style = "background:var(--de-blue)"),
+             tags$b(n_cond), " conditions")
+      }
+    )
+  })
+
   # D2.3: module-level bookmark/restore for content-hash uploads.
   # The module's `ldata` reactiveValues holds count/meta/data_source;
   # serialize_load_state() round-trips them through content_hash_store
@@ -374,111 +401,128 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
 dataLoadUI <- function(id) {
   ns <- NS(id)
   list(
+    # B3.7 — Page 1 (Upload) redesigned to match outputs/debrowser_redesign.html.
+    # Pre-upload: INPUTS card with TWO drop tiles SIDE-BY-SIDE (mockup-style),
+    # below it the "Show all options" accordion + action row.
+    # Post-upload: stat strip + preview card + sample-design card + next-step CTAs.
     conditionalPanel(
       condition = paste0("!output['", ns("dataloaded"), "']"),
-      # Side-by-side drop zones: counts (required) + metadata (optional).
-      fluidRow(
-        column(
-          6,
-          div(
-            class = "de-dropzone",
-            fileUploadBox(
-              id, "countdata", "Count Data",
-              helper = "Drop or browse. .tsv / .csv / .txt / .csv.gz."
-            )
-          )
+      bslib::card(
+        bslib::card_header(
+          class = "d-flex align-items-center",
+          tags$span(class = "card-title", "Inputs"),
+          tags$span(class = "ms-auto",
+                    style = "font-size:10.5px; padding:2px 8px; border-radius:999px; border:1px solid var(--de-border-strong); color:var(--de-text-2);",
+                    ".tsv · .csv · .txt · .csv.gz")
         ),
-        column(
-          6,
-          div(
-            class = "de-dropzone",
-            fileUploadBox(
-              id, "metadata", "Metadata",
-              helper = "Optional. Drop or browse."
-            )
-          )
-        )
-      ),
-      # "couldn't auto-detect" caption (hidden by default).
-      fluidRow(
-        column(
-          12,
-          conditionalPanel(
-            condition = paste0("output['", ns("autoDetectFailed"), "']"),
-            div(
-              class = "de-detect-fail-caption",
-              "Couldn't auto-detect the separator -- pick it under Show all options."
-            )
-          )
-        )
-      ),
-      # "Show all options" disclosure: separator radios for both files.
-      fluidRow(
-        column(
-          12,
-          bslib::accordion(
-            id = ns("advancedOptions"),
-            open = FALSE,
-            bslib::accordion_panel(
-              title = "Show all options",
-              fluidRow(
-                column(6, sepRadio(id, "countdataSep")),
-                column(6, sepRadio(id, "metadataSep"))
+        bslib::card_body(
+          # Two side-by-side drop tiles using mockup .drop structure
+          div(class = "de-drop-grid",
+              style = "display:grid; grid-template-columns: 1fr 1fr; gap:12px;",
+            # Tile 1: Count Data (required)
+            div(class = "de-drop",
+              div(class = "de-drop-ic", HTML("&#10515;")),  # up arrow ⤳
+              div(class = "de-drop-meta",
+                div(class = "de-drop-title", "Count Data"),
+                div(class = "de-drop-help",
+                    "Genes/regions × samples · drag & drop or browse")
+              ),
+              div(class = "de-drop-input",
+                fileInput(
+                  ns("countdata"),
+                  label = NULL,
+                  accept = fileTypes(),
+                  buttonLabel = "Browse",
+                  placeholder = "No file"
+                )
+              )
+            ),
+            # Tile 2: Metadata (optional)
+            div(class = "de-drop",
+              div(class = "de-drop-ic", HTML("&#8862;")),  # square+dot ⌗
+              div(class = "de-drop-meta",
+                div(class = "de-drop-title",
+                    "Metadata ",
+                    tags$span(class = "de-drop-muted", "(optional)")),
+                div(class = "de-drop-help",
+                    "Sample table with conditions, batches, etc.")
+              ),
+              div(class = "de-drop-input",
+                fileInput(
+                  ns("metadata"),
+                  label = NULL,
+                  accept = fileTypes(),
+                  buttonLabel = "Browse",
+                  placeholder = "No file"
+                )
               )
             )
-          )
-        )
-      ),
-      # Action row: Upload (primary) + demo buttons under "or try a demo:".
-      fluidRow(
-        column(
-          12,
-          actionButtonDE(ns("uploadFile"), label = "Upload", styleclass = "primary"),
-          div(
-            class = "de-demo-row",
-            span(class = "de-demo-caption", "or try a demo:"),
-            actionButtonDE(ns("demo"), label = "Vernia et. al",  styleclass = "primary"),
-            actionButtonDE(ns("demo2"), label = "Donnard et. al", styleclass = "primary")
+          ),
+          # Auto-detect failure caption
+          conditionalPanel(
+            condition = paste0("output['", ns("autoDetectFailed"), "']"),
+            div(class = "de-detect-fail-caption",
+                style = "margin-top:10px;",
+                "Couldn't auto-detect the separator — pick it under Show all options.")
+          ),
+          # "Show all options" accordion
+          div(style = "margin-top:14px;",
+            bslib::accordion(
+              id = ns("advancedOptions"),
+              open = FALSE,
+              bslib::accordion_panel(
+                title = "Show all options",
+                fluidRow(
+                  column(6, sepRadio(id, "countdataSep")),
+                  column(6, sepRadio(id, "metadataSep"))
+                )
+              )
+            )
+          ),
+          # Action row: Upload (auto-width primary) + demo pills
+          div(class = "de-action-row",
+              style = "margin-top:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;",
+            actionButton(ns("uploadFile"), "Upload",
+                         class = "btn btn-primary"),
+            tags$span(class = "de-demo-caption",
+                      style = "color:var(--de-text-2); font-style:italic; margin: 0 6px 0 4px;",
+                      "or try a demo:"),
+            actionButton(ns("demo"),  "Vernia et. al",
+                         class = "btn btn-sm"),
+            actionButton(ns("demo2"), "Donnard et. al",
+                         class = "btn btn-sm")
           )
         )
       )
     ),
-    # Inline preview (5 rows x 6 cols) shown immediately after upload.
-    fluidRow(column(
-      12,
-      conditionalPanel(
-        condition = paste0("output['", ns("dataloaded"), "']"),
-        de_card(
-          title = "Preview (first 5 rows x 6 columns)",
-          div(
-            style = "overflow: auto",
-            tableOutput(ns("countPreview"))
-          )
+    # ------------ Post-upload ------------
+    conditionalPanel(
+      condition = paste0("output['", ns("dataloaded"), "']"),
+      # B3.24 — Sticky workbar: stat strip on left, primary "Continue →
+      # Filter" pill on the right. Always visible at the top of the
+      # post-upload view so the next-step action never gets buried under
+      # long tables.
+      div(class = "de-data-workbar",
+        uiOutput(ns("statStrip")),
+        div(class = "spacer", style = "flex:1"),
+        div(class = "de-data-workbar-actions",
+            uiOutput(ns("nextButton"))
         )
-      )
-    )),
-    fluidRow(column(
-      12,
-      conditionalPanel(
-        condition = paste0("output['", ns("dataloaded"), "']"),
-        uiOutput(ns("nextButton"))
-      )
-    )),
-    br(),
-    fluidRow(
+      ),
+      tags$div(style = "height:12px"),
+      de_card(
+        title = "Preview · count matrix",
+        div(class = "de-compact-table",
+            style = "overflow:auto; max-height: 280px;",
+            tableOutput(ns("countPreview")))
+      ),
+      tags$div(style = "height:12px"),
       bslib::card(
-        bslib::card_header("Upload Summary"),
-        fluidRow(
-          column(
-            12,
-            tableOutput(ns("uploadSummary"))
-          )
-        ),
-        fluidRow(
-          column(12, div(
-            style = "overflow: scroll",
-            DT::dataTableOutput(ns("sampleDetails"))
-          ))
+        bslib::card_header("Sample design"),
+        bslib::card_body(
+          div(class = "de-compact-table",
+              style = "overflow:auto; max-height: 320px;",
+              DT::dataTableOutput(ns("sampleDetails")))
         )
       )
     )

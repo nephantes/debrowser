@@ -1368,14 +1368,16 @@ deServer <- function(input, output, session) {
 
       output$fgsea_enrichment_plot <- renderPlot({
         req(fgsea_selected_pw(), fgsea_pathways(), de_results_list())
-        df <- de_results_list()[[1]]
-        id_col <- .fgsea_id_col(df)
-        stats <- df$log2FoldChange
-        names(stats) <- as.character(df[[id_col]])
-        stats <- sort(stats[is.finite(stats)], decreasing = TRUE)
-        fgsea::plotEnrichment(fgsea_pathways()[[fgsea_selected_pw()]],
-                              stats) +
-          ggplot2::labs(title = fgsea_selected_pw())
+        withProgress(message = "Drawing fgsea enrichment plot", style = "notification", value = 0.1, {
+          df <- de_results_list()[[1]]
+          id_col <- .fgsea_id_col(df)
+          stats <- df$log2FoldChange
+          names(stats) <- as.character(df[[id_col]])
+          stats <- sort(stats[is.finite(stats)], decreasing = TRUE)
+          fgsea::plotEnrichment(fgsea_pathways()[[fgsea_selected_pw()]],
+                                stats) +
+            ggplot2::labs(title = fgsea_selected_pw())
+        })
       })
 
       output$fgsea_leading_edge <- renderText({
@@ -1607,22 +1609,44 @@ deServer <- function(input, output, session) {
         )
       })
 
+      # B3.30 — Submit-driven GO computation.
+      #
+      # Previously this reactive read `input$startGO` AND passed the
+      # entire `input` to getGOPlots() (which reads input$organism,
+      # input$goplot, input$gopvalue, input$ontology, input$goextplot,
+      # input$gofunc, ...). The renderUI dat call also passes `input`
+      # to getDataForTables which reads many more inputs. Result:
+      # inputGOstart depended on ~20 inputs — any of them changing,
+      # including hidden ones touched on tab switches, would re-run
+      # the full clusterProfiler enrichment.
+      #
+      # Now: only `input$startGO` (the Submit button counter) drives
+      # this reactive. Everything else is read inside isolate(), so
+      # changing settings WITHOUT clicking Submit doesn't recompute.
+      # Click Submit explicitly when you want to recompute. This is
+      # the standard "submit-driven" UX and matches what the loading
+      # message ("Please select parameters and press Submit") implies.
       inputGOstart <- reactive({
-        if (input$startGO) {
+        startGO <- input$startGO   # only dependency
+        if (!isTRUE(startGO > 0)) return(NULL)
+        isolate({
           withProgress(message = "GO Started", detail = "interactive", value = 0, {
             dat <- datForTables()
-            getGOPlots(dat[[1]], isolate(getGSEARes()), input)
+            getGOPlots(dat[[1]], getGSEARes(), input)
           })
-        }
+        })
       })
 
       getGSEARes <- reactive({
-        if (input$goplot == "GSEA") {
+        # Always read inside an isolate guard — only inputGOstart calls
+        # this, and it's wrapped in isolate() above.
+        if (isolate(input$goplot) == "GSEA") {
           dat <- datForTables()
-          gopval <- as.numeric(input$gopvalue)
+          gopval <- as.numeric(isolate(input$gopvalue))
           getGSEA(dat[[1]],
             pvalueCutoff = gopval,
-            org = input$organism, sortfield = input$sortfield
+            org = isolate(input$organism),
+            sortfield = isolate(input$sortfield)
           )
         }
       })
@@ -1632,18 +1656,28 @@ deServer <- function(input, output, session) {
       })
 
       output$GOPlots1 <- renderPlot({
-        if (!is.null(inputGOstart()$p) && input$startGO) {
-          if (input$goplot == "GSEA" && !is.null(input$gotable_rows_selected)) {
-            require_pkg("enrichplot", feature = "GSEA plot")
-            pid <- input$gotable_rows_selected
-            p <- enrichplot::gseaplot(inputGOstart()$enrich_p,
-              by = "all",
-              title = inputGOstart()$enrich_p$Description[pid[1]],
-              geneSetID = pid[1]
-            )
-            return(p)
-          }
-          return(inputGOstart()$p)
+        # Only invalidate when inputGOstart's narrow dep (Submit click)
+        # fires. Everything else read inside isolate so tab switches
+        # don't cause re-renders.
+        go <- inputGOstart()
+        if (!is.null(go$p) && isolate(input$startGO) > 0) {
+          withProgress(message = "Drawing GO/GSEA plot", style = "notification", value = 0.1, {
+            # input$gotable_rows_selected SHOULD invalidate (selecting a
+            # row should redraw the GSEA plot), so leave that reactive.
+            # input$goplot is read with isolate to keep this output from
+            # also depending on the radioButtons.
+            if (isolate(input$goplot) == "GSEA" && !is.null(input$gotable_rows_selected)) {
+              require_pkg("enrichplot", feature = "GSEA plot")
+              pid <- input$gotable_rows_selected
+              p <- enrichplot::gseaplot(go$enrich_p,
+                by = "all",
+                title = go$enrich_p$Description[pid[1]],
+                geneSetID = pid[1]
+              )
+              return(p)
+            }
+            return(go$p)
+          })
         }
       })
       observeEvent(input$KeggPathway, {

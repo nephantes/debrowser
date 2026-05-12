@@ -124,9 +124,30 @@ dataLCFUI <- function(id) {
           ),
           de_card(
             title = "Filtering Methods",
-            lcfMetRadio(id),
-            uiOutput(ns("cutoffLCFMet")),
-            actionButtonDE(ns("submitLCF"), label = "Filter", styleclass = "primary")
+            # B3.23 — Filter form on top; next-step CTAs INSIDE the same
+            # card, stacked vertically below the Filter button, all the
+            # same width, with the last CTA pinned to the card bottom.
+            div(
+              class = "de-lcf-card-content",
+              div(
+                class = "de-lcf-form",
+                lcfMetRadio(id),
+                uiOutput(ns("cutoffLCFMet")),
+                actionButtonDE(ns("submitLCF"), label = "Filter", styleclass = "primary")
+              ),
+              conditionalPanel(
+                condition = paste0("input['", ns("submitLCF"), "']"),
+                div(
+                  class = "de-lcf-cta-stack",
+                  actionButtonDE("Batch", label = "Batch Effect Correction", styleclass = "primary"),
+                  conditionalPanel(
+                    condition = "!(input.Batch)",
+                    actionButtonDE("goDEFromFilter", "Go to DE Analysis", styleclass = "primary"),
+                    actionButtonDE("goQCplotsFromFilter", "Go to QC plots", styleclass = "primary")
+                  )
+                )
+              )
+            )
           ),
           tagList(
             div(
@@ -137,15 +158,10 @@ dataLCFUI <- function(id) {
             uiOutput(ns("filteredtable"))
           )
         ),
-        conditionalPanel(
-          condition = paste0("input['", ns("submitLCF"), "']"),
-          actionButtonDE("Batch", label = "Batch Effect Correction", styleclass = "primary"),
-          conditionalPanel(
-            condition = "!(input.Batch)",
-            actionButtonDE("goDEFromFilter", "Go to DE Analysis", styleclass = "primary"),
-            actionButtonDE("goQCplotsFromFilter", "Go to QC plots", styleclass = "primary")
-          )
-        )
+        # B3.23 — The next-step CTAs were moved INSIDE the Filtering
+        # Methods card above. This empty placeholder kept for visual
+        # spacing only; intentionally rendering nothing.
+        NULL
       ),
       bslib::card(
         bslib::card_header("Histograms"),

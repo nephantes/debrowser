@@ -31,11 +31,14 @@ test_that("compute_pill_class returns 'de-pill-locked' for locked state", {
   expect_equal(compute_pill_class("locked"), "de-pill-locked")
 })
 
-test_that("compute_pill_class treats skipped like done (faded check)", {
-  # "skipped" is the explicit terminal state for an optional step the
-  # user bypassed. Visually it's done — a tick — but downstream stages
-  # treat skipped == done for unlock purposes.
-  expect_equal(compute_pill_class("skipped"), "de-pill-done")
+test_that("compute_pill_class returns 'de-pill-skipped' for skipped state", {
+  # B3.17: "skipped" now maps to its own visual class. Optional steps
+  # (Batch Effect) default to "skipped" and should render as dim/disabled
+  # — NOT as a green-dot done step. A separate rule in CSS gives
+  # de-pill-skipped a muted gray dot. For downstream gating purposes
+  # (which steps to unlock next), the server treats skipped == done
+  # but the visual is intentionally distinct.
+  expect_equal(compute_pill_class("skipped"), "de-pill-skipped")
 })
 
 test_that("de_progress_label wraps name + icon span with the right key", {

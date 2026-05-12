@@ -37,26 +37,28 @@ debrowserhistogram <- function(id, data = NULL) {
   }
   moduleServer(id, function(input, output, session) {
   output$histogram <- renderPlotly({
-    h <- hist(log10(rowSums(data)), breaks = as.numeric(input$breaks), plot = FALSE)
+    withProgress(message = "Drawing histogram", style = "notification", value = 0.1, {
+      h <- hist(log10(rowSums(data)), breaks = as.numeric(input$breaks), plot = FALSE)
 
-    p <- plot_ly(
-      x = h$mids, y = h$counts,
-      width = input$width, height = input$height
-    ) %>%
-      add_bars() %>%
-      plotly::layout(
-        margin = list(
-          l = input$left,
-          b = input$bottom,
-          t = input$top,
-          r = input$right
+      p <- plot_ly(
+        x = h$mids, y = h$counts,
+        width = input$width, height = input$height
+      ) %>%
+        add_bars() %>%
+        plotly::layout(
+          margin = list(
+            l = input$left,
+            b = input$bottom,
+            t = input$top,
+            r = input$right
+          )
         )
-      )
-    p$elementId <- NULL
-    if (!is.null(input$svg) && input$svg == TRUE) {
-      p <- p %>% config(toImageButtonOptions = list(format = "svg"))
-    }
-    p
+      p$elementId <- NULL
+      if (!is.null(input$svg) && input$svg == TRUE) {
+        p <- p %>% config(toImageButtonOptions = list(format = "svg"))
+      }
+      p
+    })
   })
   output$histogramUI <- renderUI({
     de_card(

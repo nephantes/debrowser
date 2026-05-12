@@ -58,41 +58,43 @@ enrichmentNesHeatmapUI <- function(id) {
 enrichmentNesHeatmapServer <- function(id, results_by_comparison) {
   shiny::moduleServer(id, function(input, output, session) {
     output$heatmap <- shiny::renderPlot({
-      res <- results_by_comparison()
-      shiny::req(length(res) >= 1L)
-      long <- nes_heatmap_data(
-        res,
-        sig_only      = input$sig_only,
-        sig_threshold = input$sig_threshold
-      )
-      shiny::validate(shiny::need(
-        nrow(long) > 0,
-        "No pathways meet the significance cutoff."
-      ))
-
-      x_var <- if (input$flip_axis) "pathway"    else "comparison"
-      y_var <- if (input$flip_axis) "comparison" else "pathway"
-      long$Label <- ifelse(long$padj < 0.001, "***",
-                    ifelse(long$padj < 0.01,  "**",
-                    ifelse(long$padj < 0.05,  "*",  "")))
-
-      ggplot2::ggplot(
-        long,
-        ggplot2::aes(x = .data[[x_var]],
-                     y = .data[[y_var]],
-                     fill = NES,
-                     label = Label)
-      ) +
-        ggplot2::geom_tile() +
-        ggplot2::geom_text(size = 3, vjust = 0.77) +
-        ggplot2::scale_fill_gradient2(
-          low = "steelblue", mid = "grey96", high = "firebrick"
-        ) +
-        ggplot2::theme_classic() +
-        ggplot2::theme(
-          axis.text.x = ggplot2::element_text(angle = 90, hjust = 0),
-          axis.title  = ggplot2::element_blank()
+      shiny::withProgress(message = "Drawing NES heatmap", style = "notification", value = 0.1, {
+        res <- results_by_comparison()
+        shiny::req(length(res) >= 1L)
+        long <- nes_heatmap_data(
+          res,
+          sig_only      = input$sig_only,
+          sig_threshold = input$sig_threshold
         )
+        shiny::validate(shiny::need(
+          nrow(long) > 0,
+          "No pathways meet the significance cutoff."
+        ))
+
+        x_var <- if (input$flip_axis) "pathway"    else "comparison"
+        y_var <- if (input$flip_axis) "comparison" else "pathway"
+        long$Label <- ifelse(long$padj < 0.001, "***",
+                      ifelse(long$padj < 0.01,  "**",
+                      ifelse(long$padj < 0.05,  "*",  "")))
+
+        ggplot2::ggplot(
+          long,
+          ggplot2::aes(x = .data[[x_var]],
+                       y = .data[[y_var]],
+                       fill = NES,
+                       label = Label)
+        ) +
+          ggplot2::geom_tile() +
+          ggplot2::geom_text(size = 3, vjust = 0.77) +
+          ggplot2::scale_fill_gradient2(
+            low = "steelblue", mid = "grey96", high = "firebrick"
+          ) +
+          ggplot2::theme_classic() +
+          ggplot2::theme(
+            axis.text.x = ggplot2::element_text(angle = 90, hjust = 0),
+            axis.title  = ggplot2::element_blank()
+          )
+      })
     })
   })
   invisible(NULL)

@@ -107,8 +107,10 @@ debrowsermainplot <- function(id, data = NULL, cond_names = NULL) {
   })
 
   output$main <- renderPlotly({
-    data <- plotdata()$data
-    mainScatterNew(input, data, cond_names, session$ns("source"))
+    withProgress(message = "Drawing main scatter plot", style = "notification", value = 0.1, {
+      data <- plotdata()$data
+      mainScatterNew(input, data, cond_names, session$ns("source"))
+    })
   })
 
   list(shg = (selectedPoint), shgClicked = (selectedPoint), selGenes = (getSelected))

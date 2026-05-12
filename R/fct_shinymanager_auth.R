@@ -10,6 +10,193 @@
 # can mock it without reaching the user_db. Task 3 adds the live
 # constructor shinymanager_check_credentials_fn().
 
+#' B3.6 — inline stylesheet for the shinymanager auth screen.
+#'
+#' Self-contained because the auth UI renders BEFORE deUI() / addResourcePath
+#' run, so we can't reference the main `inst/extdata/www/debrowser.css`.
+#' Repaints shinymanager's `.panel` as a centered card on the same dark
+#' navy canvas (with grid + radial glows) the rest of the app uses, and
+#' styles the brand mark, eyebrow, headline, inputs, and Login button.
+#'
+#' @return character — a CSS blob suitable for `tags$style(HTML(...))`
+#' @keywords internal
+#' @noRd
+de_auth_styles <- function() {
+'
+:root{
+  --de-cyan:#5EE6D6; --de-violet:#A78BFA; --de-pink:#FF7AA2;
+  --de-grad:linear-gradient(135deg,#5EE6D6 0%,#A78BFA 100%);
+  --de-bg-0:#0B1020; --de-bg-1:#0F1530; --de-bg-2:#141B3A; --de-bg-3:#1A2147;
+  --de-border:rgba(255,255,255,.08); --de-border-strong:rgba(255,255,255,.14);
+  --de-text-1:#E6ECFF; --de-text-2:#A8B2D1; --de-text-3:#6E7BA5;
+}
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--de-bg-0);
+  color: var(--de-text-1);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 13.5px;
+  background-image:
+    radial-gradient(800px 500px at 12% -10%, rgba(94,230,214,.10), transparent 60%),
+    radial-gradient(900px 600px at 110% 110%, rgba(167,139,250,.12), transparent 60%),
+    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: auto, auto, 56px 56px, 56px 56px;
+  background-attachment: fixed;
+}
+/* Hide shinymanager language/where selects we do not need */
+.shinymanager_lang, #shinymanager_language, #shinymanager_where { display:none !important; }
+
+/* Lay everything out as a single centered column */
+body > .container, body > div:not(.de-auth-hero):not(.de-auth-signup):not(.de-auth-footer) {
+  max-width: 420px !important; margin: 0 auto !important;
+}
+
+/* Hero (brand + eyebrow + headline + sub) above the panel */
+.de-auth-hero {
+  max-width: 420px; margin: 80px auto 18px;
+  text-align: center;
+}
+.de-auth-brand {
+  width: 44px; height: 44px; margin: 0 auto 18px;
+  border-radius: 12px;
+  background: var(--de-grad);
+  box-shadow: inset 0 0 0 7px var(--de-bg-0),
+              0 8px 22px rgba(94,230,214,.22);
+}
+.de-auth-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: .14em;
+  color: var(--de-cyan); margin-bottom: 8px;
+}
+.de-auth-eyebrow-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 5px;
+  background: var(--de-grad); color: #0B1020;
+  font-size: 10px; font-weight: 700;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+.de-auth-headline {
+  font-size: 26px; font-weight: 700; letter-spacing: -.01em;
+  margin: 0; color: var(--de-text-1);
+}
+.de-auth-sub {
+  margin-top: 6px; color: var(--de-text-3); font-size: 12px;
+}
+
+/* shinymanager renders an h3 and a .panel — restyle them as one card */
+h3 { display: none !important; }
+.panel, .panel-primary {
+  background: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.45) !important;
+  color: var(--de-text-1) !important;
+  margin: 0 auto !important;
+  max-width: 420px;
+  overflow: hidden;
+}
+.panel-heading { display: none !important; }
+.panel-body {
+  padding: 22px 24px !important;
+  background: transparent !important;
+}
+
+/* Field labels uppercase */
+.panel-body label {
+  display: block;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--de-text-3) !important;
+  margin: 14px 0 6px !important;
+}
+.panel-body label:first-child { margin-top: 0 !important; }
+
+/* Inputs */
+.panel-body input.form-control {
+  height: 36px !important;
+  padding: 0 12px !important;
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  box-shadow: none !important;
+  width: 100% !important;
+}
+.panel-body input.form-control:focus {
+  outline: 2px solid color-mix(in srgb, var(--de-cyan) 60%, transparent);
+  outline-offset: -1px;
+  border-color: var(--de-cyan) !important;
+}
+
+/* Hide the language dropdown that shinymanager renders inside the panel */
+.panel-body .selectize-control,
+.panel-body .form-group:has(#auth-language) { display: none !important; }
+
+/* Login button — gradient pill, full width inside the card */
+#auth-go_auth {
+  width: 100% !important;
+  height: 40px !important;
+  margin-top: 18px !important;
+  background: var(--de-grad) !important;
+  color: #0B1020 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  letter-spacing: .01em;
+  box-shadow: 0 4px 14px rgba(94,230,214,.20) !important;
+}
+#auth-go_auth:hover { filter: brightness(1.05); }
+
+/* Sign-up row below the card */
+.de-auth-signup {
+  max-width: 420px; margin: 18px auto 0;
+  text-align: center;
+  color: var(--de-text-2); font-size: 12.5px;
+}
+.de-auth-signup a {
+  color: var(--de-cyan) !important;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 4px;
+}
+.de-auth-signup a:hover { text-decoration: underline; }
+.de-auth-signup .fa, .de-auth-signup svg { margin-right: 4px; }
+
+/* Footer keyboard hint */
+.de-auth-footer {
+  position: fixed; bottom: 16px; right: 16px;
+  background: var(--de-bg-1);
+  border: 1px solid var(--de-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  color: var(--de-text-2);
+  box-shadow: 0 12px 32px rgba(0,0,0,.45);
+}
+.de-auth-footer .kbd {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid var(--de-border-strong);
+  color: var(--de-text-2);
+  background: var(--de-bg-2);
+}
+
+/* Any error / message box on auth failure */
+.shiny-notification, .alert {
+  background: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border) !important;
+  border-left: 3px solid var(--de-pink) !important;
+  border-radius: 10px !important;
+  color: var(--de-text-1) !important;
+}
+'
+}
+
 #' Construct the shinymanager auth provider.
 #'
 #' @param check_credentials_fn function(user, password) -> list with
@@ -55,15 +242,47 @@ shinymanager_auth_provider <- function(
     shinymanager::secure_app(
       app,
       check_credentials = check_credentials_fn,
+      fab_position = "none",
+      # B3.6 — auth screen redesign. shinymanager renders its own login
+      # panel BEFORE deUI() runs, so the main `debrowser.css` isn't
+      # loaded yet. We inline a self-contained style sheet here that
+      # repaints shinymanager's panel as the same dark navy + cyan/violet
+      # card the rest of the app uses, then prepend a brand mark +
+      # eyebrow + headline above the panel.
       head_auth = shiny::tagList(
-        shiny::div(
-          style = "text-align: center; padding: 12px 0; ",
+        shiny::tags$link(
+          rel = "stylesheet",
+          href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        ),
+        shiny::tags$style(htmltools::HTML(de_auth_styles())),
+        # Brand mark + eyebrow + headline above the shinymanager panel.
+        shiny::tags$div(
+          class = "de-auth-hero",
+          shiny::tags$div(class = "de-auth-brand"),
+          shiny::tags$div(
+            class = "de-auth-eyebrow",
+            shiny::tags$span(class = "de-auth-eyebrow-chip", "0"),
+            "SIGN IN"
+          ),
+          shiny::tags$h1(class = "de-auth-headline", "Welcome back."),
+          shiny::tags$div(class = "de-auth-sub",
+                          "DEBrowser v", getNamespaceVersion("debrowser"))
+        ),
+        # Sign-up link below the panel
+        shiny::tags$div(
+          class = "de-auth-signup",
           shiny::tags$span("Don't have an account? "),
           shiny::actionLink(
             inputId = "open_signup_from_login",
             label = "Sign up",
             icon = shiny::icon("user-plus")
           )
+        ),
+        # Footer keyboard hint
+        shiny::tags$div(
+          class = "de-auth-footer",
+          shiny::tags$span(class = "kbd", "Enter"),
+          " to sign in"
         )
       )
     )
