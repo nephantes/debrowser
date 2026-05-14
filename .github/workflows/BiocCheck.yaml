@@ -26,9 +26,15 @@ jobs:
           restore-keys: ${{ runner.os }}-bioc-devel-
 
       - name: Install dependencies
+        # Match the pattern used by R-CMD-check.yaml: install remotes
+        # explicitly first so the install_deps() call below resolves.
+        # The bioconductor_docker image ships R + system libs but not
+        # the r-lib remote-helpers by default.
         run: |
+          install.packages("remotes")
           BiocManager::install(c("BiocCheck"), update = FALSE, ask = FALSE)
-          remotes::install_deps(dependencies = TRUE, upgrade = "never")
+          remotes::install_deps(dependencies = TRUE,
+                                repos = BiocManager::repositories())
         shell: Rscript {0}
 
       - name: Build tarball
