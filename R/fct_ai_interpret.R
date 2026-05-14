@@ -47,6 +47,12 @@ ai_error <- function(message, class = NULL) {
     ai_error(sprintf("Unknown privacy_mode: '%s'", privacy_mode),
              class = "ai_invalid_response")
   }
+  # draft_methods: payload is deterministic text; nothing to redact.
+  if (identical(payload$shape, "draft_methods_text")) {
+    attr(payload, "truncated") <- FALSE
+    attr(payload, "n_total")   <- 0L
+    return(payload)
+  }
   genes <- payload$genes
   n_total <- length(genes)
   truncated <- n_total > top_n
@@ -140,17 +146,59 @@ ai_interpret <- function(question, payload, privacy_mode, provider_chat,
              class = "ai_invalid_response")
   }
 
-  redacted <- .redact_payload(payload, privacy_mode, top_n = top_n)
-  truncated <- isTRUE(attr(redacted, "truncated"))
-  n_total   <- attr(redacted, "n_total")
+  redacted <- payload  # will be re-bound for non-draft_methods questions
+  truncated <- FALSE
+  n_total   <- 0L
 
-  slots <- list(
+  if (identical(question, "draft_methods")) {
+    # No payload redaction needed; pass payload through unmodified.
+    # The deterministic methods text is in payload$deterministic_methods.
+  } else {
+    redacted  <- .redact_payload(payload, privacy_mode, top_n = top_n)
+    truncated <- isTRUE(attr(redacted, "truncated"))
+    n_total   <- attr(redacted, "n_total")
+  }
+
+  slots <- .build_template_slots(question, payload, redacted, truncated, n_total)
+  prompt_text <- .render_prompt(template_file, slots)
+
+  tryCatch(
+    provider_chat$chat(prompt_text),
+    error = function(e) .map_provider_error(e)
+  )
+}
+
+#' Build the whisker slots dict for a given preset question.
+#'
+#' Dispatches per preset and per payload shape. Each preset has its
+#' own slot vocabulary -- see inst/templates/ai_*.md for the names.
+#'
+#' @keywords internal
+#' @noRd
+.build_template_slots <- function(question, payload, redacted,
+                                  truncated, n_total) {
+  switch(
+    question,
+    "summarize_geneset"     = .slots_summarize_geneset(redacted, truncated, n_total),
+    "reconcile_enrichments" = .slots_reconcile_enrichments(payload),
+    "suggest_followup"      = .slots_suggest_followup(payload, redacted),
+    "draft_methods"         = .slots_draft_methods(payload),
+    ai_error(sprintf("Unknown AI question: '%s'", question),
+             class = "ai_invalid_response")
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.slots_summarize_geneset <- function(redacted, truncated, n_total) {
+  list(
     n_genes        = length(redacted$genes),
     n_total        = n_total,
     truncated      = truncated,
     gene_list      = paste(redacted$genes, collapse = ", "),
     has_stats      = !is.null(redacted$stats),
-    stats_table    = if (is.null(redacted$stats)) "" else .format_stats_table(redacted$stats),
+    stats_table    = if (is.null(redacted$stats)) "" else
+                       .format_stats_table(redacted$stats),
     has_enrichment = !is.null(redacted$enrichment),
     enrichment_summary = if (is.null(redacted$enrichment)) "" else
       sprintf("Term: %s; p-value: %g; overlap: %d genes.",
@@ -158,12 +206,90 @@ ai_interpret <- function(question, payload, privacy_mode, provider_chat,
               redacted$enrichment$pvalue,
               redacted$enrichment$n_overlap)
   )
-  prompt_text <- .render_prompt(template_file, slots)
+}
 
-  tryCatch(
-    provider_chat$chat(prompt_text),
-    error = function(e) .map_provider_error(e)
+#' @keywords internal
+#' @noRd
+.slots_reconcile_enrichments <- function(payload) {
+  # payload$enrichment$nes_across: data.frame with rows = comparisons,
+  # cols = NES, padj, leading_edge (chr collapsed).
+  nes <- payload$enrichment$nes_across
+  nes_table <- if (is.null(nes) || nrow(nes) == 0L) "" else {
+    rows <- vapply(seq_len(nrow(nes)), function(i) {
+      sprintf("%s | NES = %.3f | padj = %.3g",
+              nes$comparison[i], nes$NES[i], nes$padj[i])
+    }, character(1))
+    paste(rows, collapse = "\n")
+  }
+  has_le <- !is.null(nes) && "leading_edge" %in% names(nes) &&
+            any(nzchar(nes$leading_edge))
+  le_summary <- if (!has_le) "" else {
+    rows <- vapply(seq_len(nrow(nes)), function(i) {
+      sprintf("%s: %s", nes$comparison[i], nes$leading_edge[i])
+    }, character(1))
+    paste(rows, collapse = "\n")
+  }
+  list(
+    pathway_name        = payload$enrichment$term %||% "(unknown)",
+    nes_table           = nes_table,
+    has_leading_edge    = has_le,
+    leading_edge_summary = le_summary
   )
+}
+
+#' @keywords internal
+#' @noRd
+.slots_suggest_followup <- function(payload, redacted) {
+  if (identical(payload$shape, "de_table")) {
+    return(list(
+      has_single_comparison = TRUE,
+      comparison_label      = payload$comparison_label %||% "(unlabeled)",
+      stats_table           = if (is.null(redacted$stats)) "" else
+                                .format_stats_table(redacted$stats),
+      has_multiple_comparisons = FALSE
+    ))
+  }
+  if (identical(payload$shape, "concordance")) {
+    # Format per_comparison_top as one block per comparison.
+    blocks <- vapply(names(payload$per_comparison_top), function(cmp) {
+      df <- payload$per_comparison_top[[cmp]]
+      if (nrow(df) == 0L) return(sprintf("%s: (no significant genes)", cmp))
+      rows <- vapply(seq_len(nrow(df)), function(i) {
+        sprintf("  %s | %.3f | %.3g",
+                df$ID[i], df$log2FoldChange[i], df$padj[i])
+      }, character(1))
+      paste0(cmp, ":\n", paste(rows, collapse = "\n"))
+    }, character(1))
+    cs <- payload$concordance_table
+    cs_str <- if (is.null(cs) || nrow(cs) == 0L) "" else {
+      rows <- vapply(seq_len(nrow(cs)), function(i) {
+        sprintf("%s vs %s: Jaccard = %.3f; Spearman log2FC = %.3f",
+                cs$comparison1[i], cs$comparison2[i],
+                cs$jaccard[i], cs$spearman_lfc[i])
+      }, character(1))
+      paste(rows, collapse = "\n")
+    }
+    return(list(
+      has_single_comparison   = FALSE,
+      has_multiple_comparisons = TRUE,
+      comparison_labels       = paste(payload$comparison_labels, collapse = ", "),
+      concordance_table       = cs_str,
+      per_comparison_top_genes = paste(blocks, collapse = "\n\n")
+    ))
+  }
+  ai_error("suggest_followup requires a de_table or concordance payload",
+           class = "ai_invalid_response")
+}
+
+#' @keywords internal
+#' @noRd
+.slots_draft_methods <- function(payload) {
+  txt <- payload$deterministic_methods
+  if (is.null(txt) || !nzchar(txt)) {
+    ai_error("No deterministic methods paragraph available -- run DE first.",
+             class = "ai_invalid_response")
+  }
+  list(deterministic_methods = txt)
 }
 
 #' Format a stats data.frame as a human-readable two-column table.
