@@ -25,5 +25,5 @@ Optionally renders a small primary download button on the right of the
 card header.
 }
 \examples{
-x <- de_card("Heatmap", plotOutput("heat"))
+x <- de_card("Heatmap", shiny::plotOutput("heat"))
 }

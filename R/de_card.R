@@ -12,7 +12,7 @@
 #'
 #' @return a `bslib::card` tagList
 #' @examples
-#' x <- de_card("Heatmap", plotOutput("heat"))
+#' x <- de_card("Heatmap", shiny::plotOutput("heat"))
 #' @export
 de_card <- function(title, ..., download_id = NULL, full_screen = FALSE) {
   header <- if (is.null(download_id)) {
