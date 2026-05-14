@@ -1647,6 +1647,70 @@ deServer <- function(input, output, session) {
                                    payload_react = ai_enrichment_payload,
                                    settings_react = ai_settings)
 
+      # Phase E12.B: DE Analysis tab AI mount (per comparison).
+      # Reads filt_data() for the currently-selected comparison and
+      # the current cutoffs.
+      ai_de_payload <- reactive({
+        fd <- filt_data()
+        cmp_label <- if (!is.null(dc()) && !is.null(compsel())) {
+          labs <- comparison_labels(dc())
+          if (length(labs) >= compsel()) labs[compsel()] else
+            sprintf("Comparison %d", compsel())
+        } else "Unnamed comparison"
+        .build_de_payload(
+          filt_data       = fd,
+          comparison_label = cmp_label,
+          top_n           = 50L,
+          cutoffs         = list(
+            padj = input[[paste0("DEResults", compsel(), "-padj")]] %||% 0.05,
+            lfc  = input[[paste0("DEResults", compsel(), "-log2fc_cutoff")]] %||% 0
+          )
+        )
+      })
+
+      # Deterministic methods paragraph for the draft_methods preset.
+      # Wraps E9's methods_paragraph() (which takes the output of
+      # build_session_blocks()) so the AI module can consume it as a
+      # reactive. Returns "" when state is not yet ready.
+      methods_react <- reactive({
+        tryCatch({
+          st <- state_react()
+          if (is.null(st)) return("")
+          methods_paragraph(build_session_blocks(st))
+        }, error = function(e) "")
+      })
+
+      # DE-tab AI visibility: show whenever DE has run AND credentials OK.
+      # The output ID is namespaced under the current "DEResults<n>"
+      # module so each per-comparison results panel has its own gate.
+      # We re-bind the output on every compsel() change.
+      observe({
+        out_id <- paste0("DEResults", compsel(), "-ai_de_visibility")
+        local({
+          oid <- out_id
+          output[[oid]] <- reactive({
+            s <- ai_settings()
+            if (!.has_required_credentials(s)) return("hide")
+            if (!isTRUE(buttonValues$startDE)) return("hide")
+            "show"
+          })
+          outputOptions(output, oid, suspendWhenHidden = FALSE)
+        })
+      })
+
+      # Mount aiInterpretServer under the same namespaced id. Re-mount
+      # on compsel() change so it tracks the currently-selected
+      # comparison's results panel.
+      observe({
+        debrowser::aiInterpretServer(
+          paste0("DEResults", compsel(), "-ai_de"),
+          payload_react              = ai_de_payload,
+          settings_react             = ai_settings,
+          payload_shape              = "de_table",
+          deterministic_methods_react = methods_react
+        )
+      })
+
       filt_data <- reactive({
         if (!is.null(init_data()) && !is.null(comparison()) && !is.null(input$padj)) {
           applyFilters(init_data(), cols(), conds(), input)

@@ -78,6 +78,24 @@ getDEResultsUI <- function(id) {
           actionButtonDE("goMain", "Go to Main Plots", styleclass = "primary")
         )
       )
+    ),
+    # Phase E12.B: per-comparison AI interpretation card. Visibility
+    # gated by output$<ns>-ai_de_visibility (server-side); the dropdown
+    # adapts to (shape = de_table) showing summarize_geneset +
+    # suggest_followup + draft_methods.
+    conditionalPanel(
+      condition = sprintf("output['%s'] === 'show'", ns("ai_de_visibility")),
+      bslib::card(
+        bslib::card_header("AI interpretation"),
+        bslib::card_body(
+          debrowser::aiInterpretUI(
+            ns("ai_de"),
+            questions     = c("summarize_geneset", "suggest_followup",
+                              "draft_methods"),
+            payload_shape = "de_table"
+          )
+        )
+      )
     )
   )
 }
