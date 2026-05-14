@@ -11,7 +11,11 @@
 #' @keywords internal
 #' @noRd
 validate_signup_input <- function(user_id, email,
-                                  password, password_confirm) {
+                                  password, password_confirm,
+                                  require_email = TRUE,
+                                  accept_terms = NULL,
+                                  accept_privacy = NULL,
+                                  accept_cookies = NULL) {
   if (is.null(user_id) || !nzchar(trimws(as.character(user_id)))) {
     return("Username is required.")
   }
@@ -21,8 +25,15 @@ validate_signup_input <- function(user_id, email,
   if (!grepl("^[A-Za-z0-9_.+-]+$", user_id)) {
     return("Username may only contain letters, digits, and . _ + -")
   }
-  if (!is.null(email) && nzchar(trimws(as.character(email)))) {
-    if (!grepl("^[^@[:space:]]+@[^@[:space:]]+$", email)) {
+  email_present <- !is.null(email) && nzchar(trimws(as.character(email)))
+  if (require_email && !email_present) {
+    return("Email is required for account verification.")
+  }
+  if (email_present) {
+    # Slightly stricter: require a dot in the domain so single-word
+    # internal addresses fail (most signup forms expect a public-ish
+    # mailbox we can deliver verification to).
+    if (!grepl("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", email)) {
       return("Email format is invalid.")
     }
   }
@@ -35,6 +46,18 @@ validate_signup_input <- function(user_id, email,
   if (nchar(password) < 8L) {
     return("Password must be at least 8 characters long.")
   }
+  # Consent: arguments default to NULL so the helper stays compatible
+  # with non-Shiny callers (e.g. create_debrowser_user()). When the
+  # caller passes the flags, all three must be TRUE.
+  if (!is.null(accept_terms) && !isTRUE(accept_terms)) {
+    return("You must accept the Terms of Service to create an account.")
+  }
+  if (!is.null(accept_privacy) && !isTRUE(accept_privacy)) {
+    return("You must accept the Privacy Policy to create an account.")
+  }
+  if (!is.null(accept_cookies) && !isTRUE(accept_cookies)) {
+    return("You must accept the Cookie Policy to create an account.")
+  }
   NULL
 }
 
@@ -44,16 +67,88 @@ validate_signup_input <- function(user_id, email,
 #'
 #' @keywords internal
 #' @noRd
-signup_user <- function(con, user_id, email, password) {
+signup_user <- function(con, user_id, email, password,
+                        base_url = NULL,
+                        require_verification = TRUE,
+                        accept_terms = FALSE,
+                        accept_privacy = FALSE,
+                        accept_cookies = FALSE) {
   hashed <- hash_password(password)
   if (is.null(hashed)) {
     stop("signup_user: password hashing failed (empty/NULL plaintext).")
   }
-  user_db_create_user(con, user_id = user_id,
+  email_norm <- if (is.null(email) || !nzchar(email)) NA_character_ else email
+
+  token <- NA_character_
+  expires_at <- NA_integer_
+  sent_at <- NA_integer_
+  verified_flag <- 1L
+  if (isTRUE(require_verification) && !is.na(email_norm)) {
+    token <- generate_verify_token()
+    expires_at <- default_verify_expiry()
+    sent_at <- as.integer(Sys.time())
+    verified_flag <- 0L
+  }
+
+  now <- as.integer(Sys.time())
+  ts_or_na <- function(b) if (isTRUE(b)) now else NA_integer_
+  user_db_create_user(con,
+                      user_id = user_id,
                       kind = "shinymanager",
-                      email = email,
-                      hashed_pw = hashed)
-  invisible(user_id)
+                      email = email_norm,
+                      hashed_pw = hashed,
+                      email_verified = verified_flag,
+                      email_verify_token = token,
+                      email_verify_expires_at = expires_at,
+                      email_verify_sent_at = sent_at,
+                      terms_accepted_at = ts_or_na(accept_terms),
+                      privacy_accepted_at = ts_or_na(accept_privacy),
+                      cookies_accepted_at = ts_or_na(accept_cookies))
+
+  # Side-effect: send the verification email (or log it in console
+  # fallback mode). Failure here doesn't roll back the user row -- the
+  # admin can call resend_verification_email(user_id) to retry.
+  if (isTRUE(require_verification) && !is.na(email_norm)) {
+    send_verification_email(email = email_norm,
+                            user_id = user_id,
+                            token = token,
+                            base_url = base_url)
+  }
+
+  invisible(list(user_id = user_id,
+                 email_verified = as.logical(verified_flag),
+                 verify_required = isTRUE(require_verification) &&
+                                   !is.na(email_norm)))
+}
+
+#' Re-send the verification email for an existing unverified user.
+#'
+#' Generates a fresh token + 24h expiry and pushes a new send. Safe to
+#' call repeatedly -- each call invalidates any previous link.
+#'
+#' @param user_id Username.
+#' @param base_url Optional app base URL (used to build the verify link).
+#' @return TRUE on success; errors if user is unknown or already verified.
+#' @export
+resend_verification_email <- function(user_id, base_url = NULL) {
+  con <- user_db_connect()
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  row <- user_db_get_user(con, user_id)
+  if (is.null(row)) {
+    stop(sprintf("resend_verification_email: no user '%s'.", user_id))
+  }
+  if (isTRUE(row$email_verified == 1L)) {
+    stop(sprintf("User '%s' is already verified.", user_id))
+  }
+  if (is.na(row$email) || !nzchar(row$email)) {
+    stop(sprintf("User '%s' has no email on file.", user_id))
+  }
+  token <- generate_verify_token()
+  expires_at <- default_verify_expiry()
+  user_db_set_email_verify_token(con, user_id, token, expires_at)
+  send_verification_email(email = row$email, user_id = user_id,
+                          token = token, base_url = base_url)
+  invisible(TRUE)
 }
 
 #' Create a debrowser user from the R console.

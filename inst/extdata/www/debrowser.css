@@ -135,8 +135,74 @@
    so the Label / Samples / DE-method boxes actually fill the column
    they sit in (default Bootstrap leaves them at intrinsic width, which
    leaves the wide columns looking empty). */
+/* Comparison wizard compaction: previously the Sample-grouping +
+   Treatment + Control + DE-method stack required two scrollbars on a
+   1400-px viewport. Tightened padding, smaller form chrome, fixed
+   selectize pill heights, and Swap button vertically centered with the
+   Sample selectizes. The selectize multi-select boxes now keep a stable
+   height when items are added or removed (no more layout jump when the
+   user clicks a pill). */
+.de-comparison .card-header {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    line-height: 1.1;
+}
+.de-comparison .card-body {
+    padding: 8px 12px !important;
+}
+.de-comparison .form-group,
+.de-comparison .shiny-input-container {
+    margin-bottom: 6px !important;
+}
+.de-comparison label {
+    font-size: 11.5px !important;
+    font-weight: 500;
+    margin-bottom: 2px !important;
+    line-height: 1.2;
+}
+.de-comparison .form-control,
+.de-comparison .form-select,
+.de-comparison .selectize-input {
+    min-height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+}
+.de-comparison .accordion-button {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+}
+.de-comparison .accordion-body {
+    padding: 8px 10px !important;
+}
+/* Selectize multi-selects: keep a stable min-height and let pills wrap
+   inside the box instead of growing the input shell every time a sample
+   is added. flex-wrap + flex-start anchors pills to the top so adding
+   one doesn't push everything down. */
+.de-comparison .selectize-input {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px;
+    min-height: 64px !important;
+    max-height: 140px;
+    overflow-y: auto;
+}
+.de-comparison .selectize-input > .item {
+    margin: 0 !important;
+}
+/* Swap button: vertical center so it lines up with the row of sample
+   pickers either side, regardless of how many pills are showing. */
+.de-comparison .de-swap-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 120px;
+}
+
 .de-comparison .de-subcard {
-    margin-bottom: 1rem;
+    margin-bottom: 8px;
     box-shadow: none;
     height: calc(100% - 1rem);
 }
@@ -167,7 +233,7 @@
 }
 
 .de-comparison .de-subcard .selectize-dropdown {
-    z-index: 1080;
+    z-index: 2080;
 }
 
 .de-swap-wrap {
@@ -616,6 +682,126 @@ html[data-debrowser-redesign="1"] .selectize-input > .item {
   border-radius: var(--de-r-sm) !important;
   padding: 1px 8px !important;
   font-size: 11.5px;
+  /* Leave room for the remove_button X so the text doesn't crowd it. */
+  padding-right: 22px !important;
+  position: relative;
+}
+
+/* remove_button plugin: explicit X on each multi-select pill.
+   Enabled globally via inst/extdata/www/selectize_init.js. */
+html[data-debrowser-redesign="1"] .selectize-input > .item > .remove {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 18px;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-left: 1px solid var(--de-border-strong) !important;
+  border-radius: 0 var(--de-r-sm) var(--de-r-sm) 0 !important;
+  background: transparent !important;
+  color: var(--de-text-2) !important;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none !important;
+}
+html[data-debrowser-redesign="1"] .selectize-input > .item > .remove:hover {
+  background: var(--de-coral, #ef4444) !important;
+  color: #fff !important;
+  border-left-color: transparent !important;
+}
+
+/* Already-selected option in an open dropdown: tint + checkmark so the
+   user can see at a glance which samples / covariates are already in
+   the pills above. Selectize adds .selected to options that match the
+   current value(s). */
+html[data-debrowser-redesign="1"] .selectize-dropdown .option.selected {
+  background: color-mix(in srgb, var(--de-cyan, #5ee6d6) 14%, transparent) !important;
+  color: var(--de-text-1) !important;
+  font-weight: 600;
+}
+html[data-debrowser-redesign="1"] .selectize-dropdown .option.selected::after {
+  content: "\2713";   /* ✓ */
+  float: right;
+  color: var(--de-cyan, #5ee6d6);
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* ---------------------------------------------------------------------
+   Body-attached selectize dropdowns (dropdownParent = 'body' from
+   selectize_init.js). MINIMAL theme-agnostic fix: just make the popup
+   solid + give it a shadow so it doesn't bleed through whatever's
+   underneath. Deliberately NOT touching width, height, overflow, or
+   padding here -- selectize's own positioning + sizing logic is fine
+   and earlier attempts to constrain those broke the surrounding GSEA
+   panel layout (MSigDB option disappearing, Load button hidden, etc.).
+   ------------------------------------------------------------------- */
+
+/* z-index above cards / accordions / modebar AND above modals so the
+   reparented-to-<body> dropdown stays visible when opened from inside
+   a modal (AI Assistant Provider / Model, condition select, etc.).
+   Our modals sit at 2055 (see further below), so we go to 2080. */
+.selectize-dropdown {
+  z-index: 2080 !important;
+}
+
+/* "Standard dropdown" appearance for every selectize popup, in every
+   theme: white panel, dark text, slate border, subtle drop shadow,
+   light gray hover. Identical to how native browser <select> dropdowns
+   render. Earlier attempts to theme this dark in redesign mode created
+   a mixed appearance (active option light, idle options dark navy) so
+   we deliberately keep dropdowns LIGHT even when the surrounding app
+   chrome is dark -- this matches platform conventions for popovers.
+
+   Set the background on BOTH the outer `.selectize-dropdown` AND the
+   inner `.selectize-dropdown-content` because selectize paints the
+   visible surface on the inner div; styling only the outer leaves
+   options showing through. Use `background` (not just background-color)
+   so any inherited background-image gets cleared. */
+.selectize-dropdown,
+.selectize-dropdown.form-control,
+.selectize-dropdown.form-select,
+.selectize-dropdown-content {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  background-image: none !important;
+  color: #0f172a !important;
+  opacity: 1 !important;
+}
+.selectize-dropdown {
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+}
+.selectize-dropdown .option {
+  color: #0f172a !important;
+}
+
+/* Hover + selected option states. Light cyan-tint hover that reads
+   on a white background. */
+.selectize-dropdown .option.active,
+.selectize-dropdown .option:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+.selectize-dropdown .option.selected {
+  background-color: rgba(20, 184, 166, 0.10) !important;
+  color: #0f172a !important;
+  font-weight: 600;
+}
+.selectize-dropdown .option.selected.active {
+  background-color: rgba(20, 184, 166, 0.18) !important;
+}
+.selectize-dropdown .option.selected::after {
+  content: "\2713";
+  float: right;
+  color: #14b8a6;
+  font-weight: 700;
+  margin-left: 8px;
 }
 
 /* Checkboxes & radios */
@@ -885,6 +1071,49 @@ html[data-debrowser-redesign="1"] .modebar {
 }
 html[data-debrowser-redesign="1"] .modebar-btn path { fill: var(--de-text-2) !important; }
 html[data-debrowser-redesign="1"] .modebar-btn:hover { background: var(--de-bg-3) !important; }
+
+/* ---------------------------------------------------------------------
+   Plotly modebar repositioning (works in both themes).
+   Default Plotly draws the modebar inside the upper-right corner of
+   the plot, overlapping legend entries and any data sitting near the
+   axes. Push it ABOVE the plot, anchored just outside the top-right,
+   and reserve a few px of headroom on the containing card so it has
+   room to sit. The R-side `plotly_theme.js` also sets
+   `modebar.orientation: 'h'` so the icons render in a single row.
+   Applies everywhere (light AND dark redesign), since the underlying
+   problem -- icons on top of data -- isn't theme-specific.
+   ------------------------------------------------------------------- */
+.js-plotly-plot .plotly .modebar {
+  /* Hover-only by default so the icons don't clutter the eye, but ALWAYS
+     show on hover of any part of the plot container. */
+  transition: opacity .12s ease-in-out;
+  background: transparent !important;
+}
+/* Reposition: lift above the plot area, anchored to the top-right. */
+.js-plotly-plot .plotly .modebar--hover {
+  top: -2px !important;
+  right: 4px !important;
+}
+/* The container needs a bit of headroom so the floating modebar
+   doesn't overlap a heading or sit half off the card. */
+.shiny-plot-output,
+.plotly.html-widget,
+.js-plotly-plot {
+  padding-top: 20px;
+}
+.js-plotly-plot .plotly .modebar-btn {
+  font-size: 12px !important;
+  padding: 2px 4px !important;
+  margin: 0 1px !important;
+}
+.js-plotly-plot .plotly .modebar-btn svg {
+  width: 16px; height: 16px;
+}
+/* Active state uses the cyan accent in both themes. */
+.js-plotly-plot .plotly .modebar-btn.active path,
+.js-plotly-plot .plotly .modebar-btn:hover path {
+  fill: #5EE6D6 !important;
+}
 
 /* ---------- Help button (debrowser uses a small ? circle) ---------- */
 html[data-debrowser-redesign="1"] .fa-question-circle,
@@ -1368,17 +1597,73 @@ html[data-debrowser-redesign="1"] .card + .card {
   margin-top: 14px;
 }
 
-/* The "i" help-info button — match mockup's chip style */
-html[data-debrowser-redesign="1"] .help-tooltip,
-html[data-debrowser-redesign="1"] a[id*="helpButton"] {
-  background: var(--de-cyan) !important;
+/* ---------------------------------------------------------------------
+   Help button (.de-help-btn) — used everywhere getHelpButton() is called
+   ---------------------------------------------------------------------
+   Rendered as a chip: circled "i" icon + the word "Help". The chip
+   shape signals "clickable", the icon signals "info/help", and the
+   label removes any ambiguity. Hover state flips to the cyan accent.
+   Base styles below; redesign-theme tweaks in the [data-debrowser-redesign]
+   block further down. */
+.de-help-btn,
+.de-help-btn:visited {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  margin-left: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none !important;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.de-help-btn:hover,
+.de-help-btn:focus-visible {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #ffffff;
+  text-decoration: none !important;
+  outline: none;
+}
+.de-help-btn .fa-info-circle {
+  font-size: 13px;
+  line-height: 1;
+  color: #0ea5e9;
+}
+.de-help-btn:hover .fa-info-circle,
+.de-help-btn:focus-visible .fa-info-circle {
+  color: #ffffff;
+}
+.de-help-btn-label {
+  letter-spacing: 0.02em;
+}
+
+/* Redesign theme: use the design tokens. Slightly darker resting state so
+   the chip reads against the gradient card headers we ship in v1.31. */
+html[data-debrowser-redesign="1"] .de-help-btn,
+html[data-debrowser-redesign="1"] .de-help-btn:visited {
+  background: var(--de-bg-3, #1e293b) !important;
+  border-color: var(--de-border-strong, #334155) !important;
+  color: var(--de-text-1, #e2e8f0) !important;
+}
+html[data-debrowser-redesign="1"] .de-help-btn .fa-info-circle {
+  color: var(--de-cyan, #5ee6d6) !important;
+}
+html[data-debrowser-redesign="1"] .de-help-btn:hover,
+html[data-debrowser-redesign="1"] .de-help-btn:focus-visible {
+  background: var(--de-cyan, #5ee6d6) !important;
+  border-color: var(--de-cyan, #5ee6d6) !important;
   color: #0B1020 !important;
-  border-radius: 6px !important;
-  padding: 0 6px !important;
-  font-size: 10px !important;
-  height: 22px !important;
-  line-height: 22px !important;
-  width: auto !important;
+}
+html[data-debrowser-redesign="1"] .de-help-btn:hover .fa-info-circle,
+html[data-debrowser-redesign="1"] .de-help-btn:focus-visible .fa-info-circle {
+  color: #0B1020 !important;
 }
 
 /* ===== End B3.2 ===== */
@@ -1855,8 +2140,264 @@ html[data-debrowser-redesign="1"] #goQCFromFilter {
   margin-right: 6px;
 }
 
-/* Tight pagination chips: the previous "Next/1/Previous" set looked
-   like 1990s links. Match the mockup. */
+/* ---------------------------------------------------------------------
+   Account dropdown menu items (My Bookmarks / Sign out / Sign up).
+   Click handling lives in inst/extdata/www/account_dropdown.js (loaded
+   from ui.R) because Shiny's renderUI insert path uses innerHTML and
+   inline <script> tags don't execute there. Styling moved here from
+   the previous inline block so it survives every renderUI repaint.
+   ------------------------------------------------------------------- */
+.de-account-menu {
+  min-width: 200px;
+  padding: 4px 0;
+  list-style: none;
+  margin: 0;
+}
+.de-account-menu .dropdown-item,
+.de-account-menu .de-account-item {
+  white-space: nowrap;
+  text-decoration: none !important;
+  cursor: pointer;
+  display: block;
+  padding: 6px 16px;
+  color: inherit;
+}
+.de-account-menu .dropdown-item:hover {
+  background: rgba(0, 0, 0, .06);
+}
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item:hover {
+  background: var(--de-bg-3, #1A2147);
+  color: var(--de-text-1, #E6ECFF) !important;
+}
+.de-account-menu .dropdown-item .fa,
+.de-account-menu .dropdown-item .fas,
+.de-account-menu .dropdown-item .far,
+.de-account-menu .dropdown-item svg {
+  margin-right: 8px;
+}
+
+/* Navbar dropdowns (account + theme + bookmark) must paint ABOVE the
+   page content. With the redesigned cards (bslib::card with
+   `--de-shadow-lg` + overflow:hidden) some cards create a stacking
+   context whose z-index can outrank Bootstrap's default 1000 on the
+   dropdown menu, hiding it behind the card when the navbar is sticky
+   and the user has scrolled. Bump to 2000 so it sits above everything
+   page-level. Tooltips (1080) and modals (1055) remain higher because
+   they're meant to overlay even the navbar. */
+.navbar .dropdown-menu,
+.navbar-nav .dropdown-menu,
+.bslib-page-navbar .dropdown-menu {
+  z-index: 2000 !important;
+  background: #ffffff !important;
+}
+
+/* Modal z-index bump only -- letting Bootstrap handle display/animation
+   lifecycle natively. The earlier `display: block !important` on
+   `.modal.show` was overriding Bootstrap's hide transition, leaving
+   modals stuck open or causing renderContentAsync to bind into a
+   half-displayed dialog. Lesson learned: don't fight Bootstrap's
+   modal state machine.
+
+   We DO still bump z-index a small amount over the default 1050 to
+   make sure modals paint above the shinymanager login card on the
+   pre-auth screen, but not so high that we create new stacking-
+   context bugs. Default Bootstrap modal z-index is 1055; we go to
+   2055. Modal-backdrop sits one below. */
+.modal { z-index: 2055; }
+.modal-backdrop { z-index: 2054; }
+
+/* DEFENSIVE: every link inside ANY dropdown-menu must be readable.
+   Bare actionLinks emitted into nav_menu items inherit the navbar's
+   white text color, so on the white popup they're invisible. This
+   rule forces dark text regardless of class (`.action-button`,
+   `.dropdown-item`, plain `<a>`, etc.) and overrides anything the
+   redesign-dark theme tried to apply via inheritance. */
+.dropdown-menu a,
+.dropdown-menu .action-button,
+.dropdown-menu .dropdown-item,
+.navbar .dropdown-menu a,
+.navbar .dropdown-menu .action-button,
+.navbar-nav .dropdown-menu a,
+.navbar-nav .dropdown-menu .action-button {
+  color: #0f172a !important;
+  text-decoration: none !important;
+}
+.dropdown-menu a:hover,
+.dropdown-menu .action-button:hover,
+.dropdown-menu .dropdown-item:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+/* Ensure the navbar itself doesn't clip the open dropdown via overflow:
+   hidden — some bslib navbars set overflow on the .navbar-collapse. */
+.navbar,
+.navbar > *,
+.navbar-collapse,
+.bslib-page-navbar > .navbar {
+  overflow: visible !important;
+}
+
+/* ---------------------------------------------------------------------
+   DataTables: compact one-row top controls.
+   Driven by the `.dt_dom_compact` template in R/funcs.R, which emits:
+     <'dt-top row'<'col-auto'B><'col-auto'l><'col text-end'f>>
+     <'row'<'col-12'tr>>
+     <'dt-bot row'<'col-auto'i><'col text-end'p>>
+   The CSS below tightens spacing inside that template so Copy/Download,
+   the length selector, and the search box all sit on one line right
+   above the table.
+   ------------------------------------------------------------------- */
+
+/* All themes: tighten margins around the compact rows. */
+.dataTables_wrapper .dt-top,
+.dataTables_wrapper .dt-bot {
+  --bs-gutter-x: 0.5rem;
+  align-items: center;
+  min-height: 32px;
+}
+.dataTables_wrapper .dt-top { margin: 0 0 6px 0 !important; }
+.dataTables_wrapper .dt-bot { margin: 6px 0 0 0 !important; }
+
+/* Inner control wrappers (buttons, length, filter, info, pagination):
+   no leftover Bootstrap row margins, vertically centered. */
+.dataTables_wrapper .dt-top > [class*="col"],
+.dataTables_wrapper .dt-bot > [class*="col"] {
+  display: flex;
+  align-items: center;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Labels and inputs inside length/filter: inline-flex, no native top/bot
+   margins, narrower input/select. */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_wrapper .dt-buttons {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label {
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: 400;
+}
+.dataTables_wrapper .dataTables_length select {
+  height: 28px !important;
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 64px;
+}
+.dataTables_wrapper .dataTables_filter input {
+  height: 28px !important;
+  padding: 2px 10px !important;
+  font-size: 12px !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 200px;
+}
+
+/* "Copy / Download" button group sits compact next to the length. */
+.dataTables_wrapper .dt-buttons .btn {
+  height: 28px;
+  padding: 2px 12px !important;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 6px;
+}
+
+/* ---------------------------------------------------------------------
+   DataTables pagination — modern compact buttons.
+   Bootstrap-5 mode renders `<ul class="pagination"><li class="page-item">
+   <a class="page-link"></a></li></ul>` (NOT the legacy `.paginate_button`
+   anchor). Style both so we look good in either DT bootstrap mode.
+   ------------------------------------------------------------------- */
+.dataTables_wrapper .pagination {
+  --bs-pagination-padding-y: 0;
+  --bs-pagination-padding-x: 8px;
+  --bs-pagination-font-size: 11.5px;
+  --bs-pagination-border-radius: 6px;
+  margin: 0 !important;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.dataTables_wrapper .pagination .page-item {
+  margin: 0;
+}
+.dataTables_wrapper .pagination .page-link {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  background: #ffffff;
+  font-size: 11.5px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: none !important;
+}
+.dataTables_wrapper .pagination .page-link:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+  z-index: 1;
+}
+.dataTables_wrapper .pagination .page-item.active .page-link {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #ffffff;
+}
+.dataTables_wrapper .pagination .page-item.disabled .page-link {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+.dataTables_wrapper .pagination .page-item.previous .page-link,
+.dataTables_wrapper .pagination .page-item.next .page-link {
+  /* Previous / Next: slightly wider so the word fits. */
+  padding: 0 12px !important;
+  font-weight: 400;
+}
+
+/* Redesign-theme override: use the cyan/grad accent + dark surfaces. */
+html[data-debrowser-redesign="1"] .dataTables_wrapper .pagination .page-link {
+  background: var(--de-bg-1) !important;
+  border-color: var(--de-border) !important;
+  color: var(--de-text-2) !important;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .pagination .page-link:hover {
+  background: var(--de-bg-3) !important;
+  border-color: var(--de-border-strong) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .pagination .page-item.active .page-link {
+  background: var(--de-grad) !important;
+  border-color: transparent !important;
+  color: #0B1020 !important;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .pagination .page-item.disabled .page-link {
+  background: transparent !important;
+  border-color: var(--de-border) !important;
+  color: var(--de-text-3) !important;
+  opacity: 0.55;
+}
+
+/* Legacy non-Bootstrap pagination chips (kept for completeness). */
 html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_paginate .paginate_button,
 html[data-debrowser-redesign="1"] .dataTables_paginate a.paginate_button {
   height: 26px !important;
@@ -4012,10 +4553,13 @@ html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .shiny-input-
   overflow: visible !important;
 }
 
-/* Lift selectize dropdown above sibling accordion items */
+/* Lift selectize dropdown above sibling accordion items.
+   CRITICAL: must stay > 2055 (modal z-index) so selectInputs INSIDE
+   modals (AI Assistant Provider, condition selectors, etc.) aren't
+   clipped behind the modal. */
 html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .selectize-dropdown,
 html[data-debrowser-redesign="1"] .selectize-dropdown {
-  z-index: 1080 !important;     /* above accordion items + cards */
+  z-index: 2080 !important;
   background: var(--de-bg-1) !important;
   border: 1px solid var(--de-border-strong) !important;
   border-radius: var(--de-r-sm) !important;
@@ -4156,4 +4700,204 @@ html[data-debrowser-redesign="1"] [id$="-submitBatchEffect"]:hover {
 }
 
 /* ===== End B3.31 ===== */
+
+/* =====================================================================
+   B3.32 -- Navbar dropdown z-index over cards / plots / sidebar.
+   bslib `card` containers set position:relative and (for plot wrappers)
+   create new stacking contexts via `transform` or `will-change`. Those
+   stacking contexts trap any descendant z-index AT MOST at the parent
+   stack level, so the navbar dropdown menu (z-index:1000 default) can
+   render BEHIND a sibling card that happens to come later in the DOM.
+   Fix: bump the navbar dropdown to a higher tier than cards/plots, and
+   make sure the navbar itself participates in the topmost stack.
+   Applies in both classic and redesign mode (no html[...] scope).
+   ===================================================================== */
+
+/* Navbar sits above cards, panels, plots, accordions, etc. */
+.navbar {
+  position: relative;
+  z-index: 1050;        /* > .card, .accordion, .plotly */
+}
+
+/* The navbar's dropdown menus (account, settings, export) must float
+   above EVERY card / sub-card / plot in the main content area, even
+   when those create their own stacking contexts. 1090 beats:
+     - .card (no z-index)
+     - .selectize-dropdown (we use 1080)
+     - .plotly .modebar (none)
+   while staying below Bootstrap's modal (1055) so an open modal
+   still wins. */
+.navbar .dropdown-menu,
+.navbar .de-account-menu,
+.bslib-page-navbar .navbar .dropdown-menu {
+  z-index: 1090 !important;
+  position: absolute;
+}
+
+/* Some bslib navbar layouts wrap the menu in a <ul.dropdown-menu> that
+   itself is `position: static`; the .show toggle promotes it. Make
+   sure the .show state never collapses below cards. */
+.navbar .dropdown-menu.show,
+.navbar .de-account-menu.show {
+  z-index: 1090 !important;
+}
+
+/* Cards normally clip overflow (for full-screen handling). That clip
+   doesn't matter for navbar dropdowns (they're outside the card), but
+   when a dropdown opens INSIDE a card we want it to spill. */
+.card,
+.bslib-card,
+.bslib-card > .card-body {
+  /* leave card's own overflow alone, but its z-index must not exceed
+     the navbar dropdown */
+}
+
+/* ===== End B3.32 ===== */
+
+/* =====================================================================
+   B3.33 -- Export / Settings / Account dropdown polish.
+   Two issues addressed:
+     1) bslib's nav_menu wraps our `<ul class="de-account-menu">` inside
+        another `<ul class="dropdown-menu">`. The outer ul has its own
+        background + padding, which peeks out as a white strip ABOVE the
+        first row before our inner ul starts.
+     2) Inside the Export menu, `<a class="shiny-download-link">`
+        inherits the global button-like styling from rule blocks above
+        (display:inline-flex, button border, etc.), making the 4
+        download rows look boxed while the 2 actionLink rows look flat.
+   Fix: when the outer dropdown-menu contains a `.de-account-menu`,
+   strip its decorations so our inner menu is the only visible chrome.
+   And neutralize the button styling for shiny-download-links that live
+   inside the menu so they render as flat dropdown rows.
+   ===================================================================== */
+
+/* Outer wrapper provided by bslib::nav_menu: when it contains our
+   custom menu, drop ALL of its own paint so only the inner ul shows. */
+.dropdown-menu:has(> .nav-item > .de-account-menu),
+.dropdown-menu:has(> .de-account-menu) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* The wrapping <li class="nav-item"> from bslib::nav_item() must not
+   contribute any spacing either. */
+.dropdown-menu > .nav-item:has(> .de-account-menu) {
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none;
+}
+
+/* Some bslib versions don't render the nav_item wrapper, so target the
+   de-account-menu directly too. */
+.de-account-menu {
+  list-style: none !important;
+  margin: 0 !important;
+}
+.de-account-menu > li {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Flat dropdown rows for shiny-download-link inside our menu. Override
+   the global .shiny-download-link button styling: no flex centering,
+   no border, full-width left-aligned text just like the actionLink
+   siblings. */
+.de-account-menu .shiny-download-link,
+.de-account-menu .shiny-download-link.dropdown-item,
+html[data-debrowser-redesign="1"] .de-account-menu .shiny-download-link {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 8px 12px !important;
+  color: var(--de-text-1, #0f172a) !important;
+  border-radius: var(--de-r-sm, 6px) !important;
+  margin: 0 0 2px 0 !important;
+}
+.de-account-menu .shiny-download-link:hover,
+html[data-debrowser-redesign="1"] .de-account-menu .shiny-download-link:hover {
+  background: var(--de-bg-3, rgba(0,0,0,.06)) !important;
+  color: var(--de-text-1, #0f172a) !important;
+}
+
+/* ===== End B3.33 ===== */
+
+/* =====================================================================
+   B3.34 -- Stacking-context guarantees for floating UI surfaces.
+
+   The modal layer sits at z-index 2055 (backdrop 2054). Any floating
+   element that can appear OVER OR FROM-WITHIN a modal must beat that.
+   Without this block, things like a selectize dropdown inside the AI
+   Assistant modal, a tooltip on a button inside any modal, a Shiny
+   notification popped while a modal is open, or a date picker / color
+   picker inside a modal would all render BEHIND the modal and look
+   "missing" to the user. Below: every well-known popup class gets
+   bumped above 2055.
+
+   Tier table (top to bottom):
+     2090   Shiny notifications, tooltips, popovers
+     2080   Selectize, Bootstrap, jQuery UI date/color pickers,
+            shinyWidgets pickerInput, DT column filter overlays
+     2055   .modal
+     2054   .modal-backdrop
+     1090   .navbar .dropdown-menu (covered by B3.32 above)
+     1050   .navbar root
+     1000   default Bootstrap dropdown
+   ===================================================================== */
+
+/* --- Popups that can paint INSIDE or ON-TOP-OF a modal --- */
+.selectize-dropdown,
+.bootstrap-select .dropdown-menu,
+.selectize-control .dropdown-menu,
+.bsdatepicker,
+.datepicker,
+.daterangepicker,
+.ui-datepicker,
+.colorpicker,
+.picker__holder,
+.picker__frame,
+.bootstrap-datetimepicker-widget,
+table.dataTable .dropdown-menu {
+  z-index: 2080 !important;
+}
+
+/* Tooltips, popovers and notifications go ABOVE the popups so a
+   button hover-tip inside a modal isn't itself trapped by an open
+   selectize dropdown. */
+.tooltip,
+.bs-tooltip-auto,
+.bs-tooltip-top,
+.bs-tooltip-bottom,
+.bs-tooltip-left,
+.bs-tooltip-right,
+.popover,
+.bs-popover-auto,
+.bs-popover-top,
+.bs-popover-bottom,
+.bs-popover-left,
+.bs-popover-right,
+.shiny-notification-panel,
+.shiny-notification {
+  z-index: 2090 !important;
+}
+
+/* Notification panel position: keep at top-right of viewport regardless
+   of stacking context; the !important above just ensures visibility. */
+
+/* DT column-filter dropdowns (datatables) inherit from .dropdown-menu
+   but DT may also use inline-positioned divs we need to lift. */
+.dataTable .dt-button-collection,
+.dataTable .dt-button-background {
+  z-index: 2080 !important;
+}
+
+/* ===== End B3.34 ===== */
 

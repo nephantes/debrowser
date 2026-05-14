@@ -18,6 +18,13 @@ Rplots.pdf
 **/Rplots.pdf
 shiny_bookmarks/
 
+# Linux libfuse orphan files synced in from a remote peer
+# (sshfs/encfs/Docker bind-mount holds a file open while another
+# process replaces it -> libfuse renames it to .fuse_hiddenNNNN ->
+# Syncthing replicates it back to this Mac, where R CMD check would
+# otherwise trip on R/ containing invalid filenames).
+.fuse_hidden*
+
 # B3 redesign — local dev launch script (no install, hot-reload via
 # pkgload::load_all()). Not part of the installable package.
 run_styled_3839.R

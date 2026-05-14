@@ -128,7 +128,7 @@ deServer <- function(input, output, session) {
     #
     # NOTE on persistent cross-restart cookies: shinymanager 1.0.410
     # (the version we depend on) does NOT expose a `cookie_validity`
-    # parameter on `secure_server` — passing one is a fatal
+    # parameter on `secure_server` -- passing one is a fatal
     # "unused argument" error that blocks login entirely. Until
     # upstream shinymanager ships native persistent-cookie support
     # (or DEBrowser implements its own remember-me cookie layer in
@@ -147,21 +147,81 @@ deServer <- function(input, output, session) {
     shiny::observe({
       u <- res_auth$user
       invalidate_user_cache(session)
+      # After a successful login, mirror the user's stored cookie
+      # consent (from signup-time) into the JS-side flag that
+      # remember_me.js reads. This way users who created their account
+      # before the JS shim existed -- or who logged in on a fresh
+      # browser without the flag -- get their persistence preference
+      # re-applied.
+      if (!is.null(u) && length(u) == 1L && nzchar(as.character(u))) {
+        tryCatch({
+          con <- user_db_connect()
+          on.exit(DBI::dbDisconnect(con), add = TRUE)
+          row <- user_db_get_user(con, as.character(u))
+          if (!is.null(row)) {
+            consented <- !is.null(row$cookies_accepted_at) &&
+                         !is.na(row$cookies_accepted_at) &&
+                         row$cookies_accepted_at > 0
+            session$sendCustomMessage(
+              "debrowser:cookie_consent",
+              list(consented = consented)
+            )
+          }
+        }, error = function(e) NULL)
+      }
     })
 
-    # Sign-up flow accessible from the login screen (head_auth on
-    # secure_app surfaces a "Sign up" link). Observers fire even while
-    # the user is unauthenticated because the login screen is part of
-    # the same Shiny session.
+    # (Signup observers moved OUTSIDE this if-block so they register
+    # regardless of hosted_mode()/shinymanager availability. See after
+    # the closing `}` below.)
+  }
+
+  # ====================================================================
+  # SIGNUP observers -- registered UNCONDITIONALLY for every session.
+  # These were previously gated by the `if (hosted_mode() && ...)`
+  # block above, which meant they never registered if hosted_mode()
+  # returned FALSE in a given environment. The user could click "Create
+  # an account" on the login screen and nothing would happen because
+  # the observer didn't exist server-side. Moving them out guarantees
+  # registration. signup_user() itself is a pure helper that can run
+  # in any mode.
+  # ====================================================================
+  if (TRUE) {  # <-- always true; left as a stub so indentation matches
     shiny::observeEvent(input$open_signup_from_login, {
       shiny::showModal(shiny::modalDialog(
-        title = "Sign up",
+        title = "Create your DEBrowser account",
         shiny::tagList(
           shiny::textInput("login_signup_user", "Username"),
-          shiny::textInput("login_signup_email", "Email (optional)"),
+          shiny::textInput("login_signup_email",
+                           "Email (required for verification)"),
           shiny::passwordInput("login_signup_pw",
                                "Password (8+ chars)"),
-          shiny::passwordInput("login_signup_pw2", "Confirm password")
+          shiny::passwordInput("login_signup_pw2", "Confirm password"),
+          shiny::tags$hr(),
+          shiny::tags$div(
+            class = "de-signup-consent",
+            shiny::checkboxInput(
+              "login_signup_accept_terms",
+              shiny::HTML(
+                "I accept the <a href='www/legal/terms.html' target='_blank' rel='noopener'>Terms of Service</a>."
+              ),
+              value = FALSE
+            ),
+            shiny::checkboxInput(
+              "login_signup_accept_privacy",
+              shiny::HTML(
+                "I have read the <a href='www/legal/privacy.html' target='_blank' rel='noopener'>Privacy Policy</a> and consent to the described processing of my data."
+              ),
+              value = FALSE
+            ),
+            shiny::checkboxInput(
+              "login_signup_accept_cookies",
+              shiny::HTML(
+                "I accept the use of cookies and similar technologies as described in the <a href='www/legal/cookies.html' target='_blank' rel='noopener'>Cookie Policy</a>."
+              ),
+              value = FALSE
+            )
+          )
         ),
         footer = shiny::tagList(
           shiny::modalButton("Cancel"),
@@ -177,7 +237,11 @@ deServer <- function(input, output, session) {
         user_id = input$login_signup_user,
         email = input$login_signup_email,
         password = input$login_signup_pw,
-        password_confirm = input$login_signup_pw2
+        password_confirm = input$login_signup_pw2,
+        require_email = TRUE,
+        accept_terms = isTRUE(input$login_signup_accept_terms),
+        accept_privacy = isTRUE(input$login_signup_accept_privacy),
+        accept_cookies = isTRUE(input$login_signup_accept_cookies)
       )
       if (!is.null(err)) {
         shiny::showNotification(err, type = "error", duration = 6)
@@ -190,26 +254,115 @@ deServer <- function(input, output, session) {
         return()
       }
       on.exit(DBI::dbDisconnect(con2), add = TRUE)
-      ok <- tryCatch({
+      base_url <- compose_base_url(session)
+      result <- tryCatch({
         signup_user(con2, input$login_signup_user,
                     input$login_signup_email,
-                    input$login_signup_pw)
-        TRUE
+                    input$login_signup_pw,
+                    base_url = base_url,
+                    require_verification = FALSE,
+                    accept_terms = isTRUE(input$login_signup_accept_terms),
+                    accept_privacy = isTRUE(input$login_signup_accept_privacy),
+                    accept_cookies = isTRUE(input$login_signup_accept_cookies))
       }, error = function(e) {
         shiny::showNotification(
           paste("Signup failed:", conditionMessage(e)),
           type = "error", duration = 8
         )
-        FALSE
+        NULL
       })
-      if (isTRUE(ok)) {
-        shiny::removeModal()
-        shiny::showNotification(
-          "Account created. Please sign in with your credentials.",
-          type = "message", duration = 8
+      if (!is.null(result)) {
+        # Cookie-consent JS message (unchanged).
+        tryCatch(
+          session$sendCustomMessage(
+            "debrowser:cookie_consent",
+            list(consented = isTRUE(input$login_signup_accept_cookies))
+          ),
+          error = function(e) NULL
         )
+        # Success feedback uses showNotification (toast) instead of
+        # showModal. showModal goes through renderContentAsync ->
+        # _bindAll, which is what the shinymanager_language duplicate
+        # poisons. Toasts don't run through that path -- they always
+        # display.
+        if (isTRUE(result$verify_required)) {
+          # Pull the verification URL from the user_db so we can show
+          # it inline. In dev mode (no SMTP configured) the user sees
+          # the link and can click it directly instead of hunting in
+          # the R console.
+          verify_url <- tryCatch({
+            row <- user_db_get_user(con2,
+                                    as.character(input$login_signup_user))
+            if (!is.null(row) && !is.na(row$email_verify_token)) {
+              base <- compose_base_url(session)
+              if (is.null(base) || !nzchar(base)) base <- ""
+              sprintf("%s?verify=%s", sub("/+$", "", base),
+                      utils::URLencode(row$email_verify_token,
+                                       reserved = TRUE))
+            } else {
+              NA_character_
+            }
+          }, error = function(e) NA_character_)
+
+          msg <- paste0(
+            "Account created. We sent a verification link to ",
+            input$login_signup_email,
+            ". Click it within 24 hours to activate your account."
+          )
+          shiny::showNotification(msg, type = "message", duration = 12)
+
+          if (!is.na(verify_url) && nzchar(verify_url)) {
+            # Show the URL inline as a follow-up notification with a
+            # clickable link. Many email setups in dev fail silently;
+            # this lets the user verify without hunting the R console.
+            shiny::showNotification(
+              shiny::tagList(
+                shiny::tags$div(
+                  shiny::tags$b("DEV MODE: "),
+                  "No SMTP configured -- click here to verify directly: ",
+                  shiny::tags$a(href = verify_url, target = "_self",
+                                "Verify my email")
+                )
+              ),
+              type = "warning", duration = NULL
+            )
+          }
+        } else {
+          shiny::showNotification(
+            "Account created. Please sign in with your credentials.",
+            type = "message", duration = 8
+          )
+        }
       }
     }, ignoreInit = TRUE)
+
+    # ?verify=<token> URL handler. Fires whenever a session opens; if the
+    # query string contains a verify token we consume it and show the
+    # outcome modal. Safe to be unconditional because consume_email_verify_token
+    # returns "unknown_token" on missing/invalid tokens and is a no-op there.
+    shiny::observe({
+      qs <- session$clientData$url_search
+      if (is.null(qs) || !nzchar(qs)) return()
+      tok <- shiny::parseQueryString(qs)$verify
+      if (is.null(tok) || !nzchar(tok)) return()
+      outcome <- tryCatch(consume_email_verify_token(tok),
+                          error = function(e) "unknown_token")
+      msg <- switch(outcome,
+        ok               = "Your email is verified. You can now sign in.",
+        already_verified = "This account is already verified. Please sign in.",
+        expired          = "This verification link has expired. Please request a new one from the admin or re-run signup.",
+        unknown_token    = "We couldn't verify that link. It may have been used already, or it's invalid.",
+        "Verification failed."
+      )
+      severity <- if (outcome %in% c("ok", "already_verified"))
+        "message" else "warning"
+      shiny::showModal(shiny::modalDialog(
+        title = if (outcome == "ok") "Email verified" else "Email verification",
+        shiny::tags$p(msg),
+        footer = shiny::modalButton("OK"),
+        easyClose = TRUE
+      ))
+    })
   }
 
   onBookmark(function(state) {
@@ -1609,14 +1762,14 @@ deServer <- function(input, output, session) {
         )
       })
 
-      # B3.30 — Submit-driven GO computation.
+      # B3.30 -- Submit-driven GO computation.
       #
       # Previously this reactive read `input$startGO` AND passed the
       # entire `input` to getGOPlots() (which reads input$organism,
       # input$goplot, input$gopvalue, input$ontology, input$goextplot,
       # input$gofunc, ...). The renderUI dat call also passes `input`
       # to getDataForTables which reads many more inputs. Result:
-      # inputGOstart depended on ~20 inputs — any of them changing,
+      # inputGOstart depended on ~20 inputs -- any of them changing,
       # including hidden ones touched on tab switches, would re-run
       # the full clusterProfiler enrichment.
       #
@@ -1638,7 +1791,7 @@ deServer <- function(input, output, session) {
       })
 
       getGSEARes <- reactive({
-        # Always read inside an isolate guard — only inputGOstart calls
+        # Always read inside an isolate guard -- only inputGOstart calls
         # this, and it's wrapped in isolate() above.
         if (isolate(input$goplot) == "GSEA") {
           dat <- datForTables()
@@ -1794,7 +1947,7 @@ deServer <- function(input, output, session) {
             extensions = "Buttons",
             options = list(
               server = TRUE,
-              dom = "Blfrtip",
+              dom = .dt_dom_compact,
               buttons =
                 list("copy", list(
                   extend = "collection",
@@ -1894,7 +2047,7 @@ deServer <- function(input, output, session) {
           extensions = "Buttons",
           options = list(
             server = TRUE,
-            dom = "Blfrtip",
+            dom = .dt_dom_compact,
             buttons =
               list("copy", list(
                 extend = "collection",
@@ -1925,7 +2078,7 @@ deServer <- function(input, output, session) {
             extensions = "Buttons",
             options = list(
               server = TRUE,
-              dom = "Blfrtip",
+              dom = .dt_dom_compact,
               buttons =
                 list("copy", list(
                   extend = "collection",

@@ -57,6 +57,75 @@ user_db_migrate <- function(con) {
   for (s in stmts) {
     DBI::dbExecute(con, s)
   }
+  # ------------------------------------------------------------------
+  # Schema v2: email verification columns. Added in R rather than in
+  # users-schema.sql because SQLite's `ALTER TABLE ADD COLUMN` errors
+  # on a second run -- there's no `IF NOT EXISTS` for ALTER. We add
+  # them here under a tryCatch so the migration is idempotent.
+  # ------------------------------------------------------------------
+  existing_cols <- tryCatch(
+    DBI::dbGetQuery(con, "PRAGMA table_info(users)")$name,
+    error = function(e) character()
+  )
+  add_col <- function(col, ddl) {
+    if (!(col %in% existing_cols)) {
+      tryCatch(
+        DBI::dbExecute(con, sprintf("ALTER TABLE users ADD COLUMN %s", ddl)),
+        error = function(e) {
+          # If another connection added it in a race, ignore "duplicate
+          # column" but re-raise anything else.
+          if (!grepl("duplicate column", conditionMessage(e),
+                     ignore.case = TRUE)) stop(e)
+        }
+      )
+    }
+  }
+  add_col("email_verified",
+          "email_verified INTEGER NOT NULL DEFAULT 0")
+  add_col("email_verify_token",
+          "email_verify_token TEXT")
+  add_col("email_verify_expires_at",
+          "email_verify_expires_at INTEGER")
+  add_col("email_verify_sent_at",
+          "email_verify_sent_at INTEGER")
+  # Schema v3: consent timestamps for terms / privacy / cookies. Storing
+  # the actual acceptance time lets us re-prompt if the relevant policy
+  # version changes later. NULL = never accepted.
+  add_col("terms_accepted_at",
+          "terms_accepted_at INTEGER")
+  add_col("privacy_accepted_at",
+          "privacy_accepted_at INTEGER")
+  add_col("cookies_accepted_at",
+          "cookies_accepted_at INTEGER")
+  # Useful index for the URL-token consumption path.
+  tryCatch(
+    DBI::dbExecute(con,
+      "CREATE INDEX IF NOT EXISTS idx_users_verify_token
+         ON users(email_verify_token)"),
+    error = function(e) NULL
+  )
+  # Grandfather pre-existing users. The ALTER above adds the column with
+  # DEFAULT 0, so every account that existed before the verification
+  # migration is now flagged unverified and would be locked out at the
+  # check_credentials gate.
+  #
+  # A legitimate unverified row (created by the new signup flow) ALWAYS
+  # has email_verify_token set. So the safe heuristic is: if email_verified=0
+  # AND email_verify_token IS NULL, the row predates this migration --
+  # mark it verified so login keeps working.
+  #
+  # Idempotent across repeat runs: once grandfathered, the row's
+  # email_verified is 1 and the WHERE clause skips it. A new signup
+  # (token written) is never matched by the WHERE clause, so we don't
+  # accidentally mark unverified signups as verified.
+  tryCatch(
+    DBI::dbExecute(con,
+      "UPDATE users
+          SET email_verified = 1
+        WHERE email_verified = 0
+          AND email_verify_token IS NULL"),
+    error = function(e) NULL
+  )
   invisible(NULL)
 }
 
@@ -73,13 +142,30 @@ user_db_migrate <- function(con) {
 user_db_create_user <- function(con, user_id, kind,
                                 email = NA_character_,
                                 display_name = NA_character_,
-                                hashed_pw = NA_character_) {
+                                hashed_pw = NA_character_,
+                                email_verified = 0L,
+                                email_verify_token = NA_character_,
+                                email_verify_expires_at = NA_integer_,
+                                email_verify_sent_at = NA_integer_,
+                                terms_accepted_at = NA_integer_,
+                                privacy_accepted_at = NA_integer_,
+                                cookies_accepted_at = NA_integer_) {
   DBI::dbExecute(con,
     "INSERT INTO users
-      (user_id, kind, email, display_name, hashed_pw, created_at)
-     VALUES (?, ?, ?, ?, ?, ?)",
+      (user_id, kind, email, display_name, hashed_pw, created_at,
+       email_verified, email_verify_token, email_verify_expires_at,
+       email_verify_sent_at,
+       terms_accepted_at, privacy_accepted_at, cookies_accepted_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     params = list(user_id, kind, email, display_name, hashed_pw,
-                  as.integer(Sys.time()))
+                  as.integer(Sys.time()),
+                  as.integer(email_verified),
+                  email_verify_token,
+                  email_verify_expires_at,
+                  email_verify_sent_at,
+                  terms_accepted_at,
+                  privacy_accepted_at,
+                  cookies_accepted_at)
   )
   invisible(user_id)
 }
@@ -90,12 +176,71 @@ user_db_create_user <- function(con, user_id, kind,
 user_db_get_user <- function(con, user_id) {
   rows <- DBI::dbGetQuery(con,
     "SELECT user_id, kind, email, display_name, hashed_pw,
-            created_at, last_login
+            created_at, last_login,
+            email_verified, email_verify_token,
+            email_verify_expires_at, email_verify_sent_at
        FROM users WHERE user_id = ?",
     params = list(user_id)
   )
   if (nrow(rows) == 0L) return(NULL)
   as.list(rows[1L, ])
+}
+
+#' Fetch one row by an unconsumed email-verification token, or NULL.
+#'
+#' Returns NULL if no row matches OR if the matching row has already
+#' been verified (defensive — token should have been cleared on verify).
+#'
+#' @keywords internal
+#' @noRd
+user_db_get_user_by_verify_token <- function(con, token) {
+  if (is.null(token) || !nzchar(token)) return(NULL)
+  rows <- DBI::dbGetQuery(con,
+    "SELECT user_id, kind, email, hashed_pw, email_verified,
+            email_verify_token, email_verify_expires_at
+       FROM users
+      WHERE email_verify_token = ?
+        AND email_verified = 0
+      LIMIT 1",
+    params = list(token)
+  )
+  if (nrow(rows) == 0L) return(NULL)
+  as.list(rows[1L, ])
+}
+
+#' Mark a user's email as verified and clear the token.
+#' @keywords internal
+#' @noRd
+user_db_set_email_verified <- function(con, user_id) {
+  DBI::dbExecute(con,
+    "UPDATE users
+        SET email_verified = 1,
+            email_verify_token = NULL,
+            email_verify_expires_at = NULL
+      WHERE user_id = ?",
+    params = list(user_id)
+  )
+  invisible(NULL)
+}
+
+#' Replace a user's verification token (e.g. for a resend).
+#' @keywords internal
+#' @noRd
+user_db_set_email_verify_token <- function(con, user_id,
+                                           token,
+                                           expires_at,
+                                           sent_at = as.integer(Sys.time())) {
+  DBI::dbExecute(con,
+    "UPDATE users
+        SET email_verify_token = ?,
+            email_verify_expires_at = ?,
+            email_verify_sent_at = ?,
+            email_verified = 0
+      WHERE user_id = ?",
+    params = list(token, as.integer(expires_at), as.integer(sent_at),
+                  user_id)
+  )
+  invisible(NULL)
 }
 
 #' Stamp `last_login = now`.
@@ -215,9 +360,9 @@ user_db_can_open <- function(con, state_id, user_id) {
 
 #' Insert or update a row in `ai_settings` for `user_id`.
 #'
-#' Uses INSERT…ON CONFLICT(user_id) DO UPDATE for atomic upsert. Any
+#' Uses INSERT...ON CONFLICT(user_id) DO UPDATE for atomic upsert. Any
 #' parameter left at its default (`NULL` or formals-default) is written
-#' verbatim — the caller controls whether to clear or preserve fields.
+#' verbatim -- the caller controls whether to clear or preserve fields.
 #' Use [user_db_ai_settings_clear()] to delete the row entirely.
 #'
 #' @param api_key_enc raw vector of sodium-encrypted bytes, or NULL.
@@ -293,7 +438,7 @@ user_db_upload_ref_inc <- function(con, sha256, user_id) {
 }
 
 #' Decrement the (sha, user_id) refcount. Deletes the row when it hits
-#' zero. Returns the new refcount (0 ⇒ row deleted).
+#' zero. Returns the new refcount (0 means row deleted).
 #' @keywords internal
 #' @noRd
 user_db_upload_ref_dec <- function(con, sha256, user_id) {

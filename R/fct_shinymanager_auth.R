@@ -10,7 +10,7 @@
 # can mock it without reaching the user_db. Task 3 adds the live
 # constructor shinymanager_check_credentials_fn().
 
-#' B3.6 — inline stylesheet for the shinymanager auth screen.
+#' B3.6 -- inline stylesheet for the shinymanager auth screen.
 #'
 #' Self-contained because the auth UI renders BEFORE deUI() / addResourcePath
 #' run, so we can't reference the main `inst/extdata/www/debrowser.css`.
@@ -18,7 +18,7 @@
 #' navy canvas (with grid + radial glows) the rest of the app uses, and
 #' styles the brand mark, eyebrow, headline, inputs, and Login button.
 #'
-#' @return character — a CSS blob suitable for `tags$style(HTML(...))`
+#' @return character -- a CSS blob suitable for `tags$style(HTML(...))`
 #' @keywords internal
 #' @noRd
 de_auth_styles <- function() {
@@ -84,7 +84,7 @@ body > .container, body > div:not(.de-auth-hero):not(.de-auth-signup):not(.de-au
   margin-top: 6px; color: var(--de-text-3); font-size: 12px;
 }
 
-/* shinymanager renders an h3 and a .panel — restyle them as one card */
+/* shinymanager renders an h3 and a .panel -- restyle them as one card */
 h3 { display: none !important; }
 .panel, .panel-primary {
   background: var(--de-bg-1) !important;
@@ -136,7 +136,7 @@ h3 { display: none !important; }
 .panel-body .selectize-control,
 .panel-body .form-group:has(#auth-language) { display: none !important; }
 
-/* Login button — gradient pill, full width inside the card */
+/* Login button -- gradient pill, full width inside the card */
 #auth-go_auth {
   width: 100% !important;
   height: 40px !important;
@@ -152,20 +152,129 @@ h3 { display: none !important; }
 }
 #auth-go_auth:hover { filter: brightness(1.05); }
 
-/* Sign-up row below the card */
+/* Sign-up row below the card. Renders as a proper outlined button
+   instead of a thin text link so first-time visitors notice it. */
 .de-auth-signup {
-  max-width: 420px; margin: 18px auto 0;
-  text-align: center;
+  max-width: 420px; margin: 22px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   color: var(--de-text-2); font-size: 12.5px;
 }
-.de-auth-signup a {
-  color: var(--de-cyan) !important;
-  text-decoration: none;
-  font-weight: 500;
-  margin-left: 4px;
+.de-auth-signup > span:first-child {
+  font-size: 11.5px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--de-text-3);
 }
-.de-auth-signup a:hover { text-decoration: underline; }
-.de-auth-signup .fa, .de-auth-signup svg { margin-right: 4px; }
+.de-auth-signup a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 220px;
+  padding: 10px 18px;
+  border: 1px solid rgba(94,230,214,.55);
+  border-radius: 10px;
+  background: rgba(94,230,214,.06);
+  color: var(--de-cyan) !important;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none !important;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.de-auth-signup a:hover,
+.de-auth-signup a:focus-visible {
+  background: var(--de-grad);
+  border-color: transparent;
+  color: #0B1020 !important;
+  outline: none;
+}
+.de-auth-signup .fa,
+.de-auth-signup svg {
+  font-size: 13px;
+}
+
+/* Inline signup form (replaces modal-based signup). The <details>
+   summary acts as the "Create an account" button; clicking expands
+   the form right below the login card. No modal = no Shiny
+   renderContentAsync = duplicate-ID warning can\'t break us. */
+.de-auth-signup-inline {
+  max-width: 420px; margin: 22px auto 0;
+  color: var(--de-text-2); font-size: 12.5px;
+}
+.de-auth-signup-inline > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 220px;
+  padding: 10px 18px;
+  border: 1px solid rgba(94,230,214,.55);
+  border-radius: 10px;
+  background: rgba(94,230,214,.06);
+  color: var(--de-cyan) !important;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  list-style: none;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.de-auth-signup-inline > summary::-webkit-details-marker { display: none; }
+.de-auth-signup-inline[open] > summary,
+.de-auth-signup-inline > summary:hover {
+  background: var(--de-grad);
+  border-color: transparent;
+  color: #0B1020 !important;
+}
+.de-auth-signup-form {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--de-bg-1);
+  border: 1px solid var(--de-border-strong);
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  text-align: left;
+}
+.de-auth-signup-form label {
+  font-size: 11.5px;
+  color: var(--de-text-2);
+  letter-spacing: .02em;
+  margin-bottom: 4px;
+}
+.de-auth-signup-form input[type="text"],
+.de-auth-signup-form input[type="password"] {
+  background: var(--de-bg-2) !important;
+  border: 1px solid var(--de-border) !important;
+  color: var(--de-text-1) !important;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  width: 100%;
+}
+.de-auth-signup-form .form-check {
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--de-text-2);
+}
+.de-auth-signup-form .form-check a {
+  color: var(--de-cyan);
+  text-decoration: none;
+}
+.de-auth-signup-form .form-check a:hover { text-decoration: underline; }
+.de-auth-signup-form .btn-primary {
+  background: var(--de-grad) !important;
+  border: 0 !important;
+  color: #0B1020 !important;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 10px 18px;
+}
+.de-auth-signup-form hr {
+  border-color: var(--de-border);
+  margin: 10px 0;
+}
 
 /* Footer keyboard hint */
 .de-auth-footer {
@@ -243,42 +352,107 @@ shinymanager_auth_provider <- function(
       app,
       check_credentials = check_credentials_fn,
       fab_position = "none",
-      # B3.6 — auth screen redesign. shinymanager renders its own login
+      # CRITICAL: hides the language picker that shinymanager auto-renders
+      # in BOTH secure_app() and secure_server(). With the default
+      # `choose_language = TRUE` the same `shinymanager_language` input ID
+      # appears twice on the page, which makes Shiny's binder throw
+      # "Duplicate input ID" during every modal render. That error
+      # aborts `_bindAll`, so showModal() messages from the server-side
+      # observers (signup, AI settings, My Bookmarks, etc.) reach the
+      # client but the modal never finishes binding and is invisible to
+      # the user. Disabling the language picker removes one of the two
+      # bindings -- we don't expose locale switching to users anyway.
+      choose_language = FALSE,
+      # B3.6: auth screen redesign. shinymanager renders its own login
       # panel BEFORE deUI() runs, so the main `debrowser.css` isn't
-      # loaded yet. We inline a self-contained style sheet here that
-      # repaints shinymanager's panel as the same dark navy + cyan/violet
-      # card the rest of the app uses, then prepend a brand mark +
-      # eyebrow + headline above the panel.
+      # loaded yet. We inline a self-contained style sheet via head_auth,
+      # then place visual chrome (hero above, sign-up + footer below)
+      # via tags_top / tags_bottom, which shinymanager renders INSIDE
+      # <body>. Putting divs in head_auth (which goes inside <head>)
+      # leads to inconsistent rendering across browsers -- some auto-
+      # promote them into <body>, some don't, and the sign-up link
+      # disappears either way on stricter browsers.
       head_auth = shiny::tagList(
         shiny::tags$link(
           rel = "stylesheet",
           href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
         ),
         shiny::tags$style(htmltools::HTML(de_auth_styles())),
-        # Brand mark + eyebrow + headline above the shinymanager panel.
+        # remember_me.js MUST be on the login screen too. If the user
+        # has a saved cookie + cookie-consent flag, this script reloads
+        # the page with the cached `?_token_=...` so shinymanager skips
+        # the login form entirely. addResourcePath('www', ...) is
+        # registered in .onLoad so this resolves even on the auth screen.
+        shiny::tags$script(src = "www/remember_me.js")
+      ),
+      tags_top = shiny::tags$div(
+        class = "de-auth-hero",
+        shiny::tags$div(class = "de-auth-brand"),
         shiny::tags$div(
-          class = "de-auth-hero",
-          shiny::tags$div(class = "de-auth-brand"),
-          shiny::tags$div(
-            class = "de-auth-eyebrow",
-            shiny::tags$span(class = "de-auth-eyebrow-chip", "0"),
-            "SIGN IN"
-          ),
-          shiny::tags$h1(class = "de-auth-headline", "Welcome back."),
-          shiny::tags$div(class = "de-auth-sub",
-                          "DEBrowser v", getNamespaceVersion("debrowser"))
+          class = "de-auth-eyebrow",
+          shiny::tags$span(class = "de-auth-eyebrow-chip", "0"),
+          "SIGN IN"
         ),
-        # Sign-up link below the panel
-        shiny::tags$div(
-          class = "de-auth-signup",
-          shiny::tags$span("Don't have an account? "),
-          shiny::actionLink(
-            inputId = "open_signup_from_login",
-            label = "Sign up",
-            icon = shiny::icon("user-plus")
+        shiny::tags$h1(class = "de-auth-headline", "Welcome back."),
+        shiny::tags$div(class = "de-auth-sub",
+                        "DEBrowser v", getNamespaceVersion("debrowser"))
+      ),
+      tags_bottom = shiny::tagList(
+        # Inline signup using <details>/<summary>. No modal, no
+        # Shiny showModal(), so we sidestep shinymanager's duplicate
+        # `shinymanager_language` ID that was poisoning every
+        # _bindAll inside renderContentAsync. Inputs below are bound
+        # by Shiny on initial page render -- exactly the same path
+        # the username/password fields above use -- so they "just
+        # work" regardless of whether the modal binder is healthy.
+        shiny::tags$details(
+          class = "de-auth-signup-inline",
+          shiny::tags$summary(
+            shiny::icon("user-plus"), " Create an account"
+          ),
+          shiny::tags$div(
+            class = "de-auth-signup-form",
+            shiny::textInput("login_signup_user", "Username",
+                             width = "100%"),
+            shiny::textInput("login_signup_email",
+                             "Email (required for verification)",
+                             width = "100%"),
+            shiny::passwordInput("login_signup_pw",
+                                 "Password (8+ chars)",
+                                 width = "100%"),
+            shiny::passwordInput("login_signup_pw2",
+                                 "Confirm password",
+                                 width = "100%"),
+            shiny::tags$hr(),
+            shiny::checkboxInput(
+              "login_signup_accept_terms",
+              shiny::HTML(
+                "I accept the <a href='www/legal/terms.html' target='_blank' rel='noopener'>Terms of Service</a>."
+              ),
+              value = FALSE
+            ),
+            shiny::checkboxInput(
+              "login_signup_accept_privacy",
+              shiny::HTML(
+                "I have read the <a href='www/legal/privacy.html' target='_blank' rel='noopener'>Privacy Policy</a> and consent to the described processing of my data."
+              ),
+              value = FALSE
+            ),
+            shiny::checkboxInput(
+              "login_signup_accept_cookies",
+              shiny::HTML(
+                "I accept the use of cookies as described in the <a href='www/legal/cookies.html' target='_blank' rel='noopener'>Cookie Policy</a>."
+              ),
+              value = FALSE
+            ),
+            shiny::actionButton(
+              "login_signup_submit",
+              "Create account",
+              class = "btn-primary btn-block",
+              style = "width:100%;margin-top:8px;"
+            )
           )
         ),
-        # Footer keyboard hint
         shiny::tags$div(
           class = "de-auth-footer",
           shiny::tags$span(class = "kbd", "Enter"),
@@ -319,7 +493,7 @@ shinymanager_auth_provider <- function(
 #' Construct the check_credentials function passed to
 #' [shinymanager::secure_app()].
 #'
-#' Consults `users.sqlite` (D2.1) — only rows with `kind = 'shinymanager'`
+#' Consults `users.sqlite` (D2.1) -- only rows with `kind = 'shinymanager'`
 #' may authenticate via this path. OIDC/header users authenticate
 #' through their respective providers' identify().
 #'
@@ -354,6 +528,28 @@ shinymanager_check_credentials_fn <- function(db_path = NULL) {
     if (is.null(row)) return(deny)
     if (!identical(row$kind, "shinymanager")) return(deny)
     if (!verify_password(password, row$hashed_pw)) return(deny)
+
+    # D3: enforce email verification. Rows created BEFORE the migration
+    # have email_verified = 0 by default (the ALTER's DEFAULT 0 fills
+    # them), but we treat NA / missing column gracefully too in case
+    # the migration didn't run (e.g. external DB file).
+    verified <- isTRUE(row$email_verified == 1L) ||
+                # Backward-compat: rows with no email at all are treated
+                # as legacy admin-bootstrap accounts and allowed through.
+                # `create_debrowser_user()` opt-in to this path.
+                (is.na(row$email) || !nzchar(row$email))
+    if (!isTRUE(verified)) {
+      return(list(
+        result = FALSE,
+        user_info = list(
+          user = user,
+          # shinymanager surfaces user_info$message in the login UI
+          # via `auth_ui`'s "tags_top" slot in some configs; harmless
+          # to include even when it doesn't render.
+          message = "Please verify your email before signing in. Check your inbox for the verification link, or re-run signup to resend."
+        )
+      ))
+    }
 
     user_db_update_login(con, user)
     list(result = TRUE,

@@ -29,7 +29,7 @@ deUI <- function(req = NULL) {
 
   # Theme playground: ?preset=NAME swaps the bslib preset at runtime.
   # Precedence: explicit URL ?preset= wins, then `debrowser_preset` cookie,
-  # then default. Unknown values → default Slate theme via de_theme().
+  # then default. Unknown values \u2192 default Slate theme via de_theme().
   preset <- if (!is.null(req)) {
     p <- shiny::parseQueryString(req$QUERY_STRING)[["preset"]]
     if (is.null(p) || !nzchar(p)) p <- parse_preset_cookie(req$HTTP_COOKIE)
@@ -53,7 +53,7 @@ deUI <- function(req = NULL) {
   #    paint the navbar with `var(--bs-primary)`, the standard Bootstrap 5
   #    CSS variable that bootswatch sets per preset. Result: the navbar
   #    bg automatically tracks whichever preset is active. `inverse=TRUE`
-  #    is kept so bslib emits the standard `navbar-dark` class — light
+  #    is kept so bslib emits the standard `navbar-dark` class -- light
   #    text on the colored bar.
   navbar_bg <- if (is.null(preset)) "#0f172a" else NULL
 
@@ -128,6 +128,106 @@ deUI <- function(req = NULL) {
           )
         ),
         tags$script(src = "www/dropzone.js"),
+        # Global selectize defaults: adds the remove_button plugin (so every
+        # multi-select pill has an X) and reparents every dropdown to <body>
+        # so card / accordion overflow:hidden can't clip the menu. See
+        # inst/extdata/www/selectize_init.js for the full rationale.
+        tags$script(src = "www/selectize_init.js"),
+        # Persistent-login bridge: captures shinymanager's URL token into
+        # a long-lived `debrowser_remember` cookie (only when the user has
+        # accepted cookies). On a bare-URL revisit, the saved token is
+        # replayed so the login screen is skipped. See
+        # inst/extdata/www/remember_me.js for the full rationale.
+        tags$script(src = "www/remember_me.js"),
+        # Plotly theme + modebar overlap fix. Re-styles every Plotly
+        # graph on render to match the dark/light theme, and lifts the
+        # modebar above the plot area so its icons don't sit on top of
+        # data. See inst/extdata/www/plotly_theme.js for the full
+        # rationale.
+        tags$script(src = "www/plotly_theme.js"),
+        # Click delegate for the navbar account dropdown (Sign out /
+        # My Bookmarks / Sign up). MUST live in a static file rather
+        # than an inline tags$script inside the renderUI, because
+        # Shiny replaces uiOutput content with innerHTML, which does
+        # NOT execute embedded <script> tags. See the file for the
+        # full rationale.
+        tags$script(src = "www/account_dropdown.js"),
+        # Belt-and-suspenders fix for shinymanager rendering the
+        # `shinymanager_language` input twice. The duplicate aborts
+        # Shiny's modal-bind step, which is what's been silently killing
+        # every navbar dropdown click (signup, My Bookmarks, Sign out,
+        # Settings, AI Assistant). This script strips the duplicate from
+        # the DOM before Shiny's binder sees it. See dedup_shinymanager.js
+        # for the full rationale.
+        tags$script(src = "www/dedup_shinymanager.js"),
+        # Belt-and-suspenders: same fix INLINED, so it runs even if
+        # the external script file is cached, blocked, or missed. The
+        # external file remains as the primary path but if anything
+        # interferes (Shiny static-file cache, www/ path mis-resolve,
+        # CSP, etc.), this inline copy still executes.
+        tags$script(htmltools::HTML("
+          (function(){
+            var TARGET = 'shinymanager_language';
+            var renamed = 0;
+            function dedup(){
+              try {
+                var byId = document.querySelectorAll('[id=\"'+TARGET+'\"]');
+                for (var i = 1; i < byId.length; i++) {
+                  byId[i].id = TARGET + '_dup' + (++renamed);
+                  if (byId[i].getAttribute('name') === TARGET)
+                    byId[i].setAttribute('name', byId[i].id);
+                }
+                var byName = document.querySelectorAll('[name=\"'+TARGET+'\"]');
+                for (var j = 1; j < byName.length; j++) {
+                  if (byName[j].id && byName[j].id.indexOf('_dup') >= 0) continue;
+                  byName[j].setAttribute('name', TARGET + '_dup' + (++renamed));
+                }
+              } catch (e) {}
+            }
+            function patchWarn(){
+              if (!window.Shiny) return false;
+              var attempts = [
+                window.Shiny,
+                window.Shiny.shinyapp,
+                window.Shiny.ShinyApp && window.Shiny.ShinyApp.prototype
+              ].filter(Boolean);
+              attempts.forEach(function(obj){
+                if (obj && typeof obj.showShinyClientMessage === 'function' &&
+                    !obj.__debrowserPatched) {
+                  var orig = obj.showShinyClientMessage;
+                  obj.showShinyClientMessage = function(m){
+                    try {
+                      var msg = (m && (m.message || m)) || '';
+                      if (typeof msg === 'string' &&
+                          msg.indexOf('Duplicate input ID') >= 0 &&
+                          msg.indexOf('shinymanager_language') >= 0) {
+                        return; // swallow
+                      }
+                    } catch(e){}
+                    return orig.apply(this, arguments);
+                  };
+                  obj.__debrowserPatched = true;
+                }
+              });
+              return true;
+            }
+            dedup(); patchWarn();
+            [0, 50, 100, 250, 500, 1000, 2000].forEach(function(t){
+              setTimeout(function(){ dedup(); patchWarn(); }, t);
+            });
+            if (window.MutationObserver) {
+              new MutationObserver(function(){ dedup(); }).observe(
+                document.documentElement || document,
+                { childList: true, subtree: true,
+                  attributes: true, attributeFilter: ['id','name'] }
+              );
+            }
+            document.addEventListener('shiny:connected', function(){
+              dedup(); patchWarn();
+            });
+            console.log('[debrowser] inline dedup+patch installed');
+          })();
+        ")),
         # B3: redesign layer is opt-in via `data-debrowser-redesign` on <html>.
         # The CSS file ships with everything dormant until this attribute is
         # set, so existing users see no change. We turn it on by default
@@ -143,7 +243,7 @@ deUI <- function(req = NULL) {
         # B3: Inter is loaded by bslib; JetBrains Mono is added for tables.
         tags$link(rel = "stylesheet",
                   href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"),
-        # Wires the navbar preset picker → cookie + reload (see de_theme.R).
+        # Wires the navbar preset picker \u2192 cookie + reload (see de_theme.R).
         de_preset_js(),
         # Dark-mode toggle: flips data-bs-theme on <html> on click.
         # Plus B3.2: keyboard shortcuts 1-6 (switch tabs), T (toggle theme).
@@ -156,7 +256,7 @@ deUI <- function(req = NULL) {
              html.setAttribute('data-bs-theme', current === 'dark' ? 'light' : 'dark');
            });
 
-           // Keyboard shortcuts — ignore when focus is in an input/select/textarea
+           // Keyboard shortcuts -- ignore when focus is in an input/select/textarea
            document.addEventListener('keydown', function(e) {
              var t = e.target;
              if (!t) return;
@@ -165,7 +265,7 @@ deUI <- function(req = NULL) {
              if (t.isContentEditable) return;
              if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-             // Number keys → switch top-level tabs (panel0..panel5)
+             // Number keys \u2192 switch top-level tabs (panel0..panel5)
              var n = parseInt(e.key, 10);
              if (n >= 1 && n <= 6) {
                var panels = ['panel0','panel1','panel2','panel_cc','panel3','panel4'];
@@ -187,11 +287,11 @@ deUI <- function(req = NULL) {
         tags$div(
           class = "de-foot-hint",
           tags$span(class = "kbd", "T"),
-          " light/dark · ",
-          tags$span(class = "kbd", "1–6"),
+          " light/dark \u00b7 ",
+          tags$span(class = "kbd", "1\u20136"),
           " tabs"
         ),
-        # B3.29 — Middle-truncate long sidebar checkbox / radio labels so
+        # B3.29 -- Middle-truncate long sidebar checkbox / radio labels so
         # they fit on one line. Stores original text in data-de-orig and
         # mirrors it into title= so hover shows the full string.
         tags$script(htmltools::HTML(
@@ -238,7 +338,7 @@ deUI <- function(req = NULL) {
       id = "shared_sidebar",
       width = 300, open = "open",
 
-      # Data Prep tab — wizard nav lives in the sidebar (was nested in
+      # Data Prep tab -- wizard nav lives in the sidebar (was nested in
       # navset_pill_list inside the panel content prior to B1.16). DE
       # Filter (cutoff + comparison-selector) docks below the wizard nav
       # when on the DEAnalysis step (matches pre-B1 sidebar location;
@@ -246,7 +346,7 @@ deUI <- function(req = NULL) {
       # asked for the sidebar location).
       conditionalPanel(
         condition = "input.methodtabs == 'panel0'",
-        # B3.11 — wizard pipeline + DEMOS + SETTINGS sections, matching
+        # B3.11 -- wizard pipeline + DEMOS + SETTINGS sections, matching
         # the mockup pixel-by-pixel. Each step = [num] [dot] [label].
         # State on dot only (mint=done, cyan=active, gray=pending).
         tags$h6("Pipeline", class = "side-title"),
@@ -290,33 +390,33 @@ deUI <- function(req = NULL) {
           })
         ),
 
-        # DEMOS — simple two-column row (prefix + label).
+        # DEMOS -- simple two-column row (prefix + label).
         tags$h6("Demos", class = "side-title"),
         tags$div(class = "de-side-list",
           tags$a(class = "de-side-list-item", href = "#",
                  onclick = "document.querySelector('#load-demo')?.click(); return false;",
-                 tags$span(class = "de-side-list-prefix", "▸"),
+                 tags$span(class = "de-side-list-prefix", "\u25b8"),
                  "Vernia et al."),
           tags$a(class = "de-side-list-item", href = "#",
                  onclick = "document.querySelector('#load-demo2')?.click(); return false;",
-                 tags$span(class = "de-side-list-prefix", "▸"),
+                 tags$span(class = "de-side-list-prefix", "\u25b8"),
                  "Donnard et al.")
         ),
 
-        # SETTINGS — simple two-column row
+        # SETTINGS -- simple two-column row
         tags$h6("Settings", class = "side-title"),
         tags$div(class = "de-side-list",
           tags$a(class = "de-side-list-item", href = "#",
                  onclick = "document.querySelector('#dark_mode_toggle')?.click(); return false;",
-                 tags$span(class = "de-side-list-prefix", "⚙"),
+                 tags$span(class = "de-side-list-prefix", "\u2699"),
                  "Theme & layout"),
           tags$a(class = "de-side-list-item", href = "#",
-                 onclick = "alert('Shortcuts:\\n1-6 → switch tabs\\nT → toggle theme'); return false;",
-                 tags$span(class = "de-side-list-prefix", "⌘"),
+                 onclick = "alert('Shortcuts:\\n1-6 \u2192 switch tabs\\nT \u2192 toggle theme'); return false;",
+                 tags$span(class = "de-side-list-prefix", "\u2318"),
                  "Keyboard shortcuts")
         ),
 
-        # B3.21 — Permanent safety net for green-dot persistence.
+        # B3.21 -- Permanent safety net for green-dot persistence.
         # The Shiny addCustomMessageHandler pathway was unreliable in our
         # observed sessions (the registered handler didn't run for every
         # 'debrowser-progress' broadcast). This direct WebSocket listener
@@ -352,7 +452,7 @@ deUI <- function(req = NULL) {
                            el.classList.add('de-pill-skipped');
                          }
                        } else {
-                         // pending / blank — leave done alone
+                         // pending / blank -- leave done alone
                          if (!wasDone) {
                            el.classList.remove('de-pill-locked','de-pill-skipped');
                          }
@@ -368,7 +468,7 @@ deUI <- function(req = NULL) {
 
         # Active-step observer: read input.DataPrep (current navset_hidden
         # value) and add .active to the matching wiz-step.
-        # B3.19 — Also enforces the locking rule: once a step is .de-pill-done
+        # B3.19 -- Also enforces the locking rule: once a step is .de-pill-done
         # it stays unlockable even if its data-requires input briefly goes
         # falsy. Previously every shiny:inputchanged fire would re-add
         # .de-pill-locked to completed steps, dimming them under the green dot.
@@ -447,7 +547,7 @@ deUI <- function(req = NULL) {
         )
       ),
 
-      # Plot/table tabs — existing left-menu content
+      # Plot/table tabs -- existing left-menu content
       conditionalPanel(
         condition = "input.methodtabs != 'panel0'",
         conditionalPanel(
@@ -547,7 +647,7 @@ deUI <- function(req = NULL) {
     bslib::nav_panel(
       title = de_nav_chip(2, "Main Plots"), value = "panel1",
       de_eyebrow(2, "Main plots"),
-      de_headline("Volcano, MA, scatter — at a glance."),
+      de_headline("Volcano, MA, scatter -- at a glance."),
       uiOutput("mainmsgs"),
       uiOutput("mainpanel")
     ),
@@ -559,7 +659,7 @@ deUI <- function(req = NULL) {
       uiOutput("qcpanel")
     ),
 
-    # E11 (post-redirect): Comparison Concordance — top-level tab
+    # E11 (post-redirect): Comparison Concordance -- top-level tab
     # between QC Plots and Enrichment. Hidden at startup; shown by an
     # observer in R/server.R when length(de_results_list()) >= 2.
     bslib::nav_panel(
@@ -585,14 +685,23 @@ deUI <- function(req = NULL) {
 
     bslib::nav_spacer(),
 
-    debrowser::exportMenuUI("export"),
+    # NOTE (B3.34): In hosted mode the Export items render INSIDE the
+    # account (@user) dropdown -- see accountDropdownServer's
+    # renderUI. We only show the standalone Export nav_menu in
+    # non-hosted mode (no account dropdown exists to host it).
+    if (!hosted_mode()) debrowser::exportMenuUI("export"),
 
     bslib::nav_item(
       shiny::actionButton("bookmark_share", "Bookmark",
                           icon = shiny::icon("bookmark"))
     ),
 
-    debrowser::aiSettingsUI("ai_settings"),
+    # NOTE: Settings nav_menu removed -- "AI Assistant" now lives inside
+    # the account dropdown (after "My Bookmarks") so the navbar has one
+    # fewer dropdown. The aiSettingsServer is still mounted in server.R
+    # and listens on input `ai_settings-open_ai_modal`, which the
+    # account dropdown's AI Assistant row fires directly via
+    # `data-debrowser-input="ai_settings-open_ai_modal"`.
 
     # D2.5: account dropdown only surfaces in hosted mode (the only
     # mode where signup/signin/signout are meaningful). Non-hosted

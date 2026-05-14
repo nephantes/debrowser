@@ -30,27 +30,60 @@
 #' @export
 exportMenuUI <- function(id) {
   ns <- shiny::NS(id)
+  # NOTE: as of B3.34, the Export menu is rendered INSIDE the account
+  # dropdown (see exportMenuItems() and accountDropdownServer()). We
+  # keep this function for backward-compatibility (anyone embedding
+  # debrowser as a sub-app expects exportMenuUI() to return a navbar
+  # element), but the main app no longer mounts it -- ui.R skipped the
+  # call and accountDropdownServer renders these items inline. Returning
+  # the same nav_menu here means a standalone app still works.
   bslib::nav_menu(
     title = "Export",
     align = "right",
     bslib::nav_item(
-      shiny::downloadLink(ns("download_r"), "R script")
-    ),
-    bslib::nav_item(
-      shiny::downloadLink(ns("download_rmd_src"), "Rmd source")
-    ),
-    bslib::nav_item(
-      shiny::downloadLink(ns("download_rmd"), "HTML")
-    ),
-    bslib::nav_item(
-      shiny::actionLink(ns("view_html_tab"), "View HTML in tab")
-    ),
-    bslib::nav_item(
-      shiny::downloadLink(ns("download_ipynb"), "Jupyter notebook")
-    ),
-    bslib::nav_item(
-      shiny::actionLink(ns("show_methods"), "Copy methods text")
+      shiny::tags$ul(class = "de-account-menu", exportMenuItems(id))
     )
+  )
+}
+
+#' Export menu items (without nav_menu wrapper) for embedding in the
+#' account dropdown. Returns a list of `<li>`s, each carrying either a
+#' shiny-download-link (downloads) or a `data-debrowser-input` action
+#' link (modal opens). IDs are namespaced under `id` so the existing
+#' `exportMenuServer(id, ...)` observers/handlers wire up unchanged.
+#'
+#' @param id Module ID (matches the one passed to `exportMenuServer()`).
+#' @return list of `shiny::tags$li` elements.
+#' @export
+exportMenuItems <- function(id) {
+  ns <- shiny::NS(id)
+  mk_action <- function(action_name, label, icon_name) {
+    shiny::tags$a(
+      href = "#",
+      `data-debrowser-input` = ns(action_name),
+      class = "dropdown-item de-account-item",
+      style = "color: #0f172a; cursor: pointer;",
+      shiny::icon(icon_name), " ", label
+    )
+  }
+  mk_download <- function(action_name, label, icon_name) {
+    shiny::downloadLink(
+      outputId = ns(action_name),
+      label    = shiny::tagList(shiny::icon(icon_name), " ", label),
+      class    = "dropdown-item de-account-item",
+      style    = "color: #0f172a; cursor: pointer;"
+    )
+  }
+  # Icon names chosen to work in both FA5 and FA6 (avoid FA6-only names
+  # like arrow-up-right-from-square / file-lines / file-export which
+  # render as a fallback "bars" glyph in FA5).
+  list(
+    shiny::tags$li(mk_download("download_r",       "R script",        "file-code")),
+    shiny::tags$li(mk_download("download_rmd_src", "Rmd source",      "file-alt")),
+    shiny::tags$li(mk_download("download_rmd",     "HTML",            "download")),
+    shiny::tags$li(mk_action  ("view_html_tab",    "View HTML in tab", "external-link-alt")),
+    shiny::tags$li(mk_download("download_ipynb",   "Jupyter notebook", "book")),
+    shiny::tags$li(mk_action  ("show_methods",     "Copy methods text","clipboard"))
   )
 }
 

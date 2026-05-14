@@ -27,9 +27,25 @@ accountDropdownUI <- function(id) {
 #' @export
 accountDropdownServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
-    output$label <- shiny::renderUI({
+
+    # Auth-state poll: every 2s, recompute the user id and write into a
+    # reactiveVal. Outputs depend on the reactiveVal, NOT on a fresh
+    # invalidateLater(), so the renderUI fires ONLY when the user
+    # identifier actually changes (login, logout). This eliminates the
+    # race where the 2-second auto-re-render replaced the dropdown DOM
+    # mid-click, dropping the click event before Shiny could deliver it
+    # to input$signout / input$my_bookmarks.
+    user_id_rv <- shiny::reactiveVal(NA_character_)
+    shiny::observe({
       shiny::invalidateLater(2000, session)
-      uid <- current_user(session)
+      shiny::isolate({
+        uid <- current_user(session)
+        if (!identical(uid, user_id_rv())) user_id_rv(uid)
+      })
+    })
+
+    output$label <- shiny::renderUI({
+      uid <- user_id_rv()
       if (is.na(uid) || identical(uid, "local")) {
         shiny::tags$span("Not signed in")
       } else {
@@ -37,60 +53,141 @@ accountDropdownServer <- function(id) {
       }
     })
 
-    # Menu items swap based on login state.
-    # D2.5 fix: render each action as a Bootstrap `.dropdown-item` so
-    # it inherits the navbar's native menu styling (color, padding,
-    # hover, no-underline, dark-theme aware) instead of looking like
-    # an underlined cyan hyperlink. The wrapper carries min-width so
-    # "My Bookmarks" doesn't get clipped on the left.
+    # Menu items render as `<a data-debrowser-action="...">` with both
+    # (a) a document-level click delegate installed from
+    # inst/extdata/www/account_dropdown.js (loaded by ui.R), AND
+    # (b) an inline onclick attribute that fires the same setInputValue
+    # call directly. We need both because:
+    #   - The external script can be blocked by aggressive cache or
+    #     CSP -- onclick is a hard guarantee.
+    #   - The document-level delegate handles edge cases like clicks on
+    #     the icon (e.target may be the <i>, not the <a>), via
+    #     `closest('[data-debrowser-action]')`. onclick on the <a>
+    #     handles direct anchor clicks.
+    # Inline onclick is safe from the "innerHTML strips scripts" gotcha
+    # because it's an attribute, not a <script> element.
     output$menu_items <- shiny::renderUI({
-      shiny::invalidateLater(2000, session)
-      uid <- current_user(session)
-      style_css <- paste(
-        ".de-account-menu { min-width: 200px; padding: 4px 0; }",
-        ".de-account-menu .dropdown-item {",
-        "  white-space: nowrap; text-decoration: none !important;",
-        "}",
-        ".de-account-menu .dropdown-item .fa,",
-        ".de-account-menu .dropdown-item .fas,",
-        ".de-account-menu .dropdown-item .far,",
-        ".de-account-menu .dropdown-item svg { margin-right: 8px; }",
-        sep = " "
-      )
-      mk_item <- function(input_id, label, icon_name) {
-        shiny::actionLink(
-          inputId = session$ns(input_id),
-          label   = shiny::tagList(shiny::icon(icon_name), " ", label),
-          class   = "dropdown-item"
+      uid <- user_id_rv()
+      ns_prefix <- session$ns("")  # "account-"
+      # CSP-safe click delivery: we emit the FULL Shiny input id in a
+      # `data-debrowser-input` attribute, and the
+      # inst/extdata/www/account_dropdown.js script (loaded by ui.R)
+      # attaches a single document-level listener that reads this
+      # attribute on click and fires Shiny.setInputValue with the
+      # right id. No inline onclick / onmousedown / javascript: href
+      # -- all three of those are blocked by Shiny's default CSP, so
+      # the previous attempts silently failed even though the
+      # attributes were in the DOM.
+      #
+      # `mk_item()` defaults to firing an input INSIDE this module's
+      # namespace ("account-<action_name>"). For AI Assistant we point
+      # to the aiSettings module's namespace directly:
+      # "ai_settings-open_ai_modal" so the Settings nav_menu in the
+      # navbar can be removed entirely while the existing
+      # aiSettingsServer observer still picks the click up.
+      mk_item <- function(action_name, label, icon_name,
+                          full_input_id = NULL) {
+        input_id <- if (!is.null(full_input_id)) full_input_id
+                    else paste0(ns_prefix, action_name)
+        shiny::tags$li(
+          shiny::tags$a(
+            href = "#",
+            `data-debrowser-input` = input_id,
+            class = "dropdown-item de-account-item",
+            style = "color: #0f172a; cursor: pointer;",
+            shiny::icon(icon_name), " ", label
+          )
         )
       }
+      ai_item <- mk_item(
+        action_name   = "ai_assistant",
+        label         = "AI Assistant",
+        icon_name     = "robot",
+        full_input_id = "ai_settings-open_ai_modal"
+      )
+
+      # B3.34: Export items rendered inline here (was previously a
+      # separate navbar dropdown). They live in the "export" namespace,
+      # which matches exportMenuServer("export", ...) wired in server.R,
+      # so their downloads / actionLinks keep working unchanged.
+      export_section <- shiny::tagList(
+        shiny::tags$li(shiny::tags$hr(
+          class = "dropdown-divider",
+          style = "margin: 4px 6px; opacity: .35;"
+        )),
+        shiny::tags$li(shiny::tags$div(
+          class = "dropdown-header",
+          style = paste(
+            "font-size: 11px; font-weight: 700;",
+            "text-transform: uppercase; letter-spacing: .05em;",
+            "padding: 4px 12px; color: #64748b;"
+          ),
+          "Export"
+        )),
+        # Same-package call (no `debrowser::` prefix needed and avoids
+        # the "not an exported object" error before NAMESPACE is
+        # regenerated by roxygen). `exportMenuItems` lives in
+        # R/mod_export.R.
+        exportMenuItems("export")
+      )
+
       if (is.na(uid) || identical(uid, "local")) {
-        shiny::tagList(
-          shiny::tags$style(shiny::HTML(style_css)),
-          shiny::div(class = "de-account-menu",
-                     mk_item("signup_link", "Sign up", "user-plus"))
-        )
+        # Anonymous: Sign up + AI Assistant + Export
+        # (settings + export are still useful without an account).
+        shiny::tags$ul(class = "de-account-menu",
+                       mk_item("signup_link", "Sign up", "user-plus"),
+                       ai_item,
+                       export_section)
       } else {
-        shiny::tagList(
-          shiny::tags$style(shiny::HTML(style_css)),
-          shiny::div(class = "de-account-menu",
-                     mk_item("my_bookmarks", "My Bookmarks", "bookmark"),
-                     mk_item("signout",      "Sign out",     "sign-out-alt"))
-        )
+        # Signed in: My Bookmarks -> AI Assistant -> Export... -> Sign out
+        shiny::tags$ul(class = "de-account-menu",
+                       mk_item("my_bookmarks", "My Bookmarks", "bookmark"),
+                       ai_item,
+                       export_section,
+                       shiny::tags$li(shiny::tags$hr(
+                         class = "dropdown-divider",
+                         style = "margin: 4px 6px; opacity: .35;"
+                       )),
+                       mk_item("signout",      "Sign out",     "sign-out-alt"))
       }
     })
 
     shiny::observeEvent(input$signup_link, {
       shiny::showModal(shiny::modalDialog(
-        title = "Sign up",
+        title = "Create your DEBrowser account",
         shiny::tagList(
           shiny::textInput(session$ns("signup_user"), "Username"),
           shiny::textInput(session$ns("signup_email"),
-                           "Email (optional)"),
+                           "Email (required for verification)"),
           shiny::passwordInput(session$ns("signup_pw"),
                                "Password (8+ chars)"),
           shiny::passwordInput(session$ns("signup_pw2"),
-                               "Confirm password")
+                               "Confirm password"),
+          shiny::tags$hr(),
+          shiny::tags$div(
+            class = "de-signup-consent",
+            shiny::checkboxInput(
+              session$ns("signup_accept_terms"),
+              shiny::HTML(
+                "I accept the <a href='www/legal/terms.html' target='_blank' rel='noopener'>Terms of Service</a>."
+              ),
+              value = FALSE
+            ),
+            shiny::checkboxInput(
+              session$ns("signup_accept_privacy"),
+              shiny::HTML(
+                "I have read the <a href='www/legal/privacy.html' target='_blank' rel='noopener'>Privacy Policy</a> and consent to the described processing of my data."
+              ),
+              value = FALSE
+            ),
+            shiny::checkboxInput(
+              session$ns("signup_accept_cookies"),
+              shiny::HTML(
+                "I accept the use of cookies and similar technologies as described in the <a href='www/legal/cookies.html' target='_blank' rel='noopener'>Cookie Policy</a>."
+              ),
+              value = FALSE
+            )
+          )
         ),
         footer = shiny::tagList(
           shiny::modalButton("Cancel"),
@@ -106,7 +203,8 @@ accountDropdownServer <- function(id) {
         user_id = input$signup_user,
         email = input$signup_email,
         password = input$signup_pw,
-        password_confirm = input$signup_pw2
+        password_confirm = input$signup_pw2,
+        require_email = TRUE
       )
       if (!is.null(err)) {
         shiny::showNotification(err, type = "error", duration = 6)
@@ -119,23 +217,38 @@ accountDropdownServer <- function(id) {
         return()
       }
       on.exit(DBI::dbDisconnect(con), add = TRUE)
-      ok <- tryCatch({
+      base_url <- compose_base_url(session)
+      result <- tryCatch({
         signup_user(con, input$signup_user, input$signup_email,
-                    input$signup_pw)
-        TRUE
+                    input$signup_pw,
+                    base_url = base_url,
+                    require_verification = FALSE)
       }, error = function(e) {
         shiny::showNotification(
           paste("Signup failed:", conditionMessage(e)),
           type = "error", duration = 8
         )
-        FALSE
+        NULL
       })
-      if (isTRUE(ok)) {
+      if (!is.null(result)) {
         shiny::removeModal()
-        shiny::showNotification(
-          "Account created. Please sign in.",
-          type = "message", duration = 6
-        )
+        if (isTRUE(result$verify_required)) {
+          shiny::showModal(shiny::modalDialog(
+            title = "Check your email",
+            shiny::tags$p(
+              "We sent a verification link to ",
+              shiny::tags$b(input$signup_email), ". ",
+              "Click it within 24 hours to activate your account."
+            ),
+            easyClose = TRUE,
+            footer = shiny::modalButton("OK")
+          ))
+        } else {
+          shiny::showNotification(
+            "Account created. Please sign in.",
+            type = "message", duration = 6
+          )
+        }
       }
     })
 

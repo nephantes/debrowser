@@ -40,18 +40,22 @@ debrowserhistogram <- function(id, data = NULL) {
     withProgress(message = "Drawing histogram", style = "notification", value = 0.1, {
       h <- hist(log10(rowSums(data)), breaks = as.numeric(input$breaks), plot = FALSE)
 
+      # Pin size to the host plotlyOutput rather than to never-defined
+      # input$width/height (the histogramControlsUI only exposes a
+      # "breaks" textInput, so those legacy inputs evaluated to NULL
+      # and Plotly defaulted to ~700x500 inside an already-wide card,
+      # producing the enormous filter-step histograms reported by
+      # users). Compact margins keep the actual bars dominant over
+      # axis padding.
       p <- plot_ly(
         x = h$mids, y = h$counts,
-        width = input$width, height = input$height
+        type = "bar"
       ) %>%
-        add_bars() %>%
         plotly::layout(
-          margin = list(
-            l = input$left,
-            b = input$bottom,
-            t = input$top,
-            r = input$right
-          )
+          autosize = TRUE,
+          margin = list(l = 40, b = 36, t = 12, r = 12),
+          xaxis = list(title = "log10(rowSums)"),
+          yaxis = list(title = "Count")
         )
       p$elementId <- NULL
       if (!is.null(input$svg) && input$svg == TRUE) {
@@ -64,7 +68,8 @@ debrowserhistogram <- function(id, data = NULL) {
     de_card(
       title = "Plot",
       plotlyOutput(session$ns("histogram"),
-        width = input$width, height = input$height
+        width  = "100%",
+        height = "260px"
       )
     )
   })

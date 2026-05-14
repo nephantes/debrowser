@@ -17,11 +17,26 @@
 #' @export
 aiSettingsUI <- function(id) {
   ns <- shiny::NS(id)
+  # CSP-safe: emit data-debrowser-input. account_dropdown.js attaches
+  # a document-level click delegate that reads the attribute and
+  # fires Shiny.setInputValue. The previous javascript: href was
+  # blocked by Shiny's default CSP, so the click went nowhere.
   bslib::nav_menu(
     title = "Settings",
     align = "right",
     bslib::nav_item(
-      shiny::actionLink(ns("open_ai_modal"), "AI Assistant")
+      shiny::tags$ul(
+        class = "de-account-menu",
+        shiny::tags$li(
+          shiny::tags$a(
+            href = "#",
+            `data-debrowser-input` = ns("open_ai_modal"),
+            class = "dropdown-item de-account-item",
+            style = "color: #0f172a; cursor: pointer;",
+            shiny::icon("robot"), " AI Assistant"
+          )
+        )
+      )
     )
   )
 }

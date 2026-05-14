@@ -1,3 +1,30 @@
+# Compact one-row DataTables `dom` template.
+#
+# Default DT layout puts Buttons, length selector, and filter on separate
+# rows, each with its own block-level margin. That gives a ~3-line stack
+# of controls floating above every table. This `dom` packs B + l + f into
+# a single row above the table, with pagination/info on a single row
+# below, leaving very little vertical space between the controls and the
+# table itself.
+#
+# Used directly by the four explicit DT calls that previously passed
+# `dom = "Blfrtip"` (funcs.R, server.R x3), and installed as the global
+# default in `.onLoad` (zzz.R) so any DT call that does NOT pass `dom`
+# (mod_enrichment, mod_comparison_concordance, fgsea_results_table, etc.)
+# inherits the same compact layout.
+.dt_dom_compact <- paste0(
+  "<'dt-top row align-items-center gx-2 mb-1'",
+    "<'col-auto'B>",
+    "<'col-auto'l>",
+    "<'col text-end'f>",
+  ">",
+  "<'row'<'col-12'tr>>",
+  "<'dt-bot row align-items-center gx-2 mt-1'",
+    "<'col-auto'i>",
+    "<'col text-end'p>",
+  ">"
+)
+
 #' getSampleDetails
 #'
 #' get sample details
@@ -216,7 +243,7 @@ getTableDetails <- function(output = NULL, session = NULL, tablename = NULL, dat
         extensions = "Buttons",
         options = list(
           server = TRUE,
-          dom = "Blfrtip",
+          dom = .dt_dom_compact,
           buttons =
             list("copy", list(
               extend = "collection",
@@ -251,7 +278,7 @@ getTableDetails <- function(output = NULL, session = NULL, tablename = NULL, dat
   # We deliberately replaced shinyBS::bsModal here: the legacy bsModal
   # (last released 2015) emits Shiny.setInputValue calls with a malformed
   # `opts.mode` object, which Shiny >= 1.7 rejects with
-  # "Unexpected input value mode: '[object Object]'" — that error was
+  # "Unexpected input value mode: '[object Object]'" -- that error was
   # swallowing the click event so the modal-trigger update never reached
   # the server. shiny::modalDialog uses modern bindings and has no such
   # problem. Also: the dataTableOutput lives inside a freshly shown modal
@@ -446,18 +473,23 @@ getHelpButton <- function(name = NULL, link = NULL) {
   if (is.null(name)) {
     return(NULL)
   }
-  # D2.5 cleanup: previously rendered an actionButtonDE inside an <a>
-  # tag, both with id="info_<name>". Multiple call sites of
-  # getHelpButton("method", ...) (uifuncs.R + mod_condselect.R) produced
-  # duplicate-id warnings on every UI render. The button click was
-  # also never observable because it's wrapped in <a href="...">. So
-  # collapsed to a plain styled link with no Shiny input id.
+  # Renders an unambiguously info-styled chip: circled "i" icon + the
+  # word "Help", with a tooltip that includes the topic name. The
+  # `.de-help-btn` class drives the chip styling in debrowser.css
+  # (base + redesign variants); no Shiny input id because the link
+  # is a plain external nav, and duplicate ids broke prior renders.
+  safe_name <- htmltools::htmlEscape(name)
+  safe_link <- if (is.null(link)) "#" else link
   HTML(paste0(
-    "<a href=\"", link, "\" target=\"_blank\" ",
-    "class=\"btn btn-info btn-xs\" ",
-    "title=\"Help: ", name, "\" ",
-    "style=\"margin-left: 4px; padding: 2px 8px;\">",
-    "<i class=\"fa fa-info\"></i>",
+    "<a href=\"", safe_link, "\" target=\"_blank\" rel=\"noopener\" ",
+    "class=\"de-help-btn\" ",
+    "role=\"button\" ",
+    "aria-label=\"Help: ", safe_name,
+      " (opens documentation in a new tab)\" ",
+    "title=\"Help: ", safe_name,
+      " &#8211; opens documentation in a new tab\">",
+    "<i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i>",
+    "<span class=\"de-help-btn-label\">Help</span>",
     "</a>"
   ))
 }
@@ -611,7 +643,7 @@ getTabUpdateJS <- function() {
     "      el.classList.add(msg.state);",
     "    }",
     "  });",
-    "  // B3.19 — Once a step is DONE, keep it DONE. Reset only on the",
+    "  // B3.19 -- Once a step is DONE, keep it DONE. Reset only on the",
     "  // explicit upload-fresh-data path where the server intentionally",
     "  // sends 'locked' for downstream steps to wipe stale decorations.",
     "  var pillSel = 'a[data-progress-pill=\"' + msg.key + '\"]';",

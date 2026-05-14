@@ -16,3 +16,9 @@
 ^\.env$
 ^debrowser\.BiocCheck$
 ^.*\.Rcheck$
+^run_styled_3839\.R$
+^\.commit-msg\.txt$
+^\.commit-and-push\.sh$
+^\.gitignore$
+^.*\.fuse_hidden.*$
+^R/\.fuse_hidden.*$

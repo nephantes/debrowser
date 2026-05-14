@@ -67,12 +67,18 @@
 enrichmentGmtUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    shiny::selectizeInput(
+    # Gene-set source: only two choices, so radioButtons matches the
+    # "Plot Type" pattern used elsewhere in the sidebar and avoids the
+    # selectize popup-transparency bug entirely. The accordion-style
+    # radio is inline and always opaque.
+    shiny::radioButtons(
       ns("gmt_source"), "Gene-set source:",
       choices = c(
         "Upload .gmt" = "manual",
         "MSigDB"      = "msigdb"
-      )
+      ),
+      selected = "msigdb",
+      inline = FALSE
     ),
     shiny::conditionalPanel(
       condition = sprintf("input['%s'] == 'manual'", ns("gmt_source")),
@@ -81,15 +87,23 @@ enrichmentGmtUI <- function(id) {
     ),
     shiny::conditionalPanel(
       condition = sprintf("input['%s'] == 'msigdb'", ns("gmt_source")),
-      shiny::selectizeInput(
+      # Species + Collection have too many options for radioButtons, so
+      # use a NATIVE browser `<select>` (selectize = FALSE). Native
+      # selects are rendered by the browser chrome and are always
+      # opaque -- no popup transparency, no z-index races, no CSS
+      # hacks. Same approach the rest of the sidebar uses for any
+      # picker with more than ~5 options.
+      shiny::selectInput(
         ns("msigdb_species"), "Species:",
         choices  = .msigdb_species_choices(),
-        selected = "Homo sapiens"
+        selected = "Homo sapiens",
+        selectize = FALSE
       ),
-      shiny::selectizeInput(
+      shiny::selectInput(
         ns("msigdb_collection"), "Collection:",
         choices  = .msigdb_collection_choices(),
-        selected = "H"
+        selected = "H",
+        selectize = FALSE
       ),
       shiny::textInput(
         ns("msigdb_subcollection"),

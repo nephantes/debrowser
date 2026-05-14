@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DEBrowser · Terms of Service</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    :root {
+      --de-cyan:#5EE6D6; --de-violet:#A78BFA;
+      --de-grad:linear-gradient(135deg,#5EE6D6 0%,#A78BFA 100%);
+      --de-bg-0:#0B1020; --de-bg-1:#0F1530; --de-bg-2:#141B3A; --de-bg-3:#1A2147;
+      --de-border:rgba(255,255,255,.08); --de-border-strong:rgba(255,255,255,.14);
+      --de-text-1:#E6ECFF; --de-text-2:#A8B2D1; --de-text-3:#6E7BA5;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin:0; padding:0; background: var(--de-bg-0); color: var(--de-text-1); font-family: "Inter", system-ui, sans-serif; font-size: 14.5px; line-height: 1.65; }
+    body { background-image:
+      radial-gradient(800px 500px at 12% -10%, rgba(94,230,214,.10), transparent 60%),
+      radial-gradient(900px 600px at 110% 110%, rgba(167,139,250,.12), transparent 60%);
+      background-attachment: fixed; min-height: 100vh; }
+    main { max-width: 760px; margin: 0 auto; padding: 64px 28px 80px; }
+    h1 { font-size: 30px; font-weight: 800; letter-spacing: -.01em; margin: 0 0 4px; background: var(--de-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: .14em; color: var(--de-cyan); margin-bottom: 10px; text-transform: uppercase; }
+    .eyebrow .chip { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; background: var(--de-grad); color: #0B1020; font-size: 10px; font-weight: 700; font-family: "JetBrains Mono", monospace; }
+    .meta { color: var(--de-text-3); font-size: 12px; margin: 0 0 32px; }
+    h2 { font-size: 18px; font-weight: 700; margin: 36px 0 10px; color: var(--de-text-1); border-top: 1px solid var(--de-border); padding-top: 28px; }
+    h2:first-of-type { border-top: 0; padding-top: 0; }
+    p, ul, ol { color: var(--de-text-2); }
+    ul, ol { padding-left: 22px; }
+    li { margin: 4px 0; }
+    .summary { background: rgba(94,230,214,.06); border: 1px solid rgba(94,230,214,.22); border-radius: 12px; padding: 18px 22px; margin: 0 0 28px; }
+    .summary h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .1em; color: var(--de-cyan); margin: 0 0 8px; border: 0; padding: 0; }
+    .summary p { margin: 0 0 8px; color: var(--de-text-1); }
+    .summary ul { margin: 0; }
+    a { color: var(--de-cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .back { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--de-border-strong); border-radius: 8px; background: var(--de-bg-1); color: var(--de-text-2); font-size: 12px; font-weight: 500; margin-bottom: 32px; }
+    .back:hover { text-decoration: none; color: var(--de-text-1); border-color: var(--de-cyan); }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="javascript:history.length>1?history.back():window.close()">&larr; Back</a>
+  <div class="eyebrow"><span class="chip">§</span>Legal</div>
+  <h1>DEBrowser Terms of Service</h1>
+  <p class="meta">Last updated: May 12, 2026</p>
+
+  <div class="summary">
+    <h2>Quick summary</h2>
+    <p>By creating an account you agree that:</p>
+    <ul>
+      <li>DEBrowser is research software and may change at any time</li>
+      <li>Analyses and AI-assisted outputs may be incomplete or inaccurate and must be independently verified</li>
+      <li>You are responsible for your data, backups, and how you use the results</li>
+    </ul>
+    <p>Please read the full Terms below.</p>
+  </div>
+
+  <h2>1. Agreement to terms</h2>
+  <p>By creating an account, accessing, or using DEBrowser (the "Service"), you agree to these Terms. If you do not agree, do not use the Service.</p>
+
+  <h2>2. Research software; no warranty</h2>
+  <p>The Service is provided as research software. Features may be incomplete, unstable, or unavailable.</p>
+  <p>To the fullest extent permitted by law, the Service is provided "as is" and "as available" without warranties of any kind, including merchantability, fitness for a particular purpose, accuracy, or uninterrupted operation.</p>
+
+  <h2>3. Analysis and AI outputs disclaimer</h2>
+  <p>The Service runs statistical analyses (DESeq2, edgeR, limma) and may include AI-assisted features for interpretation and summarization.</p>
+  <p>All outputs &mdash; differential expression calls, plots, enrichment results, and AI-generated summaries &mdash; may be inaccurate, incomplete, or misleading and are provided for research purposes only. You are solely responsible for reviewing, validating, and verifying outputs before relying on them for any decision.</p>
+
+  <h2>4. No professional advice</h2>
+  <p>The Service does not provide clinical, diagnostic, medical, legal, financial, or other professional advice. Outputs must not be used as the sole basis for diagnosis or treatment.</p>
+
+  <h2>5. User responsibilities</h2>
+  <p>You are responsible for:</p>
+  <ul>
+    <li>all activity under your account</li>
+    <li>maintaining confidentiality of credentials and any API keys you configure</li>
+    <li>compliance with applicable laws and institutional policies (including IRB approvals for human-subject data)</li>
+    <li>maintaining backups of your data and exported results</li>
+  </ul>
+  <p>You may not:</p>
+  <ul>
+    <li>use the Service for unlawful purposes</li>
+    <li>reverse engineer or attempt to extract underlying models</li>
+    <li>bypass usage limits or security controls</li>
+    <li>build a competing service using the Service</li>
+  </ul>
+
+  <h2>6. Data and availability</h2>
+  <p>You acknowledge that:</p>
+  <ul>
+    <li>data may be lost, corrupted, or deleted</li>
+    <li>the Service may be unavailable or interrupted</li>
+    <li>research systems may not be backed up</li>
+  </ul>
+  <p>You are solely responsible for maintaining backups.</p>
+
+  <h2>7. Third-party services</h2>
+  <p>The Service may rely on third-party providers (Bioconductor mirrors, AI model providers, hosting infrastructure). We are not responsible for their performance, outputs, or terms.</p>
+
+  <h2>8. Fees and payments</h2>
+  <p>DEBrowser is free and open source. If you access a hosted instance that charges fees, those fees are due as stated at purchase and are non-refundable except where required by law.</p>
+
+  <h2>9. Intellectual property</h2>
+  <p>You retain ownership of your data.</p>
+  <p>You grant DEBrowser a limited license to use, process, and store your data to operate and improve the Service.</p>
+  <p>We may use aggregated and anonymized usage metrics to improve the platform.</p>
+
+  <h2>10. Suspension and termination</h2>
+  <p>We may suspend or terminate access at any time, with or without notice. Upon termination, access ends immediately and data may be deleted.</p>
+
+  <h2>11. Limitation of liability</h2>
+  <p>To the fullest extent permitted by law, DEBrowser and its maintainers will not be liable for indirect, incidental, or consequential damages, including loss of data, profits, or business interruption.</p>
+  <p>Total liability will not exceed the greater of amounts paid for the Service in the prior 3 months or $100 USD.</p>
+
+  <h2>12. Indemnification</h2>
+  <p>You agree to indemnify and hold harmless DEBrowser and its maintainers from claims arising from your use, your data, or your violations of these Terms.</p>
+
+  <h2>13. Changes to service and terms</h2>
+  <p>We may modify or discontinue the Service at any time. We may update these Terms; continued use means acceptance.</p>
+
+  <h2>14. Governing law</h2>
+  <p>These Terms are governed by the laws of Massachusetts, United States. Disputes will be resolved in courts located in Massachusetts, United States.</p>
+
+  <h2>15. Contact</h2>
+  <p>For questions, contact the DEBrowser maintainers at <a href="https://github.com/UMMS-Biocore/debrowser/issues">github.com/UMMS-Biocore/debrowser/issues</a>.</p>
+</main>
+</body>
+</html>
