@@ -559,7 +559,7 @@ decrypt_for_user <- function(user_id, blob) {
   if (length(blob) < 25L) return(NA_character_)
   require_pkg("sodium", feature = "per-user AI key encryption")
   k <- derive_user_key(load_or_init_master_key(), user_id)
-  nonce <- blob[1:24]
-  ct    <- blob[-(1:24)]
+  nonce <- blob[seq_len(24L)]
+  ct    <- blob[-seq_len(24L)]
   rawToChar(sodium::data_decrypt(ct, key = k, nonce = nonce))
 }

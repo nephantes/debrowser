@@ -29,7 +29,7 @@ getPCAPlotUI <- function(id) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserpcaplot("pca")
 #' }
 #'
@@ -132,7 +132,7 @@ pcaPlotControlsUI <- function(id = "pca") {
 #'   package = "debrowser"
 #' ))
 #' pca_data <- run_pca(getNormalizedMatrix(
-#'   demodata[rowSums(demodata[, 1:6]) > 10, 1:6]
+#'   demodata[rowSums(demodata[, seq_len(6L)]) > 10, seq_len(6L)]
 #' ))
 #'
 #' @export
@@ -175,15 +175,15 @@ run_pca <- function(
 #'   package = "debrowser"
 #' ))
 #' metadata <- cbind(
-#'   colnames(demodata[, 1:6]),
-#'   colnames(demodata[, 1:6]),
+#'   colnames(demodata[, seq_len(6L)]),
+#'   colnames(demodata[, seq_len(6L)]),
 #'   c(rep("Cond1", 3), rep("Cond2", 3))
 #' )
 #' colnames(metadata) <- c("samples", "color", "shape")
 #'
 #' a <- plot_pca(
 #'   getNormalizedMatrix(
-#'     demodata[rowSums(demodata[, 1:6]) > 10, 1:6]
+#'     demodata[rowSums(demodata[, seq_len(6L)]) > 10, seq_len(6L)]
 #'   ),
 #'   metadata = metadata, color = "samples",
 #'   size = 5, shape = "shape"
@@ -312,8 +312,8 @@ prepPCADat <- function(pca_data = NULL, metadata = NULL, input = NULL, pcx = 1, 
 #' load(system.file("extdata", "demo", "demodata.Rda", package = "debrowser"))
 #' input <- c()
 #' input$qcplot <- "pca"
-#' input$col_list <- colnames(demodata[, 1:6])
-#' dat <- getNormalizedMatrix(demodata[, 1:6])
+#' input$col_list <- colnames(demodata[, seq_len(6L)])
+#' dat <- getNormalizedMatrix(demodata[, seq_len(6L)])
 #' pca_data <- run_pca(dat)
 #' x <- getPCAexplained(dat, pca_data, input)
 #'
@@ -334,7 +334,7 @@ getPCAexplained <- function(
   }
   datexp <- data.frame(cbind(
     unlist(lapply(
-      c(1:size),
+      seq_len(size),
       function(x) {
         paste0("PC", x)
       }
@@ -343,7 +343,7 @@ getPCAexplained <- function(
   ))
   colnames(datexp) <- c("PCs", "explained")
   datexp$explained <- as.numeric(as.character(datexp$explained))
-  datexp <- datexp[1:size, ]
+  datexp <- datexp[seq_len(size), ]
   var <- pca_data$pca$sdev^2 / sum(pca_data$pca$sdev^2)
 
   ## Select the genes for PCA, removing the least variable
@@ -463,6 +463,8 @@ getColorShapeSelection <- function(metadata = NULL, input = NULL, session = NULL
 #' select legend
 #' @param id, namespace id
 #' @note \code{getLegendSelect}
+#' @return A `shiny::selectInput` letting the user pick whether the PCA
+#'   plot's legend tracks the color or shape mapping.
 #' @examples
 #' x <- getLegendSelect("pca")
 #' @export
@@ -481,6 +483,8 @@ getLegendSelect <- function(id = "pca") {
 #'
 #' hide legend
 #' @param id, namespace id
+#' @return A `shiny::radioButtons` toggling whether the PCA plot legend
+#'   is rendered or hidden.
 #' @examples
 #' x <- getHideLegendOnOff("pca")
 #' @export

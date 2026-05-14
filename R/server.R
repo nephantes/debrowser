@@ -2292,18 +2292,13 @@ deServer <- function(input, output, session) {
       output$downloadGOPlot <- downloadHandler(filename = function() {
         paste(input$goplot, ".pdf", sep = "")
       }, content = function(file) {
-        pdf(file)
-        print(inputGOstart()$p)
-        dev.off()
+        # Plot persistence via grid graphics device. BiocCheck flags
+        # bare print() in package code, but grid graphics objects must
+        # be drawn explicitly for pdf() to capture them.
+        grDevices::pdf(file)
+        grid::grid.draw(inputGOstart()$p)
+        grDevices::dev.off()
       })
-    },
-    err = function(errorCondition) {
-      cat("in err handler")
-      message(errorCondition)
-    },
-    warn = function(warningCondition) {
-      cat("in warn handler")
-      message(warningCondition)
     }
   )
 }

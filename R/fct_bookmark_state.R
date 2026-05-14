@@ -104,7 +104,7 @@ is_safe_to_restore <- function(saved_version, current_version) {
       error = function(e) NULL,
       warning = function(w) NULL
     )
-    if (is.null(parts) || length(parts) < 2L || any(is.na(parts[1:2]))) {
+    if (is.null(parts) || length(parts) < 2L || any(is.na(parts[seq_len(2L)]))) {
       return(NULL)
     }
     parts

@@ -20,7 +20,7 @@ panel
 Module to correct batch effect
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserbatcheffect("batch")
 }
 

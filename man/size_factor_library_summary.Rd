@@ -24,7 +24,7 @@ to 1 confirm DESeq2 picked up depth differences without unexpected
 per-sample composition shifts.
 }
 \examples{
-\dontrun{
+\donttest{
 size_factor_library_summary(dds)
 }
 }

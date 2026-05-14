@@ -13,7 +13,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserbarmainplot("bar")
 #' }
 #'
@@ -91,6 +91,7 @@ barMainPlotControlsUI <- function(id) {
 #' @param key, key
 #' @param title, title
 #' @param input, input
+#' @return A `plotly` bar plot for the selected gene/region across samples.
 #' @export
 #'
 #' @examples

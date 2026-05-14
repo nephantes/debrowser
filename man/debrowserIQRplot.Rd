@@ -19,7 +19,7 @@ Module for an IQR plot that can be used in data prep and
 low count removal modules
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserIQRplot("iqr")
 }
 

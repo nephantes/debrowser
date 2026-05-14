@@ -19,7 +19,7 @@ Updates the \code{hashed_pw} column for an existing user. Useful when
 the password is forgotten and there is no admin UI yet.
 }
 \examples{
-\dontrun{
+\donttest{
 reset_debrowser_password("alice", "newhunter2!")
 }
 }

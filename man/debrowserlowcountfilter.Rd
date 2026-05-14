@@ -20,7 +20,7 @@ panel
 Module to filter low count genes/regions
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserlowcountfilter("lcf")
 }
 

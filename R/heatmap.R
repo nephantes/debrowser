@@ -7,7 +7,7 @@
 #' @return heatmapply plot
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserheatmap("heatmap")
 #' }
 #'
@@ -78,7 +78,7 @@ debrowserheatmap <- function(id, expdata = NULL) {
   })
   observe({
     if (!input$changeOrder) {
-      updateTextInput(session, "clusterorder", value = paste(seq(1:input$knum), collapse = ","))
+      updateTextInput(session, "clusterorder", value = paste(seq_len(input$knum), collapse = ","))
     }
 
     if (is.null(shg())) {
@@ -256,7 +256,7 @@ runHeatmap2 <- function(input = NULL, session = NULL, expdata = NULL) {
     return(NULL)
   }
   if (nrow(expdata) > 5000) {
-    expdata <- expdata[1:5000, ]
+    expdata <- expdata[seq_len(5000L), ]
   }
 
   if (!input$customColors) {
@@ -324,7 +324,7 @@ changeClusterOrder <- function(order = NULL, cld = NULL) {
   newcluster <- c()
   idx <- as.integer(as.vector(unlist(strsplit(order, ","))))
   da <- data.frame(cld)
-  for (i in 1:length(idx)) {
+  for (i in seq_along(idx)) {
     newcluster <- rbind(newcluster, da[da$class == idx[i], ])
   }
   newcluster
@@ -360,7 +360,7 @@ niceKmeans <- function(df = NULL, input = NULL, iter.max = 1000, nstart = 100) {
     }
   }
   breaks <- c()
-  for (i in 1:input$knum) {
+  for (i in seq_len(input$knum)) {
     cluster <- source[kmeans$cluster == i, ]
     rows <- row.names(cluster)
     clust <- hclust(distfun_row(as.matrix(cluster)), method = input$hclustFun_Row)
@@ -843,7 +843,7 @@ heatmapServer <- function(input, output, session) {
 #' @return the panel for heatmapUI;
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   shiny::shinyApp(ui = heatmapUI, server = function(input, output) {})
 #' }
 #'

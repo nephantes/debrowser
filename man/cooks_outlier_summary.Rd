@@ -28,7 +28,7 @@ Default threshold is the canonical DESeq2 vignette cut,
 attached as `attr(out, "threshold")`.
 }
 \examples{
-\dontrun{
+\donttest{
 cooks_outlier_summary(dds)
 }
 }

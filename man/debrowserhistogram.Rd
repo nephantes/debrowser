@@ -19,7 +19,7 @@ Module for a histogram that can be used in data prep and
 low count removal modules
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserhistogram("histogram")
 }
 

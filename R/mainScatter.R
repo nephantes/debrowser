@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowsermainplot("main")
 #' }
 #'
@@ -241,7 +241,7 @@ plotData <- function(pdata = NULL, input = NULL) {
 
   datapoints <- as.integer(nrow(data_NS) * backperc / 100)
   if (nrow(data_NS) > datapoints) {
-    data_rand <- data_NS[sample(1:nrow(data_NS), datapoints,
+    data_rand <- data_NS[sample(seq_len(nrow(data_NS)), datapoints,
       replace = FALSE
     ), ]
   } else {
@@ -325,7 +325,7 @@ mainPlotControlsUI <- function(id) {
 
 getLegendColors <- function(Legend = c("up", "down", "NS")) {
   colors <- c()
-  for (i in seq(1:length(Legend))) {
+  for (i in seq_along(Legend)) {
     if (Legend[i] == "Up") {
       colors <- c(colors, "red")
     } else if (Legend[i] == "Down") {
@@ -352,7 +352,7 @@ getLegendColors <- function(Legend = c("up", "down", "NS")) {
 
 getLevelOrder <- function(Level = c("up", "down", "NS")) {
   levels <- c("NS", "Up", "Down", "GS")
-  for (i in seq(1:length(levels)))
+  for (i in seq_along(levels))
   {
     if (!levels[i] %in% Level) {
       levels <- levels[-(i)]

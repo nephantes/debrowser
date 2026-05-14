@@ -9,6 +9,10 @@ accountDropdownUI(id)
 \arguments{
 \item{id}{Shiny module namespace id.}
 }
+\value{
+A `bslib::nav_menu` element with a server-side-rendered
+  label and a per-state menu (Sign up / Sign out).
+}
 \description{
 UI: navbar account dropdown.
 }

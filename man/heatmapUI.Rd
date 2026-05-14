@@ -23,7 +23,7 @@ Creates a shinyUI to be able to run DEBrowser interactively.
 \code{heatmapUI}
 }
 \examples{
-\dontrun{
+\donttest{
   shiny::shinyApp(ui = heatmapUI, server = function(input, output) {})
 }
 

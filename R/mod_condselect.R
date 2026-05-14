@@ -67,7 +67,7 @@ condSelectUI <- function(id) {
 #'   reactiveValues and UI cards reflect the restored state.
 #' @return list with `n_comparisons`, `start_de`, `is_ready`, `comparisons_spec`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   counts <- matrix(as.integer(c(100, 200, 10, 12, 40, 60)),
 #'                    nrow = 2,
 #'                    dimnames = list(c("G1", "G2"), paste0("S", 1:3)))

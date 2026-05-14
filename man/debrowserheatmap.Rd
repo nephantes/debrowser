@@ -19,7 +19,7 @@ Heatmap module to create interactive heatmaps and get selected list from
 a heatmap
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserheatmap("heatmap")
 }
 

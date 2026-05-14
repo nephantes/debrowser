@@ -26,7 +26,7 @@ Server factory for the size-factors-vs-library-size QC card. Computes
 sample plus the Spearman correlation in the subtitle.
 }
 \examples{
-\dontrun{
+\donttest{
 debrowserqcsizefactors("sizeFactors", dds)
 }
 }

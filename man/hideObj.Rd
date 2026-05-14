@@ -9,6 +9,10 @@ hideObj(btns = NULL)
 \arguments{
 \item{btns, }{hide group of objects with shinyjs}
 }
+\value{
+invisible(NULL); called for the side effect of calling
+  `shinyjs::hide()` on each supplied id.
+}
 \description{
 Hides a shiny object.
 }

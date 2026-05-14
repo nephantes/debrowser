@@ -132,7 +132,7 @@ enrichmentGmtUI <- function(id) {
 #' @param id Module ID.
 #' @return Reactive expression yielding the parsed pathways list.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   shiny::shinyApp(
 #'     ui = enrichmentGmtUI("gmt"),
 #'     server = function(input, output, session) {

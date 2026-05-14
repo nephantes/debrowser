@@ -8,6 +8,8 @@
 
 #' UI: navbar account dropdown.
 #' @param id Shiny module namespace id.
+#' @return A `bslib::nav_menu` element with a server-side-rendered
+#'   label and a per-state menu (Sign up / Sign out).
 #' @export
 accountDropdownUI <- function(id) {
   ns <- shiny::NS(id)
@@ -24,6 +26,8 @@ accountDropdownUI <- function(id) {
 
 #' Server: wires the dropdown to current_user, signup modal, signout.
 #' @param id Shiny module namespace id.
+#' @return invisible(NULL); called for its observers and outputs side
+#'   effects (login/logout label, signup modal, sign-out flow).
 #' @export
 accountDropdownServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {

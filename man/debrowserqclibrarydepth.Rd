@@ -26,7 +26,7 @@ colored by the optional `group_col`. Outliers (>2 SD from the mean depth)
 are drawn with a red marker outline.
 }
 \examples{
-\dontrun{
+\donttest{
 debrowserqclibrarydepth("libraryDepth", counts, meta, "samples")
 }
 }

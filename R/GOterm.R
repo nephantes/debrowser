@@ -255,8 +255,12 @@ getGSEA <- function(dataset = NULL, pvalueCutoff = 0.01,
   res <- c()
   OrgDb <- org
   if (is(OrgDb, "character")) {
-    require(OrgDb, character.only = TRUE)
-    OrgDb <- eval(parse(text = OrgDb))
+    # Resolve the org package via Suggests gating (BiocCheck flags
+    # require() in package code). eval(parse(text=org)) only works
+    # when the package is attached to the search path, so use
+    # getExportedValue() instead.
+    require_pkg(OrgDb, feature = "GO/KEGG enrichment")
+    OrgDb <- getExportedValue(OrgDb, OrgDb)
   }
   res$enrich_p <- gseGO(
     geneList = newdatatmp, ont = "All", OrgDb = OrgDb, verbose = FALSE,
@@ -316,13 +320,13 @@ clusterData <- function(dat = NULL) {
 
   wss <- (nrow(mydata) - 1) * sum(apply(mydata, 2, var))
   for (i in 2:15) wss[i] <- sum(kmeans(mydata, centers = i)$withinss)
-  plot(1:15, wss,
+  plot(seq_len(15L), wss,
     type = "b",
     xlab = "Number of Clusters",
     ylab = "Within groups sum of squares"
   )
   k <- 0
-  for (i in 1:14) {
+  for (i in seq_len(14L)) {
     if ((wss[i] / wss[i + 1]) > 1.2) {
       k <- k + 1
     }
@@ -372,7 +376,7 @@ compareClust <- function(
   res <- c()
   genecluster <- list()
   k <- max(dat$fit.cluster)
-  for (i in 1:k) {
+  for (i in seq_len(k)) {
     clgenes <- rownames(dat[dat$fit.cluster == i, ])
     # getGeneList() returns a data.frame(SYMBOL, ENTREZID).
     # compareCluster() expects a list of character gene-ID vectors.

@@ -33,7 +33,7 @@ DE panel
 Module to perform and visualize DE results.
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserdeanalysis("de")
 }
 

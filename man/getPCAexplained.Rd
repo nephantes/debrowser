@@ -24,8 +24,8 @@ the selected dataset.
 load(system.file("extdata", "demo", "demodata.Rda", package = "debrowser"))
 input <- c()
 input$qcplot <- "pca"
-input$col_list <- colnames(demodata[, 1:6])
-dat <- getNormalizedMatrix(demodata[, 1:6])
+input$col_list <- colnames(demodata[, seq_len(6L)])
+dat <- getNormalizedMatrix(demodata[, seq_len(6L)])
 pca_data <- run_pca(dat)
 x <- getPCAexplained(dat, pca_data, input)
 

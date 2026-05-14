@@ -27,7 +27,7 @@ Unknown or missing `preset` keeps the default theme.
 \code{deUI}
 }
 \examples{
-\dontrun{
+\donttest{
   shiny::shinyApp(ui = deUI, server = deServer)
 }
 

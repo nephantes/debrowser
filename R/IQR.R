@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserIQRplot("iqr")
 #' }
 #'
@@ -81,6 +81,8 @@ IQRPlotControlsUI <- function(id) {
 #' @param input, input
 #' @param title, title
 #'
+#' @return A `plotly` IQR boxplot showing the per-sample inter-quartile
+#'   spread of the input data.
 #' @export
 #'
 #' @examples

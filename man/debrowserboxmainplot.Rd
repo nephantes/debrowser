@@ -34,7 +34,7 @@ Module for a box plot that can be used in DEanalysis main part and
 used heatmaps
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserboxmainplot("box")
 }
 

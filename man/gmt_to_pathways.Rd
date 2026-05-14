@@ -21,7 +21,7 @@ file-existence check (raising classed \code{de_error}) and a
 see a friendly install message rather than a stack trace.
 }
 \examples{
-\dontrun{
+\donttest{
 p <- system.file("extdata", "test-gmt", "hallmark-mini.gmt",
                  package = "debrowser")
 gmt_to_pathways(p)

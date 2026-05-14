@@ -13,6 +13,10 @@ togglePanels(num = NULL, nums = NULL, session = NULL)
 
 \item{session, }{session info}
 }
+\value{
+invisible(NULL); called for the navbar nav_show / nav_hide /
+  nav_select side effects on the methodtabs nav.
+}
 \description{
 User defined toggle to display which panels are to be shown within
 DEBrowser.

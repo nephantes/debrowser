@@ -698,6 +698,8 @@ getCondMsg <- function(dc = NULL, input = NULL, cols = NULL, conds = NULL) {
 #' @param nums, all panels
 #' @param session, session info
 #' @note \code{togglePanels}
+#' @return invisible(NULL); called for the navbar nav_show / nav_hide /
+#'   nav_select side effects on the methodtabs nav.
 #' @examples
 #' x <- togglePanels()
 #' @export
@@ -743,6 +745,8 @@ togglePanels <- function(num = NULL, nums = NULL, session = NULL) {
 #' @param foldChange, the name of the foldChange column in the dataset
 #' @param DEsection, if it is in DESection or not
 #' @note \code{getTableStyle}
+#' @return A `DT::datatable` HTML widget with row colouring driven by
+#'   the supplied padj / log2FoldChange thresholds.
 #' @examples
 #' x <- getTableStyle()
 #' @export
@@ -803,6 +807,8 @@ getTableStyle <- function(
 #' @param rows, the # of rows
 #' @param cols, the # of  cols
 #' @param class, css class
+#' @return A `shiny::tags$div` containing a `<label>` and a
+#'   `<textarea>` Shiny-bound input.
 #' @examples
 #' x <- textareaInput("genesetarea", "Gene Set",
 #'   "Fgf21",
@@ -826,6 +832,8 @@ textareaInput <- function(
 #' Displays a shiny object.
 #'
 #' @param btns, show group of objects with shinyjs
+#' @return invisible(NULL); called for the side effect of calling
+#'   `shinyjs::show()` on each supplied id.
 #' @examples
 #' x <- showObj()
 #' @export
@@ -834,7 +842,7 @@ showObj <- function(btns = NULL) {
   if (is.null(btns)) {
     return(NULL)
   }
-  for (btn in seq(1:length(btns))) {
+  for (btn in seq_along(btns)) {
     shinyjs::show(btns[btn])
   }
 }
@@ -844,6 +852,8 @@ showObj <- function(btns = NULL) {
 #' Hides a shiny object.
 #'
 #' @param btns, hide group of objects with shinyjs
+#' @return invisible(NULL); called for the side effect of calling
+#'   `shinyjs::hide()` on each supplied id.
 #' @examples
 #' x <- hideObj()
 #' @export
@@ -852,7 +862,7 @@ hideObj <- function(btns = NULL) {
   if (is.null(btns)) {
     return(NULL)
   }
-  for (btn in seq(1:length(btns))) {
+  for (btn in seq_along(btns)) {
     shinyjs::hide(btns[btn])
   }
 }
@@ -1006,6 +1016,8 @@ getQCPanel <- function(input = NULL) {
 #' @param datasetInput, selected dataset
 #' @param input, user input params
 #'
+#' @return A subset of `data` (rows of `datasetInput`, columns selected
+#'   in `input$col_list`), or NULL when neither input is provided.
 #' @export
 #'
 #' @examples
@@ -1038,6 +1050,8 @@ getSelectedCols <- function(data = NULL, datasetInput = NULL, input = NULL) {
 #'
 #' @param dat, selected data
 #'
+#' @return `dat` with QC-extraneous columns (padj/foldChange/Legend/etc.)
+#'   stripped, leaving only sample columns suitable for plotting.
 #' @export
 #'
 #' @examples

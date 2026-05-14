@@ -164,7 +164,7 @@ resend_verification_email <- function(user_id, base_url = NULL) {
 #' @param email Optional email. Default \code{NA_character_}.
 #' @return The created user_id, invisibly.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' create_debrowser_user("alice", "hunter2!", "alice@example.com")
 #' startDEBrowser(hosted = TRUE)  # then log in as alice / hunter2!
 #' }
@@ -188,7 +188,7 @@ create_debrowser_user <- function(user_id, password,
 #' @param new_password New plaintext password (hashed before storage).
 #' @return TRUE on success; errors if the user does not exist.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' reset_debrowser_password("alice", "newhunter2!")
 #' }
 #' @export

@@ -31,7 +31,7 @@ getBoxMainPlotUI <- function(id) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserboxmainplot("box")
 #' }
 #'
@@ -91,6 +91,7 @@ BoxMainPlotControlsUI <- function(id) {
 #' @param key, key
 #' @param title, title
 #' @param input, input
+#' @return A `plotly` box plot for the selected gene/region across samples.
 #' @export
 #'
 #' @examples

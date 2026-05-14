@@ -21,7 +21,7 @@ Server factory for the feature-detection-rate QC card. Computes
 `detection_pct` per sample.
 }
 \examples{
-\dontrun{
+\donttest{
 debrowserqcdetectionrate("detectionRate", counts)
 }
 }

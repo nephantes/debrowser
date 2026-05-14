@@ -9,6 +9,10 @@ accountDropdownServer(id)
 \arguments{
 \item{id}{Shiny module namespace id.}
 }
+\value{
+invisible(NULL); called for its observers and outputs side
+  effects (login/logout label, signup modal, sign-out flow).
+}
 \description{
 Server: wires the dropdown to current_user, signup modal, signout.
 }

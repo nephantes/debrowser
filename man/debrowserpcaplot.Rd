@@ -23,7 +23,7 @@ Module for a pca plot with its loadings
 as a mainplot in debrowser
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserpcaplot("pca")
 }
 

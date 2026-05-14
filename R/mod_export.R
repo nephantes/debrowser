@@ -96,7 +96,7 @@ exportMenuItems <- function(id) {
 #'   that case.
 #' @return Invisibly NULL.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   shiny::shinyApp(
 #'     ui = bslib::page_navbar(exportMenuUI("exp")),
 #'     server = function(input, output, session) {

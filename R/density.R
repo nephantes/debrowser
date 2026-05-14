@@ -27,7 +27,7 @@ getDensityPlotUI <- function(id) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserdensityplot("density")
 #' }
 #'
@@ -82,6 +82,8 @@ densityPlotControlsUI <- function(id) {
 #' @param input, input
 #' @param title, title
 #'
+#' @return A `plotly` density plot showing the per-sample distributions
+#'   of the input count matrix (one density curve per sample).
 #' @export
 #'
 #' @examples

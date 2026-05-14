@@ -21,7 +21,7 @@ Server factory for the sample-distance heatmap. Computes
 \code{heatmaply::heatmaply}.
 }
 \examples{
-\dontrun{
+\donttest{
 debrowserqcsampledist("sampleDist", counts)
 }
 }

@@ -117,9 +117,10 @@ getGeneSetData <- function(data = NULL, geneset = NULL) {
   geneset4 <- unique(as.vector(unlist(lapply(
     toupper(geneset2),
     function(x) {
-      sapply(
+      vapply(
         dat2[(grepl(x, toupper(dat2[, "ID"]))), "ID"],
-        as.character
+        as.character,
+        character(1)
       )
     }
   ))))
@@ -272,7 +273,7 @@ removeCols <- function(cols = NULL, dat = NULL) {
   if (is.null(dat)) {
     return(NULL)
   }
-  for (colnum in seq(1:length(cols))) {
+  for (colnum in seq_along(cols)) {
     if (cols[colnum] %in% colnames(dat)) {
       dat[, cols[colnum]] <- NULL
     }

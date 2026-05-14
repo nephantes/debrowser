@@ -21,7 +21,7 @@ plotly). Renders an empty-state alert when `dds` is NULL (no DE run yet,
 or method was not DESeq2).
 }
 \examples{
-\dontrun{
+\donttest{
 debrowserqcdispersion("dispersion", dds)
 }
 }

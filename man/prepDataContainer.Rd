@@ -27,7 +27,7 @@ list of length `length(comparisons_spec)` with components
 Run DE per comparison and return the downstream `dclist` payload.
 }
 \examples{
-\dontrun{
+\donttest{
   set.seed(42)
   counts <- matrix(
     as.integer(abs(rnorm(60, mean = 100, sd = 30))),

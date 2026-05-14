@@ -46,7 +46,7 @@ qcLibraryDepthUI <- function(id) {
 #' @param group_col optional name of a column in `meta` used to color bars
 #' @return invisible(NULL); the module wires `output$plot` and `output$dl`
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' debrowserqclibrarydepth("libraryDepth", counts, meta, "samples")
 #' }
 #' @export
@@ -150,7 +150,7 @@ qcDetectionRateUI <- function(id) {
 #'   cols = samples); the module no-ops if NULL
 #' @return invisible(NULL); the module wires `output$plot` and `output$dl`
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' debrowserqcdetectionrate("detectionRate", counts)
 #' }
 #' @export
@@ -234,7 +234,7 @@ qcMtPctUI <- function(id) {
 #' @return invisible(NULL); the module wires `output$body`, `output$plot`,
 #'   and `output$dl`
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' debrowserqcmtpct("mtPct", counts, threshold_pct = 5)
 #' }
 #' @export
@@ -363,7 +363,7 @@ qc_card_empty_state_no_dds <- function() {
 #'   cols = samples); the module no-ops if NULL
 #' @return invisible(NULL); the module wires `output$plot` and `output$dl`
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' debrowserqcsampledist("sampleDist", counts)
 #' }
 #' @export
@@ -443,7 +443,7 @@ qcDispersionUI <- function(id) {
 #' @param dds A fitted `DESeqDataSet`, or NULL.
 #' @return invisible(NULL); wires `output$body` and `output$plot`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' debrowserqcdispersion("dispersion", dds)
 #' }
 #' @export
@@ -513,7 +513,7 @@ qcSizeFactorsUI <- function(id) {
 #' @return invisible(NULL); wires `output$body`, `output$plot`, and
 #'   `output$dl`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' debrowserqcsizefactors("sizeFactors", dds)
 #' }
 #' @export
@@ -634,7 +634,7 @@ qcCooksUI <- function(id) {
 #' @return invisible(NULL); wires `output$body`, `output$plot`, and
 #'   `output$dl`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' debrowserqccooks("cooks", dds)
 #' }
 #' @export

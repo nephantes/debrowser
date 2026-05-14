@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserlowcountfilter("lcf")
 #' }
 #'

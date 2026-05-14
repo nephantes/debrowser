@@ -9,6 +9,10 @@ showObj(btns = NULL)
 \arguments{
 \item{btns, }{show group of objects with shinyjs}
 }
+\value{
+invisible(NULL); called for the side effect of calling
+  `shinyjs::show()` on each supplied id.
+}
 \description{
 Displays a shiny object.
 }

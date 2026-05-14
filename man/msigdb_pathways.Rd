@@ -42,7 +42,7 @@ Pathway names use the canonical \code{gs_name} (e.g.
 \code{gene_symbol} column.
 }
 \examples{
-\dontrun{
+\donttest{
 p <- msigdb_pathways("Homo sapiens", "H")
 length(p)               # 50 (Hallmark)
 head(p[["HALLMARK_HYPOXIA"]])

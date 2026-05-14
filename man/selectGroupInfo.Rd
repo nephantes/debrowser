@@ -20,6 +20,10 @@ selectGroupInfo(
 
 \item{label, }{label of the select box}
 }
+\value{
+A `shiny::selectInput` listing metadata-column choices (with
+  "None" prepended), or NULL when no metadata is supplied.
+}
 \description{
 Group info column selection. This can be used in batch effect
 or coloring the groups in the plots.

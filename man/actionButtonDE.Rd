@@ -36,6 +36,10 @@ button}
 
 \item{...}{Other argument to feed into shiny::actionButton}
 }
+\value{
+A `shiny::tags$button` element wired as a click-counting
+  action button, suitable for embedding in any Shiny UI.
+}
 \description{
 Creates an action button whose value is initially zero, and increments by one
 each time it is pressed.

@@ -19,6 +19,10 @@ textareaInput(id, label, value, rows = 20, cols = 35, class = "form-control")
 
 \item{class, }{css class}
 }
+\value{
+A `shiny::tags$div` containing a `<label>` and a
+  `<textarea>` Shiny-bound input.
+}
 \description{
 Generates a text area input to be used for gene selection within
 the DEBrowser.

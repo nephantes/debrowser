@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserall2all("all2all")
 #' }
 #'
@@ -41,7 +41,9 @@ debrowserall2all <- function(id, data = NULL, cex = 2) {
 #'
 #' @note \code{getAll2AllPlotUI}
 #' @param id, namespace id
-#' @return the panel for all2all plots;
+#' @return A `shiny::uiOutput` placeholder under namespace `id` that
+#'   the all2all module's server fills with the all-pairs scatter
+#'   matrix plot.
 #'
 #' @examples
 #' x <- getAll2AllPlotUI("bar")
@@ -96,7 +98,7 @@ all2all <- function(data, cex = 2) {
   if (nr > 1000) {
     nr <- 1000
   }
-  pairs(log10(data[1:nr, ]),
+  pairs(log10(data[seq_len(nr), ]),
     cex = 0.25,
     diag.panel = panel.hist, lower.panel = pcor
   )
@@ -117,7 +119,7 @@ all2all <- function(data, cex = 2) {
 panel.hist <- function(x, ...) {
   usr <- par("usr")
   on.exit(par(usr))
-  par(usr = c(usr[1:2], 0, 1.5))
+  par(usr = c(usr[seq_len(2L)], 0, 1.5))
   h <- hist(x, plot = FALSE)
   breaks <- h$breaks
   nb <- length(breaks)

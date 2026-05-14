@@ -49,7 +49,7 @@ Symbols in `de_table[[id_col]]` are matched against the gene IDs in
 (typically both SYMBOL or both ENTREZID).
 }
 \examples{
-\dontrun{
+\donttest{
 p <- gmt_to_pathways(system.file("extdata", "test-gmt",
                                  "hallmark-mini.gmt",
                                  package = "debrowser"))

@@ -34,7 +34,7 @@ Starts the DEBrowser to be able to run interactively.
 \code{startDEBrowser}
 }
 \examples{
-\dontrun{
+\donttest{
 startDEBrowser()
 startDEBrowser(hosted = TRUE,
                trusted_proxies = c("127.0.0.1", "10.0.0.0/8"))

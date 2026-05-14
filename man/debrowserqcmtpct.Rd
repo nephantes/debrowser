@@ -26,7 +26,7 @@ horizontal threshold line at `threshold_pct`, or an empty-state info alert
 when no MT genes are detected.
 }
 \examples{
-\dontrun{
+\donttest{
 debrowserqcmtpct("mtPct", counts, threshold_pct = 5)
 }
 }

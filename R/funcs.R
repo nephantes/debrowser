@@ -89,6 +89,8 @@ getSampleDetails <- function(output = NULL, summary = NULL, details = NULL, data
 #' @param selectname, name of the select box
 #' @param label, label of the select box
 #' @note \code{selectGroupInfo}
+#' @return A `shiny::selectInput` listing metadata-column choices (with
+#'   "None" prepended), or NULL when no metadata is supplied.
 #' @examples
 #' x <- selectGroupInfo()
 #' @export
@@ -368,6 +370,8 @@ round_vals <- function(l) {
 #'   button
 #' @param ... Other argument to feed into shiny::actionButton
 #'
+#' @return A `shiny::tags$button` element wired as a click-counting
+#'   action button, suitable for embedding in any Shiny UI.
 #' @export
 #'
 #' @examples
@@ -444,6 +448,8 @@ getNormalizedMatrix <- function(M = NULL, method = "TMM") {
 #' @param name, the name of the selectInput
 #' @param count, comparison count
 #' @note \code{getCompSelection}
+#' @return A `shiny::selectInput` (or NULL when only one comparison
+#'   exists) listing the available comparison indices.
 #' @examples
 #' x <- getCompSelection(name = "comp", count = 2)
 #' @export
@@ -453,7 +459,7 @@ getCompSelection <- function(name = NULL, count = NULL) {
   if (count > 1) {
     a <- list(selectInput(name,
       label = "Choose a comparison:",
-      choices = c(1:count)
+      choices = seq_len(count)
     ))
   }
   a
@@ -532,7 +538,7 @@ getColors <- function(domains = NULL) {
     return(NULL)
   }
   colors <- c()
-  for (dn in seq(1:length(domains))) {
+  for (dn in seq_along(domains)) {
     if (domains[dn] == "NS" || domains[dn] == "NA") {
       colors <- c(colors, "#aaa")
     } else if (domains[dn] == "Up") {
@@ -708,20 +714,6 @@ getPCAcontolUpdatesJS <- function() {
                      "))
 }
 
-.initial <- function() {
-  req <- function(...) {
-    reqFun <- function(pack) {
-      if (!suppressWarnings(suppressMessages(require(pack, character.only = TRUE)))) {
-        message(paste0("unable to load package ", pack))
-        require(pack, character.only = TRUE)
-      }
-    }
-    lapply(..., reqFun)
-  }
-  packs <- c("debrowser", "plotly", "shiny", "jsonlite", "shinyjs", "bslib", "shinyBS")
-  req(packs)
-}
-
 .onAttach <- function(libname, pkgname) {
   pkgVersion <- packageDescription("debrowser", fields = "Version")
   msg <- paste0(
@@ -737,5 +729,4 @@ getPCAcontolUpdatesJS <- function() {
   )
 
   packageStartupMessage(paste0(msg, citation))
-  .initial()
 }

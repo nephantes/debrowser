@@ -26,7 +26,7 @@ Server factory for the Cook's-distance outlier-count QC card. Computes
 `n_high_cooks` per sample. Subtitle reports the active threshold.
 }
 \examples{
-\dontrun{
+\donttest{
 debrowserqccooks("cooks", dds)
 }
 }

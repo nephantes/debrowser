@@ -17,7 +17,7 @@
 #' @return Named list, names = pathway names, elements = character vectors
 #'   of gene symbols (or whatever ID the GMT uses).
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' p <- system.file("extdata", "test-gmt", "hallmark-mini.gmt",
 #'                  package = "debrowser")
 #' gmt_to_pathways(p)
@@ -59,7 +59,7 @@ gmt_to_pathways <- function(path) {
 #'   `pval`, `leading_edge` (last is a list-column of character vectors),
 #'   ordered by descending `|NES|`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' p <- gmt_to_pathways(system.file("extdata", "test-gmt",
 #'                                  "hallmark-mini.gmt",
 #'                                  package = "debrowser"))
@@ -96,14 +96,21 @@ run_gsea <- function(de_table,
   stats <- stats[is.finite(stats)]
   stats <- sort(stats, decreasing = TRUE)
 
-  set.seed(seed)
-  res <- fgsea::fgsea(
-    pathways    = pathways,
-    stats       = stats,
-    eps         = 0,
-    minSize     = min_size,
-    maxSize     = max_size,
-    nPermSimple = n_perm
+  # Scope the seed to just this fgsea call (BiocCheck flags global
+  # set.seed() in package code -- it would clobber the user's RNG
+  # state). withr::with_seed() saves+restores .Random.seed around
+  # the expression.
+  require_pkg("withr", feature = "GSEA")
+  res <- withr::with_seed(
+    seed,
+    fgsea::fgsea(
+      pathways    = pathways,
+      stats       = stats,
+      eps         = 0,
+      minSize     = min_size,
+      maxSize     = max_size,
+      nPermSimple = n_perm
+    )
   )
 
   out <- data.frame(
@@ -146,7 +153,7 @@ run_gsea <- function(de_table,
 #'   \code{empty_input} error if msigdbr returns no rows for the given
 #'   species/collection/subcollection combination.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' p <- msigdb_pathways("Homo sapiens", "H")
 #' length(p)               # 50 (Hallmark)
 #' head(p[["HALLMARK_HYPOXIA"]])
@@ -205,7 +212,7 @@ msigdb_pathways <- function(species = "Homo sapiens",
 #' @param sig_threshold padj cutoff used when `sig_only = TRUE`.
 #' @return data.frame with columns `pathway`, `comparison`, `NES`, `padj`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' nes_heatmap_data(list(c1 = run_gsea(de1, paths),
 #'                       c2 = run_gsea(de2, paths)))
 #' }

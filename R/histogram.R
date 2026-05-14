@@ -27,7 +27,7 @@ getHistogramUI <- function(id) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserhistogram("histogram")
 #' }
 #'

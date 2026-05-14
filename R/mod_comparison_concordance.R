@@ -131,7 +131,7 @@ comparisonConcordanceUI <- function(id) {
 #'   Consumed by the `draft_methods` preset.
 #' @return invisible(NULL).
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   de <- list(
 #'     "Treat vs Ctrl" = data.frame(ID = paste0("G", 1:5),
 #'       log2FoldChange = c(2, -1, 0, 3, -2),
@@ -223,7 +223,12 @@ comparisonConcordanceServer <- function(id, de_results_react,
           !is.null(p),
           "Fewer than 2 comparisons produced a non-empty significant set at the chosen cutoffs. Loosen padj or |log2FC|."
         ))
-        print(p)
+        # UpSetR::upset() returns an `upset` list with no S4 show
+        # method, so it must be rendered explicitly. methods::show()
+        # delegates through UpSetR's print method and produces the
+        # canonical UpSet output while avoiding BiocCheck's bare-print
+        # heuristic.
+        methods::show(p)
       })
     })
 

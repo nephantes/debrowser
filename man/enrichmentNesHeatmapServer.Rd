@@ -19,7 +19,7 @@ invisible(NULL).
 Server for the NES heatmap card.
 }
 \examples{
-\dontrun{
+\donttest{
   shiny::shinyApp(
     ui = enrichmentNesHeatmapUI("nes"),
     server = function(input, output, session) {

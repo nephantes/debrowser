@@ -23,7 +23,7 @@ Module for a scatter, volcano and ma plots that are going to be used
 as a mainplot in debrowser
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowsermainplot("main")
 }
 

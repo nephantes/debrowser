@@ -302,7 +302,7 @@ mt_default_pattern <- function() {
 #'   `sf_scaled`, `lib_scaled`. Attribute `spearman_rho` holds the rank
 #'   correlation between size factor and library size (NA for n < 2).
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' size_factor_library_summary(dds)
 #' }
 #' @importFrom DESeq2 sizeFactors counts
@@ -360,7 +360,7 @@ size_factor_library_summary <- function(dds) {
 #'   `high_cooks_pct`. The active threshold is attached as
 #'   `attr(out, "threshold")`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' cooks_outlier_summary(dds)
 #' }
 #' @importFrom SummarizedExperiment assays colData

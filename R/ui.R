@@ -14,7 +14,7 @@
 #' @return the page tagList for DEBrowser
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   shiny::shinyApp(ui = deUI, server = deServer)
 #' }
 #'

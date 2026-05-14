@@ -22,7 +22,7 @@ invisible(NULL).
 Server for the Enrichment tab.
 }
 \examples{
-\dontrun{
+\donttest{
   de <- data.frame(ID = paste0("G", 1:5),
                    log2FoldChange = c(2, -1, 0, 3, -2),
                    padj = c(0.01, 0.04, 0.5, 0.02, 0.03))

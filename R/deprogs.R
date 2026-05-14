@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserdeanalysis("de")
 #' }
 #'
@@ -422,7 +422,7 @@ prepGroup <- function(conds = NULL, cols = NULL, metadata = NULL, covariates = N
       sample_column_ind <- which(apply(metadata, 2, function(x) sum(x %in% cols) == length(cols)))
       sample_column <- colnames(metadata)[sample_column_ind]
       covariates <- metadata[match(cols, metadata[, sample_column]), covariates, drop = FALSE]
-      for (i in 1:ncol(covariates)) {
+      for (i in seq_len(ncol(covariates))) {
         cur_covariate <- covariates[, i]
         cur_covariate <- factor(cur_covariate)
         coldata <- data.frame(cbind(coldata, cur_covariate))

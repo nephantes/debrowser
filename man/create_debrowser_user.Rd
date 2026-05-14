@@ -24,7 +24,7 @@ the in-app signup modal lives behind the login wall and is unreachable
 until you have an account.
 }
 \examples{
-\dontrun{
+\donttest{
 create_debrowser_user("alice", "hunter2!", "alice@example.com")
 startDEBrowser(hosted = TRUE)  # then log in as alice / hunter2!
 }

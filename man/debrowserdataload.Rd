@@ -20,7 +20,7 @@ panel
 Module to load count data and metadata
 }
 \examples{
-\dontrun{
+\donttest{
 x <- debrowserdataload("load")
 }
 

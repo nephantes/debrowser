@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' x <- debrowserdataload("load")
 #' }
 #'
@@ -20,7 +20,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
   loadeddata <- reactive({
     ret <- NULL
     if (!is.null(ldata$count)) {
-      ldata$count <- ldata$count[, sapply(ldata$count, is.numeric)]
+      ldata$count <- ldata$count[, vapply(ldata$count, is.numeric, logical(1))]
       ret <- list(count = ldata$count, meta = ldata$meta,
                   data_source = ldata$data_source)
     }
@@ -71,11 +71,13 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
       jsondata <- data.frame(data, stringsAsFactors = TRUE)
 
       rownames(jsondata) <- jsondata[, 1]
-      jsondata <- jsondata[, c(3:ncol(jsondata))]
-      jsondata[, c(1:ncol(jsondata))] <- sapply(
-        jsondata[, c(1:ncol(jsondata))], as.numeric
-      )
-      jsondata <- jsondata[, sapply(jsondata, is.numeric)]
+      jsondata <- jsondata[, seq.int(3L, ncol(jsondata))]
+      # `jsondata[] <- lapply(...)` preserves the data.frame structure
+      # while replacing every column atomically. Avoids sapply()'s
+      # "could return a matrix or a list" ambiguity that BiocCheck
+      # flags.
+      jsondata[] <- lapply(jsondata, as.numeric)
+      jsondata <- jsondata[, vapply(jsondata, is.numeric, logical(1))]
 
       metadatatable <- NULL
       jsonmet <- query$meta
@@ -103,7 +105,6 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
         cnames <- names(jsondata)
         selectcols <- cnames[cnames %in% metadatatable[, 1]]
         ldata$count <- jsondata[, selectcols]
-        print(dim(ldata$count))
       } else {
         ldata$count <- jsondata
         metadatatable <- make_default_metadata(jsondata)
@@ -211,7 +212,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     )
     if (is.null(counttable)) return(NULL)
     colnames(counttable) <- gsub("\\s+|\\.|\\-", "_", colnames(counttable))
-    counttable <- counttable[, sapply(counttable, is.numeric)]
+    counttable <- counttable[, vapply(counttable, is.numeric, logical(1))]
     metadatatable <- c()
     if (!is.null(input$metadata$datapath)) {
       detected_meta <- detect_separator(input$metadata$datapath, min_score = 1L)

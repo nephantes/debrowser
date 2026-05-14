@@ -49,7 +49,7 @@ prep_comparison_inputs <- function(spec, comparison_idx = 1L) {
 #'   NULL for edgeR/limma. Returns NULL if no comparison produced usable
 #'   results.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   set.seed(42)
 #'   counts <- matrix(
 #'     as.integer(abs(rnorm(60, mean = 100, sd = 30))),

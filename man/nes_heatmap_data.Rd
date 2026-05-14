@@ -23,7 +23,7 @@ Used by \code{\link{enrichmentNesHeatmapServer}} to render a tile plot
 of NES across pathways (rows) by comparisons (columns).
 }
 \examples{
-\dontrun{
+\donttest{
 nes_heatmap_data(list(c1 = run_gsea(de1, paths),
                       c2 = run_gsea(de2, paths)))
 }
