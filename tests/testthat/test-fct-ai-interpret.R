@@ -241,3 +241,110 @@ test_that("ai_interpret symbols mode does NOT include effect-size context", {
                "symbols", stub, top_n = 50L)
   expect_no_match(captured$prompt, "Effect-size context")
 })
+
+# Phase E12.B - render tests for the 3 new presets.
+
+test_that("ai_reconcile_enrichments template renders with NES table", {
+  template_dir <- system.file("templates", package = "debrowser")
+  nes <- data.frame(comparison = c("A", "B"),
+                    NES = c(2.1, -1.5),
+                    padj = c(0.01, 0.04),
+                    leading_edge = c("G1, G2", "G3, G4"),
+                    stringsAsFactors = FALSE)
+  payload <- list(
+    enrichment = list(term = "Glycolysis", nes_across = nes)
+  )
+  slots <- .slots_reconcile_enrichments(payload)
+  expect_equal(slots$pathway_name, "Glycolysis")
+  expect_match(slots$nes_table, "A", fixed = TRUE)
+  expect_match(slots$nes_table, "2.100", fixed = TRUE)
+  expect_true(slots$has_leading_edge)
+
+  out <- .render_prompt(file.path(template_dir,
+                                  "ai_reconcile_enrichments.md"),
+                        slots)
+  expect_match(out, "Pathway: Glycolysis", fixed = TRUE)
+  expect_match(out, "NES = 2.100", fixed = TRUE)
+  expect_match(out, "leading-edge", fixed = TRUE)
+})
+
+test_that("ai_reconcile_enrichments omits leading-edge block when absent", {
+  template_dir <- system.file("templates", package = "debrowser")
+  nes <- data.frame(comparison = c("A", "B"),
+                    NES = c(2.1, -1.5),
+                    padj = c(0.01, 0.04),
+                    leading_edge = c("", ""),
+                    stringsAsFactors = FALSE)
+  payload <- list(
+    enrichment = list(term = "Glycolysis", nes_across = nes)
+  )
+  slots <- .slots_reconcile_enrichments(payload)
+  expect_false(slots$has_leading_edge)
+  out <- .render_prompt(file.path(template_dir,
+                                  "ai_reconcile_enrichments.md"),
+                        slots)
+  expect_no_match(out, "Leading-edge", fixed = TRUE)
+})
+
+test_that("ai_suggest_followup renders single-comparison block", {
+  template_dir <- system.file("templates", package = "debrowser")
+  payload <- list(shape = "de_table",
+                  comparison_label = "Treat vs Ctrl")
+  redacted <- list(stats = data.frame(gene_id = c("G1", "G2"),
+                                      log2FoldChange = c(2, -1),
+                                      padj = c(0.01, 0.04),
+                                      stringsAsFactors = FALSE))
+  slots <- .slots_suggest_followup(payload, redacted)
+  expect_true(slots$has_single_comparison)
+  expect_false(slots$has_multiple_comparisons)
+  out <- .render_prompt(file.path(template_dir, "ai_suggest_followup.md"),
+                        slots)
+  expect_match(out, "Comparison: Treat vs Ctrl", fixed = TRUE)
+  expect_match(out, "G1",   fixed = TRUE)
+  expect_match(out, "2.000",fixed = TRUE)
+})
+
+test_that("ai_suggest_followup renders multi-comparison block", {
+  template_dir <- system.file("templates", package = "debrowser")
+  payload <- list(
+    shape              = "concordance",
+    comparison_labels  = c("A vs B", "C vs D"),
+    per_comparison_top = list(
+      "A vs B" = data.frame(ID = c("G1"), log2FoldChange = 1.5,
+                            padj = 0.01),
+      "C vs D" = data.frame(ID = character(0), log2FoldChange = numeric(0),
+                            padj = numeric(0))
+    ),
+    concordance_table  = data.frame(comparison1 = "A vs B",
+                                    comparison2 = "C vs D",
+                                    jaccard = 0.3,
+                                    spearman_lfc = 0.6,
+                                    stringsAsFactors = FALSE)
+  )
+  slots <- .slots_suggest_followup(payload, list(stats = NULL))
+  expect_false(slots$has_single_comparison)
+  expect_true(slots$has_multiple_comparisons)
+  out <- .render_prompt(file.path(template_dir, "ai_suggest_followup.md"),
+                        slots)
+  expect_match(out, "A vs B", fixed = TRUE)
+  expect_match(out, "Jaccard = 0.300", fixed = TRUE)
+  expect_match(out, "(no significant genes)", fixed = TRUE)
+})
+
+test_that("ai_draft_methods renders the deterministic paragraph verbatim", {
+  template_dir <- system.file("templates", package = "debrowser")
+  payload <- list(deterministic_methods =
+                    "Differential expression was performed with DESeq2 v1.40.")
+  slots <- .slots_draft_methods(payload)
+  out <- .render_prompt(file.path(template_dir, "ai_draft_methods.md"),
+                        slots)
+  expect_match(out, "DESeq2 v1.40", fixed = TRUE)
+  expect_match(out, "DO NOT add", fixed = TRUE)
+})
+
+test_that("ai_draft_methods slot builder raises when text is missing", {
+  expect_error(.slots_draft_methods(list(deterministic_methods = "")),
+               class = "ai_invalid_response")
+  expect_error(.slots_draft_methods(list(deterministic_methods = NULL)),
+               class = "ai_invalid_response")
+})
