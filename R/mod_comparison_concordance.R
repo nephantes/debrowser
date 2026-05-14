@@ -83,6 +83,27 @@ comparisonConcordanceUI <- function(id) {
     bslib::card(
       bslib::card_header("Concordance summary (pairwise)"),
       bslib::card_body(DT::DTOutput(ns("summary")))
+    ),
+    # Phase E12.B: AI interpretation for concordance. Visibility
+    # gated by parent (server.R checks credentials + >= 2 comparisons).
+    bslib::card(
+      bslib::card_header("AI interpretation"),
+      bslib::card_body(
+        shiny::conditionalPanel(
+          condition = sprintf("output['%s'] === 'show'",
+                              ns("ai_pathway_picker_visible")),
+          shiny::selectInput(ns("reconcile_pathway"),
+                             "Pathway to reconcile (optional)",
+                             choices = c("(none)" = ""),
+                             selected = "")
+        ),
+        debrowser::aiInterpretUI(
+          ns("ai_concordance"),
+          questions     = c("reconcile_enrichments", "suggest_followup",
+                            "draft_methods"),
+          payload_shape = "concordance"
+        )
+      )
     )
   )
 }
@@ -100,6 +121,14 @@ comparisonConcordanceUI <- function(id) {
 #'   `cond_names` so the pairwise DEG heatmap can label group axes.
 #'   When NULL or missing cond_names, the heatmap card shows an
 #'   empty-state.
+#' @param ai_settings_react Optional reactive yielding AI settings list
+#'   (from `aiSettingsServer`). When NULL, no AI panel is mounted.
+#' @param fgsea_pathways_react Optional reactive yielding the active
+#'   fgsea pathway set (`names()` over the gene-set lookup). Drives
+#'   the in-card pathway picker for `reconcile_enrichments`.
+#' @param deterministic_methods_react Optional reactive yielding a
+#'   chr(1) Methods paragraph (e.g. from `methods_paragraph()`).
+#'   Consumed by the `draft_methods` preset.
 #' @return invisible(NULL).
 #' @examples
 #' \dontrun{
@@ -120,7 +149,10 @@ comparisonConcordanceUI <- function(id) {
 #' }
 #' @export
 comparisonConcordanceServer <- function(id, de_results_react,
-                                        comparisons_react = NULL) {
+                                        comparisons_react           = NULL,
+                                        ai_settings_react           = NULL,
+                                        fgsea_pathways_react        = NULL,
+                                        deterministic_methods_react = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
 
     # Coerce DE-augmented data.frames (which may use rownames as the
@@ -238,6 +270,85 @@ comparisonConcordanceServer <- function(id, de_results_react,
       ) |>
         DT::formatRound(c("jaccard", "spearman_lfc"), 3)
     })
+
+    # Phase E12.B: AI interpretation panel. Skip if no AI settings
+    # reactive provided (older mounts that haven't been migrated).
+    if (!is.null(ai_settings_react)) {
+
+      # Pathways for the reconcile_enrichments picker: those significant
+      # in >= 2 comparisons. Sourced from fgsea_pathways_react when
+      # provided; empty otherwise.
+      pathways_for_reconcile <- shiny::reactive({
+        gmt <- if (is.null(fgsea_pathways_react)) NULL else
+                 fgsea_pathways_react()
+        if (is.null(gmt)) return(character(0))
+        d <- de_list()
+        if (length(d) < 2L) return(character(0))
+        hits_per_pathway <- lapply(d, function(df) {
+          tryCatch({
+            r <- run_gsea(df, gmt)
+            r$pathway[r$padj <= 0.05]
+          }, error = function(e) character(0))
+        })
+        all_hits <- unlist(hits_per_pathway, use.names = FALSE)
+        tab <- table(all_hits)
+        names(tab)[tab >= 2L]
+      })
+
+      shiny::observe({
+        choices <- pathways_for_reconcile()
+        if (length(choices) == 0L) {
+          shiny::updateSelectInput(session, "reconcile_pathway",
+                                   choices = c("(none)" = ""),
+                                   selected = "")
+        } else {
+          shiny::updateSelectInput(session, "reconcile_pathway",
+                                   choices = c("(none)" = "", choices))
+        }
+      })
+
+      output$ai_pathway_picker_visible <- shiny::reactive({
+        if (length(pathways_for_reconcile()) > 0L) "show" else "hide"
+      })
+      shiny::outputOptions(output, "ai_pathway_picker_visible",
+                           suspendWhenHidden = FALSE)
+
+      ai_concordance_payload <- shiny::reactive({
+        d <- de_list()
+        if (length(d) < 2L) return(NULL)
+        cs <- tryCatch(concordance_summary(d,
+                                           padj_cutoff = input$padj,
+                                           lfc_cutoff  = input$lfc),
+                       error = function(e) data.frame())
+        # Rename to user-facing labels (same as the summary table).
+        if (nrow(cs) > 0L) {
+          colnames(cs)[colnames(cs) == "method1"]   <- "comparison1"
+          colnames(cs)[colnames(cs) == "method2"]   <- "comparison2"
+          colnames(cs)[colnames(cs) == "n_method1"] <- "n_comparison1"
+          colnames(cs)[colnames(cs) == "n_method2"] <- "n_comparison2"
+        }
+        out <- .build_concordance_payload(
+          de_results_list   = d,
+          concordance_table = cs,
+          top_n             = 50L,
+          cutoffs           = list(padj = input$padj, lfc = input$lfc)
+        )
+        # Attach the candidate pathway list for .applicable_questions.
+        if (!is.null(out)) {
+          out$pathways_for_reconcile <- pathways_for_reconcile()
+          out$selected_pathway       <- input$reconcile_pathway
+        }
+        out
+      })
+
+      debrowser::aiInterpretServer(
+        "ai_concordance",
+        payload_react              = ai_concordance_payload,
+        settings_react             = ai_settings_react,
+        payload_shape              = "concordance",
+        deterministic_methods_react = deterministic_methods_react
+      )
+    }
 
     invisible(NULL)
   })

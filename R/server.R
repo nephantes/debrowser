@@ -1265,11 +1265,12 @@ deServer <- function(input, output, session) {
       # Pure consumer of de_results_list - no DE re-running. Visibility
       # is governed by the observer immediately below: the tab is
       # hidden at startup and shown only when there are 2+ comparisons.
-      comparisonConcordanceServer(
-        "comparison_concordance",
-        de_results_react  = de_results_list,
-        comparisons_react = dc
-      )
+      #
+      # E12.B.7: comparisonConcordanceServer() call hoisted below to
+      # after methods_react / ai_settings / fgsea_pathways have been
+      # defined (the call now passes those reactives for the in-card AI
+      # mount). The visibility observer below remains in place because
+      # it depends only on de_results_list, not the module call.
       # D2.5 noise fix: only manipulate the methodtabs nav after the
       # shinymanager login wall has cleared (Token B). Pre-auth the
       # panel doesn't exist yet and the message would error in console.
@@ -1679,6 +1680,19 @@ deServer <- function(input, output, session) {
           methods_paragraph(build_session_blocks(st))
         }, error = function(e) "")
       })
+
+      # E12.B.7: Comparison Concordance server mount, hoisted from
+      # ~line 1268 (just below comparison_labels) to here so the closure
+      # can capture ai_settings / fgsea_pathways / methods_react. The
+      # visibility nav observer remains at its original location.
+      comparisonConcordanceServer(
+        "comparison_concordance",
+        de_results_react            = de_results_list,
+        comparisons_react           = dc,
+        ai_settings_react           = ai_settings,
+        fgsea_pathways_react        = fgsea_pathways,
+        deterministic_methods_react = methods_react
+      )
 
       # DE-tab AI visibility + mount: register a fresh visibility output
       # binding AND mount aiInterpretServer per unique "DEResults<n>"
