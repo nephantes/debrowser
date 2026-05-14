@@ -5,34 +5,67 @@
 # disclosure / Ask button / response. Reads the parent's payload reactive
 # and the user's settings reactive; calls the pure ai_interpret() helper.
 # No tests for this module (Shiny module is thin).
+#
+# Phase E12.B - widened signatures: aiInterpretUI gains questions= /
+# payload_shape= ; aiInterpretServer gains payload_shape= /
+# deterministic_methods_react= . Backward-compatible defaults preserve
+# E12.A behavior. Response area swapped from textOutput+tags$pre to
+# uiOutput+sanitized-markdown HTML.
 
 #' AI interpretation panel UI.
 #'
-#' Renders a card with: question dropdown (only one preset in v1),
-#' privacy radio, Top-N input, "What will be sent" disclosure, Ask
-#' button, and response area. The card is meant to be wrapped in a
-#' parent's conditionalPanel so it only renders when settings are valid
-#' and analytical results exist.
+#' Renders a card with: question dropdown, privacy radio (hidden for
+#' `draft_methods`), Top-N input, "What will be sent?" disclosure, Ask
+#' button, and a sanitized-markdown response area. The card is meant
+#' to be wrapped in a parent's conditionalPanel so it only renders
+#' when settings are valid and analytical results exist.
 #'
 #' @param id Module ID.
+#' @param questions Character vector of preset keys offered in the
+#'   dropdown. Default `"summarize_geneset"` (E12.A behavior).
+#'   Supported keys: `summarize_geneset`, `reconcile_enrichments`,
+#'   `suggest_followup`, `draft_methods`.
+#' @param payload_shape One of `"geneset"`, `"de_table"`,
+#'   `"concordance"`. Drives slot building and per-shape privacy
+#'   defaults. Default `"geneset"` (E12.A behavior).
 #' @return tagList.
 #' @examples
-#' aiInterpretUI("ai")
+#' aiInterpretUI("ai_enrichment")
+#' aiInterpretUI("ai_de",
+#'               questions     = c("summarize_geneset", "suggest_followup",
+#'                                 "draft_methods"),
+#'               payload_shape = "de_table")
 #' @export
-aiInterpretUI <- function(id) {
+aiInterpretUI <- function(id,
+                          questions     = "summarize_geneset",
+                          payload_shape = "geneset") {
   ns <- shiny::NS(id)
+  # Friendly labels for the dropdown -- match the preset key vocabulary.
+  all_labels <- c(
+    "summarize_geneset"     = "Summarize this gene set's biology",
+    "reconcile_enrichments" = "Reconcile this pathway across comparisons",
+    "suggest_followup"      = "Suggest follow-up analyses and experiments",
+    "draft_methods"         = "Polish the Methods paragraph"
+  )
+  q_labels  <- all_labels[questions]
+  q_choices <- setNames(names(q_labels), unname(q_labels))
+
   shiny::tagList(
+    shiny::tags$div(`data-shape` = payload_shape),  # for downstream introspection
     shiny::selectInput(ns("question"), "Question",
-                       choices = c("Summarize this gene set's biology" = "summarize_geneset"),
-                       selected = "summarize_geneset"),
-    shiny::radioButtons(ns("privacy"), "Privacy",
-                       choices = c(
-                         "Symbols"          = "symbols",
-                         "+ Stats"          = "stats",
-                         "+ Stats + Enrich" = "stats_enrichment"
-                       ),
-                       inline = TRUE,
-                       selected = "symbols"),
+                       choices = q_choices,
+                       selected = q_choices[[1]]),
+    shiny::conditionalPanel(
+      condition = sprintf("input['%s'] !== 'draft_methods'", ns("question")),
+      shiny::radioButtons(ns("privacy"), "Privacy",
+                         choices = c(
+                           "Symbols"          = "symbols",
+                           "+ Stats"          = "stats",
+                           "+ Stats + Enrich" = "stats_enrichment"
+                         ),
+                         inline = TRUE,
+                         selected = "symbols")
+    ),
     shiny::numericInput(ns("top_n"), "Top-N genes (cap)",
                         value = 50L, min = 1L, max = 500L, step = 1L),
     shiny::tags$details(
@@ -45,8 +78,8 @@ aiInterpretUI <- function(id) {
                         class = "btn-primary"),
     shiny::tags$div(
       class = "ai-response mt-3",
-      shiny::tags$pre(shiny::textOutput(ns("response")),
-                      style = "white-space: pre-wrap; max-height: 400px; overflow-y: auto;")
+      shiny::uiOutput(ns("response"),
+                      style = "max-height: 400px; overflow-y: auto;")
     )
   )
 }
@@ -54,56 +87,107 @@ aiInterpretUI <- function(id) {
 #' AI interpretation panel server.
 #'
 #' @param id Module ID (matches [aiInterpretUI()]).
-#' @param payload_react reactive expression returning the payload list:
-#'   `list(genes = chr, stats = data.frame|NULL, enrichment = list|NULL)`.
-#'   May return NULL when no selection exists; Ask is disabled in that case.
-#' @param settings_react reactive expression yielding the current AI
+#' @param payload_react Reactive expression returning the payload list
+#'   per shape:
+#'   * `geneset` shape: `list(genes, stats, enrichment, context_mode)`
+#'   * `de_table` shape: `list(comparison_label, genes, stats,
+#'     n_total_de, cutoffs)`
+#'   * `concordance` shape: `list(comparison_labels, concordance_table,
+#'     per_comparison_top, cutoffs)`
+#'   May return NULL; Ask is disabled in that case.
+#' @param settings_react Reactive expression yielding the current AI
 #'   settings list (from `aiSettingsServer`).
+#' @param payload_shape One of `"geneset"`, `"de_table"`, `"concordance"`.
+#'   Must match the shape passed to `aiInterpretUI(id, ..., payload_shape)`.
+#'   Default `"geneset"`.
+#' @param deterministic_methods_react Optional reactive expression
+#'   yielding a chr(1) Methods paragraph (e.g. from `methods_paragraph()`).
+#'   Required for the `draft_methods` preset; ignored otherwise.
 #' @return invisible(NULL).
 #' @export
-aiInterpretServer <- function(id, payload_react, settings_react) {
+aiInterpretServer <- function(id, payload_react, settings_react,
+                              payload_shape = "geneset",
+                              deterministic_methods_react = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
 
-    # Initialize privacy radio from settings on first session
+    # Per-shape privacy defaults (overrides settings' default_privacy).
+    shape_default_privacy <- switch(payload_shape,
+                                    "geneset"     = NULL,  # use settings
+                                    "de_table"    = "stats",
+                                    "concordance" = "stats",
+                                    NULL)
     shiny::observe({
       s <- settings_react()
-      shiny::updateRadioButtons(session, "privacy",
-                                selected = s$default_privacy %||% "symbols")
+      sel <- shape_default_privacy %||% s$default_privacy %||% "symbols"
+      shiny::updateRadioButtons(session, "privacy", selected = sel)
     }, priority = 100)
 
-    # Live prompt preview (rebuilt on input changes / payload changes).
-    # Wrap the entire body -- including payload_react() -- in tryCatch so
-    # an upstream error (e.g. a stale row selection raising "subscript
-    # out of bounds") returns a friendly placeholder rather than
-    # crashing this output and the dependent char_count.
+    # Dynamic question dropdown filtering per (shape, payload).
+    shiny::observe({
+      p <- tryCatch(payload_react(), error = function(e) NULL)
+      choices <- .applicable_questions(payload_shape, p)
+      all_labels <- c(
+        "summarize_geneset"     = "Summarize this gene set's biology",
+        "reconcile_enrichments" = "Reconcile this pathway across comparisons",
+        "suggest_followup"      = "Suggest follow-up analyses and experiments",
+        "draft_methods"         = "Polish the Methods paragraph"
+      )
+      keep <- intersect(choices, names(all_labels))
+      if (length(keep) == 0L) return()
+      labeled <- setNames(keep, unname(all_labels[keep]))
+      shiny::updateSelectInput(session, "question", choices = labeled)
+    })
+
     prompt_preview_text <- shiny::reactive({
       tryCatch({
         p <- payload_react()
-        if (is.null(p) || length(p$genes) == 0L) {
-          return("(no genes selected)")
+        if (identical(input$question, "draft_methods")) {
+          txt <- if (is.null(deterministic_methods_react)) NULL else
+                   deterministic_methods_react()
+          if (is.null(txt) || !nzchar(txt)) {
+            return("(no methods paragraph available -- run DE first)")
+          }
+          # Inject the deterministic text as a synthetic payload field
+          # for ai_interpret's draft_methods path; this matches what
+          # the Ask handler does below.
+          if (is.null(p)) p <- list()
+          p$shape <- "draft_methods_text"
+          p$deterministic_methods <- txt
+          template_file <- system.file("templates",
+                                       "ai_draft_methods.md",
+                                       package = "debrowser")
+          if (!file.exists(template_file)) return("(template missing)")
+          slots <- .slots_draft_methods(p)
+          return(.render_prompt(template_file, slots))
         }
-        # Build the same prompt ai_interpret() would build, without dispatching.
+        if (is.null(p) ||
+            (identical(payload_shape, "geneset")     && length(p$genes) == 0L) ||
+            (identical(payload_shape, "de_table")    && length(p$genes) == 0L) ||
+            (identical(payload_shape, "concordance") && length(p$comparison_labels) < 2L)) {
+          return("(payload not ready)")
+        }
         template_dir <- system.file("templates", package = "debrowser")
         template_file <- file.path(template_dir,
                                    sprintf("ai_%s.md", input$question))
         if (!file.exists(template_file)) return("(template missing)")
-        redacted <- .redact_payload(p, input$privacy %||% "symbols",
-                                    top_n = as.integer(input$top_n %||% 50L))
-        slots <- list(
-          n_genes = length(redacted$genes),
-          n_total = attr(redacted, "n_total"),
-          truncated = isTRUE(attr(redacted, "truncated")),
-          gene_list = paste(redacted$genes, collapse = ", "),
-          has_stats = !is.null(redacted$stats),
-          stats_table = if (is.null(redacted$stats)) "" else
-            .format_stats_table(redacted$stats),
-          has_enrichment = !is.null(redacted$enrichment),
-          enrichment_summary = if (is.null(redacted$enrichment)) "" else
-            sprintf("Term: %s; p-value: %g; overlap: %d genes.",
-                    redacted$enrichment$term,
-                    redacted$enrichment$pvalue,
-                    redacted$enrichment$n_overlap)
-        )
+
+        if (identical(input$question, "summarize_geneset")) {
+          redacted <- .redact_payload(p, input$privacy %||% "symbols",
+                                      top_n = as.integer(input$top_n %||% 50L))
+          slots <- .slots_summarize_geneset(
+            redacted,
+            isTRUE(attr(redacted, "truncated")),
+            attr(redacted, "n_total")
+          )
+        } else if (identical(input$question, "reconcile_enrichments")) {
+          slots <- .slots_reconcile_enrichments(p)
+        } else if (identical(input$question, "suggest_followup")) {
+          redacted <- .redact_payload(p, input$privacy %||% "symbols",
+                                      top_n = as.integer(input$top_n %||% 50L))
+          slots <- .slots_suggest_followup(p, redacted)
+        } else {
+          return("(unknown question)")
+        }
         .render_prompt(template_file, slots)
       }, error = function(e) sprintf("(could not render preview: %s)",
                                      conditionMessage(e)))
@@ -120,30 +204,66 @@ aiInterpretServer <- function(id, payload_react, settings_react) {
       sprintf("%d characters will be sent.", nchar(txt))
     })
 
-    # Response state
     response_rv <- shiny::reactiveVal("")
 
-    output$response <- shiny::renderText({ response_rv() })
+    output$response <- shiny::renderUI({
+      txt <- response_rv()
+      if (!nzchar(txt)) return(NULL)
+      if (identical(txt, "(thinking...)")) {
+        return(shiny::tags$em("thinking..."))
+      }
+      rendered <- tryCatch(
+        .render_markdown_sanitized(txt),
+        error = function(e) {
+          shiny::showNotification(
+            "Could not render markdown; showing plain text.",
+            type = "warning", duration = 6
+          )
+          sprintf("<pre>%s</pre>", htmltools::htmlEscape(txt))
+        }
+      )
+      htmltools::HTML(rendered)
+    })
 
     shiny::observeEvent(input$ask, {
       p <- payload_react()
-      if (is.null(p) || length(p$genes) == 0L) {
-        shiny::showNotification("No genes to summarize.", type = "warning")
-        return()
-      }
       s <- settings_react()
       if (!.has_required_credentials(s)) {
         shiny::showNotification(
-          "Configure a provider in Settings - AI Assistant.", type = "warning"
+          "Configure a provider in Settings - AI Assistant.",
+          type = "warning"
         )
         return()
       }
+      q <- input$question
+
+      # draft_methods needs the deterministic methods text injected.
+      if (identical(q, "draft_methods")) {
+        txt <- if (is.null(deterministic_methods_react)) NULL else
+                 deterministic_methods_react()
+        if (is.null(txt) || !nzchar(txt)) {
+          shiny::showNotification(
+            "Run DE first -- no Methods paragraph yet.",
+            type = "warning"
+          )
+          return()
+        }
+        if (is.null(p)) p <- list()
+        p$shape <- "draft_methods_text"
+        p$deterministic_methods <- txt
+      } else {
+        if (is.null(p)) {
+          shiny::showNotification("No payload available.", type = "warning")
+          return()
+        }
+      }
+
       key <- if (s$provider == "ollama") NULL else ai_key_get(s$provider)
       response_rv("(thinking...)")
       tryCatch({
         chat <- ai_chat(s$provider, s$model, api_key = key)
         out  <- ai_interpret(
-          question      = input$question,
+          question      = q,
           payload       = p,
           privacy_mode  = input$privacy %||% "symbols",
           provider_chat = chat,
@@ -181,3 +301,6 @@ aiInterpretServer <- function(id, payload_react, settings_react) {
     invisible(NULL)
   })
 }
+
+# Local null-coalescing operator. Keep at bottom of file.
+`%||%` <- function(a, b) if (is.null(a)) b else a
