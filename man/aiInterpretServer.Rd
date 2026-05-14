@@ -4,17 +4,36 @@
 \alias{aiInterpretServer}
 \title{AI interpretation panel server.}
 \usage{
-aiInterpretServer(id, payload_react, settings_react)
+aiInterpretServer(
+  id,
+  payload_react,
+  settings_react,
+  payload_shape = "geneset",
+  deterministic_methods_react = NULL
+)
 }
 \arguments{
 \item{id}{Module ID (matches [aiInterpretUI()]).}
 
-\item{payload_react}{reactive expression returning the payload list:
-`list(genes = chr, stats = data.frame|NULL, enrichment = list|NULL)`.
-May return NULL when no selection exists; Ask is disabled in that case.}
+\item{payload_react}{Reactive expression returning the payload list
+per shape:
+* `geneset` shape: `list(genes, stats, enrichment, context_mode)`
+* `de_table` shape: `list(comparison_label, genes, stats,
+  n_total_de, cutoffs)`
+* `concordance` shape: `list(comparison_labels, concordance_table,
+  per_comparison_top, cutoffs)`
+May return NULL; Ask is disabled in that case.}
 
-\item{settings_react}{reactive expression yielding the current AI
+\item{settings_react}{Reactive expression yielding the current AI
 settings list (from `aiSettingsServer`).}
+
+\item{payload_shape}{One of `"geneset"`, `"de_table"`, `"concordance"`.
+Must match the shape passed to `aiInterpretUI(id, ..., payload_shape)`.
+Default `"geneset"`.}
+
+\item{deterministic_methods_react}{Optional reactive expression
+yielding a chr(1) Methods paragraph (e.g. from `methods_paragraph()`).
+Required for the `draft_methods` preset; ignored otherwise.}
 }
 \value{
 invisible(NULL).

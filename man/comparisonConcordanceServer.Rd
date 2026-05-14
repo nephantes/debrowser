@@ -4,7 +4,14 @@
 \alias{comparisonConcordanceServer}
 \title{Server for the Comparison Concordance tab.}
 \usage{
-comparisonConcordanceServer(id, de_results_react, comparisons_react = NULL)
+comparisonConcordanceServer(
+  id,
+  de_results_react,
+  comparisons_react = NULL,
+  ai_settings_react = NULL,
+  fgsea_pathways_react = NULL,
+  deterministic_methods_react = NULL
+)
 }
 \arguments{
 \item{id}{Module ID.}
@@ -20,6 +27,17 @@ from `R/server.R`). Each element must contain `ID`,
 `cond_names` so the pairwise DEG heatmap can label group axes.
 When NULL or missing cond_names, the heatmap card shows an
 empty-state.}
+
+\item{ai_settings_react}{Optional reactive yielding AI settings list
+(from `aiSettingsServer`). When NULL, no AI panel is mounted.}
+
+\item{fgsea_pathways_react}{Optional reactive yielding the active
+fgsea pathway set (`names()` over the gene-set lookup). Drives
+the in-card pathway picker for `reconcile_enrichments`.}
+
+\item{deterministic_methods_react}{Optional reactive yielding a
+chr(1) Methods paragraph (e.g. from `methods_paragraph()`).
+Consumed by the `draft_methods` preset.}
 }
 \value{
 invisible(NULL).

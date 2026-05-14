@@ -4,21 +4,34 @@
 \alias{aiInterpretUI}
 \title{AI interpretation panel UI.}
 \usage{
-aiInterpretUI(id)
+aiInterpretUI(id, questions = "summarize_geneset", payload_shape = "geneset")
 }
 \arguments{
 \item{id}{Module ID.}
+
+\item{questions}{Character vector of preset keys offered in the
+dropdown. Default `"summarize_geneset"` (E12.A behavior).
+Supported keys: `summarize_geneset`, `reconcile_enrichments`,
+`suggest_followup`, `draft_methods`.}
+
+\item{payload_shape}{One of `"geneset"`, `"de_table"`,
+`"concordance"`. Drives slot building and per-shape privacy
+defaults. Default `"geneset"` (E12.A behavior).}
 }
 \value{
 tagList.
 }
 \description{
-Renders a card with: question dropdown (only one preset in v1),
-privacy radio, Top-N input, "What will be sent" disclosure, Ask
-button, and response area. The card is meant to be wrapped in a
-parent's conditionalPanel so it only renders when settings are valid
-and analytical results exist.
+Renders a card with: question dropdown, privacy radio (hidden for
+`draft_methods`), Top-N input, "What will be sent?" disclosure, Ask
+button, and a sanitized-markdown response area. The card is meant
+to be wrapped in a parent's conditionalPanel so it only renders
+when settings are valid and analytical results exist.
 }
 \examples{
-aiInterpretUI("ai")
+aiInterpretUI("ai_enrichment")
+aiInterpretUI("ai_de",
+              questions     = c("summarize_geneset", "suggest_followup",
+                                "draft_methods"),
+              payload_shape = "de_table")
 }
