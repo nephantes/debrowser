@@ -21,7 +21,7 @@ Result of `UpSetR::upset()` (a list with class `"upset"`).
 }
 \description{
 Gated by `require_pkg("UpSetR")`. Returns the `UpSetR::upset()`
-object — caller (renderPlot) is responsible for printing.
+object -- caller (renderPlot) is responsible for printing.
 }
 \examples{
 if (requireNamespace("UpSetR", quietly = TRUE)) {

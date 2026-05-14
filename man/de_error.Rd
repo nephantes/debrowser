@@ -16,7 +16,7 @@ to the condition's class list. Always inherits from
 \item{...}{Extra named fields stored on the condition for caller use.}
 }
 \value{
-Nothing — always raises.
+Nothing -- always raises.
 }
 \description{
 All errors raised by the `fct_*` pure functions go through this helper so

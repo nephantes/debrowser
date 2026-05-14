@@ -45,7 +45,7 @@ build_auth_chain <- function(trusted_proxies = character(0)) {
 #'
 #' @param session The Shiny session object.
 #' @param chain Optional override (defaults to [build_auth_chain()]
-#'   with no proxy allowlist — the app's startShiny.R passes the
+#'   with no proxy allowlist -- the app's startShiny.R passes the
 #'   configured chain via getOption("debrowser.auth_chain") in normal
 #'   operation).
 #' @keywords internal
@@ -64,7 +64,7 @@ current_user <- function(session,
   }
   cached <- ud$debrowser_auth$user_id
   if (!is.null(cached)) {
-    # In hosted mode, never cache "local" as final — it means the chain
+    # In hosted mode, never cache "local" as final -- it means the chain
     # fell through (no auth yet). Re-resolve so we pick up the user as
     # soon as shinymanager / OIDC populates res_auth.
     if (!hosted_mode() || !identical(cached, "local")) {
@@ -72,7 +72,7 @@ current_user <- function(session,
     }
   }
   uid <- chain$identify(session)
-  if (is.null(uid)) uid <- "local"   # safety floor — should never hit
+  if (is.null(uid)) uid <- "local"   # safety floor -- should never hit
   ud$debrowser_auth$user_id <- uid
   uid
 }

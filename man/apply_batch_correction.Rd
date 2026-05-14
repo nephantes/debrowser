@@ -22,13 +22,13 @@ apply_batch_correction(
 \item{batch_col}{Name of the batch column in `metadata`.}
 
 \item{treatment_col}{Name of the treatment column in `metadata`. May be
-NULL or "None" — only required for Harman.}
+NULL or "None" -- only required for Harman.}
 }
 \value{
 Corrected count matrix.
 }
 \description{
-Pure function — no Shiny dependency. Accepts batch / treatment column
+Pure function -- no Shiny dependency. Accepts batch / treatment column
 names directly instead of pulling from a reactive `input` object.
 }
 \examples{

@@ -64,7 +64,7 @@ test_that("build_auth_chain: non-hosted returns just local_anonymous", {
   })
 })
 
-test_that("build_auth_chain: hosted with header → 'alice'; no header → 'local'", {
+test_that("build_auth_chain: hosted with header \u2192 'alice'; no header \u2192 'local'", {
   skip_if_not_installed("ipaddress")
   withr::with_options(list(debrowser.hosted = TRUE), {
     chain <- build_auth_chain(trusted_proxies = c("10.0.0.0/8"))
@@ -72,12 +72,12 @@ test_that("build_auth_chain: hosted with header → 'alice'; no header → 'loca
       chain$identify(make_fake_session_with_userdata("10.0.0.5", "alice")),
       "alice"
     )
-    # Untrusted IP → header is ignored → falls through to local
+    # Untrusted IP \u2192 header is ignored \u2192 falls through to local
     expect_equal(
       chain$identify(make_fake_session_with_userdata("8.8.8.8", "alice")),
       "local"
     )
-    # No header, trusted IP → falls through to local
+    # No header, trusted IP \u2192 falls through to local
     expect_equal(
       chain$identify(make_fake_session_with_userdata("10.0.0.5", "")),
       "local"
@@ -109,7 +109,7 @@ test_that("current_user: NULL session returns NA_character_", {
 test_that("current_user: handles missing userData by creating it (non-tampering)", {
   withr::with_options(list(debrowser.hosted = FALSE), {
     s <- list(request = list(REMOTE_ADDR = "127.0.0.1"))
-    # No userData on the session — current_user should still resolve
+    # No userData on the session \u2014 current_user should still resolve
     expect_equal(current_user(s), "local")
   })
 })

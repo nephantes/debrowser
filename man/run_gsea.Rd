@@ -45,7 +45,7 @@ enrichment scores ordered by descending |NES|. No Shiny calls.
 }
 \details{
 Symbols in `de_table[[id_col]]` are matched against the gene IDs in
-`pathways` directly — caller is responsible for ID-space consistency
+`pathways` directly -- caller is responsible for ID-space consistency
 (typically both SYMBOL or both ENTREZID).
 }
 \examples{

@@ -4,7 +4,7 @@
 # from incoming Shiny session requests, but only when the request
 # originates from an IP in `trusted_proxies` (exact match or CIDR
 # network). Covers nginx + LDAP, oauth2-proxy + Okta, Apache + Kerberos,
-# etc. — any reverse-proxy auth setup that injects an identity header.
+# etc. -- any reverse-proxy auth setup that injects an identity header.
 #
 # Configured at startup via startDEBrowser(trusted_proxies = ...).
 
@@ -12,7 +12,7 @@
 #'
 #' @param trusted_proxies Character vector of proxy IPs and/or CIDR
 #'   networks (e.g. `c("127.0.0.1", "10.0.0.0/8")`). If empty, the
-#'   provider always returns NULL — useful as an opt-out.
+#'   provider always returns NULL -- useful as an opt-out.
 #' @keywords internal
 #' @noRd
 header_auth_provider <- function(trusted_proxies = character(0)) {

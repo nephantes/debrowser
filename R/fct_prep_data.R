@@ -1,6 +1,6 @@
 #' Apply DE filters and label Up/Down/NS/MV/GS rows.
 #'
-#' Pure function — no Shiny dependency. Re-normalizes the count columns,
+#' Pure function -- no Shiny dependency. Re-normalizes the count columns,
 #' computes per-condition x/y log10 means, and labels each row by cutoff.
 #'
 #' @param filt_data data.frame with columns including `foldChange`, `padj`,

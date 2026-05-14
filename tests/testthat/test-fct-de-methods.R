@@ -24,7 +24,7 @@ test_that("run_deseq2() with structured params matches the legacy DESeq2 golden 
   res <- as.data.frame(res)
   res <- res[order(rownames(res)), c("baseMean", "log2FoldChange", "padj"), drop = FALSE]
 
-  # Same hash as test-golden-de.R "DESeq2 result" — the pure function
+  # Same hash as test-golden-de.R "DESeq2 result" \u2014 the pure function
   # must be byte-identical to the legacy runDESeq2() path.
   expect_snapshot_value(stable_hash(res), style = "json2")
 })
@@ -66,7 +66,7 @@ test_that("run_edger() includes baseMean column for Rmd report parity (Issue 5)"
   # D2.5 fix Issue 5: the Rmd report template selects `baseMean` for
   # the Results table and uses it as the MA-plot x-axis. Before this
   # fix, run_edger() returned only log2FoldChange / pvalue / padj /
-  # stat — Rmd render failed with "Column `baseMean` doesn't exist."
+  # stat \u2014 Rmd render failed with "Column `baseMean` doesn't exist."
   # Now run_edger() derives baseMean from edgeR's logCPM (or rowMeans
   # fallback) so EdgeR results plug into the same template.
   skip_on_cran()

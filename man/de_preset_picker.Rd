@@ -14,7 +14,7 @@ an `htmltools::tag` (`<select>`).
 }
 \description{
 Compact native `<select>` styled with standard Bootstrap classes
-(`form-select form-select-sm`) — no custom classes. Sits next to the
+(`form-select form-select-sm`) -- no custom classes. Sits next to the
 dark-mode toggle in `deUI()`. The `change` event is wired in JS to
 write a `debrowser_preset` cookie and reload (see `de_preset_js()`).
 }

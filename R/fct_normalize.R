@@ -42,7 +42,7 @@ normalize_counts <- function(counts, method = "TMM") {
 
 #' Apply batch-effect correction.
 #'
-#' Pure function — no Shiny dependency. Accepts batch / treatment column
+#' Pure function -- no Shiny dependency. Accepts batch / treatment column
 #' names directly instead of pulling from a reactive `input` object.
 #'
 #' @param counts Numeric matrix (genes x samples).
@@ -50,7 +50,7 @@ normalize_counts <- function(counts, method = "TMM") {
 #' @param method One of "none", "Combat", "CombatSeq", "Harman".
 #' @param batch_col Name of the batch column in `metadata`.
 #' @param treatment_col Name of the treatment column in `metadata`. May be
-#'   NULL or "None" — only required for Harman.
+#'   NULL or "None" -- only required for Harman.
 #' @return Corrected count matrix.
 #' @examples
 #' m <- matrix(as.integer(c(100, 200, 150, 80, 250, 130,

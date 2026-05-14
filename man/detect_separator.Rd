@@ -24,7 +24,7 @@ semicolon. Returns NA when no candidate clears the threshold.
 }
 \details{
 Decompresses `.gz` files and strips a leading UTF-8 BOM before
-scoring. Excel files are not handled here — callers should branch
+scoring. Excel files are not handled here -- callers should branch
 on extension before calling this.
 
 Counts files default to `min_score = 3` (3+ numeric columns is a strong

@@ -7,14 +7,14 @@ test_that("validate_signup_input: rejects empty user_id", {
 
 test_that("validate_signup_input: rejects mismatched passwords", {
   expect_match(
-    validate_signup_input("alice", "a@b", "pw1", "pw2"),
+    validate_signup_input("alice", "a@b.org", "pw1", "pw2"),
     "match", ignore.case = TRUE
   )
 })
 
 test_that("validate_signup_input: rejects short password", {
   expect_match(
-    validate_signup_input("alice", "a@b", "1234567", "1234567"),
+    validate_signup_input("alice", "a@b.org", "1234567", "1234567"),
     "8|length|short", ignore.case = TRUE
   )
 })

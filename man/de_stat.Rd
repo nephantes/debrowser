@@ -7,11 +7,11 @@
 de_stat(value, label, color = "var(--de-cyan)")
 }
 \arguments{
-\item{value}{character — the value (e.g. "6")}
+\item{value}{character -- the value (e.g. "6")}
 
-\item{label}{character — the trailing label (e.g. "samples")}
+\item{label}{character -- the trailing label (e.g. "samples")}
 
-\item{color}{CSS color — the dot color (default cyan)}
+\item{color}{CSS color -- the dot color (default cyan)}
 }
 \value{
 an `htmltools::tag` (`<span>` with a dot + value + label).

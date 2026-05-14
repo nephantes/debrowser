@@ -7,7 +7,7 @@
 de_workbar(crumb, ...)
 }
 \arguments{
-\item{crumb}{character — current tab label, shown bold}
+\item{crumb}{character -- current tab label, shown bold}
 
 \item{...}{trailing tags (e.g. `actionButton`s)}
 }

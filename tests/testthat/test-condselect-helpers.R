@@ -17,7 +17,7 @@ test_that("infer_control_level falls back to alphabetical when no match", {
 })
 
 test_that("infer_control_level falls back to alphabetical when ambiguous", {
-  # Both look like references — alphabetical wins.
+  # Both look like references \u2014 alphabetical wins.
   expect_equal(infer_control_level(c("control", "wt")), "control")
 })
 

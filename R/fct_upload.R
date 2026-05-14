@@ -3,7 +3,7 @@
 #' Pure helpers for the Quick Start wizard (B2b).
 #'
 #' These are testthat-tested in isolation. The file has no `library()`
-#' calls and no Shiny references — keep it that way.
+#' calls and no Shiny references -- keep it that way.
 #'
 #' @keywords internal
 #' @name fct_upload
@@ -66,7 +66,7 @@ NULL
 #' semicolon. Returns NA when no candidate clears the threshold.
 #'
 #' Decompresses `.gz` files and strips a leading UTF-8 BOM before
-#' scoring. Excel files are not handled here — callers should branch
+#' scoring. Excel files are not handled here -- callers should branch
 #' on extension before calling this.
 #'
 #' Counts files default to `min_score = 3` (3+ numeric columns is a strong
@@ -100,7 +100,7 @@ detect_separator <- function(path, sample_lines = 50L, min_score = 3L) {
 #'
 #' Used as a fallback when the user uploads counts without metadata.
 #' Downstream condSelect's existing "need >=2 conditions" validation
-#' will surface the requirement when the user proceeds — no new
+#' will surface the requirement when the user proceeds -- no new
 #' validation is added here.
 #'
 #' @param counts data frame whose column names are the sample IDs.
@@ -127,9 +127,9 @@ make_default_metadata <- function(counts) {
 #' on class via tryCatch.
 #'
 #' Raises:
-#'   * `bad_separator`     — fewer than 3 columns after read (typically a
+#'   * `bad_separator`     -- fewer than 3 columns after read (typically a
 #'                           wrong-separator file).
-#'   * `duplicate_gene_ids` — first column contains duplicate values; the
+#'   * `duplicate_gene_ids` -- first column contains duplicate values; the
 #'                           condition object carries field `dups`.
 #'
 #' Other I/O failures propagate as plain `simpleError` / `simpleWarning`
@@ -173,8 +173,8 @@ validate_count_upload <- function(path, sep) {
 #' on validation failures.
 #'
 #' Raises:
-#'   * `bad_separator`   — fewer than 2 columns after read.
-#'   * `column_mismatch` — count column names not present in metadata's
+#'   * `bad_separator`   -- fewer than 2 columns after read.
+#'   * `column_mismatch` -- count column names not present in metadata's
 #'                         first column. Field `unmatched` lists them.
 #'
 #' Other I/O failures propagate as plain conditions.

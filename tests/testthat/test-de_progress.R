@@ -34,7 +34,7 @@ test_that("compute_pill_class returns 'de-pill-locked' for locked state", {
 test_that("compute_pill_class returns 'de-pill-skipped' for skipped state", {
   # B3.17: "skipped" now maps to its own visual class. Optional steps
   # (Batch Effect) default to "skipped" and should render as dim/disabled
-  # — NOT as a green-dot done step. A separate rule in CSS gives
+  # \u2014 NOT as a green-dot done step. A separate rule in CSS gives
   # de-pill-skipped a muted gray dot. For downstream gating purposes
   # (which steps to unlock next), the server treats skipped == done
   # but the visual is intentionally distinct.

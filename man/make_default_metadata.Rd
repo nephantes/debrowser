@@ -15,7 +15,7 @@ data frame with columns `Sample`, `Condition`, `Batch`.
 \description{
 Used as a fallback when the user uploads counts without metadata.
 Downstream condSelect's existing "need >=2 conditions" validation
-will surface the requirement when the user proceeds — no new
+will surface the requirement when the user proceeds -- no new
 validation is added here.
 }
 \examples{

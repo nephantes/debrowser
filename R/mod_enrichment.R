@@ -6,7 +6,7 @@
 
 # Internal: pick the gene-id column name in a DE table. DEBrowser's
 # legacy `addDataCols()` output uses "ID"; the gsea-explorer reference
-# uses "gene". Accept either — fall back to NULL and let run_gsea raise
+# uses "gene". Accept either -- fall back to NULL and let run_gsea raise
 # a classed error.
 #' @noRd
 .enrichment_id_col <- function(de) {

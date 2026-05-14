@@ -5,6 +5,6 @@
 \title{Pure helpers for the Quick Start wizard (B2b).}
 \description{
 These are testthat-tested in isolation. The file has no `library()`
-calls and no Shiny references — keep it that way.
+calls and no Shiny references -- keep it that way.
 }
 \keyword{internal}

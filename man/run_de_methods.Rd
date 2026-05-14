@@ -45,7 +45,7 @@ frames are normalized to a common shape:
 helpers can join by `ID` without per-method special-casing.
 }
 \details{
-DESeq2's native return is a `DESeqResults` object — coerced via
+DESeq2's native return is a `DESeqResults` object -- coerced via
 `as.data.frame()`. edgeR / limma already return data.frames.
 }
 \examples{

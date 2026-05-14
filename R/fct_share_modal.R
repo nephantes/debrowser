@@ -9,7 +9,7 @@
 #'   passed by Shiny to `onBookmarked`).
 #' @param can_toggle Logical(1). When TRUE, render the visibility
 #'   toggle (private vs. link). D2.4 ships the toggle UI but does NOT
-#'   wire the DB UPDATE — D2.5's account UI does that. Default FALSE.
+#'   wire the DB UPDATE -- D2.5's account UI does that. Default FALSE.
 #' @param current_visibility Character(1). Either "private" or "link".
 #'   Only consulted when `can_toggle = TRUE`.
 #' @return A `shiny::tagList()` ready to embed in `modalDialog`.

@@ -30,7 +30,7 @@ length(cols)). Values look like "Cond1"/"Cond2"/...}
 data.frame with added `x`, `y`, `Legend`, `Size` columns; or NULL.
 }
 \description{
-Pure function — no Shiny dependency. Re-normalizes the count columns,
+Pure function -- no Shiny dependency. Re-normalizes the count columns,
 computes per-condition x/y log10 means, and labels each row by cutoff.
 }
 \examples{

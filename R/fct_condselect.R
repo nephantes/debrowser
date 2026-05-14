@@ -20,8 +20,8 @@
 #' reference-shaped words. If exactly one level matches, returns it. Otherwise
 #' falls back to alphabetical order so the result is always deterministic.
 #'
-#' @param levels character vector of metadata-column levels (≥ 2 expected).
-#' @return character(1) — the level chosen as control.
+#' @param levels character vector of metadata-column levels (>= 2 expected).
+#' @return character(1) -- the level chosen as control.
 #' @noRd
 infer_control_level <- function(levels) {
   matches <- grepl(.CONTROL_REGEX, levels, perl = TRUE)
@@ -260,7 +260,7 @@ validate_comparison <- function(spec, metadata) {
     }
   }
 
-  # Covariate predicates (severity = warning, advisory only — except an
+  # Covariate predicates (severity = warning, advisory only -- except an
   # unknown column name, which is a hard configuration error).
   selected_samples <- c(spec$treatment_samples, spec$control_samples)
   treatment_marker <- c(rep("Treat", length(spec$treatment_samples)),

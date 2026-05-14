@@ -6,8 +6,8 @@
 #' Optionally accepts a `de_progress_label()`-style progress-pill marker
 #' so the Data Prep tab keeps its workflow checkmark behavior.
 #'
-#' @param num integer/character — the chip number (1..N)
-#' @param label character — the tab label
+#' @param num integer/character -- the chip number (1..N)
+#' @param label character -- the tab label
 #' @param progress_pill optional progress pill key (e.g. `"data_prep"`)
 #' @return an `htmltools::HTML` blob suitable for `nav_panel(title = ...)`
 #' @examples
@@ -41,8 +41,8 @@ de_nav_chip <- function(num, label, progress_pill = NULL) {
 #' inst/extdata/www/debrowser.css and is dormant until the redesign layer
 #' is toggled on via `data-debrowser-redesign="1"` on `<html>`.
 #'
-#' @param num character / numeric — the chip number (1..N)
-#' @param label character — the eyebrow text
+#' @param num character / numeric -- the chip number (1..N)
+#' @param label character -- the eyebrow text
 #' @return an `htmltools::tag` (`<div class="de-eyebrow">`).
 #' @examples
 #' x <- de_eyebrow(1, "Upload & configure")
@@ -59,7 +59,7 @@ de_eyebrow <- function(num, label) {
 #'
 #' B3 helper. Page-level headline rendered just under the eyebrow.
 #'
-#' @param text character — the headline text
+#' @param text character -- the headline text
 #' @return an `htmltools::tag` (`<h2 class="de-headline">`).
 #' @examples
 #' x <- de_headline("Bring your counts & metadata in.")
@@ -87,9 +87,9 @@ de_stat_strip <- function(...) {
 #'
 #' B3 helper. Single stat inside a `de_stat_strip()`.
 #'
-#' @param value character — the value (e.g. "6")
-#' @param label character — the trailing label (e.g. "samples")
-#' @param color CSS color — the dot color (default cyan)
+#' @param value character -- the value (e.g. "6")
+#' @param label character -- the trailing label (e.g. "samples")
+#' @param color CSS color -- the dot color (default cyan)
 #' @return an `htmltools::tag` (`<span>` with a dot + value + label).
 #' @examples
 #' x <- de_stat("6", "samples", color = "var(--de-cyan)")
@@ -107,7 +107,7 @@ de_stat <- function(value, label, color = "var(--de-cyan)") {
 #' B3 helper. Small breadcrumb / toolbar row that sits above a tab's
 #' headline. Accepts a current-tab label and optional trailing actions.
 #'
-#' @param crumb character — current tab label, shown bold
+#' @param crumb character -- current tab label, shown bold
 #' @param ... trailing tags (e.g. `actionButton`s)
 #' @return an `htmltools::tag` (`<div class="de-workbar">`).
 #' @examples
@@ -117,7 +117,7 @@ de_workbar <- function(crumb, ...) {
   htmltools::tags$div(
     class = "de-workbar",
     htmltools::tags$div(class = "de-crumbs",
-                        "Workspace · ", htmltools::tags$b(crumb)),
+                        "Workspace \u00b7 ", htmltools::tags$b(crumb)),
     htmltools::tags$div(class = "spacer"),
     ...
   )
@@ -771,7 +771,7 @@ getTableStyle <- function(
   if (!is.null(foldChange) && DEsection && all(foldChange %in% names(dat$x$data))) {
     # input$padj and input$log2fc_cutoff here are the GLOBAL sidebar
     # cutoffs (from getCutOffSelection), not the namespaced per-plot
-    # ones — the main DT colours genes by the user's overall threshold.
+    # ones -- the main DT colours genes by the user's overall threshold.
     fc <- log2fc_to_fold(as.numeric(input$log2fc_cutoff))
     a <- a %>%
       formatStyle(

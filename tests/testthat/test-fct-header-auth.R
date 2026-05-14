@@ -14,7 +14,7 @@ test_that("header_auth_provider: constructor rejects non-character input", {
 test_that("header_auth_provider: empty trusted_proxies is allowed (no-op provider)", {
   p <- header_auth_provider(trusted_proxies = character(0))
   expect_true(is_auth_provider(p))
-  # identify will always return NULL (no trusted proxies → no headers honored)
+  # identify will always return NULL (no trusted proxies \u2192 no headers honored)
   fake_session <- list(request = list(
     REMOTE_ADDR = "127.0.0.1",
     HTTP_X_FORWARDED_USER = "alice"

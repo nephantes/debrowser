@@ -11,7 +11,7 @@ skip_if_not_installed("chromote")
 
 # Skip when Chrome isn't reachable. R-CMD-check workflow installs
 # `shinytest2` + `chromote` (because they're in Suggests) but does NOT
-# install Chrome — only the dedicated `shinytest2` workflow does.
+# install Chrome \u2014 only the dedicated `shinytest2` workflow does.
 # Without this guard the AppDriver$new() call below times out at 15s
 # and fails 11 tests in R-CMD-check; the dedicated job still covers them.
 chrome_path <- tryCatch(chromote::find_chrome(), error = function(e) NULL)
@@ -56,7 +56,7 @@ test_that("downstream tabs are hidden before any data is loaded", {
 
   # B2a hides Main Plots / GO Term / Tables panels until DE has run.
   # We assert pre-DE state by checking an output that *only* renders
-  # after `sel()` is populated by the wizard — `compselectUI` is
+  # after `sel()` is populated by the wizard \u2014 `compselectUI` is
   # rendered as NULL when no condSelectServer module is wired, which is
   # the pre-DE state. Checking `leftMenu` was unreliable: getLeftMenu()
   # returns a static `list(conditionalPanel(...))` that always renders

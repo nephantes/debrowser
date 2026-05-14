@@ -34,6 +34,6 @@ test_that("startDEBrowser passes deUI as a function reference (not shinyUI(deUI)
   src <- deparse(body(startDEBrowser))
   expect_false(
     any(grepl("shinyUI\\s*\\(\\s*deUI", src)),
-    info = "startDEBrowser must not wrap deUI in shinyUI() — pass the function"
+    info = "startDEBrowser must not wrap deUI in shinyUI() \u2014 pass the function"
   )
 })

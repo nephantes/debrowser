@@ -55,7 +55,7 @@ serialize_load_state <- function(loaded, store, con, user_id) {
        meta_sha  = meta_sha)
 }
 
-#' Inverse of [serialize_load_state()] — return file paths the dataLoad
+#' Inverse of [serialize_load_state()] -- return file paths the dataLoad
 #' module can read from. For demo/json, the helper just returns the
 #' data_source marker; the dataLoad module's onRestore handles the
 #' reconstitution.

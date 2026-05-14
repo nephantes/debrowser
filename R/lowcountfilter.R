@@ -124,7 +124,7 @@ dataLCFUI <- function(id) {
           ),
           de_card(
             title = "Filtering Methods",
-            # B3.23 — Filter form on top; next-step CTAs INSIDE the same
+            # B3.23 -- Filter form on top; next-step CTAs INSIDE the same
             # card, stacked vertically below the Filter button, all the
             # same width, with the last CTA pinned to the card bottom.
             div(
@@ -158,7 +158,7 @@ dataLCFUI <- function(id) {
             uiOutput(ns("filteredtable"))
           )
         ),
-        # B3.23 — The next-step CTAs were moved INSIDE the Filtering
+        # B3.23 -- The next-step CTAs were moved INSIDE the Filtering
         # Methods card above. This empty placeholder kept for visual
         # spacing only; intentionally rendering nothing.
         NULL

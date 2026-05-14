@@ -11,7 +11,7 @@ an `htmltools::tag` (`<script>`).
 }
 \description{
 On change of `#de_preset_picker`: writes a `debrowser_preset` cookie
-(1-year expiry, path /) — or deletes it when the user picks "Default" —
+(1-year expiry, path /) -- or deletes it when the user picks "Default" --
 strips any `?preset=` from the current URL, and reloads. Uses standard
 DOM APIs and jQuery's delegated event binding (already in Shiny).
 }

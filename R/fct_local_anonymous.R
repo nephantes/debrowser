@@ -9,7 +9,7 @@
 #' Used in non-hosted mode (`startDEBrowser()` with no args). Bookmarks,
 #' AI settings, etc. are all owned by the implicit `"local"` user. The
 #' user_db_create_user(con, "local", "local") row is created on first
-#' write by the consuming module — this provider doesn't touch the DB.
+#' write by the consuming module -- this provider doesn't touch the DB.
 #'
 #' @keywords internal
 #' @noRd

@@ -24,7 +24,7 @@ debrowserbatcheffect <- function(id, ldata = NULL) {
     if (is.null(ldata$count)) {
       return(NULL)
     }
-    # B3.32 — Top-level safety net: any unhandled error inside
+    # B3.32 -- Top-level safety net: any unhandled error inside
     # normalization / batch-correction is surfaced as a friendly toast
     # so the observer (and the page) keeps working. The inner
     # correctCombat / correctHarman calls also tryCatch their own
@@ -40,7 +40,7 @@ debrowserbatcheffect <- function(id, ldata = NULL) {
               de_notify_error(paste0(
                 "Normalization (", input$norm_method,
                 ") failed: ", conditionMessage(e),
-                " — try a different method."
+                " -- try a different method."
               ))
               NULL
             }
@@ -67,7 +67,7 @@ debrowserbatcheffect <- function(id, ldata = NULL) {
     }, error = function(e) {
       de_notify_error(paste0(
         "Batch effect step failed: ", conditionMessage(e),
-        " — adjust your settings and click Submit again."
+        " -- adjust your settings and click Submit again."
       ))
     })
   })
@@ -141,7 +141,7 @@ batchEffectUI <- function(id) {
           ),
           de_card(
             title = "Options",
-            # B3.31 — Mirror the Filter card pattern: form on top,
+            # B3.31 -- Mirror the Filter card pattern: form on top,
             # next-step CTAs INSIDE the same card stacked under Submit.
             div(
               class = "de-batch-card-content",
@@ -306,7 +306,7 @@ correctCombat <- function(input = NULL, idata = NULL, metadata = NULL,
   } else {
     NULL
   }
-  # B3.32 — sva::ComBat / ComBat_seq throws on confounded covariates,
+  # B3.32 -- sva::ComBat / ComBat_seq throws on confounded covariates,
   # singular models, etc. Catch and surface as a friendly notification
   # instead of letting the observer die and the page freeze.
   tryCatch(
@@ -318,7 +318,7 @@ correctCombat <- function(input = NULL, idata = NULL, metadata = NULL,
       de_notify_error(paste0(
         "Batch correction (", method, ") could not run: ",
         conditionMessage(e),
-        " — try a different batch column, drop confounded covariates, ",
+        " -- try a different batch column, drop confounded covariates, ",
         "or pick a different correction method."
       ))
       NULL
@@ -347,7 +347,7 @@ correctHarman <- function(input = NULL, idata = NULL, metadata = NULL) {
     )
     return(NULL)
   }
-  # B3.32 — Harman::harman throws on bad batch/treatment configurations
+  # B3.32 -- Harman::harman throws on bad batch/treatment configurations
   # (e.g. only one batch level, or batch perfectly confounds treatment).
   # Catch and surface as a friendly notification instead of crashing.
   tryCatch(
@@ -359,7 +359,7 @@ correctHarman <- function(input = NULL, idata = NULL, metadata = NULL) {
       de_notify_error(paste0(
         "Harman correction could not run: ",
         conditionMessage(e),
-        " — verify your batch and treatment fields are valid (more than ",
+        " -- verify your batch and treatment fields are valid (more than ",
         "one level, not perfectly confounded), then try again."
       ))
       NULL

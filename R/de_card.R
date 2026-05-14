@@ -4,11 +4,11 @@
 #' Optionally renders a small primary download button on the right of the
 #' card header.
 #'
-#' @param title character — card title shown in the header
+#' @param title character -- card title shown in the header
 #' @param ... card body content
-#' @param download_id character or NULL — if non-NULL, render a
+#' @param download_id character or NULL -- if non-NULL, render a
 #'   `downloadButton` with this id in the header
-#' @param full_screen logical — passed through to `bslib::card()`
+#' @param full_screen logical -- passed through to `bslib::card()`
 #'
 #' @return a `bslib::card` tagList
 #' @examples

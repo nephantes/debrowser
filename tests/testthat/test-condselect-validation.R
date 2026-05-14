@@ -205,7 +205,7 @@ test_that("validate_comparison: covariate evaluated correctly when sample column
 test_that("validate_comparison: two covariates - emits one warning per bad cov", {
   meta <- mk_meta()
   meta$donor <- c("X", "X", "Y", "Y")  # confounded
-  # batch is c("A","B","A","B") in mk_meta — well balanced, should not warn.
+  # batch is c("A","B","A","B") in mk_meta \u2014 well balanced, should not warn.
   records <- validate_comparison(
     mk_spec(covariates = c("batch", "donor")),
     meta

@@ -42,7 +42,7 @@ gmt_to_pathways <- function(path) {
 #' enrichment scores ordered by descending |NES|. No Shiny calls.
 #'
 #' Symbols in `de_table[[id_col]]` are matched against the gene IDs in
-#' `pathways` directly — caller is responsible for ID-space consistency
+#' `pathways` directly -- caller is responsible for ID-space consistency
 #' (typically both SYMBOL or both ENTREZID).
 #'
 #' @param de_table data.frame with at minimum `id_col` (gene ID) and
@@ -141,7 +141,7 @@ run_gsea <- function(de_table,
 #' @param subcollection Optional character; the subcollection code (e.g.
 #'   \code{"CP:KEGG"}, \code{"GO:BP"}). NULL returns all subcollections
 #'   under the given top-level collection.
-#' @return Named list — names are pathway names, elements are character
+#' @return Named list -- names are pathway names, elements are character
 #'   vectors of gene symbols. Empty list with a classed
 #'   \code{empty_input} error if msigdbr returns no rows for the given
 #'   species/collection/subcollection combination.

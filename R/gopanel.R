@@ -21,7 +21,7 @@ getGoPanel <- function() {
         "http://debrowser.readthedocs.io/en/master/examples/examples.html#go-term-plots"
       )
     ),
-    # Legacy GO/KEGG/Disease/compareClusters/gseGO modes — existing
+    # Legacy GO/KEGG/Disease/compareClusters/gseGO modes -- existing
     # plot+table tab layout.
     conditionalPanel(
       condition = "input.goplot != 'fgseaGSEA'",
@@ -37,7 +37,7 @@ getGoPanel <- function() {
         )
       )
     ),
-    # E2.5: fgsea-based GSEA mode (manual .gmt or MSigDB) — cards
+    # E2.5: fgsea-based GSEA mode (manual .gmt or MSigDB) -- cards
     # mirror the standalone Enrichment tab layout introduced in E1.
     conditionalPanel(
       condition = "input.goplot == 'fgseaGSEA'",

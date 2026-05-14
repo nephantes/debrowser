@@ -7,7 +7,7 @@
 de_headline(text)
 }
 \arguments{
-\item{text}{character — the headline text}
+\item{text}{character -- the headline text}
 }
 \value{
 an `htmltools::tag` (`<h2 class="de-headline">`).

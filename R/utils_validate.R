@@ -9,7 +9,7 @@
 #'   to the condition's class list. Always inherits from
 #'   `"debrowser_error"`.
 #' @param ... Extra named fields stored on the condition for caller use.
-#' @return Nothing — always raises.
+#' @return Nothing -- always raises.
 #' @export
 #' @examples
 #' tryCatch(de_error("bad input"), error = function(e) e$message)
@@ -53,7 +53,7 @@ require_pkg <- function(pkg, feature = pkg) {
 
 #' Show a sticky error notification (manual close).
 #'
-#' Standard surface for Tier 1 user-facing errors — they need to stay
+#' Standard surface for Tier 1 user-facing errors -- they need to stay
 #' on screen while the user reads the fix hint and acts on it.
 #'
 #' @param msg Plain-text message in "<problem>. <imperative fix>." form.
@@ -93,7 +93,7 @@ de_notify_warning <- function(msg) {
 
 #' Show an auto-dismissing info notification (8 seconds).
 #'
-#' For "analysis ran successfully but produced no result" cases — these are
+#' For "analysis ran successfully but produced no result" cases -- these are
 #' NOT errors; they should not display in red.
 #'
 #' @inheritParams de_notify_error

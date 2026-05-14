@@ -4,7 +4,7 @@
 # `debrowserdeanalysis`, the latter being a `moduleServer`). End-to-end DE
 # integration is covered by manual smoke (Vernia demo) + shinytest2 in CI.
 #
-# Here we test the pure spec → (cols, conds, cond_names, demethod_params)
+# Here we test the pure spec \u2192 (cols, conds, cond_names, demethod_params)
 # mapping via the `prep_comparison_inputs()` helper. That mapping is the
 # deterministic part of `prepDataContainer` and the part most likely to
 # regress on rewrites of the wizard.
@@ -72,7 +72,7 @@ test_that("prepDataContainer returns NULL for empty/missing inputs", {
 })
 
 test_that("prep_comparison_inputs preserves meta-path labels (Task 9)", {
-  # Meta-path spec — meta_column is set, and the user has overridden the
+  # Meta-path spec \u2014 meta_column is set, and the user has overridden the
   # auto-defaulted level names to friendlier labels.
   spec <- mk_minimal_spec(
     meta_column     = "treatment",

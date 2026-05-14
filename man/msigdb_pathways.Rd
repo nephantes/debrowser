@@ -23,7 +23,7 @@ for ontology). See \code{msigdbr::msigdbr_collections()}.}
 under the given top-level collection.}
 }
 \value{
-Named list — names are pathway names, elements are character
+Named list -- names are pathway names, elements are character
   vectors of gene symbols. Empty list with a classed
   \code{empty_input} error if msigdbr returns no rows for the given
   species/collection/subcollection combination.

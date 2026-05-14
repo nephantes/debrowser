@@ -285,7 +285,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
     getSampleDetails(output, "uploadSummary", "sampleDetails", loadeddata())
   })
 
-  # B3.7 — stat strip pill: samples · genes · conditions
+  # B3.7 -- stat strip pill: samples \u00b7 genes \u00b7 conditions
   output$statStrip <- renderUI({
     d <- loadeddata()
     if (is.null(d) || is.null(d$count)) return(NULL)
@@ -401,7 +401,7 @@ debrowserdataload <- function(id, nextpagebutton = NULL) {
 dataLoadUI <- function(id) {
   ns <- NS(id)
   list(
-    # B3.7 — Page 1 (Upload) redesigned to match outputs/debrowser_redesign.html.
+    # B3.7 -- Page 1 (Upload) redesigned to match outputs/debrowser_redesign.html.
     # Pre-upload: INPUTS card with TWO drop tiles SIDE-BY-SIDE (mockup-style),
     # below it the "Show all options" accordion + action row.
     # Post-upload: stat strip + preview card + sample-design card + next-step CTAs.
@@ -413,7 +413,7 @@ dataLoadUI <- function(id) {
           tags$span(class = "card-title", "Inputs"),
           tags$span(class = "ms-auto",
                     style = "font-size:10.5px; padding:2px 8px; border-radius:999px; border:1px solid var(--de-border-strong); color:var(--de-text-2);",
-                    ".tsv · .csv · .txt · .csv.gz")
+                    ".tsv \u00b7 .csv \u00b7 .txt \u00b7 .csv.gz")
         ),
         bslib::card_body(
           # Two side-by-side drop tiles using mockup .drop structure
@@ -421,11 +421,11 @@ dataLoadUI <- function(id) {
               style = "display:grid; grid-template-columns: 1fr 1fr; gap:12px;",
             # Tile 1: Count Data (required)
             div(class = "de-drop",
-              div(class = "de-drop-ic", HTML("&#10515;")),  # up arrow ⤳
+              div(class = "de-drop-ic", HTML("&#10515;")),  # up arrow \u2933
               div(class = "de-drop-meta",
                 div(class = "de-drop-title", "Count Data"),
                 div(class = "de-drop-help",
-                    "Genes/regions × samples · drag & drop or browse")
+                    "Genes/regions \u00d7 samples \u00b7 drag & drop or browse")
               ),
               div(class = "de-drop-input",
                 fileInput(
@@ -439,7 +439,7 @@ dataLoadUI <- function(id) {
             ),
             # Tile 2: Metadata (optional)
             div(class = "de-drop",
-              div(class = "de-drop-ic", HTML("&#8862;")),  # square+dot ⌗
+              div(class = "de-drop-ic", HTML("&#8862;")),  # square+dot \u2317
               div(class = "de-drop-meta",
                 div(class = "de-drop-title",
                     "Metadata ",
@@ -463,7 +463,7 @@ dataLoadUI <- function(id) {
             condition = paste0("output['", ns("autoDetectFailed"), "']"),
             div(class = "de-detect-fail-caption",
                 style = "margin-top:10px;",
-                "Couldn't auto-detect the separator — pick it under Show all options.")
+                "Couldn't auto-detect the separator -- pick it under Show all options.")
           ),
           # "Show all options" accordion
           div(style = "margin-top:14px;",
@@ -498,7 +498,7 @@ dataLoadUI <- function(id) {
     # ------------ Post-upload ------------
     conditionalPanel(
       condition = paste0("output['", ns("dataloaded"), "']"),
-      # B3.24 — Sticky workbar: stat strip on left, primary "Continue →
+      # B3.24 -- Sticky workbar: stat strip on left, primary "Continue \u2192
       # Filter" pill on the right. Always visible at the top of the
       # post-upload view so the next-step action never gets buried under
       # long tables.
@@ -511,7 +511,7 @@ dataLoadUI <- function(id) {
       ),
       tags$div(style = "height:12px"),
       de_card(
-        title = "Preview · count matrix",
+        title = "Preview \u00b7 count matrix",
         div(class = "de-compact-table",
             style = "overflow:auto; max-height: 280px;",
             tableOutput(ns("countPreview")))
@@ -683,7 +683,7 @@ checkMetaData <- function(input = NULL, counttable = NULL, sep = NULL) {
   # BEHAVIORAL CHANGE since B3.5: the legacy `setdiff(meta, count)`
   # direction (metadata rows with no count column) was changed to
   # `setdiff(count, meta)` (count columns with no metadata row). The
-  # new direction catches a real silent bug — the legacy code returned
+  # new direction catches a real silent bug -- the legacy code returned
   # "success" when count columns lacked metadata rows, then later
   # silently dropped those samples via `counttable[, metadatatable[, 1]]`.
   # The error string format ("Colnames doesn't match with the metada

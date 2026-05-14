@@ -6,11 +6,11 @@
 # below). D2.4 (account UI) consumes the chain via current_user(session).
 #
 # Three concrete providers ship in D2:
-#   - local_anonymous_provider  — non-hosted mode; user_id is "local".
-#   - header_auth_provider      — D2.2; trusts X-Forwarded-User from
+#   - local_anonymous_provider  -- non-hosted mode; user_id is "local".
+#   - header_auth_provider      -- D2.2; trusts X-Forwarded-User from
 #                                 configured proxy IPs.
-#   - shinymanager_auth_provider — D2.4 (login UI).
-#   - oidc_auth_provider         — D2.5 (Google OIDC native).
+#   - shinymanager_auth_provider -- D2.4 (login UI).
+#   - oidc_auth_provider         -- D2.5 (Google OIDC native).
 
 #' Construct an auth provider.
 #'
@@ -72,7 +72,7 @@ is_auth_provider <- function(x) {
 #'
 #' Walks providers in argument order. `identify` returns the first
 #' non-NULL `user_id`. `wrap_app` composes the providers' wrappers
-#' inside-out (first arg is OUTERMOST, last is innermost) — so for a
+#' inside-out (first arg is OUTERMOST, last is innermost) -- so for a
 #' chain `auth_chain(outer, inner)`, the rendered app is
 #' `outer$wrap_app(inner$wrap_app(app))`. `logout` fans out to every
 #' provider. `user_info` returns the first non-empty result.

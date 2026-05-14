@@ -129,7 +129,7 @@ test_that("bookmarks CRUD: insert / get / list_for_user / set_visibility / delet
   })
 })
 
-test_that("user_db_can_open: private⇒owner-only, link⇒anyone", {
+test_that("user_db_can_open: private\u21d2owner-only, link\u21d2anyone", {
   with_test_data_dir({
     ensure_data_dir()
     con <- user_db_connect()

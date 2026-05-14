@@ -125,12 +125,12 @@ test_that(".render_prompt errors on missing template file", {
 # --- .map_provider_error tests ---
 
 test_that(".map_provider_error maps 401 / unauthorized to ai_no_key", {
-  e <- simpleError("HTTP 401: Unauthorized — invalid API key")
+  e <- simpleError("HTTP 401: Unauthorized \u2014 invalid API key")
   expect_error(.map_provider_error(e), class = "ai_no_key")
 })
 
 test_that(".map_provider_error maps 429 / rate limit to ai_rate_limit", {
-  e <- simpleError("HTTP 429: Too Many Requests — rate limit exceeded")
+  e <- simpleError("HTTP 429: Too Many Requests \u2014 rate limit exceeded")
   expect_error(.map_provider_error(e), class = "ai_rate_limit")
 })
 
@@ -155,7 +155,7 @@ test_that(".map_provider_error maps unknown errors to ai_invalid_response", {
 }
 
 # Real on-disk template for ai_interpret. Tests that depend on it skip
-# when the template fixture is missing — defensive against E12.A.1 not
+# when the template fixture is missing \u2014 defensive against E12.A.1 not
 # yet running.
 .summarize_template_path <- function() {
   system.file("templates", "ai_summarize_geneset.md",

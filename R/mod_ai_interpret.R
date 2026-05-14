@@ -72,7 +72,7 @@ aiInterpretServer <- function(id, payload_react, settings_react) {
     }, priority = 100)
 
     # Live prompt preview (rebuilt on input changes / payload changes).
-    # Wrap the entire body — including payload_react() — in tryCatch so
+    # Wrap the entire body -- including payload_react() -- in tryCatch so
     # an upstream error (e.g. a stale row selection raising "subscript
     # out of bounds") returns a friendly placeholder rather than
     # crashing this output and the dependent char_count.

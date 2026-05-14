@@ -7,9 +7,9 @@
 de_eyebrow(num, label)
 }
 \arguments{
-\item{num}{character / numeric — the chip number (1..N)}
+\item{num}{character / numeric -- the chip number (1..N)}
 
-\item{label}{character — the eyebrow text}
+\item{label}{character -- the eyebrow text}
 }
 \value{
 an `htmltools::tag` (`<div class="de-eyebrow">`).

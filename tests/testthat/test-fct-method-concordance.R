@@ -240,7 +240,7 @@ test_that("plot_de_pairwise_heatmap() returns a ggplot with cond_names groups", 
   de <- .mc_fixture_de_list()
   s  <- de_direction_summary(de)
   # Fixture entries are named DESeq2/EdgeR/Limma; for the heatmap we
-  # still need cond_names per "comparison" — fabricate group pairs so
+  # still need cond_names per "comparison" \u2014 fabricate group pairs so
   # the helper has something to plot.
   comps <- list(
     list(cond_names = c("Treated", "Control")),  # matches "DESeq2" row

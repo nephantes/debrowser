@@ -1,6 +1,6 @@
 # R/fct_method_concordance.R
 #
-# Phase E11 — Statistical method concordance.
+# Phase E11 -- Statistical method concordance.
 #
 # Pure helpers consumed by R/mod_method_concordance.R. No Shiny calls;
 # all error paths go through de_error() so callers can class-dispatch.
@@ -13,7 +13,7 @@
 #' `data.frame(ID, log2FoldChange, padj, pvalue, stat)` so downstream
 #' helpers can join by `ID` without per-method special-casing.
 #'
-#' DESeq2's native return is a `DESeqResults` object — coerced via
+#' DESeq2's native return is a `DESeqResults` object -- coerced via
 #' `as.data.frame()`. edgeR / limma already return data.frames.
 #'
 #' @param counts Numeric count matrix or data.frame (genes x samples).
@@ -170,7 +170,7 @@ concordance_summary <- function(de_list, padj_cutoff = 0.05,
 #' UpSet plot of DE-gene overlap across methods.
 #'
 #' Gated by `require_pkg("UpSetR")`. Returns the `UpSetR::upset()`
-#' object — caller (renderPlot) is responsible for printing.
+#' object -- caller (renderPlot) is responsible for printing.
 #'
 #' @inheritParams concordance_sets
 #' @return Result of `UpSetR::upset()` (a list with class `"upset"`).

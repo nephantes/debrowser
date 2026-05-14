@@ -7,9 +7,9 @@
 de_nav_chip(num, label, progress_pill = NULL)
 }
 \arguments{
-\item{num}{integer/character — the chip number (1..N)}
+\item{num}{integer/character -- the chip number (1..N)}
 
-\item{label}{character — the tab label}
+\item{label}{character -- the tab label}
 
 \item{progress_pill}{optional progress pill key (e.g. `"data_prep"`)}
 }

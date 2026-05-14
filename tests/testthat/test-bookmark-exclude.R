@@ -246,18 +246,18 @@ test_that("secure_server uses a long inactivity timeout (no cookie_validity)", {
     skip("server.R not in expected path")
   }
   src <- paste(readLines(here), collapse = "\n")
-  # MUST NOT pass cookie_validity — shinymanager 1.0.410 errors on it.
+  # MUST NOT pass cookie_validity \u2014 shinymanager 1.0.410 errors on it.
   expect_false(grepl("cookie_validity\\s*=", src),
                info = "secure_server must NOT pass cookie_validity (unsupported by shinymanager 1.0.410)")
-  # MUST set a long timeout — the only knob shinymanager exposes for keeping
+  # MUST set a long timeout \u2014 the only knob shinymanager exposes for keeping
   # the user logged in within a single browser session.
   expect_true(grepl("timeout\\s*=\\s*60\\s*\\*\\s*24", src),
               info = "secure_server should set a multi-day timeout in minutes")
 })
 
 # Regression: pending_de_replay capture must run BEFORE the token-guard
-# early-return so that hosted-mode (shinymanager) sessions — which keep
-# `?token=...` in the URL for the entire post-auth lifetime — still
+# early-return so that hosted-mode (shinymanager) sessions \u2014 which keep
+# `?token=...` in the URL for the entire post-auth lifetime \u2014 still
 # trigger DE auto-replay.
 test_that("onRestore captures pending_de_replay before the token guard", {
   here <- testthat::test_path("..", "..", "R", "server.R")

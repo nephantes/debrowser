@@ -11,7 +11,7 @@
 
 # Bootswatch presets only (excludes the two bslib built-ins that don't have
 # a CDN equivalent). The URL-param playground in `deUI()` injects the CDN
-# stylesheet for these so each tab gets a unique URL — sidesteps bslib's
+# stylesheet for these so each tab gets a unique URL -- sidesteps bslib's
 # global resource-path collision when multiple presets are compiled in one
 # Shiny process.
 .de_bootswatch_presets <- setdiff(.de_theme_presets, c("bootstrap", "shiny"))
@@ -60,7 +60,7 @@ parse_preset_cookie <- function(cookie_header) {
 #' Render the navbar preset picker
 #'
 #' Compact native `<select>` styled with standard Bootstrap classes
-#' (`form-select form-select-sm`) — no custom classes. Sits next to the
+#' (`form-select form-select-sm`) -- no custom classes. Sits next to the
 #' dark-mode toggle in `deUI()`. The `change` event is wired in JS to
 #' write a `debrowser_preset` cookie and reload (see `de_preset_js()`).
 #'
@@ -90,7 +90,7 @@ de_preset_picker <- function(current = NULL) {
 #' Tiny JS that wires the preset picker to a cookie
 #'
 #' On change of `#de_preset_picker`: writes a `debrowser_preset` cookie
-#' (1-year expiry, path /) — or deletes it when the user picks "Default" —
+#' (1-year expiry, path /) -- or deletes it when the user picks "Default" --
 #' strips any `?preset=` from the current URL, and reloads. Uses standard
 #' DOM APIs and jQuery's delegated event binding (already in Shiny).
 #'
@@ -120,7 +120,7 @@ de_preset_js <- function() {
 #' DEBrowser bslib theme. Default behavior: hand-rolled Slate + OK-blue
 #' palette with Inter typography on Bootstrap 5. When `preset` is supplied
 #' (e.g. `"zephyr"`, `"lumen"`, `"cosmo"`), returns a bare Bootstrap 5
-#' theme with only Inter font applied — preset-specific colors come from
+#' theme with only Inter font applied -- preset-specific colors come from
 #' the bootswatch CDN stylesheet that `deUI()` injects separately, so
 #' each preset URL is unique and tabs don't collide on the same compiled
 #' bootstrap.min.css. Used as the `theme` argument to `bslib::page_navbar()`

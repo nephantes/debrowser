@@ -7,14 +7,14 @@
 de_card(title, ..., download_id = NULL, full_screen = FALSE)
 }
 \arguments{
-\item{title}{character — card title shown in the header}
+\item{title}{character -- card title shown in the header}
 
 \item{...}{card body content}
 
-\item{download_id}{character or NULL — if non-NULL, render a
+\item{download_id}{character or NULL -- if non-NULL, render a
 `downloadButton` with this id in the header}
 
-\item{full_screen}{logical — passed through to `bslib::card()`}
+\item{full_screen}{logical -- passed through to `bslib::card()`}
 }
 \value{
 a `bslib::card` tagList
