@@ -39,7 +39,8 @@
   if (!is.null(primary_de) && is.data.frame(primary_de) &&
       nrow(primary_de) > 0L) {
     id_col <- .fgsea_id_col(primary_de)
-    if (!is.na(id_col)) {
+    have_stats_cols <- all(c("log2FoldChange", "padj") %in% names(primary_de))
+    if (!is.na(id_col) && have_stats_cols) {
       keep <- as.character(primary_de[[id_col]]) %in% genes
       if (any(keep)) {
         stats <- data.frame(
@@ -109,6 +110,7 @@
   }
   per <- lapply(de_results_list, function(df) {
     keep <- !is.na(df$padj) & df$padj <= cutoffs$padj &
+            !is.na(df$log2FoldChange) &
             abs(df$log2FoldChange) >= (cutoffs$lfc %||% 0)
     sub <- df[keep, , drop = FALSE]
     if (nrow(sub) == 0L) return(sub)

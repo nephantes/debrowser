@@ -131,6 +131,62 @@ test_that(".build_concordance_payload applies cutoffs per comparison", {
   expect_equal(nrow(out$per_comparison_top[["C vs D"]]), 1L)
 })
 
+test_that(".build_concordance_payload drops rows with NA log2FoldChange", {
+  de_list <- list(
+    "A vs B" = data.frame(ID = c("G1", "G2", "G3"),
+                          log2FoldChange = c(NA_real_, 2, -1.5),
+                          padj = c(0.01, 0.001, 0.01)),
+    "C vs D" = data.frame(ID = c("G4", "G5"),
+                          log2FoldChange = c(NA_real_, 1.2),
+                          padj = c(0.01, 0.02))
+  )
+  out <- .build_concordance_payload(de_results_list = de_list,
+                                    concordance_table = data.frame(),
+                                    top_n = 50L,
+                                    cutoffs = list(padj = 0.05, lfc = 1))
+  # A vs B: only G2 (lfc 2) and G3 (lfc -1.5) survive; G1 dropped on NA
+  expect_equal(nrow(out$per_comparison_top[["A vs B"]]), 2L)
+  expect_false(any(is.na(out$per_comparison_top[["A vs B"]]$log2FoldChange)))
+  # C vs D: only G5 (lfc 1.2) survives; G4 dropped on NA
+  expect_equal(nrow(out$per_comparison_top[["C vs D"]]), 1L)
+  expect_false(any(is.na(out$per_comparison_top[["C vs D"]]$log2FoldChange)))
+})
+
+test_that(".build_geneset_payload handles primary_de missing stat columns", {
+  bare <- data.frame(ID = c("A", "B", "C"))  # no log2FoldChange / padj
+  out <- .build_geneset_payload(
+    genes = c("A", "B"),
+    primary_de = bare,
+    term = NULL,
+    context_mode = "enrichGO"
+  )
+  expect_equal(out$genes, c("A", "B"))
+  expect_null(out$stats)
+})
+
+test_that(".applicable_questions adds reconcile_enrichments when nes_across is populated", {
+  nes <- matrix(c(1, 2, -1, 1.5), nrow = 2,
+                dimnames = list(NULL, c("Cmp1", "Cmp2")))
+  payload <- list(shape = "geneset",
+                  genes = c("A","B"),
+                  enrichment = list(term = "P1", nes_across = nes))
+  out <- .applicable_questions("geneset", payload)
+  expect_true("reconcile_enrichments" %in% out)
+})
+
+test_that(".applicable_questions adds reconcile_enrichments on concordance with pathways", {
+  payload <- list(shape = "concordance",
+                  comparison_labels = c("A","B"),
+                  pathways_for_reconcile = c("PathA", "PathB"))
+  out <- .applicable_questions("concordance", payload)
+  expect_true("reconcile_enrichments" %in% out)
+})
+
+test_that(".applicable_questions returns character(0) for unknown shape", {
+  out <- .applicable_questions("unknown_shape", list())
+  expect_equal(out, character(0))
+})
+
 test_that(".applicable_questions filters per shape + payload", {
   # geneset shape, no NES-across-comparisons -> only summarize_geneset
   out <- .applicable_questions("geneset", list(shape = "geneset",
