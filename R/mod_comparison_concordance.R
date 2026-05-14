@@ -313,6 +313,35 @@ comparisonConcordanceServer <- function(id, de_results_react,
       shiny::outputOptions(output, "ai_pathway_picker_visible",
                            suspendWhenHidden = FALSE)
 
+      # Local helper: collect NES + leading-edge for a SPECIFIC pathway
+      # across every comparison in `de_list`. Returns a data.frame with
+      # columns (comparison, NES, padj, leading_edge) and at least 1 row,
+      # or NULL when fewer than 2 comparisons have the pathway scored.
+      # Mirrors .collect_nes_across in server.R but is scoped per-module
+      # to keep this file self-contained.
+      .cc_collect_nes_for_pathway <- function(pathway_name, de_list, gmt) {
+        if (is.null(pathway_name) || !nzchar(pathway_name)) return(NULL)
+        if (length(de_list) < 2L || is.null(gmt)) return(NULL)
+        rows <- lapply(names(de_list), function(cmp) {
+          df <- tryCatch(run_gsea(de_list[[cmp]], gmt),
+                         error = function(e) NULL)
+          if (is.null(df) || nrow(df) == 0L) return(NULL)
+          hit <- df[df$pathway == pathway_name, , drop = FALSE]
+          if (nrow(hit) == 0L) return(NULL)
+          le <- if ("leading_edge" %in% names(hit))
+                  paste(hit$leading_edge[[1]], collapse = ", ")
+                else ""
+          data.frame(comparison   = cmp,
+                     NES          = hit$NES[1],
+                     padj         = hit$padj[1],
+                     leading_edge = le,
+                     stringsAsFactors = FALSE)
+        })
+        rows <- rows[!vapply(rows, is.null, logical(1))]
+        if (length(rows) < 2L) return(NULL)
+        do.call(rbind, rows)
+      }
+
       ai_concordance_payload <- shiny::reactive({
         d <- de_list()
         if (length(d) < 2L) return(NULL)
@@ -337,6 +366,18 @@ comparisonConcordanceServer <- function(id, de_results_react,
         if (!is.null(out)) {
           out$pathways_for_reconcile <- pathways_for_reconcile()
           out$selected_pathway       <- input$reconcile_pathway
+
+          # When the user has picked a pathway, populate the enrichment
+          # slot the reconcile_enrichments slot builder expects.
+          sel_pw <- input$reconcile_pathway
+          if (!is.null(sel_pw) && nzchar(sel_pw)) {
+            gmt <- if (is.null(fgsea_pathways_react)) NULL else
+                     fgsea_pathways_react()
+            nes_df <- .cc_collect_nes_for_pathway(sel_pw, d, gmt)
+            if (!is.null(nes_df)) {
+              out$enrichment <- list(term = sel_pw, nes_across = nes_df)
+            }
+          }
         }
         out
       })
