@@ -40,7 +40,8 @@
 #' @noRd
 .render_markdown_sanitized <- function(markdown_text,
                                        allow_list = .ai_md_allow_list()) {
-  if (!is.character(markdown_text) || length(markdown_text) != 1L) {
+  if (!is.character(markdown_text) || length(markdown_text) != 1L ||
+      is.na(markdown_text)) {
     return("")
   }
   if (!nzchar(trimws(markdown_text))) {

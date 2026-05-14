@@ -54,11 +54,31 @@ test_that("strips <script> entirely (commonmark default; defense in depth)", {
 
 test_that("drops all attributes except class on <code>", {
   raw_html <- "<p onclick=\"alert(1)\" style=\"color:red\">x</p>"
-  # commonmark::markdown_html with extensions=FALSE escapes raw HTML,
-  # so this verifies the inline-html escape path.
+  # commonmark with extensions=FALSE passes raw HTML through unescaped;
+  # the sanitizer's attribute-scrubbing loop is what removes onclick
+  # and style. This test verifies that scrubber.
   out <- .render_markdown_sanitized(raw_html)
   expect_no_match(out, "onclick", fixed = TRUE)
   expect_no_match(out, "style=",  fixed = TRUE)
+})
+
+test_that("retains class attribute on <code class='language-r'>", {
+  md  <- "```r\nf(x)\n```\n"
+  out <- .render_markdown_sanitized(md)
+  expect_match(out, "class=\"language-r\"", fixed = TRUE)
+})
+
+test_that("preserves nesting through allow-list tags", {
+  md  <- "- **bold-in-list**\n"
+  out <- .render_markdown_sanitized(md)
+  # Recursive walker should keep <ul><li><strong>...</strong></li></ul> intact.
+  expect_match(out, "<ul>",       fixed = TRUE)
+  expect_match(out, "<li>",       fixed = TRUE)
+  expect_match(out, "<strong>",   fixed = TRUE)
+  expect_match(out, "bold-in-list", fixed = TRUE)
+  expect_match(out, "</strong>",  fixed = TRUE)
+  expect_match(out, "</li>",      fixed = TRUE)
+  expect_match(out, "</ul>",      fixed = TRUE)
 })
 
 test_that("preserves <code> and <pre> for code blocks", {
