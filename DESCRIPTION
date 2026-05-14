@@ -78,6 +78,7 @@ Suggests: testthat (>= 3.2.0),
     org.Mm.eg.db,
     apeglm,
     ashr,
+    commonmark,
     enrichplot,
     fgsea,
     ipaddress (>= 1.0),
@@ -90,7 +91,8 @@ Suggests: testthat (>= 3.2.0),
     keyring,
     sodium (>= 1.2),
     whisker,
-    withr
+    withr,
+    xml2
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/UMMS-Biocore/debrowser

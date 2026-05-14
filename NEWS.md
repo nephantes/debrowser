@@ -237,6 +237,39 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   (the sample-info table) so the QC and Sample Info sections can
   reference the same data DEBrowser sees.
 
+### Phase E12.B — AI interpretation: presets + mount points
+
+* AI interpretation panel widened from `fgseaGSEA`-only to all 6
+  Enrichment modes (`enrichGO`, `enrichKEGG`, `enrichDO`,
+  `enrichPathway`, `compareCluster`, `fgseaGSEA`). One mount, one
+  preset (`summarize_geneset`) works across all modes via per-mode
+  payload adapters.
+* New AI panel on the **DE Analysis** tab (per-comparison, below the
+  results table). Presets: `summarize_geneset`, `suggest_followup`,
+  `draft_methods`. Privacy default for this mount: `+ Stats`.
+* New AI panel on the **Comparison Concordance** tab (below the
+  summary card). Presets: `reconcile_enrichments`, `suggest_followup`,
+  `draft_methods`. In-card pathway picker surfaces when one or more
+  pathways are enriched in two or more comparisons; selecting one
+  triggers cross-comparison fgsea so the prompt sees real NES rows.
+* New presets in `inst/templates/`:
+  - `ai_reconcile_enrichments.md` — explains a pathway's divergent
+    NES across multiple comparisons.
+  - `ai_suggest_followup.md` — two-section response: bioinformatic
+    next-analyses + wet-lab next-experiments.
+  - `ai_draft_methods.md` — journal-style polish of E9's
+    deterministic Methods paragraph. Cannot add or remove facts.
+* Sanitized markdown response rendering via `commonmark` + `xml2`
+  (replaces v1's plain `<pre>`). Strict allow-list: headings, bold,
+  italic, lists, code, blockquote, hr. Links rendered as plain text
+  (no hallucinated URLs are clickable). Images and scripts stripped.
+* Privacy modes adapted per payload shape: `de_table` and
+  `concordance` default to `+ Stats`; the `draft_methods` preset
+  hides the radio entirely (no genes / stats in payload).
+* No new Imports. `commonmark` + `xml2` added to Suggests (both
+  already transitively present via `rmarkdown` / `httr2`).
+* Streaming responses still deferred.
+
 ### Phase E12.A — AI interpretation foundation
 
 * New top-right **Settings** dropdown in the navbar with an AI
