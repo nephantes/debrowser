@@ -1541,53 +1541,105 @@ deServer <- function(input, output, session) {
         paste(df$leading_edge[[sel]], collapse = ", ")
       })
 
-      # Phase E12.A: AI panel payload reactive. Produces the gene list
-      # (leading edge of the currently-selected pathway), per-gene stats
-      # from the primary DE result, and the enrichment context. NULL when
-      # no pathway is selected -- panel disables Ask in that case.
+      # Phase E12.B: AI panel payload, dispatching on the current
+      # enrichment mode. Works across all 6 modes (was fgseaGSEA-only
+      # in E12.A).
       ai_enrichment_payload <- reactive({
-        sel <- input$fgsea_results_table_rows_selected
-        req(length(sel) == 1L)
-        df <- fgsea_primary_result()
-        # DT keeps the old selection across re-renders, so a row index
-        # may temporarily point past the new result's nrow. Guard against
-        # that -- and against a missing leading_edge column -- so the AI
-        # panel reactive doesn't crash the whole tab with subscript
-        # errors.
-        req(is.data.frame(df), nrow(df) >= sel,
-            "leading_edge" %in% names(df))
-        pw_row     <- df[sel, , drop = FALSE]
-        leading    <- df$leading_edge[[sel]]
-        if (is.null(leading)) leading <- character(0)
+        mode <- input$goplot
         primary_de <- de_results_list()
         if (is.null(primary_de) || length(primary_de) == 0L) return(NULL)
         primary_de <- primary_de[[1]]
-        id_col     <- .fgsea_id_col(primary_de)
-        stats_df   <- if (is.na(id_col) || length(leading) == 0L) NULL else {
-          keep <- as.character(primary_de[[id_col]]) %in% leading
-          data.frame(
-            gene_id        = as.character(primary_de[[id_col]][keep]),
-            log2FoldChange = primary_de$log2FoldChange[keep],
-            padj           = primary_de$padj[keep],
-            stringsAsFactors = FALSE
-          )
+
+        if (identical(mode, "fgseaGSEA")) {
+          sel <- input$fgsea_results_table_rows_selected
+          req(length(sel) == 1L)
+          df <- fgsea_primary_result()
+          req(is.data.frame(df), nrow(df) >= sel,
+              "leading_edge" %in% names(df))
+          pw_row  <- df[sel, , drop = FALSE]
+          leading <- df$leading_edge[[sel]]
+          if (is.null(leading)) leading <- character(0)
+          term <- list(term = pw_row$pathway,
+                       pvalue = pw_row$padj,
+                       n_overlap = length(leading))
+          # Surface cross-comparison NES for the reconcile_enrichments preset.
+          nes_across <- tryCatch(.collect_nes_across(pw_row$pathway,
+                                                    de_results_list(),
+                                                    fgsea_pathways()),
+                                 error = function(e) NULL)
+          term$nes_across <- nes_across
+          return(.build_geneset_payload(
+            genes       = leading,
+            primary_de  = primary_de,
+            term        = term,
+            context_mode = "fgseaGSEA"
+          ))
         }
-        list(
-          genes      = leading,
-          stats      = stats_df,
-          enrichment = list(
-            term      = pw_row$pathway,
-            pvalue    = pw_row$padj,
-            n_overlap = length(leading)
-          )
+
+        # Legacy modes (enrichGO / enrichKEGG / enrichDO / enrichPathway /
+        # compareCluster / GSEA). Selection via gotable_rows_selected.
+        sel <- input$gotable_rows_selected
+        req(length(sel) == 1L)
+        go <- inputGOstart()
+        req(!is.null(go), is.data.frame(go$table), nrow(go$table) >= sel)
+        org <- input$organism
+        genes_field <- if (identical(mode, "GSEA"))
+                         go$enrich_p$core_enrichment[sel]
+                       else
+                         go$enrich_p$geneID[sel]
+        if (is.null(genes_field) || !nzchar(genes_field)) return(NULL)
+        et <- getEntrezTable(genes_field, primary_de, org)
+        if (is.null(et) || nrow(et) == 0L) return(NULL)
+        symbols <- rownames(et)
+        term <- list(
+          term      = go$table$Description[sel] %||%
+                      go$table$ID[sel] %||% "(unknown)",
+          pvalue    = go$table$p.adjust[sel] %||% NA_real_,
+          n_overlap = length(symbols)
+        )
+        .build_geneset_payload(
+          genes        = symbols,
+          primary_de   = primary_de,
+          term         = term,
+          context_mode = mode
         )
       })
 
-      # Phase E12.A: gate the AI card visibility from JS-side
+      # Helper: collect NES across comparisons for a given pathway.
+      # Returns data.frame(comparison, NES, padj, leading_edge) or NULL.
+      .collect_nes_across <- function(pathway_name, de_list, gmt_pathways) {
+        if (length(de_list) < 2L || is.null(gmt_pathways)) return(NULL)
+        rows <- lapply(names(de_list), function(cmp) {
+          df <- tryCatch(run_gsea(de_list[[cmp]], gmt_pathways),
+                         error = function(e) NULL)
+          if (is.null(df) || nrow(df) == 0L) return(NULL)
+          hit <- df[df$pathway == pathway_name, , drop = FALSE]
+          if (nrow(hit) == 0L) return(NULL)
+          le <- if ("leading_edge" %in% names(hit))
+                  paste(hit$leading_edge[[1]], collapse = ", ")
+                else ""
+          data.frame(comparison = cmp,
+                     NES        = hit$NES[1],
+                     padj       = hit$padj[1],
+                     leading_edge = le,
+                     stringsAsFactors = FALSE)
+        })
+        rows <- rows[!vapply(rows, is.null, logical(1))]
+        if (length(rows) < 2L) return(NULL)
+        do.call(rbind, rows)
+      }
+
+      # Phase E12.B: gate the AI card visibility from JS-side
       # (conditionalPanel reads output$ai_panel_visibility).
       output$ai_panel_visibility <- reactive({
         s <- ai_settings()
-        if (.has_required_credentials(s)) "show" else "hide"
+        if (!.has_required_credentials(s)) return("hide")
+        # Show whenever startGO has fired (i.e., enrichment has been
+        # run for the current mode). The dropdown gating and the
+        # per-mode payload reactive's req() chain handle the
+        # "no selection yet" empty-state at panel level.
+        if (!isTRUE(input$startGO)) return("hide")
+        "show"
       })
       outputOptions(output, "ai_panel_visibility", suspendWhenHidden = FALSE)
 
