@@ -1680,35 +1680,42 @@ deServer <- function(input, output, session) {
         }, error = function(e) "")
       })
 
-      # DE-tab AI visibility: show whenever DE has run AND credentials OK.
-      # The output ID is namespaced under the current "DEResults<n>"
-      # module so each per-comparison results panel has its own gate.
-      # We re-bind the output on every compsel() change.
+      # DE-tab AI visibility + mount: register a fresh visibility output
+      # binding AND mount aiInterpretServer per unique "DEResults<n>"
+      # id, but only ONCE per id. Switching to a previously-visited
+      # comparison reuses the existing module instance and its output
+      # binding -- the per-instance reactives self-update from
+      # filt_data()/compsel() reactively.
+      #
+      # Without this cache, every compsel() change re-invokes
+      # moduleServer() under the same id and leaks a fresh set of
+      # observers each time. The cache survives for the session.
+      ai_de_mounted_ids <- shiny::reactiveVal(character())
       observe({
-        out_id <- paste0("DEResults", compsel(), "-ai_de_visibility")
-        local({
-          oid <- out_id
-          output[[oid]] <- reactive({
-            s <- ai_settings()
-            if (!.has_required_credentials(s)) return("hide")
-            if (!isTRUE(buttonValues$startDE)) return("hide")
-            "show"
-          })
-          outputOptions(output, oid, suspendWhenHidden = FALSE)
-        })
-      })
+        cur <- compsel()
+        if (is.null(cur)) return()
+        out_id  <- paste0("DEResults", cur, "-ai_de_visibility")
+        srv_id  <- paste0("DEResults", cur, "-ai_de")
+        seen    <- ai_de_mounted_ids()
+        if (srv_id %in% seen) return()  # already mounted; nothing to do
 
-      # Mount aiInterpretServer under the same namespaced id. Re-mount
-      # on compsel() change so it tracks the currently-selected
-      # comparison's results panel.
-      observe({
+        output[[out_id]] <- reactive({
+          s <- ai_settings()
+          if (!.has_required_credentials(s)) return("hide")
+          if (!isTRUE(buttonValues$startDE)) return("hide")
+          "show"
+        })
+        outputOptions(output, out_id, suspendWhenHidden = FALSE)
+
         debrowser::aiInterpretServer(
-          paste0("DEResults", compsel(), "-ai_de"),
+          srv_id,
           payload_react              = ai_de_payload,
           settings_react             = ai_settings,
           payload_shape              = "de_table",
           deterministic_methods_react = methods_react
         )
+
+        ai_de_mounted_ids(c(seen, srv_id))
       })
 
       filt_data <- reactive({
