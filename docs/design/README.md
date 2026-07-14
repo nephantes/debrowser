@@ -32,7 +32,7 @@ Several sections depend on these tokens existing. Add/change them in the token b
 ```css
   /* Spacing scale (8px base) — replaces scattered inline margins / height:12px spacers */
   --de-space-1: 4px;  --de-space-2: 8px;  --de-space-3: 12px;
-  --de-space-4: 16px; --de-space-5: 20px; --de-space-6: 24px;
+  --de-space-4: 16px; --de-space-5: 24px; --de-space-6: 32px;
   /* Motion — one duration + one curve for the whole app */
   --de-dur:  140ms;
   --de-ease: cubic-bezier(.2, .6, .2, 1);
