@@ -127,6 +127,7 @@ deUI <- function(req = NULL) {
             )
           )
         ),
+        tags$link(rel = "icon", type = "image/x-icon", href = "www/favicon.ico"),
         tags$script(src = "www/dropzone.js"),
         # Global selectize defaults: adds the remove_button plugin (so every
         # multi-select pill has an X) and reparents every dropdown to <body>

@@ -291,7 +291,7 @@ getTableDetails <- function(output = NULL, session = NULL, tablename = NULL, dat
   output[[tablename]] <- renderUI({
     list(
       downloadButton(session$ns(paste(tablename, "Download")), "Download"),
-      actionButtonDE(trigger_id, "Show Data", styleclass = "primary", icon = "show")
+      actionButtonDE(trigger_id, "Show Data", styleclass = "primary", icon = "eye")
     )
   })
 
