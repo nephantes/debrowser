@@ -62,44 +62,46 @@ debrowserqclibrarydepth <- function(id, counts = NULL, meta = NULL,
     })
 
     output$plot <- plotly::renderPlotly({
-      df <- df_react()
-      has_group <- !all(is.na(df$group))
-      # Use the same factor order as the data so the y-axis matches input.
-      df$sample <- factor(df$sample, levels = df$sample)
-      line_col <- ifelse(df$is_outlier_2sd, "red", "rgba(0,0,0,0)")
-      line_w   <- ifelse(df$is_outlier_2sd, 2, 0)
+      withProgress(message = "Drawing library depth", style = "notification", value = 0.1, {
+        df <- df_react()
+        has_group <- !all(is.na(df$group))
+        # Use the same factor order as the data so the y-axis matches input.
+        df$sample <- factor(df$sample, levels = df$sample)
+        line_col <- ifelse(df$is_outlier_2sd, "red", "rgba(0,0,0,0)")
+        line_w   <- ifelse(df$is_outlier_2sd, 2, 0)
 
-      p <- if (has_group) {
-        plotly::plot_ly(
-          df,
-          x = ~depth,
-          y = ~sample,
-          color = ~group,
-          type = "bar",
-          orientation = "h",
-          marker = list(line = list(color = line_col, width = line_w))
-        )
-      } else {
-        plotly::plot_ly(
-          df,
-          x = ~depth,
-          y = ~sample,
-          type = "bar",
-          orientation = "h",
-          marker = list(
-            color = "#4F81BD",
-            line = list(color = line_col, width = line_w)
+        p <- if (has_group) {
+          plotly::plot_ly(
+            df,
+            x = ~depth,
+            y = ~sample,
+            color = ~group,
+            type = "bar",
+            orientation = "h",
+            marker = list(line = list(color = line_col, width = line_w))
           )
+        } else {
+          plotly::plot_ly(
+            df,
+            x = ~depth,
+            y = ~sample,
+            type = "bar",
+            orientation = "h",
+            marker = list(
+              color = "#4F81BD",
+              line = list(color = line_col, width = line_w)
+            )
+          )
+        }
+        p <- plotly::layout(
+          p,
+          xaxis = list(title = "Total counts"),
+          yaxis = list(title = "", autorange = "reversed"),
+          margin = list(l = 120)
         )
-      }
-      p <- plotly::layout(
-        p,
-        xaxis = list(title = "Total counts"),
-        yaxis = list(title = "", autorange = "reversed"),
-        margin = list(l = 120)
-      )
-      p$elementId <- NULL
-      p
+        p$elementId <- NULL
+        p
+      })
     })
 
     output$dl <- downloadHandler(
@@ -165,24 +167,26 @@ debrowserqcdetectionrate <- function(id, counts = NULL) {
     })
 
     output$plot <- plotly::renderPlotly({
-      df <- df_react()
-      df$sample <- factor(df$sample, levels = df$sample)
-      p <- plotly::plot_ly(
-        df,
-        x = ~detection_pct,
-        y = ~sample,
-        type = "bar",
-        orientation = "h",
-        marker = list(color = "#4F81BD")
-      )
-      p <- plotly::layout(
-        p,
-        xaxis = list(title = "Detection %", range = c(0, 100)),
-        yaxis = list(title = "", autorange = "reversed"),
-        margin = list(l = 120)
-      )
-      p$elementId <- NULL
-      p
+      withProgress(message = "Drawing detection rate", style = "notification", value = 0.1, {
+        df <- df_react()
+        df$sample <- factor(df$sample, levels = df$sample)
+        p <- plotly::plot_ly(
+          df,
+          x = ~detection_pct,
+          y = ~sample,
+          type = "bar",
+          orientation = "h",
+          marker = list(color = "#4F81BD")
+        )
+        p <- plotly::layout(
+          p,
+          xaxis = list(title = "Detection %", range = c(0, 100)),
+          yaxis = list(title = "", autorange = "reversed"),
+          margin = list(l = 120)
+        )
+        p$elementId <- NULL
+        p
+      })
     })
 
     output$dl <- downloadHandler(
@@ -269,33 +273,35 @@ debrowserqcmtpct <- function(id, counts = NULL, threshold_pct = 5) {
     })
 
     output$plot <- plotly::renderPlotly({
-      df <- df_react()
-      req(nrow(df) > 0)
-      df$sample <- factor(df$sample, levels = df$sample)
-      p <- plotly::plot_ly(
-        df,
-        x = ~sample,
-        y = ~mt_pct,
-        type = "bar",
-        marker = list(color = "#4F81BD")
-      )
-      p <- plotly::layout(
-        p,
-        xaxis = list(title = "", categoryorder = "array",
-                     categoryarray = as.character(df$sample)),
-        yaxis = list(title = "MT %"),
-        shapes = list(
-          list(
-            type = "line",
-            x0 = -0.5, x1 = nrow(df) - 0.5,
-            y0 = threshold_pct, y1 = threshold_pct,
-            xref = "x", yref = "y",
-            line = list(color = "red", width = 2, dash = "dash")
+      withProgress(message = "Drawing mitochondrial content", style = "notification", value = 0.1, {
+        df <- df_react()
+        req(nrow(df) > 0)
+        df$sample <- factor(df$sample, levels = df$sample)
+        p <- plotly::plot_ly(
+          df,
+          x = ~sample,
+          y = ~mt_pct,
+          type = "bar",
+          marker = list(color = "#4F81BD")
+        )
+        p <- plotly::layout(
+          p,
+          xaxis = list(title = "", categoryorder = "array",
+                       categoryarray = as.character(df$sample)),
+          yaxis = list(title = "MT %"),
+          shapes = list(
+            list(
+              type = "line",
+              x0 = -0.5, x1 = nrow(df) - 0.5,
+              y0 = threshold_pct, y1 = threshold_pct,
+              xref = "x", yref = "y",
+              line = list(color = "red", width = 2, dash = "dash")
+            )
           )
         )
-      )
-      p$elementId <- NULL
-      p
+        p$elementId <- NULL
+        p
+      })
     })
 
     output$dl <- downloadHandler(
@@ -537,44 +543,46 @@ debrowserqcsizefactors <- function(id, dds = NULL,
       }
     })
     output$plot <- plotly::renderPlotly({
-      df <- df_react()
-      df$sample <- factor(df$sample, levels = df$sample)
-      rho <- attr(df, "spearman_rho")
-      subtitle <- if (is.finite(rho)) {
-        sprintf("Spearman rho = %.3f", rho)
-      } else {
-        "Spearman rho: n/a"
-      }
-      p <- plotly::plot_ly(df) |>
-        plotly::add_bars(
-          x = ~sample, y = ~sf_scaled,
-          name = "Size factor (scaled)",
-          marker = list(color = "#4F81BD"),
-          hovertext = ~sprintf("size factor: %.3f", size_factor),
-          hoverinfo = "text+name"
-        ) |>
-        plotly::add_bars(
-          x = ~sample, y = ~lib_scaled,
-          name = "Library size (scaled)",
-          marker = list(color = "#C0504D"),
-          hovertext = ~sprintf("library size: %s",
-                               formatC(library_size, format = "d",
-                                       big.mark = ",")),
-          hoverinfo = "text+name"
-        ) |>
-        plotly::layout(
-          barmode = "group",
-          xaxis = list(title = "", categoryorder = "array",
-                       categoryarray = as.character(df$sample)),
-          yaxis = list(title = "Scaled value [0, 1]", range = c(0, 1.05)),
-          legend = list(orientation = "h", x = 0, y = -0.15),
-          annotations = list(list(
-            text = subtitle, x = 1, y = 1.06, xref = "paper", yref = "paper",
-            xanchor = "right", showarrow = FALSE
-          ))
-        )
-      p$elementId <- NULL
-      p
+      withProgress(message = "Drawing size factors", style = "notification", value = 0.1, {
+        df <- df_react()
+        df$sample <- factor(df$sample, levels = df$sample)
+        rho <- attr(df, "spearman_rho")
+        subtitle <- if (is.finite(rho)) {
+          sprintf("Spearman rho = %.3f", rho)
+        } else {
+          "Spearman rho: n/a"
+        }
+        p <- plotly::plot_ly(df) |>
+          plotly::add_bars(
+            x = ~sample, y = ~sf_scaled,
+            name = "Size factor (scaled)",
+            marker = list(color = "#4F81BD"),
+            hovertext = ~sprintf("size factor: %.3f", size_factor),
+            hoverinfo = "text+name"
+          ) |>
+          plotly::add_bars(
+            x = ~sample, y = ~lib_scaled,
+            name = "Library size (scaled)",
+            marker = list(color = "#C0504D"),
+            hovertext = ~sprintf("library size: %s",
+                                 formatC(library_size, format = "d",
+                                         big.mark = ",")),
+            hoverinfo = "text+name"
+          ) |>
+          plotly::layout(
+            barmode = "group",
+            xaxis = list(title = "", categoryorder = "array",
+                         categoryarray = as.character(df$sample)),
+            yaxis = list(title = "Scaled value [0, 1]", range = c(0, 1.05)),
+            legend = list(orientation = "h", x = 0, y = -0.15),
+            annotations = list(list(
+              text = subtitle, x = 1, y = 1.06, xref = "paper", yref = "paper",
+              xanchor = "right", showarrow = FALSE
+            ))
+          )
+        p$elementId <- NULL
+        p
+      })
     })
     output$dl <- downloadHandler(
       filename = function() "size_factors_vs_library_size.csv",
