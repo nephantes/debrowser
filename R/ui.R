@@ -81,21 +81,54 @@ deUI <- function(req = NULL) {
            window.open(msg.url, '_blank');
          });"
       ))),
+      # Modern boot screen: dark-navy canvas with the brand cyan->violet
+      # gradient, a lightweight CSS conic-gradient spinner (replaces the
+      # 1.1 MB initial_loading.gif), the brand mark + version, and a
+      # reduced-motion fallback. Dismissed by shinyjs::hide() on dataready.
       shinyjs::inlineCSS("
         #loading-debrowser {
-          position: absolute;
-          background: #000000;
-          opacity: 0.9;
-          z-index: 100;
-          left: 0; right: 0;
-          height: 100%;
-          text-align: center;
-          color: #EFEFEF;
+          position: fixed; inset: 0; z-index: 100000;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 20px;
+          background: #0B1020;
+          background-image:
+            radial-gradient(620px 420px at 18% 8%, rgba(94,230,214,.10), transparent 60%),
+            radial-gradient(720px 520px at 100% 100%, rgba(167,139,250,.13), transparent 60%);
+          color: #E6ECFF;
+          font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+        #loading-debrowser .de-load-mark {
+          width: 54px; height: 54px; border-radius: 15px;
+          background: linear-gradient(135deg, #5EE6D6 0%, #A78BFA 100%);
+          box-shadow: inset 0 0 0 9px #0B1020, 0 10px 30px rgba(94,230,214,.26);
+        }
+        #loading-debrowser .de-load-title {
+          font-size: 20px; font-weight: 700; letter-spacing: -.01em;
+        }
+        #loading-debrowser .de-load-title small {
+          font-size: 12px; font-weight: 500; color: #6E7BA5; margin-left: 8px;
+        }
+        #loading-debrowser .de-load-ring {
+          width: 34px; height: 34px; border-radius: 50%;
+          background: conic-gradient(from 0deg, #5EE6D6, #A78BFA, #5EE6D6);
+          -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+                  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+          animation: de-load-spin .9s linear infinite;
+        }
+        #loading-debrowser .de-load-sub {
+          font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: #5EE6D6;
+        }
+        @keyframes de-load-spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) {
+          #loading-debrowser .de-load-ring { animation-duration: 2.6s; }
         }"),
       tags$div(
-        h4(paste0("Loading DEBrowser v", version_label)),
         id = "loading-debrowser",
-        tags$img(src = "www/images/initial_loading.gif")
+        tags$div(class = "de-load-mark"),
+        tags$div(class = "de-load-title", "DEBrowser",
+                 tags$small(paste0("v", version_label))),
+        tags$div(class = "de-load-ring"),
+        tags$div(class = "de-load-sub", "Preparing workspace")
       ),
       tags$head(
         # Bootswatch CDN preset (when ?preset=NAME is set). Each preset
