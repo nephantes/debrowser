@@ -73,9 +73,9 @@ getDEResultsUI <- function(id) {
         fluidRow(
           column(
             12,
-            uiOutput(ns("DEResults"))
-          ),
-          actionButtonDE("goMain", "Go to Main Plots", styleclass = "primary")
+            uiOutput(ns("DEResults")),
+            actionButtonDE("goMain", "Go to Main Plots", styleclass = "primary")
+          )
         )
       )
     ),

@@ -175,59 +175,61 @@ batchEffectUI <- function(id) {
       bslib::card(
         bslib::card_header("Plots"),
         fluidRow(
-          column(1, div()),
-          tabsetPanel(
-            id = ns("batchTabs"),
-            tabPanel(
-              id = ns("PCA"), "PCA",
-              column(
-                5,
-                getPCAPlotUI(ns("beforeCorrectionPCA"))
-              ),
-              column(
-                2,
-                de_card(
-                  title = "PCA Controls",
-                  tabsetPanel(
-                    id = ns("pcacontrols"),
-                    tabPanel(
-                      "Before",
-                      pcaPlotControlsUI(ns("beforeCorrectionPCA"))
-                    ),
-                    tabPanel(
-                      "After",
-                      pcaPlotControlsUI(ns("afterCorrectionPCA"))
+          column(
+            12,
+            tabsetPanel(
+              id = ns("batchTabs"),
+              tabPanel(
+                id = ns("PCA"), "PCA",
+                column(
+                  5,
+                  getPCAPlotUI(ns("beforeCorrectionPCA"))
+                ),
+                column(
+                  2,
+                  de_card(
+                    title = "PCA Controls",
+                    tabsetPanel(
+                      id = ns("pcacontrols"),
+                      tabPanel(
+                        "Before",
+                        pcaPlotControlsUI(ns("beforeCorrectionPCA"))
+                      ),
+                      tabPanel(
+                        "After",
+                        pcaPlotControlsUI(ns("afterCorrectionPCA"))
+                      )
                     )
                   )
+                ),
+                column(
+                  5,
+                  getPCAPlotUI(ns("afterCorrectionPCA"))
                 )
               ),
-              column(
-                5,
-                getPCAPlotUI(ns("afterCorrectionPCA"))
-              )
-            ),
-            tabPanel(
-              id = ns("IQR"), "IQR",
-              column(
-                5,
-                getIQRPlotUI(ns("beforeCorrectionIQR"))
+              tabPanel(
+                id = ns("IQR"), "IQR",
+                column(
+                  5,
+                  getIQRPlotUI(ns("beforeCorrectionIQR"))
+                ),
+                column(2, div()),
+                column(
+                  5,
+                  getIQRPlotUI(ns("afterCorrectionIQR"))
+                )
               ),
-              column(2, div()),
-              column(
-                5,
-                getIQRPlotUI(ns("afterCorrectionIQR"))
-              )
-            ),
-            tabPanel(
-              id = ns("Density"), "Density",
-              column(
-                5,
-                getDensityPlotUI(ns("beforeCorrectionDensity"))
-              ),
-              column(2, div()),
-              column(
-                5,
-                getDensityPlotUI(ns("afterCorrectionDensity"))
+              tabPanel(
+                id = ns("Density"), "Density",
+                column(
+                  5,
+                  getDensityPlotUI(ns("beforeCorrectionDensity"))
+                ),
+                column(2, div()),
+                column(
+                  5,
+                  getDensityPlotUI(ns("afterCorrectionDensity"))
+                )
               )
             )
           )

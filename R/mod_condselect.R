@@ -691,13 +691,10 @@ comparisonCardUI <- function(ns, i, rv, data, metadata) {
         class = "de-subcard",
         bslib::card_header("Differential expression model"),
         bslib::card_body(
-          shiny::fluidRow(shiny::column(
-            6,
-            shiny::selectInput(iid("de_method"),
-              label = "DE method",
-              choices = c("DESeq2", "EdgeR", "Limma"),
-              selected = rv$de_method, width = "100%")
-          )),
+          shiny::selectInput(iid("de_method"),
+            label = "DE method",
+            choices = c("DESeq2", "EdgeR", "Limma"),
+            selected = rv$de_method, width = "100%"),
           bslib::accordion(
             open = FALSE, multiple = FALSE,
             bslib::accordion_panel(

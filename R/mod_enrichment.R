@@ -29,7 +29,7 @@ enrichmentUI <- function(id) {
   ns <- shiny::NS(id)
   bslib::layout_sidebar(
     sidebar = bslib::sidebar(
-      width = 280,
+      width = 300,
       bslib::accordion(
         id   = ns("acc"),
         open = c("Method", "Gene sets"),

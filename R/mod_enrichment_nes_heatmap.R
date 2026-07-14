@@ -20,20 +20,12 @@ enrichmentNesHeatmapUI <- function(id) {
     bslib::card_header("NES heatmap"),
     bslib::card_body(
       shiny::plotOutput(ns("heatmap"), height = "500px"),
-      shiny::fluidRow(
-        shiny::column(
-          3,
-          shiny::checkboxInput(ns("flip_axis"), "Invert axes", FALSE)
-        ),
-        shiny::column(
-          3,
-          shiny::checkboxInput(ns("sig_only"), "Significant only", TRUE)
-        ),
-        shiny::column(
-          3,
-          shiny::numericInput(ns("sig_threshold"), "padj cutoff", 0.05,
-                              min = 0, max = 1, step = 0.01)
-        )
+      bslib::layout_columns(
+        col_widths = c(4, 4, 4),
+        shiny::checkboxInput(ns("flip_axis"), "Invert axes", FALSE),
+        shiny::checkboxInput(ns("sig_only"), "Significant only", TRUE),
+        shiny::numericInput(ns("sig_threshold"), "padj cutoff", 0.05,
+                            min = 0, max = 1, step = 0.01)
       )
     )
   )

@@ -40,15 +40,12 @@ comparisonConcordanceUI <- function(id) {
           "used for the UpSet plot and the concordance summary; the",
           "pairwise scatter shows log2FC across all common genes."
         ),
-        shiny::fluidRow(
-          shiny::column(3,
-            shiny::numericInput(ns("padj"), "padj <=",
-                                value = 0.05, min = 0, max = 1, step = 0.01)
-          ),
-          shiny::column(3,
-            shiny::numericInput(ns("lfc"), "|log2FC| >=",
-                                value = 0, min = 0, step = 0.1)
-          )
+        bslib::layout_columns(
+          col_widths = c(6, 6),
+          shiny::numericInput(ns("padj"), "padj <=",
+                              value = 0.05, min = 0, max = 1, step = 0.01),
+          shiny::numericInput(ns("lfc"), "|log2FC| >=",
+                              value = 0, min = 0, step = 0.1)
         )
       )
     ),
