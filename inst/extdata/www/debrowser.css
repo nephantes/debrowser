@@ -329,6 +329,18 @@
 html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-moon { display: none !important; }
 html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-sun  { display: inline-block !important; }
 
+/* Respect users who ask for less motion. Global on purpose: accessibility is
+   not gated on the redesign theme. Near-zero (not 0) so transitionend/
+   animationend handlers still fire. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* =====================================================================
    B3 — DEBrowser redesign layer
    Comprehensive control restyle inspired by aidrift.geniohub.com and
@@ -340,6 +352,9 @@ html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-sun  { display: inlin
    ===================================================================== */
 
 html[data-debrowser-redesign="1"] {
+  /* --- Brand accents (FILL-only: buttons, chips, dots, slider bars,
+     gradient underlines, borders). Never use --de-cyan as a text color;
+     use --de-accent-ink (theme-resolved, see light/dark blocks) instead. --- */
   --de-cyan:    #5EE6D6;
   --de-violet:  #A78BFA;
   --de-blue:    #60A5FA;
@@ -348,11 +363,30 @@ html[data-debrowser-redesign="1"] {
   --de-grad:    linear-gradient(135deg, #5EE6D6 0%, #A78BFA 100%);
   --de-grad-soft: linear-gradient(135deg, rgba(94,230,214,.12), rgba(167,139,250,.12));
 
+  /* Radii */
   --de-r-sm:   6px;
   --de-r-md:   10px;
   --de-r-lg:   14px;
   --de-r-pill: 999px;
 
+  /* Spacing scale (4px base) — consumed by 01-grid-system-plan.md */
+  --de-space-1: 4px;
+  --de-space-2: 8px;
+  --de-space-3: 12px;
+  --de-space-4: 16px;
+  --de-space-5: 24px;
+  --de-space-6: 32px;
+
+  /* Motion — consumed by 05-hover-cursor-plan.md */
+  --de-dur:  140ms;
+  --de-ease: cubic-bezier(.2,.6,.2,1);
+
+  /* Ink color for text/icons placed on top of accent fills (buttons, chips).
+     Definition only in this wave — existing #0B1020 literals are migrated
+     to this token in a later wave. */
+  --de-ink-on-accent: #0B1020;
+
+  /* Shadows */
   --de-shadow:    0 6px 24px rgba(0,0,0,.06);
   --de-shadow-lg: 0 12px 32px rgba(15,21,48,.10);
 }
@@ -368,7 +402,8 @@ html[data-debrowser-redesign="1"]:not([data-bs-theme="dark"]) {
   --de-border-strong: rgba(15,21,48,.18);
   --de-text-1:  #0F1530;
   --de-text-2:  #475270;
-  --de-text-3:  #6E7BA5;
+  --de-text-3:  #556087;   /* was #6E7BA5 (4.17:1 FAIL) -> 6.16:1 on white */
+  --de-accent-ink: #0E7490; /* cyan-700: accent-as-TEXT. 5.36:1 on white */
   --de-grid:    rgba(15,21,48,.04);
 }
 
@@ -382,7 +417,8 @@ html[data-debrowser-redesign="1"][data-bs-theme="dark"] {
   --de-border-strong: rgba(255,255,255,.14);
   --de-text-1:  #E6ECFF;
   --de-text-2:  #A8B2D1;
-  --de-text-3:  #6E7BA5;
+  --de-text-3:  #808CB8;   /* was #6E7BA5 (4.31:1 FAIL) -> 5.44:1 on #0F1530 */
+  --de-accent-ink: #5EE6D6; /* accent-as-TEXT in dark = the bright cyan. 11.76:1 */
   --de-grid:    rgba(255,255,255,.04);
   --de-shadow:    0 6px 24px rgba(0,0,0,.35);
   --de-shadow-lg: 0 12px 32px rgba(0,0,0,.45);
@@ -535,7 +571,11 @@ html[data-debrowser-redesign="1"] .btn {
   background-color: var(--de-bg-2);
   color: var(--de-text-1);
   box-shadow: none;
-  transition: all .12s ease;
+  transition: color var(--de-dur) var(--de-ease),
+              background-color var(--de-dur) var(--de-ease),
+              border-color var(--de-dur) var(--de-ease),
+              transform var(--de-dur) var(--de-ease),
+              box-shadow var(--de-dur) var(--de-ease);
 }
 html[data-debrowser-redesign="1"] .btn:hover {
   background-color: var(--de-bg-3);
@@ -575,6 +615,24 @@ html[data-debrowser-redesign="1"] .btn:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--de-cyan) 60%, transparent);
   outline-offset: 2px;
   box-shadow: none !important;
+}
+
+/* Keyboard focus for interactive elements that lacked any focus style.
+   :focus-visible so mouse clicks don't paint a ring. .btn and .de-help-btn
+   already have bespoke treatments above/below — this covers the rest. */
+html[data-debrowser-redesign="1"] .navbar .nav-link:focus-visible,
+html[data-debrowser-redesign="1"] .nav-tabs .nav-link:focus-visible,
+html[data-debrowser-redesign="1"] .wiz-step:focus-visible,
+html[data-debrowser-redesign="1"] .de-side-list-item:focus-visible,
+html[data-debrowser-redesign="1"] table.dataTable tbody tr:focus-visible,
+html[data-debrowser-redesign="1"] .table tbody tr:focus-visible,
+html[data-debrowser-redesign="1"] .de-drop:focus-visible,
+html[data-debrowser-redesign="1"] .de-dropzone .card:focus-visible,
+html[data-debrowser-redesign="1"] .modebar-btn:focus-visible,
+html[data-debrowser-redesign="1"] .dropdown-item:focus-visible,
+html[data-debrowser-redesign="1"] .selectize-dropdown .option:focus-visible {
+  outline: 2px solid var(--de-accent-ink);
+  outline-offset: 2px;
 }
 
 /* Download button gets a download glyph styling */
@@ -727,7 +785,7 @@ html[data-debrowser-redesign="1"] .selectize-dropdown .option.selected {
 html[data-debrowser-redesign="1"] .selectize-dropdown .option.selected::after {
   content: "\2713";   /* ✓ */
   float: right;
-  color: var(--de-cyan, #5ee6d6);
+  color: var(--de-accent-ink, #0E7490);
   font-weight: 700;
   margin-left: 8px;
 }
@@ -1118,7 +1176,7 @@ html[data-debrowser-redesign="1"] .modebar-btn:hover { background: var(--de-bg-3
 /* ---------- Help button (debrowser uses a small ? circle) ---------- */
 html[data-debrowser-redesign="1"] .fa-question-circle,
 html[data-debrowser-redesign="1"] a[href*="readthedocs"] {
-  color: var(--de-cyan) !important;
+  color: var(--de-accent-ink) !important;
 }
 
 /* ---------- Badges ---------- */
@@ -1138,7 +1196,7 @@ html[data-debrowser-redesign="1"] .badge.bg-primary {
 html[data-debrowser-redesign="1"] .de-eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
   font-size: 10.5px; font-weight: 600; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--de-cyan);
+  text-transform: uppercase; color: var(--de-accent-ink);
   margin-bottom: 6px;
 }
 html[data-debrowser-redesign="1"] .de-eyebrow .de-eyebrow-chip {
@@ -1374,7 +1432,7 @@ html[data-debrowser-redesign="1"] code, html[data-debrowser-redesign="1"] kbd {
   padding: 1px 6px;
   border-radius: 4px;
   background: var(--de-bg-3);
-  color: var(--de-cyan);
+  color: var(--de-accent-ink);
   border: 1px solid var(--de-border);
 }
 
@@ -1456,7 +1514,9 @@ html[data-debrowser-redesign="1"] .de-nav-chip-num {
   font-size: 10.5px;
   font-weight: 700;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  transition: all .12s ease;
+  transition: color var(--de-dur) var(--de-ease),
+              background-color var(--de-dur) var(--de-ease),
+              box-shadow var(--de-dur) var(--de-ease);
 }
 html[data-debrowser-redesign="1"] .de-nav-chip-label {
   font-weight: 500;
@@ -1653,7 +1713,7 @@ html[data-debrowser-redesign="1"] .de-help-btn:visited {
   color: var(--de-text-1, #e2e8f0) !important;
 }
 html[data-debrowser-redesign="1"] .de-help-btn .fa-info-circle {
-  color: var(--de-cyan, #5ee6d6) !important;
+  color: var(--de-accent-ink, #0E7490) !important;
 }
 html[data-debrowser-redesign="1"] .de-help-btn:hover,
 html[data-debrowser-redesign="1"] .de-help-btn:focus-visible {
@@ -2562,7 +2622,7 @@ html[data-debrowser-redesign="1"] .de-drop-ic {
   background: var(--de-bg-2);
   border: 1px solid var(--de-border);
   display: grid; place-items: center;
-  color: var(--de-cyan);
+  color: var(--de-accent-ink);
   font-size: 18px;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
@@ -2976,7 +3036,6 @@ html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
   border-color: var(--de-cyan) !important;
   box-shadow: 0 0 0 5px rgba(94,230,214,.28),
               0 0 14px rgba(94,230,214,.40) !important;
-  animation: de-pulse 1.8s ease-in-out infinite;
 }
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-label {
   color: var(--de-text-1) !important;
@@ -2984,20 +3043,8 @@ html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-label {
   letter-spacing: -.005em;
 }
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-num {
-  color: var(--de-cyan) !important;
+  color: var(--de-accent-ink) !important;
   font-weight: 700;
-}
-
-/* Subtle pulse animation on the active dot */
-@keyframes de-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 5px rgba(94,230,214,.28),
-                0 0 14px rgba(94,230,214,.40);
-  }
-  50% {
-    box-shadow: 0 0 0 7px rgba(94,230,214,.18),
-                0 0 20px rgba(94,230,214,.50);
-  }
 }
 
 /* Done-state visual tweaks (cleaner) */
@@ -3064,9 +3111,6 @@ html[data-debrowser-redesign="1"] .wizard-step-list::before { content: none !imp
 html[data-debrowser-redesign="1"] .wiz-step + .wiz-step::before { content: none !important; }
 html[data-debrowser-redesign="1"] .wiz-step.de-pill-done::after { content: none !important; }
 html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked::after { content: none !important; }
-html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
-  animation: none !important;
-}
 
 /* Step row: 8px·12px padding, 6px corner radius, three-column flex */
 html[data-debrowser-redesign="1"] .wiz-step {
