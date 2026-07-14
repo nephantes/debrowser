@@ -380,6 +380,17 @@ html[data-debrowser-redesign="1"] {
   /* Motion — consumed by 05-hover-cursor-plan.md */
   --de-dur:  140ms;
   --de-ease: cubic-bezier(.2,.6,.2,1);
+  /* Composite transition applied to interactive bases (T4). Named
+     properties only — never `all` — and only compositor/paint-cheap
+     channels (color, background-color, border-color, transform,
+     box-shadow). Neutralized globally by the prefers-reduced-motion
+     block above. */
+  --de-transition:
+    color            var(--de-dur) var(--de-ease),
+    background-color var(--de-dur) var(--de-ease),
+    border-color     var(--de-dur) var(--de-ease),
+    transform        var(--de-dur) var(--de-ease),
+    box-shadow       var(--de-dur) var(--de-ease);
 
   /* Ink color for text/icons placed on top of accent fills (buttons, chips).
      Definition only in this wave — existing #0B1020 literals are migrated
@@ -470,10 +481,8 @@ html[data-debrowser-redesign="1"] .navbar .nav-link:hover {
 html[data-debrowser-redesign="1"] .navbar .nav-link.active {
   color: #fff !important; background: rgba(255,255,255,.08);
 }
-html[data-debrowser-redesign="1"] .navbar .nav-link.active::after {
-  content: ""; position: absolute; left: 10px; right: 10px; bottom: -4px;
-  height: 2px; border-radius: 2px; background: var(--de-grad);
-}
+/* Underline ::after superseded by the base-level wipe rule below (T6);
+   this fully-overridden duplicate is removed rather than left dead. */
 
 /* Preset picker + utility items in navbar — flatten BS classic */
 html[data-debrowser-redesign="1"] #de_preset_picker {
@@ -571,11 +580,8 @@ html[data-debrowser-redesign="1"] .btn {
   background-color: var(--de-bg-2);
   color: var(--de-text-1);
   box-shadow: none;
-  transition: color var(--de-dur) var(--de-ease),
-              background-color var(--de-dur) var(--de-ease),
-              border-color var(--de-dur) var(--de-ease),
-              transform var(--de-dur) var(--de-ease),
-              box-shadow var(--de-dur) var(--de-ease);
+  /* transition consolidated into the interactive-bases block (T4);
+     see `transition: var(--de-transition)` below. */
 }
 html[data-debrowser-redesign="1"] .btn:hover {
   background-color: var(--de-bg-3);
@@ -592,6 +598,12 @@ html[data-debrowser-redesign="1"] .btn-primary:hover,
 html[data-debrowser-redesign="1"] .btn-success:hover {
   filter: brightness(1.05);
   color: #0B1020 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(94,230,214,.24);   /* deeper than base shadow above */
+}
+html[data-debrowser-redesign="1"] .btn-primary:active,
+html[data-debrowser-redesign="1"] .btn-success:active {
+  transform: translateY(0);
 }
 html[data-debrowser-redesign="1"] .btn-secondary,
 html[data-debrowser-redesign="1"] .btn-outline-secondary {
@@ -633,6 +645,24 @@ html[data-debrowser-redesign="1"] .dropdown-item:focus-visible,
 html[data-debrowser-redesign="1"] .selectize-dropdown .option:focus-visible {
   outline: 2px solid var(--de-accent-ink);
   outline-offset: 2px;
+}
+
+/* Motion token rollout (T4): one reusable transition for every interactive
+   base, so hover/focus color+shadow+transform changes ramp smoothly instead
+   of snapping. Named-property token only (--de-transition) — never `all`. */
+html[data-debrowser-redesign="1"] .btn,
+html[data-debrowser-redesign="1"] .card,
+html[data-debrowser-redesign="1"] .bslib-card,
+html[data-debrowser-redesign="1"] .de-dropzone .card,
+html[data-debrowser-redesign="1"] .navbar .nav-link,
+html[data-debrowser-redesign="1"] .nav-tabs .nav-link,
+html[data-debrowser-redesign="1"] .wiz-step,
+html[data-debrowser-redesign="1"] .de-side-list-item,
+html[data-debrowser-redesign="1"] table.dataTable tbody tr,
+html[data-debrowser-redesign="1"] .table tbody tr,
+html[data-debrowser-redesign="1"] .dropdown-item,
+html[data-debrowser-redesign="1"] .selectize-dropdown .option {
+  transition: var(--de-transition);
 }
 
 /* Download button gets a download glyph styling */
@@ -732,6 +762,11 @@ html[data-debrowser-redesign="1"] .selectize-dropdown .option.active,
 html[data-debrowser-redesign="1"] .selectize-dropdown .option:hover {
   background: var(--de-bg-3) !important;
   color: var(--de-text-1) !important;
+}
+/* Restrained slide (T7): nudge only the hovered row, not the keyboard-active
+   one (.option.active), so arrow-key navigation doesn't jitter the list. */
+html[data-debrowser-redesign="1"] .selectize-dropdown .option:hover {
+  transform: translateX(2px);
 }
 html[data-debrowser-redesign="1"] .selectize-input > .item {
   background: var(--de-bg-3) !important;
@@ -930,6 +965,15 @@ html[data-debrowser-redesign="1"] .de-dropzone.dragover .card {
   border-color: var(--de-cyan) !important;
   background-color: rgba(94,230,214,.12) !important;
 }
+/* Hover lift (T5): these tiles are genuinely clickable drop/launch
+   targets, unlike generic .card panels, so they get the 1px cue. */
+html[data-debrowser-redesign="1"] .de-dropzone .card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--de-shadow-lg) !important;   /* base shadow is var(--de-shadow) */
+}
+html[data-debrowser-redesign="1"] .de-dropzone .card:active {
+  transform: translateY(0);
+}
 html[data-debrowser-redesign="1"] .de-dropzone .card-header {
   background: transparent !important; color: var(--de-text-1) !important;
 }
@@ -1091,6 +1135,7 @@ html[data-debrowser-redesign="1"] .dropdown-item:hover,
 html[data-debrowser-redesign="1"] .dropdown-item:focus {
   background: var(--de-bg-3);
   color: var(--de-text-1);
+  transform: translateX(2px);
 }
 
 /* ---------- Alerts ---------- */
@@ -1310,14 +1355,26 @@ html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"] {
   background-color: transparent !important;
   font-weight: 600;
 }
-html[data-debrowser-redesign="1"] .navbar .nav-link.active::after,
-html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"]::after {
+/* Gradient underline wipe (T6): lives on the base so every tab carries a
+   collapsed bar; hover/active/aria-selected expand it via scaleX. The two
+   later geometry overrides below (bottom/left/right/height tweaks) still
+   apply on top for the active/selected state — only the reveal mechanism
+   changed here, not the final active-tab position. */
+html[data-debrowser-redesign="1"] .navbar .nav-link::after {
   content: "";
   position: absolute;
   left: 14px; right: 14px; bottom: 0;
   height: 2px;
   background: var(--de-grad);
   border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--de-dur) var(--de-ease);
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link:hover::after,
+html[data-debrowser-redesign="1"] .navbar .nav-link.active::after,
+html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"]::after {
+  transform: scaleX(1);
 }
 
 /* Bigger / clearer brand mark */
@@ -2791,7 +2848,10 @@ html[data-debrowser-redesign="1"] .wiz-step-dot {
   border-radius: 50%;
   background: var(--de-border-strong);
   flex: 0 0 8px;
-  transition: all .15s ease;
+  /* T4: token-based explicit list (was the all-properties shorthand); a dot never moves */
+  transition: background-color var(--de-dur) var(--de-ease),
+              box-shadow var(--de-dur) var(--de-ease),
+              opacity var(--de-dur) var(--de-ease);
 }
 html[data-debrowser-redesign="1"] .wiz-step-label {
   flex: 1; min-width: 0;
