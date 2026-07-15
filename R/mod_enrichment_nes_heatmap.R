@@ -18,7 +18,7 @@ enrichmentNesHeatmapUI <- function(id) {
   ns <- shiny::NS(id)
   de_card(
     "NES heatmap",
-    shiny::plotOutput(ns("heatmap"), height = "500px"),
+    shiny::plotOutput(ns("heatmap"), height = de_plot_h("lg")),
     bslib::layout_columns(
       col_widths = c(4, 4, 4),
       shiny::checkboxInput(ns("flip_axis"), "Invert axes", FALSE),

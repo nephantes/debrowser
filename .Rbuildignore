@@ -6,6 +6,7 @@
 ^\.aidrift$
 ^\.claude$
 ^\.superpowers$
+^tools$
 ^viafoundry_errors\.log$
 ^README\.md$
 ^codecov\.yml$

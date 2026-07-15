@@ -37,3 +37,22 @@ de_card <- function(title, ..., download_id = NULL, full_screen = FALSE,
   }
   bslib::card(header, ..., full_screen = full_screen, class = class)
 }
+
+#' de_plot_h
+#'
+#' Single source of truth for the three `plotOutput(height=)` tiers used
+#' across DEBrowser, so they can't drift into intent-free magic numbers.
+#' Returned as literal CSS px strings: bslib/shiny run `height` through
+#' `validateCssUnit()`, which rejects `var()` custom properties, so these
+#' plot heights cannot live as CSS tokens like the `--de-space-*` scale.
+#'
+#' @param size one of "sm" (360px), "md" (420px), "lg" (500px).
+#' @return a CSS length string.
+#' @noRd
+de_plot_h <- function(size = c("md", "sm", "lg")) {
+  switch(match.arg(size),
+    sm = "360px",
+    md = "420px",
+    lg = "500px"
+  )
+}

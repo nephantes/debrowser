@@ -471,11 +471,11 @@ dataLoadUI <- function(id) {
           conditionalPanel(
             condition = paste0("output['", ns("autoDetectFailed"), "']"),
             div(class = "de-detect-fail-caption",
-                style = "margin-top:10px;",
+                style = "margin-top:var(--de-space-3);",
                 "Couldn't auto-detect the separator -- pick it under Show all options.")
           ),
           # "Show all options" accordion
-          div(style = "margin-top:14px;",
+          div(style = "margin-top:var(--de-space-4);",
             bslib::accordion(
               id = ns("advancedOptions"),
               open = FALSE,
@@ -491,7 +491,7 @@ dataLoadUI <- function(id) {
           ),
           # Action row: Upload (auto-width primary) + demo pills
           div(class = "de-action-row",
-              style = "margin-top:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;",
+              style = "margin-top:var(--de-space-4); display:flex; align-items:center; gap:var(--de-space-2); flex-wrap:wrap;",
             actionButton(ns("uploadFile"), "Upload",
                          class = "btn btn-primary"),
             tags$span(class = "de-demo-caption",
@@ -512,26 +512,27 @@ dataLoadUI <- function(id) {
       # Filter" pill on the right. Always visible at the top of the
       # post-upload view so the next-step action never gets buried under
       # long tables.
-      div(class = "de-data-workbar",
-        uiOutput(ns("statStrip")),
-        div(class = "spacer", style = "flex:1"),
-        div(class = "de-data-workbar-actions",
-            uiOutput(ns("nextButton"))
+      div(
+        style = "display:flex; flex-direction:column; gap:var(--de-space-3);",
+        div(class = "de-data-workbar",
+          uiOutput(ns("statStrip")),
+          div(class = "spacer", style = "flex:1"),
+          div(class = "de-data-workbar-actions",
+              uiOutput(ns("nextButton"))
+          )
+        ),
+        de_card(
+          title = "Preview \u00b7 count matrix",
+          div(class = "de-compact-table",
+              style = "overflow:auto; max-height: 280px;",
+              tableOutput(ns("countPreview")))
+        ),
+        de_card(
+          title = "Sample design",
+          div(class = "de-compact-table",
+              style = "overflow:auto; max-height: 320px;",
+              DT::dataTableOutput(ns("sampleDetails")))
         )
-      ),
-      tags$div(style = "height:12px"),
-      de_card(
-        title = "Preview \u00b7 count matrix",
-        div(class = "de-compact-table",
-            style = "overflow:auto; max-height: 280px;",
-            tableOutput(ns("countPreview")))
-      ),
-      tags$div(style = "height:12px"),
-      de_card(
-        title = "Sample design",
-        div(class = "de-compact-table",
-            style = "overflow:auto; max-height: 320px;",
-            DT::dataTableOutput(ns("sampleDetails")))
       )
     )
   )

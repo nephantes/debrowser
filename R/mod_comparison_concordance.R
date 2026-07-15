@@ -51,18 +51,18 @@ comparisonConcordanceUI <- function(id) {
       col_widths = c(6, 6),
       de_card(
         "DEGs per comparison (up / down)",
-        shiny::plotOutput(ns("deg_bar"), height = "420px")
+        shiny::plotOutput(ns("deg_bar"), height = de_plot_h("md"))
       ),
       de_card(
         "Pairwise DEG count heatmap",
-        shiny::plotOutput(ns("deg_heatmap"), height = "420px")
+        shiny::plotOutput(ns("deg_heatmap"), height = de_plot_h("md"))
       )
     ),
     bslib::layout_columns(
       col_widths = c(6, 6),
       de_card(
         "Overlap (UpSet)",
-        shiny::plotOutput(ns("upset"), height = "420px")
+        shiny::plotOutput(ns("upset"), height = de_plot_h("md"))
       ),
       de_card(
         "Pairwise log2FC scatter",
@@ -71,7 +71,7 @@ comparisonConcordanceUI <- function(id) {
           shiny::uiOutput(ns("scatter_x_ui")),
           shiny::uiOutput(ns("scatter_y_ui"))
         ),
-        shiny::plotOutput(ns("scatter"), height = "360px")
+        shiny::plotOutput(ns("scatter"), height = de_plot_h("sm"))
       )
     ),
     de_card(
