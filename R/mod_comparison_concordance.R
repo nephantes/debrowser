@@ -49,32 +49,31 @@ comparisonConcordanceUI <- function(id) {
         )
       )
     ),
-    bslib::layout_column_wrap(
-      width = 1 / 2,
-      bslib::card(
-        bslib::card_header("DEGs per comparison (up / down)"),
-        bslib::card_body(shiny::plotOutput(ns("deg_bar"), height = "420px"))
+    bslib::layout_columns(
+      col_widths = c(6, 6),
+      de_card(
+        "DEGs per comparison (up / down)",
+        shiny::plotOutput(ns("deg_bar"), height = "420px")
       ),
-      bslib::card(
-        bslib::card_header("Pairwise DEG count heatmap"),
-        bslib::card_body(shiny::plotOutput(ns("deg_heatmap"), height = "420px"))
+      de_card(
+        "Pairwise DEG count heatmap",
+        shiny::plotOutput(ns("deg_heatmap"), height = "420px")
       )
     ),
-    bslib::layout_column_wrap(
-      width = 1 / 2,
-      bslib::card(
-        bslib::card_header("Overlap (UpSet)"),
-        bslib::card_body(shiny::plotOutput(ns("upset"), height = "420px"))
+    bslib::layout_columns(
+      col_widths = c(6, 6),
+      de_card(
+        "Overlap (UpSet)",
+        shiny::plotOutput(ns("upset"), height = "420px")
       ),
-      bslib::card(
-        bslib::card_header("Pairwise log2FC scatter"),
-        bslib::card_body(
-          shiny::fluidRow(
-            shiny::column(6, shiny::uiOutput(ns("scatter_x_ui"))),
-            shiny::column(6, shiny::uiOutput(ns("scatter_y_ui")))
-          ),
-          shiny::plotOutput(ns("scatter"), height = "360px")
-        )
+      de_card(
+        "Pairwise log2FC scatter",
+        bslib::layout_columns(
+          col_widths = c(6, 6),
+          shiny::uiOutput(ns("scatter_x_ui")),
+          shiny::uiOutput(ns("scatter_y_ui"))
+        ),
+        shiny::plotOutput(ns("scatter"), height = "360px")
       )
     ),
     bslib::card(

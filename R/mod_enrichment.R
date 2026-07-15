@@ -54,18 +54,16 @@ enrichmentUI <- function(id) {
         )
       )
     ),
-    bslib::layout_column_wrap(
-      width = 1 / 2,
-      bslib::card(
-        bslib::card_header("Results"),
-        bslib::card_body(
-          DT::DTOutput(ns("results_table")),
-          shiny::downloadButton(ns("download_results"), "Download")
-        )
+    bslib::layout_columns(
+      col_widths = c(6, 6),
+      de_card(
+        "Results",
+        download_id = ns("download_results"),
+        DT::DTOutput(ns("results_table"))
       ),
-      bslib::card(
-        bslib::card_header("Enrichment plot"),
-        bslib::card_body(shiny::plotOutput(ns("enrichment_plot")))
+      de_card(
+        "Enrichment plot",
+        shiny::plotOutput(ns("enrichment_plot"))
       )
     ),
     bslib::card(

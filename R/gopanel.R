@@ -41,18 +41,16 @@ getGoPanel <- function() {
     # mirror the standalone Enrichment tab layout introduced in E1.
     conditionalPanel(
       condition = "input.goplot == 'fgseaGSEA'",
-      bslib::layout_column_wrap(
-        width = 1 / 2,
-        bslib::card(
-          bslib::card_header("Results"),
-          bslib::card_body(
-            DT::DTOutput("fgsea_results_table"),
-            downloadButton("fgsea_download_results", "Download")
-          )
+      bslib::layout_columns(
+        col_widths = c(6, 6),
+        de_card(
+          "Results",
+          download_id = "fgsea_download_results",
+          DT::DTOutput("fgsea_results_table")
         ),
-        bslib::card(
-          bslib::card_header("Enrichment plot"),
-          bslib::card_body(plotOutput("fgsea_enrichment_plot"))
+        de_card(
+          "Enrichment plot",
+          plotOutput("fgsea_enrichment_plot")
         )
       ),
       bslib::card(
