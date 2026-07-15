@@ -29,24 +29,22 @@
 comparisonConcordanceUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    bslib::card(
-      bslib::card_header("Comparison Concordance"),
-      bslib::card_body(
-        shiny::helpText(
-          "Compares your CondSelect comparisons against each other",
-          "using the DE results that were already computed when you",
-          "ran DE (each comparison uses whatever method you picked",
-          "for it). Cutoffs below filter the significant-gene sets",
-          "used for the UpSet plot and the concordance summary; the",
-          "pairwise scatter shows log2FC across all common genes."
-        ),
-        bslib::layout_columns(
-          col_widths = c(6, 6),
-          shiny::numericInput(ns("padj"), "padj <=",
-                              value = 0.05, min = 0, max = 1, step = 0.01),
-          shiny::numericInput(ns("lfc"), "|log2FC| >=",
-                              value = 0, min = 0, step = 0.1)
-        )
+    de_card(
+      "Comparison Concordance",
+      shiny::helpText(
+        "Compares your CondSelect comparisons against each other",
+        "using the DE results that were already computed when you",
+        "ran DE (each comparison uses whatever method you picked",
+        "for it). Cutoffs below filter the significant-gene sets",
+        "used for the UpSet plot and the concordance summary; the",
+        "pairwise scatter shows log2FC across all common genes."
+      ),
+      bslib::layout_columns(
+        col_widths = c(6, 6),
+        shiny::numericInput(ns("padj"), "padj <=",
+                            value = 0.05, min = 0, max = 1, step = 0.01),
+        shiny::numericInput(ns("lfc"), "|log2FC| >=",
+                            value = 0, min = 0, step = 0.1)
       )
     ),
     bslib::layout_columns(
@@ -76,29 +74,27 @@ comparisonConcordanceUI <- function(id) {
         shiny::plotOutput(ns("scatter"), height = "360px")
       )
     ),
-    bslib::card(
-      bslib::card_header("Concordance summary (pairwise)"),
-      bslib::card_body(DT::DTOutput(ns("summary")))
+    de_card(
+      "Concordance summary (pairwise)",
+      DT::DTOutput(ns("summary"))
     ),
     # Phase E12.B: AI interpretation for concordance. Visibility
     # gated by parent (server.R checks credentials + >= 2 comparisons).
-    bslib::card(
-      bslib::card_header("AI interpretation"),
-      bslib::card_body(
-        shiny::conditionalPanel(
-          condition = sprintf("output['%s'] === 'show'",
-                              ns("ai_pathway_picker_visible")),
-          shiny::selectInput(ns("reconcile_pathway"),
-                             "Pathway to reconcile (optional)",
-                             choices = c("(none)" = ""),
-                             selected = "")
-        ),
-        debrowser::aiInterpretUI(
-          ns("ai_concordance"),
-          questions     = c("reconcile_enrichments", "suggest_followup",
-                            "draft_methods"),
-          payload_shape = "concordance"
-        )
+    de_card(
+      "AI interpretation",
+      shiny::conditionalPanel(
+        condition = sprintf("output['%s'] === 'show'",
+                            ns("ai_pathway_picker_visible")),
+        shiny::selectInput(ns("reconcile_pathway"),
+                           "Pathway to reconcile (optional)",
+                           choices = c("(none)" = ""),
+                           selected = "")
+      ),
+      debrowser::aiInterpretUI(
+        ns("ai_concordance"),
+        questions     = c("reconcile_enrichments", "suggest_followup",
+                          "draft_methods"),
+        payload_shape = "concordance"
       )
     )
   )

@@ -53,9 +53,9 @@ getGoPanel <- function() {
           plotOutput("fgsea_enrichment_plot")
         )
       ),
-      bslib::card(
-        bslib::card_header("Leading edge"),
-        bslib::card_body(textOutput("fgsea_leading_edge"))
+      de_card(
+        "Leading edge",
+        textOutput("fgsea_leading_edge")
       ),
       conditionalPanel(
         condition = "output.fgsea_show_heatmap == true",
@@ -67,14 +67,12 @@ getGoPanel <- function() {
     # provider config AND payload availability for the current mode.
     conditionalPanel(
       condition = "output.ai_panel_visibility === 'show'",
-      bslib::card(
-        bslib::card_header("AI interpretation"),
-        bslib::card_body(
-          debrowser::aiInterpretUI(
-            "ai_enrichment",
-            questions     = c("summarize_geneset", "reconcile_enrichments"),
-            payload_shape = "geneset"
-          )
+      de_card(
+        "AI interpretation",
+        debrowser::aiInterpretUI(
+          "ai_enrichment",
+          questions     = c("summarize_geneset", "reconcile_enrichments"),
+          payload_shape = "geneset"
         )
       )
     ),

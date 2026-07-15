@@ -408,6 +408,8 @@ dataLoadUI <- function(id) {
     # Post-upload: stat strip + preview card + sample-design card + next-step CTAs.
     conditionalPanel(
       condition = paste0("!output['", ns("dataloaded"), "']"),
+      # RAW CARD (de_card exception): custom header = title span + file-types
+      # badge, which de_card()'s title/download-only header can't express.
       bslib::card(
         bslib::card_header(
           class = "d-flex align-items-center",
@@ -417,9 +419,13 @@ dataLoadUI <- function(id) {
                     ".tsv \u00b7 .csv \u00b7 .txt \u00b7 .csv.gz")
         ),
         bslib::card_body(
-          # Two side-by-side drop tiles using mockup .drop structure
-          div(class = "de-drop-grid",
-              style = "display:grid; grid-template-columns: 1fr 1fr; gap:12px;",
+          # Two side-by-side drop tiles using mockup .drop structure.
+          # Gap is set on .de-drop-grid in debrowser.css via --de-space-3
+          # (bslib's gap= arg runs through validateCssUnit(), which rejects
+          # var() custom properties).
+          bslib::layout_columns(
+            col_widths = c(6, 6),
+            class = "de-drop-grid",
             # Tile 1: Count Data (required)
             div(class = "de-drop",
               div(class = "de-drop-ic",
@@ -475,9 +481,10 @@ dataLoadUI <- function(id) {
               open = FALSE,
               bslib::accordion_panel(
                 title = "Show all options",
-                fluidRow(
-                  column(6, sepRadio(id, "countdataSep")),
-                  column(6, sepRadio(id, "metadataSep"))
+                bslib::layout_columns(
+                  col_widths = c(6, 6),
+                  sepRadio(id, "countdataSep"),
+                  sepRadio(id, "metadataSep")
                 )
               )
             )
@@ -520,13 +527,11 @@ dataLoadUI <- function(id) {
             tableOutput(ns("countPreview")))
       ),
       tags$div(style = "height:12px"),
-      bslib::card(
-        bslib::card_header("Sample design"),
-        bslib::card_body(
-          div(class = "de-compact-table",
-              style = "overflow:auto; max-height: 320px;",
-              DT::dataTableOutput(ns("sampleDetails")))
-        )
+      de_card(
+        title = "Sample design",
+        div(class = "de-compact-table",
+            style = "overflow:auto; max-height: 320px;",
+            DT::dataTableOutput(ns("sampleDetails")))
       )
     )
   )

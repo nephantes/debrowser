@@ -66,9 +66,9 @@ enrichmentUI <- function(id) {
         shiny::plotOutput(ns("enrichment_plot"))
       )
     ),
-    bslib::card(
-      bslib::card_header("Leading edge"),
-      bslib::card_body(shiny::textOutput(ns("leading_edge")))
+    de_card(
+      "Leading edge",
+      shiny::textOutput(ns("leading_edge"))
     ),
     shiny::conditionalPanel(
       condition = sprintf("output['%s'] == true", ns("show_heatmap")),

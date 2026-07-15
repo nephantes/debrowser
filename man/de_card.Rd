@@ -4,7 +4,7 @@
 \alias{de_card}
 \title{de_card}
 \usage{
-de_card(title, ..., download_id = NULL, full_screen = FALSE)
+de_card(title, ..., download_id = NULL, full_screen = FALSE, class = NULL)
 }
 \arguments{
 \item{title}{character -- card title shown in the header}
@@ -15,6 +15,9 @@ de_card(title, ..., download_id = NULL, full_screen = FALSE)
 `downloadButton` with this id in the header}
 
 \item{full_screen}{logical -- passed through to `bslib::card()`}
+
+\item{class}{character or NULL -- extra CSS class(es) forwarded to
+`bslib::card()` (e.g. "de-subcard", "de-comparison")}
 }
 \value{
 a `bslib::card` tagList

@@ -2664,11 +2664,12 @@ html[data-debrowser-redesign="1"] #load-uploadSummary {
    B3.7 — Mockup-style flat drop tiles + always-show wizard steps.
    ===================================================================== */
 
-/* Two-column grid responsive: collapse to one column under 880 px */
-@media (max-width: 880px) {
-  html[data-debrowser-redesign="1"] .de-drop-grid {
-    grid-template-columns: 1fr !important;
-  }
+/* .de-drop-grid is a bslib layout_columns(c(6,6)) (see R/dataLoad.R) --
+   it owns its own 12-col grid + responsive collapse, so no
+   grid-template-columns override lives here anymore. Gap is tokenized
+   here (bslib's gap= arg can't take a var()). */
+html[data-debrowser-redesign="1"] .de-drop-grid {
+  gap: var(--de-space-3);
 }
 
 /* Single flat drop tile */
@@ -2974,18 +2975,6 @@ html[data-debrowser-redesign="1"] .wiz-step[aria-current="true"] .wiz-step-dot {
   background: var(--de-cyan) !important;
   border-color: var(--de-cyan) !important;
   box-shadow: 0 0 0 4px rgba(94,230,214,.30) !important;
-}
-
-/* Drop grid 2-col down to 640 px */
-@media (max-width: 880px) {
-  html[data-debrowser-redesign="1"] .de-drop-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
-}
-@media (max-width: 640px) {
-  html[data-debrowser-redesign="1"] .de-drop-grid {
-    grid-template-columns: 1fr !important;
-  }
 }
 
 /* Make sure each tile shrinks to fit its half without overflowing */

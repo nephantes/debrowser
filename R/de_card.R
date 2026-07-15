@@ -9,12 +9,15 @@
 #' @param download_id character or NULL -- if non-NULL, render a
 #'   `downloadButton` with this id in the header
 #' @param full_screen logical -- passed through to `bslib::card()`
+#' @param class character or NULL -- extra CSS class(es) forwarded to
+#'   `bslib::card()` (e.g. "de-subcard", "de-comparison")
 #'
 #' @return a `bslib::card` tagList
 #' @examples
 #' x <- de_card("Heatmap", shiny::plotOutput("heat"))
 #' @export
-de_card <- function(title, ..., download_id = NULL, full_screen = FALSE) {
+de_card <- function(title, ..., download_id = NULL, full_screen = FALSE,
+                    class = NULL) {
   header <- if (is.null(download_id)) {
     bslib::card_header(title)
   } else {
@@ -32,5 +35,5 @@ de_card <- function(title, ..., download_id = NULL, full_screen = FALSE) {
       )
     )
   }
-  bslib::card(header, ..., full_screen = full_screen)
+  bslib::card(header, ..., full_screen = full_screen, class = class)
 }

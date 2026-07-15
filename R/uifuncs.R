@@ -418,25 +418,15 @@ getCutOffSelection <- function(nc = 1) {
 #'
 getMainPanel <- function() {
   list(
-    fluidRow(
-      column(
-        6,
-        getMainPlotUI("main")
-      ),
-      column(
-        6,
-        getHeatmapUI("heatmap")
-      )
+    bslib::layout_columns(
+      col_widths = c(6, 6),
+      getMainPlotUI("main"),
+      getHeatmapUI("heatmap")
     ),
-    fluidRow(
-      column(
-        6,
-        getBarMainPlotUI("barmain")
-      ),
-      column(
-        6,
-        getBoxMainPlotUI("boxmain")
-      )
+    bslib::layout_columns(
+      col_widths = c(6, 6),
+      getBarMainPlotUI("barmain"),
+      getBoxMainPlotUI("boxmain")
     )
   )
 }

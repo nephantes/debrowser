@@ -127,8 +127,8 @@ batchEffectUI <- function(id) {
 
   list(
     fluidRow(
-      bslib::card(
-        bslib::card_header("Batch Effect Correction and Normalization"),
+      de_card(
+        "Batch Effect Correction and Normalization",
         bslib::layout_columns(
           col_widths = c(5, 2, 5),
           tagList(
@@ -172,8 +172,8 @@ batchEffectUI <- function(id) {
           )
         )
       ),
-      bslib::card(
-        bslib::card_header("Plots"),
+      de_card(
+        "Plots",
         fluidRow(
           column(
             12,

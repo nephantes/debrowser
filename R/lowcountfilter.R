@@ -110,8 +110,8 @@ dataLCFUI <- function(id) {
   ns <- NS(id)
   list(
     fluidRow(
-      bslib::card(
-        bslib::card_header("Low Count Filtering"),
+      de_card(
+        "Low Count Filtering",
         bslib::layout_columns(
           col_widths = c(5, 2, 5),
           tagList(
@@ -157,21 +157,18 @@ dataLCFUI <- function(id) {
             ),
             uiOutput(ns("filteredtable"))
           )
-        ),
-        # B3.23 -- The next-step CTAs were moved INSIDE the Filtering
-        # Methods card above. This empty placeholder kept for visual
-        # spacing only; intentionally rendering nothing.
-        NULL
+        )
       ),
-      bslib::card(
-        bslib::card_header("Histograms"),
-        fluidRow(
-          column(
-            6, histogramControlsUI(ns("beforeFiltering")),
+      de_card(
+        "Histograms",
+        bslib::layout_columns(
+          col_widths = c(6, 6),
+          tagList(
+            histogramControlsUI(ns("beforeFiltering")),
             getHistogramUI(ns("beforeFiltering"))
           ),
-          column(
-            6, histogramControlsUI(ns("afterFiltering")),
+          tagList(
+            histogramControlsUI(ns("afterFiltering")),
             getHistogramUI(ns("afterFiltering"))
           )
         )
