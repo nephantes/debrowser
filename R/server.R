@@ -1146,9 +1146,6 @@ deServer <- function(input, output, session) {
       output$leftMenu <- renderUI({
         getLeftMenu(input)
       })
-      output$loading <- renderUI({
-        getLoadingMsg()
-      })
       output$logo <- renderUI({
         getLogo()
       })
