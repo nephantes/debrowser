@@ -663,6 +663,21 @@ html[data-debrowser-redesign="1"] .selectize-dropdown .option:focus-visible {
   outline-offset: 2px;
 }
 
+/* T8 — cursor affordance for un-actionable controls. Disabled buttons get
+   the standard not-allowed cursor. Locked wizard steps set
+   pointer-events:none (below), so not-allowed on the step itself is
+   forward-looking: it surfaces the moment activation is blocked in the
+   click handler instead of via pointer-events (see
+   docs/design/05-hover-cursor-plan.md T8). */
+html[data-debrowser-redesign="1"] .btn:disabled,
+html[data-debrowser-redesign="1"] .btn.disabled,
+html[data-debrowser-redesign="1"] .btn[disabled] {
+  cursor: not-allowed;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked {
+  cursor: not-allowed;
+}
+
 /* Motion token rollout (T4): one reusable transition for every interactive
    base, so hover/focus color+shadow+transform changes ramp smoothly instead
    of snapping. Named-property token only (--de-transition) — never `all`. */
