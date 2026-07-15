@@ -422,7 +422,8 @@ dataLoadUI <- function(id) {
               style = "display:grid; grid-template-columns: 1fr 1fr; gap:12px;",
             # Tile 1: Count Data (required)
             div(class = "de-drop",
-              div(class = "de-drop-ic", HTML("&#10515;")),  # up arrow \u2933
+              div(class = "de-drop-ic",
+                  shiny::icon("file-arrow-up", `aria-hidden` = "true")),
               div(class = "de-drop-meta",
                 div(class = "de-drop-title", "Count Data"),
                 div(class = "de-drop-help",
@@ -440,7 +441,8 @@ dataLoadUI <- function(id) {
             ),
             # Tile 2: Metadata (optional)
             div(class = "de-drop",
-              div(class = "de-drop-ic", HTML("&#8862;")),  # square+dot \u2317
+              div(class = "de-drop-ic",
+                  shiny::icon("square-plus", `aria-hidden` = "true")),  # square+dot \u2317
               div(class = "de-drop-meta",
                 div(class = "de-drop-title",
                     "Metadata ",

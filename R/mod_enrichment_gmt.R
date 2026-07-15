@@ -222,7 +222,7 @@ enrichmentGmtServer <- function(id) {
       } else if (isTRUE(st$ok)) {
         shiny::div(
           class = "small text-success mt-2",
-          shiny::icon("check-circle"), " ", st$msg
+          shiny::icon("circle-check"), " ", st$msg
         )
       } else {
         shiny::div(

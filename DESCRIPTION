@@ -28,6 +28,7 @@ License: GPL-3 + file LICENSE
 LazyData: true
 Imports:
     shiny,
+    fontawesome,
     jsonlite,
     shinyjs,
     shinyBS,

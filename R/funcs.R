@@ -291,7 +291,8 @@ getTableDetails <- function(output = NULL, session = NULL, tablename = NULL, dat
   output[[tablename]] <- renderUI({
     list(
       downloadButton(session$ns(paste(tablename, "Download")), "Download"),
-      actionButtonDE(trigger_id, "Show Data", styleclass = "primary", icon = "eye")
+      actionButtonDE(trigger_id, "Show Data", styleclass = "primary",
+                     icon = shiny::icon("eye"))
     )
   })
 
@@ -494,6 +495,11 @@ getHelpButton <- function(name = NULL, link = NULL) {
       " (opens documentation in a new tab)\" ",
     "title=\"Help: ", safe_name,
       " &#8211; opens documentation in a new tab\">",
+    # Intentional raw-HTML FA glyph: the class must stay `fa-info-circle` to
+    # match the CSS hook (.de-help-btn .fa-info-circle in debrowser.css).
+    # shiny::icon("info-circle") emits `fa-circle-info` (FA6) and would
+    # silently drop the chip's color styling. This chip is a plain external
+    # <a> with no Shiny input id, so raw HTML is fine here.
     "<i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i>",
     "<span class=\"de-help-btn-label\">Help</span>",
     "</a>"

@@ -328,6 +328,22 @@
 .de-theme-toggle .de-theme-icon-sun  { display: none !important; }
 html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-moon { display: none !important; }
 html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-sun  { display: inline-block !important; }
+/* FA icons in the toggle inherit font-size; an FA <i> needs an explicit size. */
+.de-theme-toggle .de-theme-icon { font-size: 18px; line-height: 1; }
+
+/* ---------------------------------------------------------------------
+   Font Awesome webfont fix. The redesign's Inter font-family was
+   cascading onto Font Awesome glyph elements (<i class="fas fa-...">),
+   so every shiny::icon() rendered as a blank "tofu" box -- Export,
+   Bookmark, download, gear, wizard glyphs, all of them. Re-assert the FA
+   font families with !important so the webfont glyphs actually paint.
+   FA's own per-class font-weight (.fas = 900 / .far = 400) still applies.
+   ------------------------------------------------------------------- */
+.fa, .fas, .far, .fab,
+.fa-solid, .fa-regular, .fa-brands {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+}
+.fab, .fa-brands { font-weight: 400 !important; }
 
 /* Respect users who ask for less motion. Global on purpose: accessibility is
    not gated on the redesign theme. Near-zero (not 0) so transitionend/
