@@ -90,18 +90,25 @@ prepDataContainer <- function(data, metadata, comparisons_spec) {
 
   for (i in seq_len(n)) {
     inputs <- prep_comparison_inputs(comparisons_spec[[i]], comparison_idx = i)
+    base   <- (i - 1) / n            # fraction consumed by prior comparisons
+    step   <- 1 / (n * 3)            # three sub-steps per comparison
+    hdr    <- sprintf("DE %d of %d - %s", i, n, inputs$demethod_params)
 
     shiny::withProgress(
-      message = "Running DE Algorithms",
-      detail = inputs$demethod_params,
-      value = 0,
+      message = hdr,
+      detail = "Normalizing counts...",
+      value = base,
       {
+        shiny::setProgress(value = base + step, detail = "Fitting model...")
         initd <- debrowserdeanalysis(
           paste0("DEResults", i),
           data = data, metadata = metadata,
           columns = inputs$cols, conds = inputs$conds,
           params = unlist(strsplit(inputs$demethod_params, ","))
         )
+
+        shiny::setProgress(value = base + 2 * step,
+                           detail = "Computing contrasts...")
         if (!is.null(initd$dat()) && nrow(initd$dat()) > 1L) {
           dds_val <- tryCatch(initd$dds(), error = function(e) NULL)
           dclist[[i]] <- list(
@@ -112,7 +119,7 @@ prepDataContainer <- function(data, metadata, comparisons_spec) {
             dds = dds_val
           )
         }
-        shiny::incProgress(1 / n)
+        shiny::setProgress(value = base + 3 * step, detail = "Done")
       }
     )
   }
