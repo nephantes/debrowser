@@ -751,13 +751,15 @@ deUI <- function(req = NULL) {
         class = "nav-link de-theme-toggle",
         `aria-label` = "Toggle dark mode",
         title = "Toggle dark mode",
-        # Shown in light mode; clicking switches to dark.
-        shiny::icon("moon",
-          class = "de-theme-icon de-theme-icon-moon",
+        # Shown in light mode; clicking switches to dark. Force the SOLID
+        # FA style (fa-solid): the app ships only the solid webfont face, so
+        # the default regular (far) sun/moon render as empty/muddy glyphs.
+        htmltools::tags$i(
+          class = "fa-solid fa-moon de-theme-icon de-theme-icon-moon",
           `aria-hidden` = "true"),
         # Shown in dark mode; clicking switches to light.
-        shiny::icon("sun",
-          class = "de-theme-icon de-theme-icon-sun",
+        htmltools::tags$i(
+          class = "fa-solid fa-sun de-theme-icon de-theme-icon-sun",
           `aria-hidden` = "true")
       )
     ),
