@@ -154,6 +154,9 @@ de_theme <- function(preset = NULL) {
     version       = 5,
     bg            = "#ffffff",
     fg            = "#0f172a",
+    # OK-blue: the WCAG-AA light-mode a11y fallback for the redesign's cyan
+    # gradient (which is fill-only and fails as text). Keep it -- do NOT
+    # "unify" it with --de-cyan. See docs/design/02-color-palette-plan.md.
     primary       = "#0369a1",
     secondary     = "#64748b",
     success       = "#16a34a",

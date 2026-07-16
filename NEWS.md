@@ -4,6 +4,29 @@ For releases prior to 1.31, see the legacy `NEWS` file.
 
 ## debrowser 1.31.2 (in development)
 
+### UI design-system consolidation (docs/design plans §1–§6)
+
+* **Grid/layout:** collapsed four grid idioms to one primitive
+  (`bslib::layout_columns(col_widths=)`) and two card systems to one
+  wrapper (`de_card()`, now with a `class=` passthrough) across every
+  panel; retired `layout_column_wrap`, hand-rolled `display:grid`, and
+  ragged rows. Spacing comes from a `--de-space-*` scale and plot heights
+  from `de_plot_h()`. Added `tools/check-grid.sh` to lock the standard in.
+* **Color/contrast:** raised light/dark muted text and introduced
+  theme-resolved `--de-accent-ink` (accent-as-text) + `--de-ink-on-accent`
+  tokens for WCAG-AA contrast; `--de-cyan` is now fill-only.
+* **Icons:** Font Awesome only, via `shiny::icon()`. Repaired app-wide FA
+  webfont rendering (the Inter UI font was clobbering glyphs), consolidated
+  ad-hoc glyphs, and wired the favicon.
+* **Loading/motion:** replaced the 1.1 MB boot gif with a CSS conic ring;
+  added stepwise `withProgress` detail to the DE run; added
+  `--de-transition`, `:focus-visible` rings, `prefers-reduced-motion`, and
+  `cursor:not-allowed` affordances; removed the dead `getLoadingMsg`
+  overlay and its orphan gifs.
+* **Handoff:** added `de_style_guide()` + `inst/extdata/www/style-guide.html`
+  (a component gallery in both themes that doubles as a pixel-regression
+  baseline) and `DESIGN.md`, the contributor design contract.
+
 ### Phase A1 — foundation modernization
 
 * Bumped minimum R version to 4.2 and `RoxygenNote` to 7.3.x.

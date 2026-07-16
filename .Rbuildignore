@@ -9,6 +9,7 @@
 ^tools$
 ^viafoundry_errors\.log$
 ^README\.md$
+^DESIGN\.md$
 ^codecov\.yml$
 ^\.styler_cache$
 ^renv\.lock$

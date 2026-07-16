@@ -8,6 +8,13 @@ Alper Kucukural, Onur Yuksel, Deniz M. Ozata, Melissa J. Moore, Manuel Garber, D
 
 [![DOI](https://zenodo.org/badge/DOI/10.1186/zenodo.s12864-018-5362-x.svg)](https://doi.org/10.1186/s12864-018-5362-x)
 
+# Design system
+
+DEBrowser ships a self-contained visual redesign layer. Contributors editing
+the UI should read [`DESIGN.md`](DESIGN.md) (the token vocabulary + editing
+rules) and open the live component gallery with `debrowser::de_style_guide()`.
+Full rationale: [`docs/design/`](docs/design/).
+
 # Introduction
 
 Differential expression (DE) analysis has become an increasingly popular tool
