@@ -588,7 +588,7 @@ html[data-debrowser-redesign="1"] .de-comparison .de-subcard > .card-header {
 
 /* ---------- Buttons ---------- */
 html[data-debrowser-redesign="1"] .btn {
-  height: 32px; padding: 0 14px;
+  height: 30px; padding: 0 14px;
   border-radius: var(--de-r-pill);
   font-size: 12.5px; font-weight: 600;
   display: inline-flex; align-items: center; gap: 6px;
@@ -633,7 +633,7 @@ html[data-debrowser-redesign="1"] .btn-danger {
   border: 0 !important;
 }
 html[data-debrowser-redesign="1"] .btn-sm {
-  height: 26px; padding: 0 10px; font-size: 11.5px;
+  height: 26px; padding: 0 10px; font-size: 12px;
 }
 html[data-debrowser-redesign="1"] .btn-lg {
   height: 38px; padding: 0 18px; font-size: 13.5px;
@@ -2131,23 +2131,6 @@ html[data-debrowser-redesign="1"] textarea.form-control {
   height: auto;
   min-height: 70px !important;
   padding: 6px 10px !important;
-}
-
-/* Buttons: 30 px height (sm 26 px) — mockup spec */
-html[data-debrowser-redesign="1"] .btn {
-  height: 30px !important;
-  padding: 0 14px !important;
-  font-size: 12.5px !important;
-}
-html[data-debrowser-redesign="1"] .btn-sm {
-  height: 26px !important;
-  padding: 0 10px !important;
-  font-size: 12px !important;
-}
-html[data-debrowser-redesign="1"] .btn-lg {
-  height: 38px !important;
-  padding: 0 18px !important;
-  font-size: 13.5px !important;
 }
 
 /* Accordion buttons: tighten to mockup */
