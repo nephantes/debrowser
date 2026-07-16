@@ -549,7 +549,7 @@ html[data-debrowser-redesign="1"] .wizard-step-list .de-pill-done::before {
 }
 html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item.active::before {
   background: var(--de-cyan);
-  box-shadow: 0 0 0 3px rgba(94,230,214,.22);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22);
 }
 html[data-debrowser-redesign="1"] .wizard-step-list .de-progress-icon.done::after {
   color: var(--de-mint) !important;
@@ -941,7 +941,7 @@ html[data-debrowser-redesign="1"] .de-dropzone .card {
 }
 html[data-debrowser-redesign="1"] .de-dropzone.dragover .card {
   border-color: var(--de-cyan) !important;
-  background-color: rgba(94,230,214,.12) !important;
+  background-color: rgba(99,102,241,.12) !important;
 }
 /* Hover lift (T5): these tiles are genuinely clickable drop/launch
    targets, unlike generic .card panels, so they get the 1px cue. */
@@ -1190,10 +1190,10 @@ html[data-debrowser-redesign="1"] .modebar-btn:hover { background: var(--de-bg-3
 .js-plotly-plot .plotly .modebar-btn svg {
   width: 16px; height: 16px;
 }
-/* Active state uses the cyan accent in both themes. */
+/* Active state uses the indigo accent in both themes. */
 .js-plotly-plot .plotly .modebar-btn.active path,
 .js-plotly-plot .plotly .modebar-btn:hover path {
-  fill: #5EE6D6 !important;
+  fill: #6366F1 !important;
 }
 
 /* ---------- Help button (debrowser uses a small ? circle) ---------- */
@@ -1369,7 +1369,7 @@ html[data-debrowser-redesign="1"] .navbar-brand::before {
   box-shadow:
     inset 0 0 0 5px #0B1020,
     0 0 0 1px rgba(255,255,255,.08),
-    0 4px 12px rgba(94,230,214,.18);
+    0 4px 12px rgba(99,102,241,.18);
   margin-right: 4px;
 }
 
@@ -1563,7 +1563,7 @@ html[data-debrowser-redesign="1"] .navbar .nav-link.active .de-nav-chip-num,
 html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"] .de-nav-chip-num {
   background: var(--de-grad);
   color: var(--de-ink-on-accent);
-  box-shadow: 0 2px 6px rgba(94,230,214,.30);
+  box-shadow: 0 2px 6px rgba(99,102,241,.30);
 }
 html[data-debrowser-redesign="1"] .navbar .nav-link.active .de-nav-chip-label,
 html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"] .de-nav-chip-label {
@@ -1720,8 +1720,8 @@ html[data-debrowser-redesign="1"] .card + .card {
 }
 .de-help-btn:hover,
 .de-help-btn:focus-visible {
-  background: #0ea5e9;
-  border-color: #0ea5e9;
+  background: #4F46E5;
+  border-color: #4F46E5;
   color: #ffffff;
   text-decoration: none !important;
   outline: none;
@@ -1729,7 +1729,7 @@ html[data-debrowser-redesign="1"] .card + .card {
 .de-help-btn .fa-info-circle {
   font-size: 13px;
   line-height: 1;
-  color: #0ea5e9;
+  color: #4F46E5;
 }
 .de-help-btn:hover .fa-info-circle,
 .de-help-btn:focus-visible .fa-info-circle {
@@ -1901,7 +1901,7 @@ html[data-debrowser-redesign="1"] .navbar-brand::before {
   margin-right: 0 !important;
   box-shadow:
     inset 0 0 0 5px var(--de-bg-0),
-    0 4px 12px rgba(94,230,214,.18);
+    0 4px 12px rgba(99,102,241,.18);
 }
 
 /* -------- Nav tabs: 6×12 px padding, 2 px gap, 13 px font -------- */
@@ -2649,7 +2649,7 @@ html[data-debrowser-redesign="1"] .de-drop {
 html[data-debrowser-redesign="1"] .de-drop.dragover,
 html[data-debrowser-redesign="1"] .de-drop:hover {
   border-color: var(--de-cyan);
-  background: rgba(94,230,214,.10);
+  background: rgba(99,102,241,.10);
 }
 html[data-debrowser-redesign="1"] .de-drop-ic {
   width: 36px; height: 36px;
@@ -2853,7 +2853,7 @@ html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-num {
 /* Active step = cyan dot with halo */
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
   background: var(--de-cyan) !important;
-  box-shadow: 0 0 0 3px rgba(94,230,214,.22);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22);
 }
 
 /* Locked = dim, no clicks */
@@ -2936,7 +2936,7 @@ html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot,
 html[data-debrowser-redesign="1"] .wiz-step[aria-current="true"] .wiz-step-dot {
   background: var(--de-cyan) !important;
   border-color: var(--de-cyan) !important;
-  box-shadow: 0 0 0 4px rgba(94,230,214,.30) !important;
+  box-shadow: 0 0 0 4px rgba(99,102,241,.30) !important;
 }
 
 /* Make sure each tile shrinks to fit its half without overflowing */
@@ -3052,8 +3052,8 @@ html[data-debrowser-redesign="1"] .wiz-step.de-pill-done + .wiz-step.de-pill-don
 /* Stronger active state — bold label, cyan dot with glow, soft gradient bg */
 html[data-debrowser-redesign="1"] .wiz-step.active {
   background: linear-gradient(90deg,
-    rgba(94,230,214,.10) 0%,
-    rgba(167,139,250,.04) 70%,
+    rgba(99,102,241,.10) 0%,
+    rgba(99,102,241,.04) 70%,
     transparent 100%) !important;
   box-shadow: inset 2px 0 0 0 var(--de-cyan);
   border-radius: 8px !important;
@@ -3061,8 +3061,8 @@ html[data-debrowser-redesign="1"] .wiz-step.active {
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
   background: var(--de-cyan) !important;
   border-color: var(--de-cyan) !important;
-  box-shadow: 0 0 0 5px rgba(94,230,214,.28),
-              0 0 14px rgba(94,230,214,.40) !important;
+  box-shadow: 0 0 0 5px rgba(99,102,241,.28),
+              0 0 14px rgba(99,102,241,.40) !important;
 }
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-label {
   color: var(--de-text-1) !important;
@@ -3206,7 +3206,7 @@ html[data-debrowser-redesign="1"] .wiz-step.active {
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
   background: var(--de-cyan) !important;
   opacity: 1 !important;
-  box-shadow: 0 0 0 3px rgba(94,230,214,.22) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22) !important;
 }
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-num {
   color: var(--de-text-1) !important;
@@ -3688,7 +3688,7 @@ html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-dot {
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
   background: var(--de-cyan) !important;
   opacity: 1 !important;
-  box-shadow: 0 0 0 3px rgba(94,230,214,.22) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22) !important;
 }
 html[data-debrowser-redesign="1"] .wiz-step.active {
   background: var(--de-bg-2) !important;
@@ -3813,7 +3813,7 @@ html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-dot {
 }
 html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
   background: var(--de-cyan) !important;
-  box-shadow: 0 0 0 3px rgba(94,230,214,.22) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22) !important;
 }
 html[data-debrowser-redesign="1"] .wiz-step.active,
 html[data-debrowser-redesign="1"] .wiz-step.active:hover {
@@ -4070,7 +4070,7 @@ html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-num {
    we're actively visiting a previously-completed step. */
 html[data-debrowser-redesign="1"] .wiz-step.active.de-pill-done .wiz-step-dot {
   background: var(--de-cyan) !important;
-  box-shadow: 0 0 0 3px rgba(94,230,214,.22) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22) !important;
 }
 html[data-debrowser-redesign="1"] .wiz-step.active.de-pill-done {
   background: var(--de-bg-2) !important;
@@ -4112,7 +4112,7 @@ html[data-debrowser-redesign="1"] #goQCplotsFromFilter {
   background: var(--de-grad) !important;
   color: var(--de-ink-on-accent) !important;
   border: 0 !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.18) !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
   white-space: nowrap;
   flex: 0 0 auto;
 }
@@ -4148,7 +4148,7 @@ html[data-debrowser-redesign="1"] [id*="show"].action-button.btn-primary {
   background: var(--de-grad) !important;
   color: var(--de-ink-on-accent) !important;
   border: 0 !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.18) !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
 }
 
 /* The container that holds Download + Show Data — make it a tight row */
@@ -4216,7 +4216,7 @@ html[data-debrowser-redesign="1"] [id$="-submitLCF"].btn {
   border: 0 !important;
   font-weight: 600 !important;
   margin-top: 4px !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.18) !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
 }
 
 /* Bottom: the CTA stack — pushed to the bottom via margin-top:auto.
@@ -4248,7 +4248,7 @@ html[data-debrowser-redesign="1"] #goQCplotsFromFilter {
   color: var(--de-ink-on-accent) !important;
   border: 0 !important;
   margin: 0 !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.18) !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
   white-space: nowrap;
 }
 
@@ -4313,7 +4313,7 @@ html[data-debrowser-redesign="1"] .de-data-workbar-actions .action-button {
   background: var(--de-grad) !important;
   color: var(--de-ink-on-accent) !important;
   border: 0 !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.22) !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.22) !important;
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
@@ -4430,7 +4430,7 @@ html[data-debrowser-redesign="1"] .de-cs-workbar-actions [id$="-startDE"] {
   background: var(--de-grad) !important;
   color: var(--de-ink-on-accent) !important;
   border: 0 !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.22) !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.22) !important;
   margin-left: 4px !important;
 }
 html[data-debrowser-redesign="1"] .de-cs-workbar-actions [id$="-startDE"]::after {
@@ -4736,7 +4736,7 @@ html[data-debrowser-redesign="1"] [id$="-submitBatchEffect"].btn {
   border: 0 !important;
   font-weight: 600 !important;
   margin-top: 4px !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.18) !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
 }
 
 html[data-debrowser-redesign="1"] .de-batch-cta-stack {
@@ -4761,7 +4761,7 @@ html[data-debrowser-redesign="1"] .de-batch-cta-stack #goQCplots {
   color: var(--de-ink-on-accent) !important;
   border: 0 !important;
   margin: 0 !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.18) !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
   white-space: nowrap;
 }
 
