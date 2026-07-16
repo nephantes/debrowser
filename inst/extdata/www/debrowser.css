@@ -1229,7 +1229,7 @@ html[data-debrowser-redesign="1"] .de-eyebrow .de-eyebrow-chip {
 }
 html[data-debrowser-redesign="1"] .de-headline {
   font-size: 22px; font-weight: 700; letter-spacing: -.01em;
-  margin: 0 0 16px; color: var(--de-text-1);
+  margin: 0 0 20px; color: var(--de-text-1);
 }
 html[data-debrowser-redesign="1"] .de-stat-strip {
   display: inline-flex; flex-wrap: wrap; gap: 16px;
@@ -2079,42 +2079,6 @@ html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar-content-main 
   padding: 24px !important;
 }
 
-/* -------- Headline 22 px / -.01 em -------- */
-html[data-debrowser-redesign="1"] .de-headline {
-  font-size: 22px !important;
-  font-weight: 700 !important;
-  letter-spacing: -.01em !important;
-  margin: 0 0 20px !important;
-}
-html[data-debrowser-redesign="1"] .de-eyebrow {
-  font-size: 10.5px !important;
-  font-weight: 600 !important;
-  letter-spacing: .14em !important;
-  margin-bottom: 6px !important;
-}
-html[data-debrowser-redesign="1"] .de-eyebrow .de-eyebrow-chip {
-  width: 18px !important;
-  height: 18px !important;
-  font-size: 10px !important;
-  border-radius: 5px !important;
-}
-
-/* -------- Cards: 14 px radius, 10×14 head padding, 14 px body -------- */
-html[data-debrowser-redesign="1"] .card,
-html[data-debrowser-redesign="1"] .bslib-card {
-  border-radius: 14px !important;
-  border: 1px solid var(--de-border) !important;
-}
-html[data-debrowser-redesign="1"] .card-header,
-html[data-debrowser-redesign="1"] .bslib-card > .card-header {
-  padding: 10px 14px !important;
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
-}
-html[data-debrowser-redesign="1"] .card-body {
-  padding: 14px !important;
-}
-
 /* -------- Form controls min-height 30 px (mockup spec) -------- */
 html[data-debrowser-redesign="1"] .form-control,
 html[data-debrowser-redesign="1"] .form-select,
@@ -2131,15 +2095,6 @@ html[data-debrowser-redesign="1"] textarea.form-control {
   height: auto;
   min-height: 70px !important;
   padding: 6px 10px !important;
-}
-
-/* Accordion buttons: tighten to mockup */
-html[data-debrowser-redesign="1"] .accordion-button {
-  padding: 8px 12px !important;
-  font-size: 12.5px !important;
-}
-html[data-debrowser-redesign="1"] .accordion-body {
-  padding: 10px 12px !important;
 }
 
 /* Tighten form-group margin (Shiny default ~15 px) */
