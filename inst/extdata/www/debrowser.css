@@ -368,16 +368,16 @@ html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-sun  { display: inlin
    ===================================================================== */
 
 html[data-debrowser-redesign="1"] {
-  /* --- Brand accents (FILL-only: buttons, chips, dots, slider bars,
-     gradient underlines, borders). Never use --de-cyan as a text color;
-     use --de-accent-ink (theme-resolved, see light/dark blocks) instead. --- */
-  --de-cyan:    #5EE6D6;
+  /* --- Brand accent (FILL-only: buttons, chips, dots, slider bars,
+     underlines, borders). Solid indigo (Clinical Indigo direction).
+     Never use --de-cyan as a text color; use --de-accent-ink instead. --- */
+  --de-cyan:    #6366F1;
   --de-violet:  #A78BFA;
   --de-blue:    #60A5FA;
   --de-mint:    #3CB6A0;
   --de-pink:    #FF7AA2;
-  --de-grad:    linear-gradient(135deg, #5EE6D6 0%, #A78BFA 100%);
-  --de-grad-soft: linear-gradient(135deg, rgba(94,230,214,.12), rgba(167,139,250,.12));
+  --de-grad:    linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+  --de-grad-soft: linear-gradient(135deg, rgba(79,70,229,.12), rgba(99,102,241,.12));
 
   /* Radii */
   --de-r-sm:   6px;
@@ -408,10 +408,9 @@ html[data-debrowser-redesign="1"] {
     transform        var(--de-dur) var(--de-ease),
     box-shadow       var(--de-dur) var(--de-ease);
 
-  /* Ink color for text/icons placed on top of accent fills (buttons, chips).
-     Definition only in this wave — existing #0B1020 literals are migrated
-     to this token in a later wave. */
-  --de-ink-on-accent: #0B1020;
+  /* Ink color for text/icons on accent fills (buttons, chips, active page).
+     White, because the Clinical Indigo accent is a dark indigo. */
+  --de-ink-on-accent: #FFFFFF;
 
   /* Shadows */
   --de-shadow:    0 6px 24px rgba(0,0,0,.06);
@@ -430,7 +429,7 @@ html[data-debrowser-redesign="1"]:not([data-bs-theme="dark"]) {
   --de-text-1:  #0F1530;
   --de-text-2:  #475270;
   --de-text-3:  #556087;   /* was #6E7BA5 (4.17:1 FAIL) -> 6.16:1 on white */
-  --de-accent-ink: #0E7490; /* cyan-700: accent-as-TEXT. 5.36:1 on white */
+  --de-accent-ink: #4338CA; /* indigo-700: accent-as-TEXT. ~8:1 on white */
   --de-grid:    rgba(15,21,48,.04);
 }
 
@@ -445,7 +444,8 @@ html[data-debrowser-redesign="1"][data-bs-theme="dark"] {
   --de-text-1:  #E6ECFF;
   --de-text-2:  #A8B2D1;
   --de-text-3:  #808CB8;   /* was #6E7BA5 (4.31:1 FAIL) -> 5.44:1 on #0F1530 */
-  --de-accent-ink: #5EE6D6; /* accent-as-TEXT in dark = the bright cyan. 11.76:1 */
+  --de-accent-ink: #A5B4FC; /* indigo-300: accent-as-TEXT in dark, bright on navy */
+  --de-grad:    linear-gradient(135deg, #6366F1 0%, #818CF8 100%); /* brighter indigo for dark */
   --de-grid:    rgba(255,255,255,.04);
   --de-shadow:    0 6px 24px rgba(0,0,0,.35);
   --de-shadow-lg: 0 12px 32px rgba(0,0,0,.45);
@@ -457,8 +457,8 @@ html[data-debrowser-redesign="1"] body {
   color: var(--de-text-1);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-image:
-    radial-gradient(800px 500px at 12% -10%, rgba(94,230,214,.10), transparent 60%),
-    radial-gradient(900px 600px at 110% 110%, rgba(167,139,250,.12), transparent 60%),
+    radial-gradient(800px 500px at 12% -10%, rgba(99,102,241,.10), transparent 60%),
+    radial-gradient(900px 600px at 110% 110%, rgba(79,70,229,.10), transparent 60%),
     linear-gradient(var(--de-grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--de-grid) 1px, transparent 1px);
   background-size: auto, auto, 56px 56px, 56px 56px;
@@ -608,14 +608,14 @@ html[data-debrowser-redesign="1"] .btn-success {
   background: var(--de-grad) !important;
   color: var(--de-ink-on-accent) !important;
   border: 0 !important;
-  box-shadow: 0 4px 14px rgba(94,230,214,.18);
+  box-shadow: 0 4px 14px rgba(79,70,229,.22);
 }
 html[data-debrowser-redesign="1"] .btn-primary:hover,
 html[data-debrowser-redesign="1"] .btn-success:hover {
   filter: brightness(1.05);
   color: var(--de-ink-on-accent) !important;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(94,230,214,.24);   /* deeper than base shadow above */
+  box-shadow: 0 6px 18px rgba(79,70,229,.30);   /* deeper than base shadow above */
 }
 html[data-debrowser-redesign="1"] .btn-primary:active,
 html[data-debrowser-redesign="1"] .btn-success:active {
@@ -779,9 +779,15 @@ html[data-debrowser-redesign="1"] .selectize-input.focus {
   outline-offset: -1px;
   border-color: var(--de-cyan) !important;
 }
-html[data-debrowser-redesign="1"] .selectize-dropdown {
+/* Theme-consistent dropdown: solid on BOTH the outer popup and the inner
+   content div (selectize paints the visible surface on the inner one), so
+   it matches the app theme instead of the old forced-white popup. */
+html[data-debrowser-redesign="1"] .selectize-dropdown,
+html[data-debrowser-redesign="1"] .selectize-dropdown-content {
   background: var(--de-bg-1) !important;
   color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .selectize-dropdown {
   border: 1px solid var(--de-border-strong) !important;
   border-radius: var(--de-r-sm) !important;
   box-shadow: var(--de-shadow-lg) !important;
@@ -793,11 +799,6 @@ html[data-debrowser-redesign="1"] .selectize-dropdown .option.active,
 html[data-debrowser-redesign="1"] .selectize-dropdown .option:hover {
   background: var(--de-bg-3) !important;
   color: var(--de-text-1) !important;
-}
-/* Restrained slide (T7): nudge only the hovered row, not the keyboard-active
-   one (.option.active), so arrow-key navigation doesn't jitter the list. */
-html[data-debrowser-redesign="1"] .selectize-dropdown .option:hover {
-  transform: translateX(2px);
 }
 html[data-debrowser-redesign="1"] .selectize-input > .item {
   background: var(--de-bg-3) !important;
@@ -872,60 +873,6 @@ html[data-debrowser-redesign="1"] .selectize-dropdown .option.selected::after {
    Our modals sit at 2055 (see further below), so we go to 2080. */
 .selectize-dropdown {
   z-index: 2080 !important;
-}
-
-/* "Standard dropdown" appearance for every selectize popup, in every
-   theme: white panel, dark text, slate border, subtle drop shadow,
-   light gray hover. Identical to how native browser <select> dropdowns
-   render. Earlier attempts to theme this dark in redesign mode created
-   a mixed appearance (active option light, idle options dark navy) so
-   we deliberately keep dropdowns LIGHT even when the surrounding app
-   chrome is dark -- this matches platform conventions for popovers.
-
-   Set the background on BOTH the outer `.selectize-dropdown` AND the
-   inner `.selectize-dropdown-content` because selectize paints the
-   visible surface on the inner div; styling only the outer leaves
-   options showing through. Use `background` (not just background-color)
-   so any inherited background-image gets cleared. */
-.selectize-dropdown,
-.selectize-dropdown.form-control,
-.selectize-dropdown.form-select,
-.selectize-dropdown-content {
-  background: #FFFFFF !important;
-  background-color: #FFFFFF !important;
-  background-image: none !important;
-  color: #0f172a !important;
-  opacity: 1 !important;
-}
-.selectize-dropdown {
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
-}
-.selectize-dropdown .option {
-  color: #0f172a !important;
-}
-
-/* Hover + selected option states. Light cyan-tint hover that reads
-   on a white background. */
-.selectize-dropdown .option.active,
-.selectize-dropdown .option:hover {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
-}
-.selectize-dropdown .option.selected {
-  background-color: rgba(20, 184, 166, 0.10) !important;
-  color: #0f172a !important;
-  font-weight: 600;
-}
-.selectize-dropdown .option.selected.active {
-  background-color: rgba(20, 184, 166, 0.18) !important;
-}
-.selectize-dropdown .option.selected::after {
-  content: "\2713";
-  float: right;
-  color: #14b8a6;
-  font-weight: 700;
-  margin-left: 8px;
 }
 
 /* Checkboxes & radios */

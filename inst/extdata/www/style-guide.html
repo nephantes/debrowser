@@ -152,6 +152,60 @@
       <p class="sg-note">Focus any control with the keyboard for the <code>:focus-visible</code> accent-ink ring (§5 T1). Live app renders <code>selectize</code>, <code>DT</code> and <code>ion-rangeslider</code> via their JS libraries.</p>
     </section>
 
+    <!-- DROPDOWNS & PAGINATION -->
+    <section class="sg-section">
+      <h2>Dropdowns &amp; pagination</h2>
+      <div class="sg-row" style="align-items:flex-start; gap:24px">
+        <div style="min-width:190px">
+          <label class="form-label">Native select</label>
+          <select class="form-select"><option>DESeq2</option><option>EdgeR</option><option>Limma</option></select>
+        </div>
+        <div style="min-width:210px">
+          <label class="form-label">Selectize (single)</label>
+          <div class="selectize-control single">
+            <div class="selectize-input items full has-options has-items"><div class="item" data-value="DESeq2">DESeq2</div></div>
+          </div>
+        </div>
+        <div style="min-width:260px">
+          <label class="form-label">Selectize (multi)</label>
+          <div class="selectize-control multi">
+            <div class="selectize-input items has-items">
+              <div class="item">sample_01<a href="javascript:void 0" class="remove">&times;</a></div>
+              <div class="item">sample_02<a href="javascript:void 0" class="remove">&times;</a></div>
+            </div>
+          </div>
+        </div>
+        <div style="min-width:210px">
+          <label class="form-label">Open menu</label>
+          <div class="selectize-control single" style="position:relative">
+            <div class="selectize-dropdown single" style="display:block; position:static; width:100%">
+              <div class="selectize-dropdown-content">
+                <div class="option selected" data-value="DESeq2">DESeq2</div>
+                <div class="option active" data-value="EdgeR">EdgeR</div>
+                <div class="option" data-value="Limma">Limma</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dataTables_wrapper" style="margin-top:22px">
+        <div class="dataTables_length" style="margin-bottom:12px">
+          <label>Show <select class="form-select"><option>10</option><option>25</option><option>50</option></select> entries</label>
+        </div>
+        <div class="dataTables_paginate">
+          <ul class="pagination">
+            <li class="page-item previous disabled"><a class="page-link" href="javascript:void 0">Previous</a></li>
+            <li class="page-item active"><a class="page-link" href="javascript:void 0">1</a></li>
+            <li class="page-item"><a class="page-link" href="javascript:void 0">2</a></li>
+            <li class="page-item"><a class="page-link" href="javascript:void 0">3</a></li>
+            <li class="page-item"><a class="page-link" href="javascript:void 0">4</a></li>
+            <li class="page-item next"><a class="page-link" href="javascript:void 0">Next</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="sg-note">Selectize single/multi + open menu, native select, and DT pagination + length.</p>
+    </section>
+
     <!-- WIZARD PILLS -->
     <section class="sg-section">
       <h2>Wizard step list</h2>

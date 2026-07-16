@@ -28,12 +28,12 @@ paste a literal into a component block.
 
 | Token | Light | Dark | Use |
 |-------|-------|------|-----|
-| `--de-cyan` | `#5EE6D6` | `#5EE6D6` | primary accent (fill) |
-| `--de-violet` | `#A78BFA` | `#A78BFA` | secondary accent (fill) |
-| `--de-blue` / `--de-mint` / `--de-pink` | `#60A5FA` / `#3CB6A0` / `#FF7AA2` | (same) | accent palette (fill) |
-| `--de-grad` | cyan → violet, 135° | (same) | primary button / chip / progress fill |
-| `--de-accent-ink` | `#0E7490` | `#5EE6D6` | **accent as TEXT** (WCAG-safe; never use `--de-cyan` for text) |
-| `--de-ink-on-accent` | `#0B1020` | `#0B1020` | text/icon placed **on** an accent fill |
+| `--de-cyan` | `#6366F1` | `#6366F1` | primary accent (fill) — **indigo** (Clinical Indigo direction) |
+| `--de-violet` | `#A78BFA` | `#A78BFA` | secondary/categorical accent (fill) |
+| `--de-blue` / `--de-mint` / `--de-pink` | `#60A5FA` / `#3CB6A0` / `#FF7AA2` | (same) | categorical palette (fill) |
+| `--de-grad` | indigo `#4F46E5 → #6366F1`, 135° | `#6366F1 → #818CF8` | primary button / chip / progress fill (monochromatic — reads solid) |
+| `--de-accent-ink` | `#4338CA` | `#A5B4FC` | **accent as TEXT** (WCAG-safe; never use `--de-cyan` for text) |
+| `--de-ink-on-accent` | `#FFFFFF` | `#FFFFFF` | text/icon placed **on** an accent fill (white — the indigo accent is dark) |
 | `--de-bg-0` | `#F7F8FC` | `#0B1020` | page canvas |
 | `--de-bg-1` | `#FFFFFF` | `#0F1530` | card / raised surface |
 | `--de-bg-2` / `--de-bg-3` | `#FFFFFF` / `#F1F4FB` | `#141B3A` / `#1A2147` | nested / hover surfaces |
