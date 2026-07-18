@@ -4,6 +4,26 @@ For releases prior to 1.31, see the legacy `NEWS` file.
 
 ## debrowser 1.31.2 (in development)
 
+### Documentation overhaul
+
+* **Rewrote the user-guide vignette** (`vignettes/DEBrowser.Rmd`) around the
+  modernized six-step Data Prep wizard and the current top-level tabs (Main
+  Plots, QC Plots, Concordance, Enrichment, Tables). Added coverage for the
+  features the old guide missed — batch correction QC, cross-contrast
+  concordance, GO/KEGG + GSEA enrichment, reproducibility exports (R / R
+  Markdown / Jupyter / methods paragraph), bookmarking & sharing, theming and
+  keyboard shortcuts, and the optional AI interpretation panel. The vignette now
+  renders with a Bootstrap 5 / bslib theme tinted to the app's "Clinical Indigo"
+  accent.
+* **Rewrote `README.md`** to mirror the modern walkthrough at a shorter
+  altitude.
+* **Replaced every screenshot** with fresh captures of the current UI, taken
+  from the live app and stored in the repo (`man/figures/`, `vignettes/figures/`)
+  instead of hot-linked from an external host.
+* **Added a pkgdown site** (`_pkgdown.yml`, `pkgdown/extra.css`) themed to match
+  the app, with the reference index grouped by function family. The generated
+  site builds into the git-ignored `docs/site/`.
+
 ### UI design-system consolidation (docs/design plans §1–§6)
 
 * **Grid/layout:** collapsed four grid idioms to one primitive

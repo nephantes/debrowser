@@ -6,8 +6,12 @@ manifest.json
 .positai
 .superpowers/
 docs/superpowers/
+docs/site/
 vignettes/*.html
 vignettes/*_files/
+# knitr byproducts of the .Rmd vignette (regenerated at build)
+vignettes/DEBrowser.R
+vignettes/DEBrowser.md
 .env
 .env.*
 !.env.example

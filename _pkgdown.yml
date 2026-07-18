@@ -1,0 +1,136 @@
+url: https://umms-biocore.github.io/debrowser
+
+# Build into a subdirectory so the generated site never collides with the
+# hand-written docs/design/ and docs/superpowers/ content. The built site is
+# not committed (see .gitignore); only this config + pkgdown/ assets are.
+destination: docs/site
+
+template:
+  bootstrap: 5
+  bslib:
+    # "Clinical Indigo" — matches the DEBrowser app theme.
+    primary: "#6366F1"
+    link-color: "#4338CA"
+    border-radius: "0.5rem"
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter"}
+    code_font: {google: "JetBrains Mono"}
+
+home:
+  title: DEBrowser — interactive differential expression analysis
+  description: >
+    Point-and-click RNA-Seq differential expression with DESeq2, edgeR, and
+    limma: guided pipeline, interactive plots, QC, enrichment, and
+    reproducibility exports.
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/DEBrowser.html
+    news:
+      text: Changelog
+      href: news/index.html
+
+articles:
+  - title: User guide
+    navbar: ~
+    contents:
+      - DEBrowser
+
+reference:
+  - title: "Launching DEBrowser"
+    desc: "Start the app and its top-level UI/server."
+    contents:
+      - startDEBrowser
+      - startHeatmap
+      - deUI
+      - deServer
+
+  - title: "Differential expression"
+    desc: "Run DESeq2 / edgeR / limma and assemble results."
+    contents:
+      - run_de
+      - run_deseq2
+      - run_edger
+      - run_limma
+      - runDE
+      - runDESeq2
+      - runEdgeR
+      - runLimma
+      - prepDataContainer
+      - apply_de_filters
+
+  - title: "Normalization, filtering & batch correction"
+    contents:
+      - normalize_counts
+      - getNormalizedMatrix
+      - normalizationMethods
+      - filter_low_counts
+      - applyFilters
+      - apply_batch_correction
+      - correctCombat
+      - correctHarman
+      - setBatch
+      - batchMethod
+
+  - title: "Plots"
+    desc: "Main, heatmap, and distribution plots."
+    contents:
+      - mainScatterNew
+      - debrowsermainplot
+      - debrowserheatmap
+      - runHeatmap
+      - all2all
+      - debrowserall2all
+      - debrowserhistogram
+      - debrowserdensityplot
+      - plot_pca
+      - run_pca
+
+  - title: "Quality control"
+    contents:
+      - starts_with("debrowserqc")
+      - debrowserpcaplot
+      - debrowserIQRplot
+      - sample_distance_matrix
+      - detection_rate
+      - flag_outliers_2sd
+
+  - title: "Enrichment (GO / KEGG / GSEA)"
+    contents:
+      - run_gsea
+      - getGSEA
+      - getEnrichGO
+      - getEnrichKEGG
+      - getEnrichDO
+      - getGOPlots
+      - msigdb_pathways
+      - gmt_to_pathways
+      - enrichmentServer
+      - enrichmentUI
+
+  - title: "AI interpretation"
+    contents:
+      - ai_interpret
+      - ai_chat
+      - aiInterpretServer
+      - aiInterpretUI
+      - aiSettingsServer
+      - aiSettingsUI
+      - list_models
+
+  - title: "Reproducibility & export"
+    contents:
+      - methods_paragraph
+      - exportMenuServer
+      - exportMenuUI
+      - exportMenuItems
+
+  - title: "Complete function reference"
+    desc: "Every exported function, including Shiny module UIs/servers and helpers."
+    contents:
+      - matches(".")
