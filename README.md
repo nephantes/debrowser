@@ -4,6 +4,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.1186/zenodo.s12864-018-5362-x.svg)](https://doi.org/10.1186/s12864-018-5362-x)
 [![Bioconductor](https://img.shields.io/badge/Bioconductor-debrowser-blue.svg)](https://bioconductor.org/packages/debrowser)
+[![Documentation](https://img.shields.io/badge/docs-readthedocs-blue.svg)](https://debrowser.readthedocs.io)
 
 DEBrowser turns RNA-Seq differential expression analysis into an interactive,
 point-and-click workflow. It wraps three established Bioconductor engines —
@@ -12,7 +13,11 @@ app, so changing a cutoff, a normalization method, or a comparison re-draws
 every plot and table in real time. No code required to explore your results;
 full reproducibility exports when you're done.
 
-![DEBrowser opens on the Data Prep wizard](man/figures/debrowser-upload.png)
+> **📖 Full user guide:** the complete, screenshot-by-screenshot walkthrough
+> lives at **[debrowser.readthedocs.io](https://debrowser.readthedocs.io)**.
+> It is hosted outside the package to keep the package itself small.
+
+![DEBrowser opens on the Data Prep wizard](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-upload.png)
 
 ## Highlights
 
@@ -65,7 +70,7 @@ batches. DEBrowser accepts `.csv` / `.tsv` / `.txt` / `.csv.gz`. On upload it
 shows a summary — samples, genes, conditions — plus a preview and the
 sample-design table.
 
-![Upload summary](man/figures/debrowser-summary.png)
+![Upload summary](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-summary.png)
 
 > DESeq2 needs **un-normalized** counts (it models library size internally).
 > Use pre-normalized values only with edgeR or limma.
@@ -75,7 +80,7 @@ sample-design table.
 Trim low-signal features with **Max**, **Mean**, or **CPM** filtering. Row
 counts before and after are shown side by side, with per-sample histograms.
 
-![Low-count filtering](man/figures/debrowser-filter.png)
+![Low-count filtering](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-filter.png)
 
 ### 3. Correct batch effects (optional)
 
@@ -83,14 +88,14 @@ Choose a normalization (MRN, TMM, RLE, upperquartile) and a correction method
 (ComBat, ComBat-Seq, Harman). Inline PCA / IQR / Density plots — *Before* vs.
 *After* — confirm samples cluster by biology, not batch.
 
-![Batch-effect correction](man/figures/debrowser-batch.png)
+![Batch-effect correction](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-batch.png)
 
 ### 4. Choose comparisons
 
 Define one or more contrasts by assigning samples to each side. Each becomes
 its own DE result set you can switch between.
 
-![Comparison selection](man/figures/debrowser-comparison.png)
+![Comparison selection](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-comparison.png)
 
 ### 5. Run DE and explore
 
@@ -98,12 +103,12 @@ its own DE result set you can switch between.
 **Main Plots**. Genes are colored Up (red), Down (blue), NS (grey) per your
 `padj` and log2-fold-change cutoffs; every change is instant.
 
-![Main Plots scatter](man/figures/debrowser-main-plots.png)
+![Main Plots scatter](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-main-plots.png)
 
 Switch to the **Volcano** or **MA** view with the same controls; lasso- or
 box-select a region to spawn a linked heatmap of just those genes.
 
-![Volcano view](man/figures/debrowser-volcano.png)
+![Volcano view](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-volcano.png)
 
 ## Beyond DE
 
@@ -122,7 +127,7 @@ The **Export** menu turns your interactive session into an **R script**,
 your manuscript. The **Bookmark** button captures the entire analysis state
 behind a stable, shareable URL.
 
-![Bookmark & share dialog](man/figures/debrowser-bookmark.png)
+![Bookmark & share dialog](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-bookmark.png)
 
 ## AI interpretation (optional)
 
@@ -132,7 +137,7 @@ provider (**Anthropic**, **OpenAI**, or local **Ollama**). Per-call privacy
 modes control what leaves your machine; API keys are stored in your OS keychain
 via `keyring`, never in plaintext.
 
-![AI Settings dialog](man/figures/debrowser-ai.png)
+![AI Settings dialog](https://raw.githubusercontent.com/UMMS-Biocore/debrowser-docs/master/docs/debrowser_pics2/debrowser-ai.png)
 
 Install the AI extras once: `install.packages(c("ellmer", "whisker", "keyring"))`.
 
@@ -150,7 +155,10 @@ Full rationale: [`docs/design/`](docs/design/).
 
 ## Documentation
 
-- User guide vignette: `vignette("DEBrowser")` or the
+- **Full user guide** (illustrated, with worked examples):
+  [debrowser.readthedocs.io](https://debrowser.readthedocs.io) — source in the
+  [debrowser-docs](https://github.com/UMMS-Biocore/debrowser-docs) repo.
+- Quick reference: `vignette("DEBrowser")`, or the
   [Bioconductor page](https://bioconductor.org/packages/debrowser).
 - Design system & contributor notes: [`DESIGN.md`](DESIGN.md),
   [`docs/design/`](docs/design/).

@@ -9,20 +9,19 @@ For releases prior to 1.31, see the legacy `NEWS` file.
 * **Rewrote the user-guide vignette** (`vignettes/DEBrowser.Rmd`) around the
   modernized six-step Data Prep wizard and the current top-level tabs (Main
   Plots, QC Plots, Concordance, Enrichment, Tables). Added coverage for the
-  features the old guide missed — batch correction QC, cross-contrast
+  features the old guide missed — batch-correction QC, cross-contrast
   concordance, GO/KEGG + GSEA enrichment, reproducibility exports (R / R
   Markdown / Jupyter / methods paragraph), bookmarking & sharing, theming and
-  keyboard shortcuts, and the optional AI interpretation panel. The vignette now
-  renders with a Bootstrap 5 / bslib theme tinted to the app's "Clinical Indigo"
-  accent.
+  keyboard shortcuts, and the optional AI interpretation panel.
+* **Kept the package small.** The full illustrated user guide — with all
+  screenshots and worked examples — lives *outside* the package at
+  <https://debrowser.readthedocs.io> (the
+  `UMMS-Biocore/debrowser-docs` repo, served by Read the Docs). The vignette is a
+  concise, image-free reference that links there, and the README references the
+  same externally hosted screenshots, so no images are bundled in the package
+  tarball.
 * **Rewrote `README.md`** to mirror the modern walkthrough at a shorter
-  altitude.
-* **Replaced every screenshot** with fresh captures of the current UI, taken
-  from the live app and stored in the repo (`man/figures/`, `vignettes/figures/`)
-  instead of hot-linked from an external host.
-* **Added a pkgdown site** (`_pkgdown.yml`, `pkgdown/extra.css`) themed to match
-  the app, with the reference index grouped by function family. The generated
-  site builds into the git-ignored `docs/site/`.
+  altitude and point to the online guide.
 
 ### UI design-system consolidation (docs/design plans §1–§6)
 

@@ -96,7 +96,7 @@ Suggests: testthat (>= 3.2.0),
     xml2
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-URL: https://github.com/UMMS-Biocore/debrowser, https://umms-biocore.github.io/debrowser
+URL: https://github.com/UMMS-Biocore/debrowser, https://debrowser.readthedocs.io
 BugReports: https://github.com/UMMS-Biocore/debrowser/issues/new
 biocViews:
     Sequencing,

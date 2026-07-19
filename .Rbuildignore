@@ -1,8 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^docs$
-^_pkgdown\.yml$
-^pkgdown$
 ^\.github$
 ^\.lintr$
 ^\.aidrift$
