@@ -9,7 +9,9 @@ test_that("panel-builder helpers return shiny tags without error", {
 
   expect_silent(getMain <- getMainPanel())
   expect_true(exists("getMain"))
-  expect_equal(getMain[[1]][[1]], "div")
+  # getMainPanel() now returns a bslib::layout_columns wrapper (bslib migration),
+  # not a bare <div>.
+  expect_equal(getMain[[1]][[1]], "bslib-layout-columns")
 
   expect_silent(getStart <- getStartupMsg())
   expect_true(exists("getStart"))

@@ -125,10 +125,12 @@ test_that("prepDataContainer integration: stub debrowserdeanalysis verifies loop
     },
     .package = "debrowser"
   )
-  # withProgress requires a Shiny session; stub to bare expression evaluation.
+  # withProgress/setProgress require a Shiny session; stub to bare expression
+  # evaluation (the DE run reports stepwise progress via setProgress).
   testthat::local_mocked_bindings(
     withProgress = function(expr, ...) force(expr),
     incProgress  = function(...) invisible(NULL),
+    setProgress  = function(...) invisible(NULL),
     .package = "shiny"
   )
 
