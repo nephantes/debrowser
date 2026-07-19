@@ -19,9 +19,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  echo = TRUE, eval = FALSE, collapse = TRUE, comment = "#>"
-)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
 > **📖 Full illustrated user guide.** This vignette is a concise reference. The
@@ -61,7 +59,7 @@ chrome.
 
 Install DEBrowser from Bioconductor and launch it:
 
-```{r install}
+```r
 # 1. Install DEBrowser and its dependencies
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
@@ -82,6 +80,25 @@ The fastest way to see DEBrowser in action is the **Quick Start** step: it
 explains what each stage does and lets you load a bundled demo (Vernia et al.,
 2014) with one click, so you can walk the whole pipeline before bringing your
 own data.
+
+# Scriptable analytic core
+
+DEBrowser's normalization, filtering, and DE steps are also available as pure
+functions you can call directly — handy for scripting or reproducing an
+interactive analysis. For example, median-ratio-normalize the bundled demo
+counts:
+
+```{r demo, message=FALSE, warning=FALSE}
+library(debrowser)
+load(system.file("extdata", "demo", "demodata.Rda", package = "debrowser"))
+
+norm <- getNormalizedMatrix(demodata, method = "MRN")
+round(head(norm[, seq_len(4)]), 1)
+```
+
+The same building blocks (`filter_low_counts()`, `run_deseq2()`, `run_edger()`,
+`run_limma()`, `run_de()`) power the interactive app and can be composed in a
+script.
 
 # The Data Prep pipeline
 
@@ -228,7 +245,7 @@ default** — no network calls happen until you enable it and configure a provid
 what leaves your machine; API keys are stored encrypted in your OS keychain via
 `keyring`, never in plaintext. Install the extras once:
 
-```{r ai-pkgs}
+```r
 install.packages(c("ellmer", "whisker", "keyring"))
 ```
 

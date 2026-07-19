@@ -24,3 +24,8 @@
 ^\.gitignore$
 ^.*\.fuse_hidden.*$
 ^R/\.fuse_hidden.*$
+^shiny_bookmarks$
+^.*\.tar\.gz$
+^\.Rhistory$
+^Rplots\.pdf$
+^Rplots.*\.pdf$
