@@ -1020,7 +1020,11 @@ deServer <- function(input, output, session) {
             "cs",
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
-          choicecounter$nc <- sel()$n_comparisons()
+          # condSelectServer() returns NULL when the batch-corrected count
+          # is NULL (module never submitted). Guard before calling
+          # n_comparisons() or NULL$n_comparisons() -> NULL() throws
+          # "attempt to apply non-function" (mirrors the observe below).
+          if (!is.null(sel())) choicecounter$nc <- sel()$n_comparisons()
           # B2a: skipping past Filter+Batch -- mark them done/skipped.
           if (progress$filter != "done") progress$filter <- "done"
           if (progress$batch  == "pending" || progress$batch == "locked") {
@@ -1029,12 +1033,17 @@ deServer <- function(input, output, session) {
           progress$condselect <- "pending"
         })
         observeEvent(input$goDE, {
+          # Match goDEFromFilter: ensure batch() is populated so
+          # batch()$BatchEffect() isn't NULL()'d when this fires without a
+          # batch module (e.g. reaching DE on a null batch).
+          if (is.null(batch())) batch(setBatch(filtd()))
           bslib::nav_select("DataPrep", "CondSelect", session = session)
           sel(condSelectServer(
             "cs",
             batch()$BatchEffect()$count, batch()$BatchEffect()$meta
           ))
-          choicecounter$nc <- sel()$n_comparisons()
+          # Guard the NULL return (see goDEFromFilter above).
+          if (!is.null(sel())) choicecounter$nc <- sel()$n_comparisons()
           # B2a: condselect step entered.
           progress$condselect <- "pending"
         })
