@@ -2,7 +2,7 @@
 
 For releases prior to 1.31, see the legacy `NEWS` file.
 
-## debrowser 1.31.3 (in development)
+## debrowser 1.41.1 (in development)
 
 ### Documentation overhaul
 
