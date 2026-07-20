@@ -28,7 +28,6 @@ License: GPL-3 + file LICENSE
 LazyData: true
 Imports:
     shiny,
-    fontawesome,
     jsonlite,
     shinyjs,
     shinyBS,
@@ -36,7 +35,6 @@ Imports:
     gplots,
     DT,
     ggplot2,
-    RColorBrewer,
     annotate,
     AnnotationDbi,
     DESeq2,

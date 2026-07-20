@@ -22,6 +22,9 @@ For releases prior to 1.31, see the legacy `NEWS` file.
   tarball.
 * **Rewrote `README.md`** to mirror the modern walkthrough at a shorter
   altitude and point to the online guide.
+* Removed the unused `fontawesome` and `RColorBrewer` entries from `Imports`
+  (icons come via `shiny::icon()`; no `brewer.pal`/`RColorBrewer::` usage),
+  clearing the R CMD check "declared Imports should be used" note.
 
 ### UI design-system consolidation (docs/design plans §1–§6)
 

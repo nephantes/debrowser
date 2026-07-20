@@ -42,7 +42,6 @@
 #' @import org.Hs.eg.db
 #' @import shinyBS
 #' @import colourpicker
-#' @import RColorBrewer
 #' @import heatmaply
 
 deServer <- function(input, output, session) {
