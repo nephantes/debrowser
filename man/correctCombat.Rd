@@ -22,5 +22,5 @@ data
 Batch effect correction
 }
 \examples{
-    x<-correctCombat ()
+x <- correctCombat()
 }

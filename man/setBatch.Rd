@@ -18,7 +18,7 @@ setBatch
 to skip batch effect correction batch variable set with the filter results
 }
 \examples{
-   
-    x <- setBatch()
+
+x <- setBatch()
 
 }

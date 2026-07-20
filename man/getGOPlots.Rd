@@ -24,5 +24,5 @@ based on user selection.
 \code{getGOPlots}
 }
 \examples{
-    x<- getGOPlots()
+x <- getGOPlots()
 }

@@ -9,8 +9,8 @@ sidebar <- dashboardSidebar(  sidebarMenu(id="DataPrep",
 
 body <- dashboardBody(
   tabItems(
-    tabItem(tabName="CondSelect", 
-    condSelectUI(),
+    tabItem(tabName="CondSelect",
+    condSelectUI("cs"),
     column(12,
            verbatimTextOutput("denum")
     ))
@@ -21,11 +21,9 @@ ui <- dashboardPage(header, sidebar, body, skin = "blue")
 server <- function(input, output, session) {
   load(system.file("extdata", "demo", "demodata.Rda",
                    package = "debrowser"))
-  observe({
-     sel <- debrowsercondselect(input, output, session, demodata, metadatatable)
-     output$denum <- renderPrint({
-         head( sel$cc())
-     })
+  sel <- debrowsercondselectServer("cs", demodata, metadatatable)
+  output$denum <- renderPrint({
+    head(sel$cc())
   })
 }
 

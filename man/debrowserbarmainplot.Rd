@@ -5,9 +5,7 @@
 \title{debrowserbarmainplot}
 \usage{
 debrowserbarmainplot(
-  input,
-  output,
-  session,
+  id,
   data = NULL,
   cols = NULL,
   conds = NULL,
@@ -16,11 +14,7 @@ debrowserbarmainplot(
 )
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{data, }{a matrix that includes expression values}
 
@@ -36,10 +30,12 @@ debrowserbarmainplot(
 density plot
 }
 \description{
-Module for a bar plot that can be used in data prep, main plots 
+Module for a bar plot that can be used in data prep, main plots
 low count removal modules or any desired module
 }
 \examples{
-    x <- debrowserbarmainplot()
+\donttest{
+x <- debrowserbarmainplot("bar")
+}
 
 }

@@ -19,5 +19,5 @@ Gathers the cut off selection for DE analysis
 \code{getCutOffSelection}
 }
 \examples{
-    x <- getCutOffSelection()
+x <- getCutOffSelection()
 }

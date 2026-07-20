@@ -24,6 +24,6 @@ all2all correlation plots
 Prepares the correlations for the all2all plot.
 }
 \examples{
-    panel.cor(c(1,2,3), c(4,5,6))
+panel.cor(c(1, 2, 3), c(4, 5, 6))
 
 }

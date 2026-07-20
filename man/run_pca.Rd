@@ -22,9 +22,11 @@ pca list
 Runs PCA on the selected dataset.
 }
 \examples{
-    load(system.file("extdata", "demo", "demodata.Rda", 
-        package="debrowser"))
-    pca_data<-run_pca(getNormalizedMatrix(
-        demodata[rowSums(demodata[,1:6])>10,1:6]))
+load(system.file("extdata", "demo", "demodata.Rda",
+  package = "debrowser"
+))
+pca_data <- run_pca(getNormalizedMatrix(
+  demodata[rowSums(demodata[, seq_len(6L)]) > 10, seq_len(6L)]
+))
 
 }

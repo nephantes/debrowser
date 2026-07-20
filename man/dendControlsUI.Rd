@@ -21,5 +21,5 @@ get distance metric parameters
 \code{dendControlsUI}
 }
 \examples{
-    x <- dendControlsUI("heatmap")
+x <- dendControlsUI("heatmap")
 }

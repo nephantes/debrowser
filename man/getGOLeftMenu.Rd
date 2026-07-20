@@ -16,5 +16,5 @@ Generates the GO Left menu to be displayed within the DEBrowser.
 \code{getGOLeftMenu}
 }
 \examples{
-    x <- getGOLeftMenu()
+x <- getGOLeftMenu()
 }

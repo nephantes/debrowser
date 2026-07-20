@@ -10,7 +10,9 @@ getAll2AllPlotUI(id)
 \item{id, }{namespace id}
 }
 \value{
-the panel for all2all plots;
+A `shiny::uiOutput` placeholder under namespace `id` that
+  the all2all module's server fills with the all-pairs scatter
+  matrix plot.
 }
 \description{
 all2all plots UI.
@@ -19,6 +21,6 @@ all2all plots UI.
 \code{getAll2AllPlotUI}
 }
 \examples{
-    x <- getAll2AllPlotUI("bar")
+x <- getAll2AllPlotUI("bar")
 
 }

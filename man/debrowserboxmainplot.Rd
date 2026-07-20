@@ -5,9 +5,7 @@
 \title{debrowserboxmainplot}
 \usage{
 debrowserboxmainplot(
-  input = NULL,
-  output = NULL,
-  session = NULL,
+  id,
   data = NULL,
   cols = NULL,
   conds = NULL,
@@ -16,11 +14,7 @@ debrowserboxmainplot(
 )
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{data, }{a matrix that includes expression values}
 
@@ -36,10 +30,12 @@ debrowserboxmainplot(
 density plot
 }
 \description{
-Module for a box plot that can be used in DEanalysis main part and 
+Module for a box plot that can be used in DEanalysis main part and
 used heatmaps
 }
 \examples{
-    x <- debrowserboxmainplot()
+\donttest{
+x <- debrowserboxmainplot("box")
+}
 
 }

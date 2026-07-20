@@ -19,6 +19,6 @@ Get the organism Box.
 makes the organism box
 }
 \examples{
-    x <- getOrganismBox()
+x <- getOrganismBox()
 
 }

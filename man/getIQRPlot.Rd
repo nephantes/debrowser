@@ -13,10 +13,14 @@ getIQRPlot(data = NULL, input = NULL, title = "")
 
 \item{title, }{title}
 }
+\value{
+A `plotly` IQR boxplot showing the per-sample inter-quartile
+  spread of the input data.
+}
 \description{
 Makes IQR boxplot plot
 }
 \examples{
-    getIQRPlot()
+getIQRPlot()
 
 }

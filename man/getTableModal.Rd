@@ -15,6 +15,6 @@ getTableModal
 prepares table modal for KEGG
 }
 \examples{
-    x<- getTableModal()
+x <- getTableModal()
 
 }

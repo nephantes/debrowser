@@ -4,19 +4,10 @@
 \alias{debrowserdataload}
 \title{debrowserdataload}
 \usage{
-debrowserdataload(
-  input = NULL,
-  output = NULL,
-  session = NULL,
-  nextpagebutton = NULL
-)
+debrowserdataload(id, nextpagebutton = NULL)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{nextpagebutton, }{the name of the next page button after loading the data}
 }
@@ -29,6 +20,8 @@ panel
 Module to load count data and metadata
 }
 \examples{
-    x <- debrowserdataload()
+\donttest{
+x <- debrowserdataload("load")
+}
 
 }

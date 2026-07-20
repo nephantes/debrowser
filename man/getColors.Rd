@@ -16,6 +16,6 @@ colors
 get colors for the domains
 }
 \examples{
-    x<-getColors()
+x <- getColors()
 
 }

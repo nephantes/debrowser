@@ -24,5 +24,5 @@ GO Term plots.
 \code{getEnrichKEGG}
 }
 \examples{
-    x <- getEnrichKEGG()
+x <- getEnrichKEGG()
 }

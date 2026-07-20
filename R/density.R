@@ -1,13 +1,13 @@
 #' getDensityPlotUI
 #'
-#' Density plot UI.  
+#' Density plot UI.
 #'
 #' @param id, namespace id
 #' @note \code{getDensityPlotUI}
 #' @return the panel for Density plots;
 #'
 #' @examples
-#'     x <- getDensityPlotUI("density")
+#' x <- getDensityPlotUI("density")
 #'
 #' @export
 #'
@@ -18,31 +18,38 @@ getDensityPlotUI <- function(id) {
 
 #' debrowserdensityplot
 #'
-#' Module for a density plot that can be used in data prep and 
+#' Module for a density plot that can be used in data prep and
 #' low count removal modules
-#' 
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session 
+#'
+#' @param id, namespace id
 #' @param data, a matrix that includes expression values
-#' @return density plot 
+#' @return density plot
 #' @export
 #'
 #' @examples
-#'     x <- debrowserdensityplot()
+#' \donttest{
+#' x <- debrowserdensityplot("density")
+#' }
 #'
-debrowserdensityplot <- function(input = NULL, output = NULL, session = NULL, data = NULL) {
-    if(is.null(data)) return(NULL)
+debrowserdensityplot <- function(id, data = NULL) {
+  if (is.null(data)) {
+    return(NULL)
+  }
+  moduleServer(id, function(input, output, session) {
     output$Density <- renderPlotly({
+      withProgress(message = "Drawing density plot", style = "notification", value = 0.1, {
         getDensityPlot(data, input)
+      })
     })
     output$DensityUI <- renderUI({
-    shinydashboard::box(
-        collapsible = TRUE, title = session$ns("plot"), status = "primary", 
-        solidHeader = TRUE, width = NULL,
-        draggable = TRUE,  plotlyOutput(session$ns("Density"),
-             width = input$width, height=input$height))
+      de_card(
+        title = "Plot",
+        plotlyOutput(session$ns("Density"),
+          width = input$width, height = input$height
+        )
+      )
     })
+  })
 }
 
 #' densityPlotControlsUI
@@ -53,13 +60,17 @@ debrowserdensityplot <- function(input = NULL, output = NULL, session = NULL, da
 #' @param id, namespace id
 #' @return returns the left menu
 #' @examples
-#'     x <- densityPlotControlsUI("density")
+#' x <- densityPlotControlsUI("density")
 #' @export
 #'
 densityPlotControlsUI <- function(id) {
   ns <- NS(id)
-  shinydashboard::menuItem(paste0(id, " - Options"),
-      textInput(ns("breaks"), "Breaks", value = "100" )
+  bslib::accordion(
+    open = FALSE,
+    bslib::accordion_panel(
+      paste0(id, " - Options"),
+      textInput(ns("breaks"), "Breaks", value = "100")
+    )
   )
 }
 
@@ -71,31 +82,39 @@ densityPlotControlsUI <- function(id) {
 #' @param input, input
 #' @param title, title
 #'
+#' @return A `plotly` density plot showing the per-sample distributions
+#'   of the input count matrix (one density curve per sample).
 #' @export
 #'
 #' @examples
-#'     getDensityPlot()
+#' getDensityPlot()
 #'
-getDensityPlot <- function(data=NULL, input = NULL, title = ""){
-  if (is.null(data)) return(NULL)
+getDensityPlot <- function(data = NULL, input = NULL, title = "") {
+  if (is.null(data)) {
+    return(NULL)
+  }
   data <- as.data.frame(data)
   cols <- colnames(data)
-  data[, cols] <- apply(data[, cols], 2,
-                        function(x) log10(as.integer(x) + 1))
-  
+  data[, cols] <- apply(
+    data[, cols], 2,
+    function(x) log10(as.integer(x) + 1)
+  )
+
   data <- addID(data)
-  mdata <- melt(as.data.frame(data[,c("ID", cols)]),"ID")
-  colnames(mdata)<-c("ID", "samples", "density")
-  
-  p <- ggplot(data=mdata, aes(x=density)) +
+  mdata <- melt(as.data.frame(data[, c("ID", cols)]), "ID")
+  colnames(mdata) <- c("ID", "samples", "density")
+
+  p <- ggplot(data = mdata, aes(x = density)) +
     geom_density(aes(fill = samples), alpha = 0.5) +
     labs(x = "logcount", y = "Density") +
     theme_minimal()
-  if (!is.null(input$top))
-      p <- p + theme( plot.margin = margin(t = input$top, r =input$right, b =input$bottom, l = input$left, "pt"))
+  if (!is.null(input$top)) {
+    p <- p + theme(plot.margin = margin(t = input$top, r = input$right, b = input$bottom, l = input$left, "pt"))
+  }
   p <- ggplotly(p, width = input$width, height = input$height)
-  if (!is.null(input$svg) && input$svg == TRUE)
+  if (!is.null(input$svg) && input$svg == TRUE) {
     p <- p %>% config(toImageButtonOptions = list(format = "svg"))
+  }
   p$elementId <- NULL
   p
 }

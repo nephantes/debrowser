@@ -1,12 +1,18 @@
 Package: debrowser
 Type: Package
 Title: Interactive Differential Expresion Analysis Browser
-Version: 1.41.0
-Date: 2020-12-07
-Author: Alper Kucukural <alper.kucukural@umassmed.edu>,
-        Onur Yukselen <onur.yukselen@umassmed.edu>,
-        Manuel Garber <manuel.garber@umassmed.edu>
-Maintainer: Alper Kucukural <alper.kucukural@umassmed.edu>
+Version: 1.41.1
+Date: 2026-07-19
+Authors@R: c(
+    person("Alper", "Kucukural",
+           email = "alper.kucukural@umassmed.edu",
+           role = c("aut", "cre")),
+    person("Onur", "Yukselen",
+           email = "onur.yukselen@umassmed.edu",
+           role = "aut"),
+    person("Manuel", "Garber",
+           email = "manuel.garber@umassmed.edu",
+           role = "aut"))
 Description: Bioinformatics platform containing interactive plots and tables
     for differential gene and region expression studies. Allows visualizing
     expression data much more deeply in an interactive and faster way. By
@@ -17,15 +23,16 @@ Description: Bioinformatics platform containing interactive plots and tables
     made on site and the results are shown in various plots such as scatter,
     bar, box, volcano, ma plots and Heatmaps.
 Depends:
-    R (>= 3.5.0),
+    R (>= 4.2.0),
 License: GPL-3 + file LICENSE
 LazyData: true
 Imports:
     shiny,
+    fontawesome,
     jsonlite,
     shinyjs,
-    shinydashboard,
     shinyBS,
+    shinyWidgets,
     gplots,
     DT,
     ggplot2,
@@ -33,7 +40,6 @@ Imports:
     annotate,
     AnnotationDbi,
     DESeq2,
-    DOSE,
     igraph,
     grDevices,
     graphics,
@@ -46,28 +52,51 @@ Imports:
     stringi,
     reshape2,
     org.Hs.eg.db,
-    org.Mm.eg.db,
     limma,
     edgeR,
     clusterProfiler,
     methods,
     sva,
     RCurl,
-    enrichplot,
     colourpicker,
     plotly,
     heatmaply,
+    bslib (>= 0.7.0),
+    htmltools
+RoxygenNote: 8.0.0
+Encoding: UTF-8
+Suggests: testthat (>= 3.2.0),
+    rmarkdown,
+    RSQLite,
+    knitr,
+    digest,
+    shinymanager (>= 1.0.4),
+    shinytest2,
+    chromote,
+    DBI,
     Harman,
     pathview,
+    org.Mm.eg.db,
     apeglm,
-    ashr
-RoxygenNote: 7.2.3
-Encoding: UTF-8
-Suggests: testthat,
-    rmarkdown,
-    knitr
-VignetteBuilder: knitr, rmarkdown
-URL: https://github.com/UMMS-Biocore/debrowser
+    ashr,
+    commonmark,
+    enrichplot,
+    fgsea,
+    ipaddress (>= 1.0),
+    mockery,
+    msigdbr,
+    openssl,
+    UpSetR,
+    DOSE,
+    ellmer (>= 0.1.0),
+    keyring,
+    sodium (>= 1.2),
+    whisker,
+    withr,
+    xml2
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+URL: https://github.com/UMMS-Biocore/debrowser, https://debrowser.readthedocs.io
 BugReports: https://github.com/UMMS-Biocore/debrowser/issues/new
 biocViews:
     Sequencing,

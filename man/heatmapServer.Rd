@@ -23,6 +23,6 @@ Sets up shinyServer to be able to run heatmapServer interactively.
 \code{heatmapServer}
 }
 \examples{
-    heatmapServer
+heatmapServer
 
 }

@@ -32,6 +32,6 @@ getBSTableUI
 prepares a Modal to put a table
 }
 \examples{
-    x<- getBSTableUI()
+x <- getBSTableUI()
 
 }

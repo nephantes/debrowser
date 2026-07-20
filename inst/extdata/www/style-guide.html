@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en" data-debrowser-redesign="1" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DEBrowser — Design System Style Guide</title>
+  <!-- Same CSS environment as the app: Bootstrap 5.3 + Font Awesome 6 + Inter +
+       JetBrains Mono + debrowser.css. CDN substrate matches the shipped legal
+       pages' convention; debrowser.css is loaded locally (same directory).
+       For a fully offline build, vendor the three CDN files into
+       inst/extdata/www/vendor/ and repoint the hrefs. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="debrowser.css">
+  <style>
+    /* guide-only chrome — NOT part of the design system */
+    body { background: var(--de-bg-0); color: var(--de-text-1);
+           font-family: "Inter", system-ui, sans-serif; }
+    .sg-wrap    { max-width: 1120px; margin: 0 auto; padding: 0 32px 96px; }
+    .sg-toolbar { position: sticky; top: 0; z-index: 20; display: flex; gap: 14px;
+                  align-items: center; padding: 16px 0; margin-bottom: 8px;
+                  border-bottom: 1px solid var(--de-border);
+                  background: var(--de-bg-0); }
+    .sg-toolbar .sg-title { font: 800 16px/1 "Inter", sans-serif; letter-spacing: -.01em; }
+    .sg-toolbar .sg-sub   { color: var(--de-text-3); font-size: 12px; }
+    .sg-section { margin: 44px 0; }
+    .sg-section > h2 { font: 700 12px/1 "JetBrains Mono", monospace;
+                       letter-spacing: .14em; text-transform: uppercase;
+                       color: var(--de-text-3); margin: 0 0 18px;
+                       padding-bottom: 8px; border-bottom: 1px solid var(--de-border); }
+    .sg-row  { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .sg-note { color: var(--de-text-3); font-size: 12px; margin: 10px 0 0; }
+    .sg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .sg-swatch  { border: 1px solid var(--de-border); border-radius: 10px; overflow: hidden;
+                  background: var(--de-bg-1); }
+    .sg-swatch .chip { height: 54px; }
+    .sg-swatch .lbl  { padding: 8px 10px; font: 500 11px/1.4 "JetBrains Mono", monospace;
+                       color: var(--de-text-2); }
+    .sg-swatch .lbl b { color: var(--de-text-1); display: block; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="sg-wrap">
+
+    <div class="sg-toolbar">
+      <div>
+        <div class="sg-title">DEBrowser Design System</div>
+        <div class="sg-sub">Every component, both themes · rendered from <code>debrowser.css</code></div>
+      </div>
+      <span style="flex:1"></span>
+      <button id="themeBtn" class="btn btn-secondary btn-sm" type="button">
+        <i class="fa fa-circle-half-stroke"></i> Toggle theme
+      </button>
+    </div>
+
+    <!-- EYEBROW + HEADLINE + STAT STRIP -->
+    <section class="sg-section">
+      <h2>Eyebrow · headline · stat strip</h2>
+      <div class="de-eyebrow"><span class="de-eyebrow-chip">01</span> Upload &amp; configure</div>
+      <h3 class="de-headline">Bring your counts &amp; metadata in.</h3>
+      <div class="de-stat-strip" style="margin-top:12px">
+        <span><span class="de-stat-dot" style="background:var(--de-cyan)"></span><b>12,481</b> genes</span>
+        <span><span class="de-stat-dot" style="background:var(--de-violet)"></span><b>24</b> samples</span>
+        <span><span class="de-stat-dot" style="background:var(--de-blue)"></span><b>2</b> conditions</span>
+      </div>
+    </section>
+
+    <!-- BUTTONS -->
+    <section class="sg-section">
+      <h2>Buttons</h2>
+      <div class="sg-row">
+        <button class="btn btn-primary">Primary</button>
+        <button class="btn btn-success">Success</button>
+        <button class="btn btn-secondary">Secondary</button>
+        <button class="btn btn-outline-secondary">Outline</button>
+        <button class="btn btn-danger">Danger</button>
+        <button class="btn btn-primary btn-sm"><i class="fa fa-download"></i> With icon</button>
+        <button class="btn btn-primary" disabled>Disabled</button>
+      </div>
+      <p class="sg-note">Disabled buttons show <code>cursor:not-allowed</code> (§5 T8). Primary is the OK-blue a11y fallback; hover lifts 1px (§5 T5).</p>
+    </section>
+
+    <!-- CARDS -->
+    <section class="sg-section">
+      <h2>Cards · de_card</h2>
+      <div class="sg-row" style="align-items:stretch">
+        <div class="card" style="min-width:300px; flex:1">
+          <div class="card-header">Plain card</div>
+          <div class="card-body">Body sits on <code>var(--de-bg-1)</code>. This is <code>de_card("Plain card", …)</code>.</div>
+        </div>
+        <div class="card" style="min-width:300px; flex:1">
+          <div class="card-header d-flex align-items-center">
+            Card with download
+            <div class="ms-auto">
+              <button class="btn btn-primary btn-sm"><i class="fa fa-download"></i></button>
+            </div>
+          </div>
+          <div class="card-body">Mirrors <code>de_card(download_id=…)</code>.</div>
+        </div>
+      </div>
+      <div class="card de-comparison" style="margin-top:12px">
+        <div class="card-header">Comparison 1 · Treatment vs Control</div>
+        <div class="card-body">
+          <div class="card de-subcard">
+            <div class="card-header">Sample grouping</div>
+            <div class="card-body">Nested <code>de_card(class="de-subcard")</code> inside a <code>.de-comparison</code> card (§1 G12).</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORM CONTROLS -->
+    <section class="sg-section">
+      <h2>Form controls</h2>
+      <div class="sg-row" style="align-items:flex-start">
+        <div style="min-width:220px">
+          <label class="form-label">Text input</label>
+          <input class="form-control" placeholder="e.g. TP53">
+        </div>
+        <div style="min-width:220px">
+          <label class="form-label">Select</label>
+          <select class="form-select"><option>DESeq2</option><option>EdgeR</option><option>Limma</option></select>
+        </div>
+        <div style="min-width:220px">
+          <label class="form-label">Textarea</label>
+          <textarea class="form-control" rows="2" placeholder="Notes…"></textarea>
+        </div>
+      </div>
+      <div class="sg-row" style="margin-top:16px">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="c1" checked>
+          <label class="form-check-label" for="c1">Checkbox</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="r" id="r1" checked>
+          <label class="form-check-label" for="r1">Radio A</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="r" id="r2">
+          <label class="form-check-label" for="r2">Radio B</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="s1" checked>
+          <label class="form-check-label" for="s1">Switch</label>
+        </div>
+        <div style="min-width:220px">
+          <label class="form-label">Range</label>
+          <input class="form-range" type="range" min="0" max="100" value="45">
+        </div>
+      </div>
+      <p class="sg-note">Focus any control with the keyboard for the <code>:focus-visible</code> accent-ink ring (§5 T1). Live app renders <code>selectize</code>, <code>DT</code> and <code>ion-rangeslider</code> via their JS libraries.</p>
+    </section>
+
+    <!-- DROPDOWNS & PAGINATION -->
+    <section class="sg-section">
+      <h2>Dropdowns &amp; pagination</h2>
+      <div class="sg-row" style="align-items:flex-start; gap:24px">
+        <div style="min-width:190px">
+          <label class="form-label">Native select</label>
+          <select class="form-select"><option>DESeq2</option><option>EdgeR</option><option>Limma</option></select>
+        </div>
+        <div style="min-width:210px">
+          <label class="form-label">Selectize (single)</label>
+          <div class="selectize-control single">
+            <div class="selectize-input items full has-options has-items"><div class="item" data-value="DESeq2">DESeq2</div></div>
+          </div>
+        </div>
+        <div style="min-width:260px">
+          <label class="form-label">Selectize (multi)</label>
+          <div class="selectize-control multi">
+            <div class="selectize-input items has-items">
+              <div class="item">sample_01<a href="javascript:void 0" class="remove">&times;</a></div>
+              <div class="item">sample_02<a href="javascript:void 0" class="remove">&times;</a></div>
+            </div>
+          </div>
+        </div>
+        <div style="min-width:210px">
+          <label class="form-label">Open menu</label>
+          <div class="selectize-control single" style="position:relative">
+            <div class="selectize-dropdown single" style="display:block; position:static; width:100%">
+              <div class="selectize-dropdown-content">
+                <div class="option selected" data-value="DESeq2">DESeq2</div>
+                <div class="option active" data-value="EdgeR">EdgeR</div>
+                <div class="option" data-value="Limma">Limma</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dataTables_wrapper" style="margin-top:22px">
+        <div class="dataTables_length" style="margin-bottom:12px">
+          <label>Show <select class="form-select"><option>10</option><option>25</option><option>50</option></select> entries</label>
+        </div>
+        <div class="dataTables_paginate">
+          <ul class="pagination">
+            <li class="page-item previous disabled"><a class="page-link" href="javascript:void 0">Previous</a></li>
+            <li class="page-item active"><a class="page-link" href="javascript:void 0">1</a></li>
+            <li class="page-item"><a class="page-link" href="javascript:void 0">2</a></li>
+            <li class="page-item"><a class="page-link" href="javascript:void 0">3</a></li>
+            <li class="page-item"><a class="page-link" href="javascript:void 0">4</a></li>
+            <li class="page-item next"><a class="page-link" href="javascript:void 0">Next</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="sg-note">Selectize single/multi + open menu, native select, and DT pagination + length.</p>
+    </section>
+
+    <!-- WIZARD PILLS -->
+    <section class="sg-section">
+      <h2>Wizard step list</h2>
+      <div class="wizard-step-list" style="max-width:280px">
+        <a class="wiz-step de-pill-done" href="javascript:void 0"><span class="wiz-step-num">1</span><span class="wiz-step-dot"></span><span class="wiz-step-label">Quick start</span></a>
+        <a class="wiz-step active" href="javascript:void 0"><span class="wiz-step-num">2</span><span class="wiz-step-dot"></span><span class="wiz-step-label">Upload data</span></a>
+        <a class="wiz-step" href="javascript:void 0"><span class="wiz-step-num">3</span><span class="wiz-step-dot"></span><span class="wiz-step-label">Filter &amp; normalize</span></a>
+        <a class="wiz-step de-pill-locked" href="javascript:void 0"><span class="wiz-step-num">4</span><span class="wiz-step-dot"></span><span class="wiz-step-label">DE analysis</span></a>
+      </div>
+      <p class="sg-note">States: done · active · idle · locked. Locked steps carry <code>cursor:not-allowed</code> (§5 T8) and <code>pointer-events:none</code>.</p>
+    </section>
+
+    <!-- NAV TABS & PILLS -->
+    <section class="sg-section">
+      <h2>Nav tabs &amp; pills</h2>
+      <ul class="nav nav-tabs" style="margin-bottom:16px">
+        <li class="nav-item"><a class="nav-link active" href="javascript:void 0">Plot</a></li>
+        <li class="nav-item"><a class="nav-link" href="javascript:void 0">Table</a></li>
+        <li class="nav-item"><a class="nav-link" href="javascript:void 0">QC</a></li>
+      </ul>
+      <ul class="nav nav-pills">
+        <li class="nav-item"><a class="nav-link active" href="javascript:void 0">PCA</a></li>
+        <li class="nav-item"><a class="nav-link" href="javascript:void 0">IQR</a></li>
+        <li class="nav-item"><a class="nav-link" href="javascript:void 0">Density</a></li>
+      </ul>
+      <p class="sg-note">Active tab underline wipes in via <code>transform:scaleX</code> (§5 T6).</p>
+    </section>
+
+    <!-- ALERTS + BADGES -->
+    <section class="sg-section">
+      <h2>Alerts &amp; badges</h2>
+      <div class="alert alert-success" role="alert"><i class="fa fa-circle-check"></i> Filtering complete — 8,204 genes retained.</div>
+      <div class="alert alert-warning" role="alert"><i class="fa fa-triangle-exclamation"></i> No enriched terms at this cutoff.</div>
+      <div class="alert alert-danger" role="alert"><i class="fa fa-circle-exclamation"></i> Upload failed — could not detect a separator.</div>
+      <div class="sg-row">
+        <span class="badge bg-primary">Primary</span>
+        <span class="badge bg-success">DESeq2</span>
+        <span class="badge bg-secondary">optional</span>
+        <span class="badge bg-danger">padj &lt; 0.05</span>
+      </div>
+    </section>
+
+    <!-- WORKBAR + PROGRESS -->
+    <section class="sg-section">
+      <h2>Workbar &amp; progress</h2>
+      <div class="de-data-workbar">
+        <div class="de-stat-strip">
+          <span><span class="de-stat-dot" style="background:var(--de-cyan)"></span><b>12,481</b> genes</span>
+          <span><span class="de-stat-dot" style="background:var(--de-violet)"></span><b>24</b> samples</span>
+        </div>
+        <span style="flex:1"></span>
+        <div class="de-data-workbar-actions">
+          <button class="btn btn-primary">Continue &rarr; Filter</button>
+        </div>
+      </div>
+      <div class="progress" style="margin-top:16px; height:10px">
+        <div class="progress-bar" role="progressbar" style="width:62%"></div>
+      </div>
+      <p class="sg-note">Progress bar uses the brand gradient <code>var(--de-grad)</code> — themes the DE-run <code>withProgress</code> feedback (§4).</p>
+    </section>
+
+    <!-- TABLE -->
+    <section class="sg-section">
+      <h2>Table</h2>
+      <table class="table dataTable" style="max-width:560px">
+        <thead><tr><th>pathway</th><th>size</th><th>NES</th><th>padj</th></tr></thead>
+        <tbody>
+          <tr><td>HALLMARK_APOPTOSIS</td><td>161</td><td>2.14</td><td>1.2e-04</td></tr>
+          <tr><td>HALLMARK_HYPOXIA</td><td>200</td><td>1.87</td><td>8.9e-04</td></tr>
+          <tr><td>HALLMARK_P53_PATHWAY</td><td>200</td><td>-1.62</td><td>3.4e-03</td></tr>
+        </tbody>
+      </table>
+      <p class="sg-note">Live app renders these via <code>DT</code>; markup here mirrors <code>.table.dataTable</code> styling.</p>
+    </section>
+
+    <!-- ICONS -->
+    <section class="sg-section">
+      <h2>Iconography · Font Awesome 6</h2>
+      <div class="sg-row" style="font-size:22px; color:var(--de-text-1)">
+        <i class="fa fa-eye" title="fa-eye"></i>
+        <i class="fa fa-download" title="fa-download"></i>
+        <i class="fa fa-file-arrow-up" title="fa-file-arrow-up"></i>
+        <i class="fa fa-square-plus" title="fa-square-plus"></i>
+        <i class="fa fa-circle-check" title="fa-circle-check"></i>
+        <i class="fa fa-gear" title="fa-gear"></i>
+        <i class="fa fa-bookmark" title="fa-bookmark"></i>
+        <i class="fa fa-moon" title="fa-moon"></i>
+        <i class="fa fa-sun" title="fa-sun"></i>
+        <i class="fa fa-right-left" title="fa-right-left"></i>
+      </div>
+      <p class="sg-note">One icon set: Font Awesome 6 Free. The redesign re-asserts the FA font-family so Inter can't clobber glyphs (§3).</p>
+    </section>
+
+    <!-- TOKEN SWATCHES -->
+    <section class="sg-section">
+      <h2>Token palette</h2>
+      <div class="sg-swatches" id="swatches"></div>
+      <p class="sg-note">Live values of the <code>--de-*</code> tokens for the current theme — toggle to see the dark set. Single source of truth: <code>debrowser.css</code> · see <code>DESIGN.md</code>.</p>
+    </section>
+
+  </div>
+
+  <script>
+    // Light/dark toggle -> data-bs-theme on <html> (matches R/ui.R behaviour).
+    // Honours ?theme=dark|light so webshot2 can request either directly.
+    (function () {
+      var html = document.documentElement;
+      var q = new URL(location.href).searchParams.get('theme');
+      if (q === 'dark' || q === 'light') html.setAttribute('data-bs-theme', q);
+
+      var TOKENS = ['--de-cyan','--de-violet','--de-blue','--de-bg-0','--de-bg-1',
+                    '--de-bg-3','--de-accent-ink','--de-ink-on-accent',
+                    '--de-text-1','--de-text-2','--de-text-3',
+                    '--de-border','--de-border-strong'];
+      function paintSwatches() {
+        var cs = getComputedStyle(html);
+        document.getElementById('swatches').innerHTML = TOKENS.map(function (t) {
+          var v = cs.getPropertyValue(t).trim() || '—';
+          return '<div class="sg-swatch"><div class="chip" style="background:var(' + t + ')"></div>' +
+                 '<div class="lbl"><b>' + t + '</b>' + v + '</div></div>';
+        }).join('');
+      }
+      function setTheme(t) { html.setAttribute('data-bs-theme', t); paintSwatches(); }
+      document.getElementById('themeBtn').addEventListener('click', function () {
+        setTheme(html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
+      });
+      paintSwatches();
+    })();
+  </script>
+</body>
+</html>

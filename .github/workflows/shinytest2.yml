@@ -1,0 +1,66 @@
+name: shinytest2
+
+on:
+  push:
+    branches: [devel, modernize]
+  pull_request:
+    branches: [devel]
+
+jobs:
+  shinytest2:
+    runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker:devel
+    name: Linux state-based UI tests (container)
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Chromium for shinytest2
+        # The bioconductor docker image is Debian-based but doesn't ship a
+        # browser. Install chromium from apt (no PPA / launchpadlib path)
+        # and point chromote at it.
+        run: |
+          apt-get update -qq
+          apt-get install -y --no-install-recommends chromium
+        shell: bash
+
+      - name: Install package deps
+        run: |
+          install.packages("remotes")
+          remotes::install_deps(dependencies = TRUE,
+                                repos = BiocManager::repositories())
+          install.packages(c("testthat", "shinytest2", "chromote"))
+        shell: Rscript {0}
+
+      - name: Install package
+        run: R CMD INSTALL .
+
+      - name: Run shinytest2 suite
+        env:
+          # chromote auto-detects via Sys.which("chromium"); be explicit so
+          # the test fails loudly if the install above silently no-op'd.
+          CHROMOTE_CHROME: /usr/bin/chromium
+        run: |
+          if (!nzchar(Sys.getenv("CHROMOTE_CHROME"))) {
+            stop("CHROMOTE_CHROME not set — chromium install in previous step failed.")
+          }
+          testthat::test_file(
+            "tests/testthat/test-app-shinytest2.R",
+            reporter = testthat::default_reporter()
+          )
+        shell: Rscript {0}
+
+      - name: Upload shinytest2 artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shinytest2-debug
+          path: |
+            tests/testthat/_snaps/
+            **/*.png
+            **/*.log
+          if-no-files-found: ignore

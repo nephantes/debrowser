@@ -4,20 +4,10 @@
 \alias{debrowsermainplot}
 \title{debrowsermainplot}
 \usage{
-debrowsermainplot(
-  input = NULL,
-  output = NULL,
-  session = NULL,
-  data = NULL,
-  cond_names = NULL
-)
+debrowsermainplot(id, data = NULL, cond_names = NULL)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{data, }{a matrix that includes expression values}
 
@@ -29,10 +19,12 @@ main plot
 panel
 }
 \description{
-Module for a scatter, volcano and ma plots that are going to be used 
+Module for a scatter, volcano and ma plots that are going to be used
 as a mainplot in debrowser
 }
 \examples{
-    x <- debrowsermainplot()
+\donttest{
+x <- debrowsermainplot("main")
+}
 
 }

@@ -21,6 +21,6 @@ Gathers the merged comparison data to be used within the
 DEBrowser.
 }
 \examples{
-    x <- getMergedComparison()
+x <- getMergedComparison()
 
 }

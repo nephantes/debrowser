@@ -19,5 +19,5 @@ Generates the controls in the left menu for a bar main plot
 \code{barMainPlotControlsUI}
 }
 \examples{
-    x <- barMainPlotControlsUI("bar")
+x <- barMainPlotControlsUI("bar")
 }

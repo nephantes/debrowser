@@ -9,9 +9,13 @@ getHideLegendOnOff(id = "pca")
 \arguments{
 \item{id, }{namespace id}
 }
+\value{
+A `shiny::radioButtons` toggling whether the PCA plot legend
+  is rendered or hidden.
+}
 \description{
 hide legend
 }
 \examples{
-    x <- getHideLegendOnOff("pca")
+x <- getHideLegendOnOff("pca")
 }

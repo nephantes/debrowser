@@ -29,10 +29,13 @@ getBoxMainPlot(
 
 \item{input, }{input}
 }
+\value{
+A `plotly` box plot for the selected gene/region across samples.
+}
 \description{
 Makes Density plots
 }
 \examples{
-    getBoxMainPlot()
+getBoxMainPlot()
 
 }

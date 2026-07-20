@@ -2,19 +2,26 @@
 % Please edit documentation in R/funcs.R
 \name{getTabUpdateJS}
 \alias{getTabUpdateJS}
-\title{getTabUpdateJS
-prepmenu tab and discovery menu tab updates}
+\title{getTabUpdateJS}
 \usage{
 getTabUpdateJS()
 }
 \value{
-the JS for tab updates
+a `<script>` tag with the custom-message handler installed.
 }
 \description{
-getTabUpdateJS
-prepmenu tab and discovery menu tab updates
+Returns a `<script>` tag that installs a Shiny custom-message handler
+for type "debrowser-progress". The handler decorates wizard progress
+icons (`.de-progress-icon[data-progress-key=...]`) and parent pills
+(`a[data-progress-pill=...]`) with done/locked/skipped CSS classes.
+Producer side: `update_progress(session, key, state)` in R/de_progress.R.
+}
+\details{
+Name retained for export-compatibility; historically this tag drove
+wizard tab updates, but progressive reveal moved to server-side
+observers in B1 and progress decoration is the current responsibility.
 }
 \examples{
-    x<- getTabUpdateJS()
+x <- getTabUpdateJS()
 
 }

@@ -1,48 +1,83 @@
+# Compact one-row DataTables `dom` template.
+#
+# Default DT layout puts Buttons, length selector, and filter on separate
+# rows, each with its own block-level margin. That gives a ~3-line stack
+# of controls floating above every table. This `dom` packs B + l + f into
+# a single row above the table, with pagination/info on a single row
+# below, leaving very little vertical space between the controls and the
+# table itself.
+#
+# Used directly by the four explicit DT calls that previously passed
+# `dom = "Blfrtip"` (funcs.R, server.R x3), and installed as the global
+# default in `.onLoad` (zzz.R) so any DT call that does NOT pass `dom`
+# (mod_enrichment, mod_comparison_concordance, fgsea_results_table, etc.)
+# inherits the same compact layout.
+.dt_dom_compact <- paste0(
+  "<'dt-top row align-items-center gx-2 mb-1'",
+    "<'col-auto'B>",
+    "<'col-auto'l>",
+    "<'col text-end'f>",
+  ">",
+  "<'row'<'col-12'tr>>",
+  "<'dt-bot row align-items-center gx-2 mt-1'",
+    "<'col-auto'i>",
+    "<'col text-end'p>",
+  ">"
+)
+
 #' getSampleDetails
-#' 
+#'
 #' get sample details
 #'
 #' @param output, output
 #' @param summary, summary output name
 #' @param details, details ouput name
-#' @param data, data 
+#' @param data, data
 #' @return panel
 #' @examples
-#'     x <- getSampleDetails()
+#' x <- getSampleDetails()
 #'
 #' @export
 #'
-getSampleDetails<- function (output = NULL, summary = NULL, details = NULL, data = NULL) {
-    if (is.null(data)) return(NULL)
-    
-    output[[summary]]<- renderTable({ 
-        countdata <-  data$count
-        samplenums <- length(colnames(countdata))
-        rownums <- dim(countdata)[1]
-        result <- rbind(samplenums, rownums)
-        rownames(result) <- c("# of samples", "# of rows (genes/regions)")
-        colnames(result) <- "Value"
-        result
-    },digits=0, rownames = TRUE, align="lc")
-    
-    output[[details]] <- DT::renderDataTable({ 
-        dat <- colSums(data$count)
-        dat <- cbind(names(dat), dat)
-        dat[, c("dat")] <-  format(
-            round( as.numeric( dat[,  c("dat")], digits = 2)),
-            big.mark=",",scientific=FALSE)
-        
-        if (!is.null(data$meta)){
-            met <- data$meta
-            dat <- cbind(met, dat[,"dat"])
-            rownames(dat) <- NULL
-            colnames(dat)[ncol(dat)] <- "read counts"
-        }else{
-            rownames(dat) <- NULL
-            colnames(dat) <- c("samples", "read counts")
-        }
-        dat
-    })
+getSampleDetails <- function(output = NULL, summary = NULL, details = NULL, data = NULL) {
+  if (is.null(data)) {
+    return(NULL)
+  }
+
+  output[[summary]] <- renderTable(
+    {
+      countdata <- data$count
+      samplenums <- length(colnames(countdata))
+      rownums <- dim(countdata)[1]
+      result <- rbind(samplenums, rownums)
+      rownames(result) <- c("# of samples", "# of rows (genes/regions)")
+      colnames(result) <- "Value"
+      result
+    },
+    digits = 0,
+    rownames = TRUE,
+    align = "lc"
+  )
+
+  output[[details]] <- DT::renderDataTable({
+    dat <- colSums(data$count)
+    dat <- cbind(names(dat), dat)
+    dat[, c("dat")] <- format(
+      round(as.numeric(dat[, c("dat")], digits = 2)),
+      big.mark = ",", scientific = FALSE
+    )
+
+    if (!is.null(data$meta)) {
+      met <- data$meta
+      dat <- cbind(met, dat[, "dat"])
+      rownames(dat) <- NULL
+      colnames(dat)[ncol(dat)] <- "read counts"
+    } else {
+      rownames(dat) <- NULL
+      colnames(dat) <- c("samples", "read counts")
+    }
+    dat
+  })
 }
 
 #' selectGroupInfo
@@ -54,18 +89,24 @@ getSampleDetails<- function (output = NULL, summary = NULL, details = NULL, data
 #' @param selectname, name of the select box
 #' @param label, label of the select box
 #' @note \code{selectGroupInfo}
+#' @return A `shiny::selectInput` listing metadata-column choices (with
+#'   "None" prepended), or NULL when no metadata is supplied.
 #' @examples
-#'     x <- selectGroupInfo()
+#' x <- selectGroupInfo()
 #' @export
 #'
 selectGroupInfo <- function(metadata = NULL, input = NULL,
-                              selectname = "groupselect",
-                              label = "Group info") {
-    if (is.null(metadata)) return (NULL)
-    lst.choices <- as.list(c("None", colnames(metadata)))
-    selectInput(selectname, label = label,
-                choices = lst.choices,
-                selected = 1)
+                            selectname = "groupselect",
+                            label = "Group info") {
+  if (is.null(metadata)) {
+    return(NULL)
+  }
+  lst.choices <- as.list(c("None", colnames(metadata)))
+  selectInput(selectname,
+    label = label,
+    choices = lst.choices,
+    selected = 1
+  )
 }
 
 
@@ -78,21 +119,23 @@ selectGroupInfo <- function(metadata = NULL, input = NULL,
 #' @export
 #'
 #' @examples
-#'     x <- addID()
+#' x <- addID()
 #'
 addID <- function(data = NULL) {
-    if (is.null(data)) return (NULL)
-    dat1 <- data.frame(data)
-    dat1 <- cbind(rownames(data), data)
-    colnames(dat1) <- c("ID", colnames(data))
-    dat1
+  if (is.null(data)) {
+    return(NULL)
+  }
+  dat1 <- data.frame(data)
+  dat1 <- cbind(rownames(data), data)
+  colnames(dat1) <- c("ID", colnames(data))
+  dat1
 }
 
 #' getVariationData
 #'
 #' Adds an id to the data frame being used.
 #'
-#' @param inputdata, dataset 
+#' @param inputdata, dataset
 #' @param cols, columns
 #' @param conds, conditions
 #' @param key, gene or region name
@@ -100,27 +143,35 @@ addID <- function(data = NULL) {
 #' @export
 #'
 #' @examples
-#'     x <- getVariationData()
+#' x <- getVariationData()
 #'
-getVariationData <- function(inputdata = NULL, 
-    cols = NULL, conds = NULL, key = NULL) {
-    if (is.null(inputdata)) return (NULL)
-    # Pick out the gene with this ID
-    vardata <- inputdata[key, ]
-    bardata <- as.data.frame(cbind(key, cols,
-        t(vardata[, cols]), as.character(conds)) )
-    colnames(bardata) <- c("genename", "libs", "count", "conds")
-    bardata$count <- as.numeric(as.character(bardata$count))
-    bardata$conds <- factor(bardata$conds)
-    data <- rbind(bardata[bardata$conds == levels(bardata$conds)[1], ],
-        bardata[bardata$conds == levels(bardata$conds)[2], ])
-    data$conds  <- factor(data$conds, levels = unique(data$conds))
-    data
+getVariationData <- function(
+  inputdata = NULL,
+  cols = NULL, conds = NULL, key = NULL
+) {
+  if (is.null(inputdata)) {
+    return(NULL)
+  }
+  # Pick out the gene with this ID
+  vardata <- inputdata[key, ]
+  bardata <- as.data.frame(cbind(
+    key, cols,
+    t(vardata[, cols]), as.character(conds)
+  ))
+  colnames(bardata) <- c("genename", "libs", "count", "conds")
+  bardata$count <- as.numeric(as.character(bardata$count))
+  bardata$conds <- factor(bardata$conds)
+  data <- rbind(
+    bardata[bardata$conds == levels(bardata$conds)[1], ],
+    bardata[bardata$conds == levels(bardata$conds)[2], ]
+  )
+  data$conds <- factor(data$conds, levels = unique(data$conds))
+  data
 }
 
 #' getBSTableUI
 #' prepares a Modal to put a table
-#' @param name, name 
+#' @param name, name
 #' @param label, label
 #' @param trigger, trigger button for the modal
 #' @param size, size of the modal
@@ -128,27 +179,38 @@ getVariationData <- function(inputdata = NULL,
 #' @return the modal
 #'
 #' @examples
-#'     x<- getBSTableUI()
+#' x <- getBSTableUI()
 #'
 #' @export
-getBSTableUI<-function(name = NULL,  label = NULL, trigger = NULL, size="large", modal = NULL){
-    if (is.null(name)) return (NULL)
-    ret <- div(style = "display:block;overflow-y:auto; overflow-x:auto;",
-               wellPanel( DT::dataTableOutput(name)))
-    if (!is.null(modal) && modal)
-        ret <- shinyBS::bsModal(name, label, trigger, size = size, ret)
-    ret
+getBSTableUI <- function(name = NULL, label = NULL, trigger = NULL, size = "large", modal = NULL) {
+  if (is.null(name)) {
+    return(NULL)
+  }
+  ret <- div(
+    style = "display:block;overflow-y:auto; overflow-x:auto;",
+    wellPanel(DT::dataTableOutput(name))
+  )
+  if (!is.null(modal) && modal) {
+    # The modal needs a distinct outer id from the dataTableOutput it
+    # contains: bsModal renders <div id="...">, and so does
+    # DT::dataTableOutput(). Reusing `name` for both produces duplicate
+    # HTML ids, which makes Shiny's binding-by-id pick the wrong element
+    # and the table never renders inside the modal.
+    ret <- shinyBS::bsModal(paste0(name, "Modal"), label, trigger,
+                            size = size, ret)
+  }
+  ret
 }
 
 #' getTableDetails
-#' 
+#'
 #' get table details
 #' To be able to put a table into two lines are necessary;
 #' into the server part;
 #' getTableDetails(output, session, "dataname", data, modal=TRUE)
 #' into the ui part;
 #' uiOutput(ns("dataname"))
-#'   
+#'
 #' @param output, output
 #' @param session, session
 #' @param tablename, table name
@@ -156,52 +218,109 @@ getBSTableUI<-function(name = NULL,  label = NULL, trigger = NULL, size="large",
 #' @param modal, if it is true, the matrix is going to be in a modal
 #' @return panel
 #' @examples
-#'     x <- getTableDetails()
+#' x <- getTableDetails()
 #'
 #' @export
 #'
-getTableDetails <- function(output  = NULL, session  = NULL, tablename  = NULL, data = NULL, modal = NULL){
-    if (is.null(data)) return(NULL)
-    tablenameUI <-  paste0(tablename,"Table")
-    output[[paste(tablename, "Download")]] <- downloadHandler(
-        filename = function() {
-            paste0(tablename,".tsv")
-        },
-        content = function(file) {
-            if(!("ID" %in% names(data)))
-                data <- addID(data)
-            write.table(data, file, sep = "\t", row.names = FALSE)
-        }
-    )
-    
+getTableDetails <- function(output = NULL, session = NULL, tablename = NULL, data = NULL, modal = NULL) {
+  if (is.null(data)) {
+    return(NULL)
+  }
+  tablenameUI <- paste0(tablename, "Table")
+  output[[paste(tablename, "Download")]] <- downloadHandler(
+    filename = function() {
+      paste0(tablename, ".tsv")
+    },
+    content = function(file) {
+      if (!("ID" %in% names(data))) {
+        data <- addID(data)
+      }
+      write.table(data, file, sep = "\t", row.names = FALSE)
+    }
+  )
+
+  output[[tablenameUI]] <- DT::renderDataTable({
+    if (!is.null(data)) {
+      DT::datatable(data,
+        extensions = "Buttons",
+        options = list(
+          server = TRUE,
+          dom = .dt_dom_compact,
+          buttons =
+            list("copy", list(
+              extend = "collection",
+              buttons = c("csv", "excel", "pdf"),
+              text = "Download"
+            )), # end of buttons customization
+
+          # customize the length menu
+          lengthMenu = list(
+            c(10, 20, 50, -1) # declare values
+            , c(10, 20, 50, "All") # declare titles
+          ), # end of lengthMenu customization
+          pageLength = 10
+        )
+      )
+    }
+  })
+
+  if (is.null(modal) || !modal) {
+    # Inline mode: render the table directly into the page.
     output[[tablename]] <- renderUI({
-        ret <- getBSTableUI( session$ns(tablenameUI), "Show Data", paste0("show",tablename), modal = modal) 
-        if (!is.null(modal) && modal)
-           ret <- list( downloadButton(session$ns(paste(tablename, "Download")), "Download"),
-               actionButtonDE(paste0("show",tablename), "Show Data", styleclass = "primary", icon="show"),
-               ret)
-        ret    
+      div(
+        style = "display:block;overflow-y:auto; overflow-x:auto;",
+        wellPanel(DT::dataTableOutput(session$ns(tablenameUI)))
+      )
     })
-    
-    output[[tablenameUI]] <- DT::renderDataTable({
-        if (!is.null(data)){
-            DT::datatable(data, extensions = 'Buttons',
-            options = list( server = TRUE,
-            dom = "Blfrtip",
-            buttons = 
-              list("copy", list(
-                  extend = "collection"
-                  , buttons = c("csv", "excel", "pdf")
-                  , text = "Download"
-              ) ), # end of buttons customization
-            
-            # customize the length menu
-            lengthMenu = list( c(10, 20,  50, -1) # declare values
-                               , c(10, 20, 50, "All") # declare titles
-            ), # end of lengthMenu customization
-            pageLength = 10))
-        }
-    })
+    return(invisible(NULL))
+  }
+
+  # Modal mode: render a Download button and a "Show Data" trigger.
+  # Clicking the trigger opens a shiny::modalDialog with the table inside.
+  # We deliberately replaced shinyBS::bsModal here: the legacy bsModal
+  # (last released 2015) emits Shiny.setInputValue calls with a malformed
+  # `opts.mode` object, which Shiny >= 1.7 rejects with
+  # "Unexpected input value mode: '[object Object]'" -- that error was
+  # swallowing the click event so the modal-trigger update never reached
+  # the server. shiny::modalDialog uses modern bindings and has no such
+  # problem. Also: the dataTableOutput lives inside a freshly shown modal
+  # which is not initially in the DOM, so we keep the underlying output
+  # alive with suspendWhenHidden=FALSE.
+  trigger_id <- session$ns(paste0("show", tablename))
+
+  output[[tablename]] <- renderUI({
+    list(
+      downloadButton(session$ns(paste(tablename, "Download")), "Download"),
+      actionButtonDE(trigger_id, "Show Data", styleclass = "primary",
+                     icon = shiny::icon("eye"))
+    )
+  })
+
+  outputOptions(output, tablenameUI, suspendWhenHidden = FALSE)
+
+  # Register the click -> showModal observer once per (session, tablename).
+  # getTableDetails is called from inside reactive observers in the calling
+  # modules, so without this guard we'd accumulate one observer per
+  # observer fire.
+  registered_key <- paste0("__debrowser_modaltable_", tablename)
+  if (is.null(session$userData[[registered_key]])) {
+    session$userData[[registered_key]] <- TRUE
+    observeEvent(session$input[[paste0("show", tablename)]],
+      {
+        showModal(modalDialog(
+          title = "Data",
+          div(
+            style = "display:block;overflow-y:auto;overflow-x:auto;",
+            DT::dataTableOutput(session$ns(tablenameUI))
+          ),
+          size = "l",
+          easyClose = TRUE,
+          footer = modalButton("Close")
+        ))
+      },
+      ignoreInit = TRUE
+    )
+  }
 }
 
 #' push
@@ -215,8 +334,8 @@ getTableDetails <- function(output  = NULL, session  = NULL, tablename  = NULL, 
 #' @export
 #'
 #' @examples
-#'     mylist <- list()
-#'     newlist <- push ( 1, mylist )
+#' mylist <- list()
+#' newlist <- push(1, mylist)
 push <- function(l, ...) c(l, list(...))
 
 #' round_vals
@@ -228,10 +347,10 @@ push <- function(l, ...) c(l, list(...))
 #' @export
 #'
 #' @examples
-#'     x<-round_vals(5.1323223)
+#' x <- round_vals(5.1323223)
 round_vals <- function(l) {
-    l <- round(as.numeric(l), digits = 2)
-    parse(text = l)
+  l <- round(as.numeric(l), digits = 2)
+  parse(text = l)
 }
 
 #' Buttons including Action Buttons and Event Buttons
@@ -252,32 +371,52 @@ round_vals <- function(l) {
 #'   button
 #' @param ... Other argument to feed into shiny::actionButton
 #'
+#' @return A `shiny::tags$button` element wired as a click-counting
+#'   action button, suitable for embedding in any Shiny UI.
 #' @export
 #'
 #' @examples
-#'     actionButtonDE("goDE", "Go to DE Analysis")
+#' actionButtonDE("goDE", "Go to DE Analysis")
 #'
 actionButtonDE <- function(inputId, label, styleclass = "", size = "",
-        block = FALSE, icon = NULL, css.class = "", ...) {
-    if (styleclass %in% c("primary", "info", "success", "warning",
-        "danger", "inverse", "link")) {
-        btn.css.class <- paste("btn", styleclass, sep = "-")
-    } else btn.css.class = ""
-    
-    if (size %in% c("large", "small", "mini")) {
-        btn.size.class <- paste("btn", size, sep = "-")
-    } else btn.size.class = ""
-    
-    if (block) {
-        btn.block = "btn-block"
-    } else btn.block = ""
-    
-    if (!is.null(icon)) {
-        icon.code <- HTML(paste0("<i class='fa fa-", icon, "'></i>"))
-    } else icon.code = ""
-    tags$button(id = inputId, type = "button", class = paste("btn action-button",
-        btn.css.class, btn.size.class, btn.block, css.class, collapse = " "),
-        icon.code, label, ...)
+                           block = FALSE, icon = NULL, css.class = "", ...) {
+  if (styleclass %in% c(
+    "primary", "info", "success", "warning",
+    "danger", "inverse", "link"
+  )) {
+    btn.css.class <- paste("btn", styleclass, sep = "-")
+  } else {
+    btn.css.class <- ""
+  }
+
+  if (size %in% c("large", "small", "mini")) {
+    btn.size.class <- paste("btn", size, sep = "-")
+  } else {
+    btn.size.class <- ""
+  }
+
+  if (block) {
+    btn.block <- "btn-block"
+  } else {
+    btn.block <- ""
+  }
+
+  if (!is.null(icon)) {
+    if (inherits(icon, c("shiny.tag", "shiny.tag.list"))) {
+      icon.code <- icon
+    } else {
+      icon.code <- HTML(paste0("<i class='fa fa-", icon, "'></i>"))
+    }
+  } else {
+    icon.code <- ""
+  }
+  tags$button(
+    id = inputId, type = "button", class = paste("btn action-button",
+      btn.css.class, btn.size.class, btn.block, css.class,
+      collapse = " "
+    ),
+    icon.code, label, ...
+  )
 }
 
 
@@ -292,30 +431,15 @@ actionButtonDE <- function(inputId, label, styleclass = "", size = "",
 #' @return normalized matrix
 #'
 #' @examples
-#'     x <- getNormalizedMatrix(mtcars)
+#' x <- getNormalizedMatrix(mtcars)
 #'
 #' @export
 #'
 getNormalizedMatrix <- function(M = NULL, method = "TMM") {
-    if (is.null(M) ) return (NULL)
-    M[is.na(M)] <- 0
-    norm <- M
-    if (!(method == "none" || method == "MRN")){
-        norm.factors <- edgeR::calcNormFactors(M, method = method)
-        norm <- edgeR::equalizeLibSizes(edgeR::DGEList(M,
-            norm.factors = norm.factors))$pseudo.counts
-    }else if(method == "MRN"){
-        columns <- colnames(M)
-        conds <- columns
-        coldata <- prepGroup(conds, columns)
-        M[, columns] <- apply(M[, columns], 2,
-            function(x) as.integer(x))
-        dds <- DESeqDataSetFromMatrix(countData = as.matrix(M),
-            colData = coldata, design = ~group)
-        dds <- estimateSizeFactors(dds)
-        norm <- counts(dds, normalized=TRUE)
-    }
-    return(norm)
+  if (is.null(M)) {
+    return(NULL)
+  }
+  normalize_counts(M, method = method)
 }
 
 #' getCompSelection
@@ -325,18 +449,21 @@ getNormalizedMatrix <- function(M = NULL, method = "TMM") {
 #' @param name, the name of the selectInput
 #' @param count, comparison count
 #' @note \code{getCompSelection}
+#' @return A `shiny::selectInput` (or NULL when only one comparison
+#'   exists) listing the available comparison indices.
 #' @examples
-#'     x <- getCompSelection(name="comp", count = 2)
+#' x <- getCompSelection(name = "comp", count = 2)
 #' @export
 #'
 getCompSelection <- function(name = NULL, count = NULL) {
-    a <- NULL
-    if (count>1){
-        a <- list(selectInput(name,
-            label = "Choose a comparison:",
-            choices = c(1:count)))
-    }
-    a
+  a <- NULL
+  if (count > 1) {
+    a <- list(selectInput(name,
+      label = "Choose a comparison:",
+      choices = seq_len(count)
+    ))
+  }
+  a
 }
 #' getHelpButton
 #' prepares a helpbutton for to go to a specific site in the documentation
@@ -346,17 +473,37 @@ getCompSelection <- function(name = NULL, count = NULL) {
 #' @return the info button
 #'
 #' @examples
-#'     x<- getHelpButton()
+#' x <- getHelpButton()
 #'
 #' @export
-getHelpButton<-function(name = NULL, link = NULL){
-    if (is.null(name)) return(NULL)
-    btn <- actionButtonDE(paste0("info_",name),"",icon="info",
-        styleclass="info", size="small")
-    
-    HTML(paste0("<a id=\"info_",name,"\" href=\"",link,"\" target=\"_blank\">",
-       btn,"</a>"))
-    
+getHelpButton <- function(name = NULL, link = NULL) {
+  if (is.null(name)) {
+    return(NULL)
+  }
+  # Renders an unambiguously info-styled chip: circled "i" icon + the
+  # word "Help", with a tooltip that includes the topic name. The
+  # `.de-help-btn` class drives the chip styling in debrowser.css
+  # (base + redesign variants); no Shiny input id because the link
+  # is a plain external nav, and duplicate ids broke prior renders.
+  safe_name <- htmltools::htmlEscape(name)
+  safe_link <- if (is.null(link)) "#" else link
+  HTML(paste0(
+    "<a href=\"", safe_link, "\" target=\"_blank\" rel=\"noopener\" ",
+    "class=\"de-help-btn\" ",
+    "role=\"button\" ",
+    "aria-label=\"Help: ", safe_name,
+      " (opens documentation in a new tab)\" ",
+    "title=\"Help: ", safe_name,
+      " &#8211; opens documentation in a new tab\">",
+    # Intentional raw-HTML FA glyph: the class must stay `fa-info-circle` to
+    # match the CSS hook (.de-help-btn .fa-info-circle in debrowser.css).
+    # shiny::icon("info-circle") emits `fa-circle-info` (FA6) and would
+    # silently drop the chip's color styling. This chip is a plain external
+    # <a> with no Shiny input id, so raw HTML is fine here.
+    "<i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i>",
+    "<span class=\"de-help-btn-label\">Help</span>",
+    "</a>"
+  ))
 }
 
 #' getDomains
@@ -368,43 +515,49 @@ getHelpButton<-function(name = NULL, link = NULL){
 #' @export
 #'
 #' @examples
-#'     x<-getDomains()
-getDomains <- function(filt_data = NULL){
-    if (is.null(filt_data)) return (NULL)
-    a <- unique(filt_data$Legend)
-    a <- a[a != ""]
-    if (length(a) == 1)
-        a <- c(a, "NA")
-    a
+#' x <- getDomains()
+getDomains <- function(filt_data = NULL) {
+  if (is.null(filt_data)) {
+    return(NULL)
+  }
+  a <- unique(filt_data$Legend)
+  a <- a[a != ""]
+  if (length(a) == 1) {
+    a <- c(a, "NA")
+  }
+  a
 }
 
 #' getColors
 #'
-#' get colors for the domains 
+#' get colors for the domains
 #'
 #' @param domains, domains to be colored
 #' @return colors
 #' @export
 #'
 #' @examples
-#'     x<-getColors()
+#' x <- getColors()
 #'
-getColors <- function(domains = NULL){
-    if (is.null(domains)) return (NULL)
-    colors <- c()
-    for ( dn in seq(1:length(domains)) ){
-        if (domains[dn] == "NS" || domains[dn] == "NA")
-            colors <- c(colors, "#aaa")
-        else if (domains[dn] == "Up")
-            colors <- c(colors, "green")
-        else if (domains[dn] == "Down")
-            colors <- c(colors, "red")
-        else if (domains[dn] == "MV")
-            colors <- c(colors, "orange")
-        else if (domains[dn] == "GS")
-            colors <- c(colors, "blue")
-    } 
-    colors
+getColors <- function(domains = NULL) {
+  if (is.null(domains)) {
+    return(NULL)
+  }
+  colors <- c()
+  for (dn in seq_along(domains)) {
+    if (domains[dn] == "NS" || domains[dn] == "NA") {
+      colors <- c(colors, "#aaa")
+    } else if (domains[dn] == "Up") {
+      colors <- c(colors, "green")
+    } else if (domains[dn] == "Down") {
+      colors <- c(colors, "red")
+    } else if (domains[dn] == "MV") {
+      colors <- c(colors, "orange")
+    } else if (domains[dn] == "GS") {
+      colors <- c(colors, "blue")
+    }
+  }
+  colors
 }
 
 #' getKEGGModal
@@ -413,12 +566,16 @@ getColors <- function(domains = NULL){
 #' @return the info button
 #'
 #' @examples
-#'     x<- getKEGGModal()
+#' x <- getKEGGModal()
 #'
 #' @export
-getKEGGModal<-function(){
-    bsModal("modalExample", "KEGG Pathway", "KeggPathway", size = "large",
-            div(style = "display:block;overflow-y:auto; overflow-x:auto;",imageOutput("KEGGPlot")))
+getKEGGModal <- function() {
+  # B1.12: migrated from shinyBS::bsModal to shiny::modalDialog.
+  # The modal contents are now constructed and shown server-side via
+  # observeEvent(input$KeggPathway, ...) in R/server.R. This function
+  # returns NULL so the existing call site in R/gopanel.R (line 35)
+  # doesn't change.
+  NULL
 }
 
 #' getTableModal
@@ -427,13 +584,16 @@ getKEGGModal<-function(){
 #' @return the info button
 #'
 #' @examples
-#'     x<- getTableModal()
+#' x <- getTableModal()
 #'
 #' @export
-getTableModal<-function(){
-    bsModal("modalTable", "Genes in the category", "GeneTableButton", size = "large",
-            div(style = "display:block;overflow-y:auto; overflow-x:auto;",
-                wellPanel( DT::dataTableOutput("GOGeneTable"))))
+getTableModal <- function() {
+  # B1.12: migrated from shinyBS::bsModal to shiny::modalDialog.
+  # The modal contents are now constructed and shown server-side via
+  # observeEvent(input$GeneTableButton, ...) in R/server.R. This function
+  # returns NULL so the existing call site in R/gopanel.R (line 36)
+  # doesn't change.
+  NULL
 }
 
 #' setBatch
@@ -443,115 +603,94 @@ getTableModal<-function(){
 #' @return fd data
 #'
 #' @examples
-#'    
-#'     x <- setBatch()
+#'
+#' x <- setBatch()
 #'
 #' @export
 #'
-setBatch <- function(fd = NULL){
-    if(!is.null(fd)){ 
-        batchdata <- reactiveValues(count=NULL, meta = NULL)
-        batchdata$count <-  fd$filter()$count
-        batchdata$meta <-  fd$filter()$meta
-        batcheffectdata <- reactive({
-            ret <- NULL
-            if(!is.null(batchdata$count)){
-                ret <- batchdata
-            }
-            return(ret)
-        })
-        list(BatchEffect=batcheffectdata)
-    }
+setBatch <- function(fd = NULL) {
+  if (!is.null(fd)) {
+    batchdata <- reactiveValues(count = NULL, meta = NULL)
+    batchdata$count <- fd$filter()$count
+    batchdata$meta <- fd$filter()$meta
+    batcheffectdata <- reactive({
+      ret <- NULL
+      if (!is.null(batchdata$count)) {
+        ret <- batchdata
+      }
+      return(ret)
+    })
+    list(BatchEffect = batcheffectdata)
+  }
 }
 #' getTabUpdateJS
-#' prepmenu tab and discovery menu tab updates
 #'
-#' @return the JS for tab updates
+#' Returns a `<script>` tag that installs a Shiny custom-message handler
+#' for type "debrowser-progress". The handler decorates wizard progress
+#' icons (`.de-progress-icon[data-progress-key=...]`) and parent pills
+#' (`a[data-progress-pill=...]`) with done/locked/skipped CSS classes.
+#' Producer side: `update_progress(session, key, state)` in R/de_progress.R.
+#'
+#' Name retained for export-compatibility; historically this tag drove
+#' wizard tab updates, but progressive reveal moved to server-side
+#' observers in B1 and progress decoration is the current responsibility.
+#'
+#' @return a `<script>` tag with the custom-message handler installed.
 #'
 #' @examples
-#'     x<- getTabUpdateJS()
+#' x <- getTabUpdateJS()
 #'
 #' @export
-getTabUpdateJS<-function(){
-    tags$script(HTML( "
-                      $(function() {
-                      $('#methodtabs').attr('selectedtab', '2')
-                      $($('#methodtabs >')[0]).attr('id', 'dataprepMethod')
-                      $($('#menutabs >')[0]).attr('id', 'dataprepMenu')
-                      for(var i=1;i<=5;i++){
-                      $($('#methodtabs >')[i]).attr('id', 'discoveryMethod')
-                      }
-                      $($('#menutabs >')[1]).attr('id', 'discoveryMenu')
-                      $(document).on('click', '#dataprepMethod', function () {
-                      if($('#dataprepMenu').attr('class')!='active'){   
-                      $('#dataprepMenu').find('a').click()
-                      }
-                      });
-                      $(document).on('click', '#dataprepMenu', function () {
-                      if($('#dataprepMethod').attr('class')!='active'){   
-                      $('#dataprepMethod').find('a').click()
-                      }
-                      });
-                      $(document).on('click', '#discoveryMethod', function () {
-                      $('#methodtabs').attr('selectedtab', $(this).index())
-                      if($('#discoveryMenu').attr('class')!='active'){   
-                      $('#discoveryMenu').find('a').click()
-                      }
-                      });
-                      $('#discoveryMenu > ').css('display', 'none');
-                      $(document).on('click', '#goMain', function () {
-                      $('#discoveryMenu > ').css('display', 'block');
-                      });
-                      $(document).on('click', '#discoveryMenu', function () {
-                      $($('#methodtabs >')[ $('#methodtabs').attr('selectedtab')]).find('a').click()
-                      });
-                      //hide buttons on entrance
-                      $('.sidebar-menu > ').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(1)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(2)').css('display', 'inline');
-                      $(document).on('click', '#Filter', function () {
-                      $('.sidebar-menu > :nth-child(2)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(3)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(4)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(5)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'none');
-                      });
-                      $(document).on('click', '#Batch', function () {
-                      $('.sidebar-menu > :nth-child(4)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(5)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'none');
-                      });
-                      $(document).on('click', '#goDEFromFilter', function () {
-                      $('.sidebar-menu > :nth-child(5)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'none');
-                      });
-                      $(document).on('click', '#goDE', function () {
-                      $('.sidebar-menu > :nth-child(5)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'none');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'none');
-                      });
-                      $(document).on('click', '#startDE', function () {
-                      $('.sidebar-menu > :nth-child(6)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(7)').css('display', 'inline');
-                      $('.sidebar-menu > :nth-child(2)').css('display', 'none');
-                      });
-                      })
-                      "))
+getTabUpdateJS <- function() {
+  # B2a: install a Shiny custom-message handler that toggles CSS classes
+  # on progress icons (.de-progress-icon[data-progress-key=...]) and on
+  # parent pills (a[data-progress-pill=...]). The server side calls
+  # update_progress(session, key, state) to drive these.
+  tags$script(HTML(
+    "Shiny.addCustomMessageHandler('debrowser-progress', function(msg) {",
+    "  var iconSel = '.de-progress-icon[data-progress-key=\"' + msg.key + '\"]';",
+    "  document.querySelectorAll(iconSel).forEach(function(el) {",
+    "    el.classList.remove('done', 'locked', 'skipped');",
+    "    if (msg.state === 'done' || msg.state === 'locked' || msg.state === 'skipped') {",
+    "      el.classList.add(msg.state);",
+    "    }",
+    "  });",
+    "  // B3.19 -- Once a step is DONE, keep it DONE. Reset only on the",
+    "  // explicit upload-fresh-data path where the server intentionally",
+    "  // sends 'locked' for downstream steps to wipe stale decorations.",
+    "  var pillSel = 'a[data-progress-pill=\"' + msg.key + '\"]';",
+    "  document.querySelectorAll(pillSel).forEach(function(el) {",
+    "    var wasDone = el.classList.contains('de-pill-done');",
+    "    // Only the 'locked' state can demote a previously-done step",
+    "    // (this is the re-upload reset path).",
+    "    if (msg.state === 'locked') {",
+    "      el.classList.remove('de-pill-done', 'de-pill-skipped');",
+    "      el.classList.add('de-pill-locked');",
+    "      return;",
+    "    }",
+    "    // For pending / empty / skipped: keep done if already done.",
+    "    if (wasDone) return;",
+    "    el.classList.remove('de-pill-locked', 'de-pill-skipped');",
+    "    if (msg.state === 'done') {",
+    "      el.classList.add('de-pill-done');",
+    "    } else if (msg.state === 'skipped') {",
+    "      el.classList.add('de-pill-skipped');",
+    "    }",
+    "  });",
+    "});"
+  ))
 }
 #' getPCAcontolUpdatesJS
-#' in the prep menu we have two PCA plots to show how batch effect correction worked. 
+#' in the prep menu we have two PCA plots to show how batch effect correction worked.
 #' One set of PCA input controls updates two PCA plots with this JS.
 #' @return the JS for tab updates
 #'
 #' @examples
-#'     x<- getTabUpdateJS()
+#' x <- getTabUpdateJS()
 #'
 #' @export
-getPCAcontolUpdatesJS<-function(){
-    tags$script(HTML("  
+getPCAcontolUpdatesJS <- function() {
+  tags$script(HTML("
                         var nameInputs = ['pcselx', 'pcsely'];
                         $.each(nameInputs, function (el) {
                                               $(function () {
@@ -562,7 +701,7 @@ getPCAcontolUpdatesJS<-function(){
                                               });
                                               });
                         });
-                        
+
                         var nameDropdowns = [ 'legendonoff', 'legendSelect', 'text_pca', 'color_pca','shape_pca'];
                         $.each(nameDropdowns, function (el) {
                             $(function () {
@@ -573,7 +712,7 @@ getPCAcontolUpdatesJS<-function(){
                                 });
                             });
                         });
-                     $($('#batcheffect-pcacontrols')[0]).css('display', 'none');                     
+                     $($('#batcheffect-pcacontrols')[0]).css('display', 'none');
                      $(document).on('click','#batcheffect-submitBatchEffect',function () {
                      setTimeout(function () { $($($('#batcheffect-pcacontrols')[0]).children()[1]).children().trigger('click')
                      setTimeout(function () { $($($('#batcheffect-pcacontrols')[0]).children()[0]).children().trigger('click')}, 1000);
@@ -581,31 +720,19 @@ getPCAcontolUpdatesJS<-function(){
                      "))
 }
 
-.initial <- function() {
-    req <- function(...){
-    reqFun <- function(pack) {
-        if(!suppressWarnings(suppressMessages(require(pack, character.only = TRUE)))) {
-            message(paste0("unable to load package ", pack))
-            require(pack, character.only = TRUE)
-        }
-    }
-    lapply(..., reqFun)
-    }
-    packs <- c("debrowser", "plotly", "shiny", "jsonlite", "shinyjs", "shinydashboard", "shinyBS")
-    req(packs)
-}
-
 .onAttach <- function(libname, pkgname) {
-    pkgVersion <- packageDescription("debrowser", fields="Version")
-    msg <- paste0("DEBrowser v", pkgVersion, "  ",
-                  "For help: https://debrowser.readthedocs.org/", "\n\n")
-    
-    citation <- paste0("If you use DEBrowser in published research, please cite:\n\n",
-                       "Alper Kucukural, Onur Yukselen, Deniz M. Ozata, Melissa J. Moore, Manuel Garber\n", 
-                       "DEBrowser: Interactive Differential Expression Analysis and Visualization Tool for Count Data\n",
-                       "BMC Genomics 2019 20:6\n\ndoi:0.1186/s12864-018-5362-x\n")
-    
-    packageStartupMessage(paste0(msg, citation))
-    .initial()
+  pkgVersion <- packageDescription("debrowser", fields = "Version")
+  msg <- paste0(
+    "DEBrowser v", pkgVersion, "  ",
+    "For help: https://debrowser.readthedocs.org/", "\n\n"
+  )
 
+  citation <- paste0(
+    "If you use DEBrowser in published research, please cite:\n\n",
+    "Alper Kucukural, Onur Yukselen, Deniz M. Ozata, Melissa J. Moore, Manuel Garber\n",
+    "DEBrowser: Interactive Differential Expression Analysis and Visualization Tool for Count Data\n",
+    "BMC Genomics 2019 20:6\n\ndoi:0.1186/s12864-018-5362-x\n"
+  )
+
+  packageStartupMessage(paste0(msg, citation))
 }

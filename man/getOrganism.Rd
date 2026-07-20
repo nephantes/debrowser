@@ -19,6 +19,6 @@ getOrganism
 \code{getOrganism}
 }
 \examples{
-    x <- getOrganism()
+x <- getOrganism()
 
 }

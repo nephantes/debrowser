@@ -16,5 +16,5 @@ Generates and displays the starting message within DEBrowser.
 \code{getStartupMsg}
 }
 \examples{
-    x <- getStartupMsg()
+x <- getStartupMsg()
 }

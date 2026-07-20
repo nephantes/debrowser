@@ -5,9 +5,7 @@
 \title{debrowserdeanalysis}
 \usage{
 debrowserdeanalysis(
-  input = NULL,
-  output = NULL,
-  session = NULL,
+  id,
   data = NULL,
   metadata = NULL,
   columns = NULL,
@@ -16,11 +14,7 @@ debrowserdeanalysis(
 )
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{data, }{a matrix that includes expression values}
 
@@ -39,6 +33,8 @@ DE panel
 Module to perform and visualize DE results.
 }
 \examples{
-    x <- debrowserdeanalysis()
+\donttest{
+x <- debrowserdeanalysis("de")
+}
 
 }

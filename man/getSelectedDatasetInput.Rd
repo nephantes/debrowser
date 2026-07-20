@@ -30,6 +30,6 @@ data
 Gathers the user selected dataset output to be displayed.
 }
 \examples{
-    x <- getSelectedDatasetInput()
+x <- getSelectedDatasetInput()
 
 }

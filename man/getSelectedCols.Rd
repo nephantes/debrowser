@@ -13,11 +13,14 @@ getSelectedCols(data = NULL, datasetInput = NULL, input = NULL)
 
 \item{input, }{user input params}
 }
+\value{
+A subset of `data` (rows of `datasetInput`, columns selected
+  in `input$col_list`), or NULL when neither input is provided.
+}
 \description{
 gets selected columns
 }
 \examples{
-    getSelectedCols()
-
+getSelectedCols()
 
 }

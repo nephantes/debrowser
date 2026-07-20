@@ -19,6 +19,6 @@ main bar plots UI.
 \code{getBarMainPlotUI}
 }
 \examples{
-    x <- getBarMainPlotUI("bar")
+x <- getBarMainPlotUI("bar")
 
 }

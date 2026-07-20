@@ -1,10 +1,8 @@
 #' debrowserbatcheffect
 #'
 #' Module to correct batch effect
-#' 
-#' @param input, input variables
-#' @param output, output objects
-#' @param session, session 
+#'
+#' @param id, namespace id
 #' @param ldata, loaded data
 #' @return main plot
 #'
@@ -12,68 +10,105 @@
 #' @export
 #'
 #' @examples
-#'     x <- debrowserbatcheffect()
+#' \donttest{
+#' x <- debrowserbatcheffect("batch")
+#' }
 #'
-debrowserbatcheffect <- function(input, output, session, ldata = NULL) {
-    if(is.null(ldata)) return(NULL)
-    batchdata <- reactiveValues(count=NULL, meta = NULL)
-    observeEvent(input$submitBatchEffect, {
-    if (is.null(ldata$count)) return (NULL)
-
-    countData <- ldata$count
-    withProgress(message = 'Normalization', detail = "Normalization", value = NULL, {
-        if (input$norm_method != "none"){
-            countData <- getNormalizedMatrix(ldata$count, method=input$norm_method)
+debrowserbatcheffect <- function(id, ldata = NULL) {
+  if (is.null(ldata)) {
+    return(NULL)
+  }
+  moduleServer(id, function(input, output, session) {
+  batchdata <- reactiveValues(count = NULL, meta = NULL)
+  observeEvent(input$submitBatchEffect, {
+    if (is.null(ldata$count)) {
+      return(NULL)
+    }
+    # B3.32 -- Top-level safety net: any unhandled error inside
+    # normalization / batch-correction is surfaced as a friendly toast
+    # so the observer (and the page) keeps working. The inner
+    # correctCombat / correctHarman calls also tryCatch their own
+    # ComBat/Harman failures; this is the belt-and-suspenders layer.
+    tryCatch({
+      countData <- ldata$count
+      withProgress(message = "Normalization",
+                   detail = "Normalization", value = NULL, {
+        if (input$norm_method != "none") {
+          countData <- tryCatch(
+            getNormalizedMatrix(ldata$count, method = input$norm_method),
+            error = function(e) {
+              de_notify_error(paste0(
+                "Normalization (", input$norm_method,
+                ") failed: ", conditionMessage(e),
+                " -- try a different method."
+              ))
+              NULL
+            }
+          )
         }
+      })
+      if (is.null(countData)) return(NULL)
+
+      withProgress(message = "Batch Effect Correction",
+                   detail = "Adjusting the Data", value = NULL, {
+        if (input$batchmethod == "CombatSeq" | input$batchmethod == "Combat") {
+          batchdata$count <- correctCombat(input, countData, ldata$meta,
+                                           method = input$batchmethod)
+        } else if (input$batchmethod == "Harman") {
+          batchdata$count <- correctHarman(input, countData, ldata$meta)
+        } else {
+          batchdata$count <- countData
+        }
+      })
+      if (is.null(batchdata$count)) {
+        return(NULL)
+      }
+      batchdata$meta <- ldata$meta
+    }, error = function(e) {
+      de_notify_error(paste0(
+        "Batch effect step failed: ", conditionMessage(e),
+        " -- adjust your settings and click Submit again."
+      ))
     })
-    withProgress(message = 'Batch Effect Correction', detail = "Adjusting the Data", value = NULL, {
-    if (input$batchmethod == "CombatSeq" |  input$batchmethod == "Combat"){
-        batchdata$count <- correctCombat(input, countData, ldata$meta, method = input$batchmethod)
-    }
-    else if (input$batchmethod == "Harman"){
-        batchdata$count <- correctHarman(input, countData, ldata$meta)
-    }
-    else{
-        batchdata$count <-  countData
-    }
-    })
-    if (is.null(batchdata$count)) return(NULL)
-    batchdata$meta <- ldata$meta
   })
-  
+
   output$batchfields <- renderUI({
-    if (!is.null(ldata$meta))
-        list( conditionalPanel(condition = paste0("input['", session$ns("batchmethod"),"']!='none'"),
-             selectGroupInfo( ldata$meta, input, session$ns("treatment"), "Treatment"),
-             selectGroupInfo( ldata$meta, input, session$ns("batch"), "Batch")))
+    if (!is.null(ldata$meta)) {
+      list(conditionalPanel(
+        condition = paste0("input['", session$ns("batchmethod"), "']!='none'"),
+        selectGroupInfo(ldata$meta, input, session$ns("treatment"), "Treatment"),
+        selectGroupInfo(ldata$meta, input, session$ns("batch"), "Batch")
+      ))
+    }
   })
-  
+
   batcheffectdata <- reactive({
     ret <- NULL
-    if(!is.null(batchdata$count)){
+    if (!is.null(batchdata$count)) {
       ret <- batchdata
     }
     return(ret)
   })
-  
+
   observe({
     getSampleDetails(output, "uploadSummary", "sampleDetails", ldata)
     getSampleDetails(output, "filteredSummary", "filteredDetails", batcheffectdata())
     getTableDetails(output, session, "beforebatchtable", ldata$count, modal = TRUE)
-    callModule(debrowserpcaplot, "beforeCorrectionPCA", ldata$count, ldata$meta)
-    callModule(debrowserIQRplot, "beforeCorrectionIQR",  ldata$count)
-    callModule(debrowserdensityplot, "beforeCorrectionDensity", ldata$count)
-    if ( !is.null(batcheffectdata()$count ) && nrow(batcheffectdata()$count)>2 ){
-      withProgress(message = 'Drawing the plot', detail = "Preparing!", value = NULL, {
-       getTableDetails(output, session, "afterbatchtable", batcheffectdata()$count, modal = TRUE)
-       callModule(debrowserpcaplot, "afterCorrectionPCA",  batcheffectdata()$count, batcheffectdata()$meta)
-       callModule(debrowserIQRplot, "afterCorrectionIQR",  batcheffectdata()$count)
-       callModule(debrowserdensityplot, "afterCorrectionDensity", batcheffectdata()$count)
+    debrowserpcaplot("beforeCorrectionPCA", ldata$count, ldata$meta)
+    debrowserIQRplot("beforeCorrectionIQR", ldata$count)
+    debrowserdensityplot("beforeCorrectionDensity", ldata$count)
+    if (!is.null(batcheffectdata()$count) && nrow(batcheffectdata()$count) > 2) {
+      withProgress(message = "Drawing the plot", detail = "Preparing!", value = NULL, {
+        getTableDetails(output, session, "afterbatchtable", batcheffectdata()$count, modal = TRUE)
+        debrowserpcaplot("afterCorrectionPCA", batcheffectdata()$count, batcheffectdata()$meta)
+        debrowserIQRplot("afterCorrectionIQR", batcheffectdata()$count)
+        debrowserdensityplot("afterCorrectionDensity", batcheffectdata()$count)
       })
     }
   })
-  
-  list(BatchEffect=batcheffectdata)
+
+  list(BatchEffect = batcheffectdata)
+  })
 }
 
 
@@ -83,78 +118,125 @@ debrowserbatcheffect <- function(input, output, session, ldata = NULL) {
 #' @param id, namespace id
 #' @return panel
 #' @examples
-#'     x <- batchEffectUI("batcheffect")
+#' x <- batchEffectUI("batcheffect")
 #'
 #' @export
 #'
-batchEffectUI <- function (id) {
+batchEffectUI <- function(id) {
   ns <- NS(id)
 
   list(
     fluidRow(
-        shinydashboard::box(title = "Batch Effect Correction and Normalization",
-        solidHeader = TRUE, status = "info",  width = 12, 
-        fluidRow(
-            column(5,div(style = 'overflow: scroll',
-                tableOutput(ns("uploadSummary")),
-                DT::dataTableOutput(ns("sampleDetails"))),
-                uiOutput(ns("beforebatchtable"))
+      de_card(
+        "Batch Effect Correction and Normalization",
+        bslib::layout_columns(
+          col_widths = c(5, 2, 5),
+          tagList(
+            div(
+              style = "overflow: scroll",
+              tableOutput(ns("uploadSummary")),
+              DT::dataTableOutput(ns("sampleDetails"))
             ),
-            column(2,
-            shinydashboard::box(title = "Options",
-                solidHeader = TRUE, status = "info",
-                width = 12, 
+            uiOutput(ns("beforebatchtable"))
+          ),
+          de_card(
+            title = "Options",
+            # B3.31 -- Mirror the Filter card pattern: form on top,
+            # next-step CTAs INSIDE the same card stacked under Submit.
+            div(
+              class = "de-batch-card-content",
+              div(
+                class = "de-batch-form",
                 normalizationMethods(id),
                 batchMethod(id),
                 uiOutput(ns("batchfields")),
                 actionButtonDE(ns("submitBatchEffect"), label = "Submit", styleclass = "primary")
-           )
-          ),
-          column(5,div(style = 'overflow: scroll', 
-                tableOutput(ns("filteredSummary")),
-                DT::dataTableOutput(ns("filteredDetails"))),
-                uiOutput(ns("afterbatchtable"))
-          )
-        ),
-        conditionalPanel(condition = paste0("input['", ns("submitBatchEffect"),"']"),
-        actionButtonDE("goDE", "Go to DE Analysis", styleclass = "primary"),
-        actionButtonDE("goQCplots", "Go to QC plots", styleclass = "primary"))),
-    shinydashboard::box(title = "Plots",
-        solidHeader = TRUE, status = "info",  width = 12, 
-        fluidRow(column(1, div()),
-            tabsetPanel( id = ns("batchTabs"),
-                tabPanel(id = ns("PCA"), "PCA",
-                    column(5,
-                        getPCAPlotUI(ns("beforeCorrectionPCA"))),
-                    column(2,  
-                        shinydashboard::box(title = "PCA Controls",
-                        solidHeader = T, status = "info",  width = 12, 
-                        tabsetPanel( id = ns("pcacontrols"),
-                        tabPanel ("Before",
-                        pcaPlotControlsUI(ns("beforeCorrectionPCA"))),
-                        tabPanel ( "After",
-                        pcaPlotControlsUI(ns("afterCorrectionPCA")))))),
-                    column(5,
-                        getPCAPlotUI(ns("afterCorrectionPCA")))
-                ),
-                tabPanel(id = ns("IQR"), "IQR",
-                    column(5,
-                        getIQRPlotUI(ns("beforeCorrectionIQR"))),
-                    column(2, div()),
-                    column(5,
-                        getIQRPlotUI(ns("afterCorrectionIQR")))
-                ),
-                tabPanel(id = ns("Density"), "Density",
-                    column(5,
-                        getDensityPlotUI(ns("beforeCorrectionDensity"))),
-                    column(2, div()),
-                    column(5,
-                        getDensityPlotUI(ns("afterCorrectionDensity")))
+              ),
+              conditionalPanel(
+                condition = paste0("input['", ns("submitBatchEffect"), "']"),
+                div(
+                  class = "de-batch-cta-stack",
+                  actionButtonDE("goDE", "Go to DE Analysis", styleclass = "primary"),
+                  actionButtonDE("goQCplots", "Go to QC plots", styleclass = "primary")
                 )
+              )
             )
+          ),
+          tagList(
+            div(
+              style = "overflow: scroll",
+              tableOutput(ns("filteredSummary")),
+              DT::dataTableOutput(ns("filteredDetails"))
+            ),
+            uiOutput(ns("afterbatchtable"))
+          )
+        )
+      ),
+      de_card(
+        "Plots",
+        fluidRow(
+          column(
+            12,
+            tabsetPanel(
+              id = ns("batchTabs"),
+              tabPanel(
+                id = ns("PCA"), "PCA",
+                column(
+                  5,
+                  getPCAPlotUI(ns("beforeCorrectionPCA"))
+                ),
+                column(
+                  2,
+                  de_card(
+                    title = "PCA Controls",
+                    tabsetPanel(
+                      id = ns("pcacontrols"),
+                      tabPanel(
+                        "Before",
+                        pcaPlotControlsUI(ns("beforeCorrectionPCA"))
+                      ),
+                      tabPanel(
+                        "After",
+                        pcaPlotControlsUI(ns("afterCorrectionPCA"))
+                      )
+                    )
+                  )
+                ),
+                column(
+                  5,
+                  getPCAPlotUI(ns("afterCorrectionPCA"))
+                )
+              ),
+              tabPanel(
+                id = ns("IQR"), "IQR",
+                column(
+                  5,
+                  getIQRPlotUI(ns("beforeCorrectionIQR"))
+                ),
+                column(2, div()),
+                column(
+                  5,
+                  getIQRPlotUI(ns("afterCorrectionIQR"))
+                )
+              ),
+              tabPanel(
+                id = ns("Density"), "Density",
+                column(
+                  5,
+                  getDensityPlotUI(ns("beforeCorrectionDensity"))
+                ),
+                column(2, div()),
+                column(
+                  5,
+                  getDensityPlotUI(ns("afterCorrectionDensity"))
+                )
+              )
+            )
+          )
         )
       )
-    ), getPCAcontolUpdatesJS())
+    ), getPCAcontolUpdatesJS()
+  )
 }
 #' normalizationMethods
 #'
@@ -165,15 +247,16 @@ batchEffectUI <- function (id) {
 #' @return radio control
 #'
 #' @examples
-#'    
-#'     x <- normalizationMethods("batch")
+#'
+#' x <- normalizationMethods("batch")
 #'
 #' @export
 #'
 normalizationMethods <- function(id) {
-    ns <- NS(id)
-    selectInput(ns("norm_method"), "Normalization Method:",
-        choices = c("none", "MRN", "TMM", "RLE", "upperquartile"))
+  ns <- NS(id)
+  selectInput(ns("norm_method"), "Normalization Method:",
+    choices = c("none", "MRN", "TMM", "RLE", "upperquartile")
+  )
 }
 
 #' batchMethod
@@ -184,16 +267,16 @@ normalizationMethods <- function(id) {
 #' @return radio control
 #'
 #' @examples
-#'    
-#'     x <- batchMethod("batch")
+#'
+#' x <- batchMethod("batch")
 #'
 #' @export
 #'
 batchMethod <- function(id) {
   ns <- NS(id)
   selectInput(ns("batchmethod"), "Correction Method:",
-              choices = c("none", "Combat", "CombatSeq", "Harman"),
-               selected='none'
+    choices = c("none", "Combat", "CombatSeq", "Harman"),
+    selected = "none"
   )
 }
 
@@ -208,44 +291,41 @@ batchMethod <- function(id) {
 #' @export
 #'
 #' @examples
-#'     x<-correctCombat ()
-correctCombat <- function (input = NULL, idata = NULL, metadata = NULL, method = NULL) {
-  if (is.null(idata)) return(NULL)
-  
+#' x <- correctCombat()
+correctCombat <- function(input = NULL, idata = NULL, metadata = NULL,
+                          method = NULL) {
+  if (is.null(idata)) {
+    return(NULL)
+  }
   if (input$batch == "None") {
-      showNotification("Please select the batch field to use Combat!", type = "error")
-      return(NULL)
+    de_notify_error(
+      "ComBat needs a batch field. Pick one in the Batch dropdown above before applying."
+    )
+    return(NULL)
   }
-  
-  batch <- metadata[, input$batch]
-  
-  columns <- colnames(idata)
-  datacor <- data.frame(idata[, columns])
-  datacor[, columns] <- apply(datacor[, columns], 2,
-      function(x) as.integer(x) + runif(1, 0, 0.01))
-  
-  if (input$treatment != "None") {
-      treatment <- metadata[, input$treatment]
-      meta <- data.frame(cbind(columns, treatment, batch))
-      modcombat = model.matrix(~as.factor(treatment), data = meta)
-      if(method == "Combat"){
-        combat_res = sva::ComBat(dat=as.matrix(datacor), mod=modcombat, batch=batch)
-      } else {
-        combat_res = sva::ComBat_seq(counts=as.matrix(datacor), covar_mod = modcombat, batch=batch)
-      }
+  treatment_col <- if (!is.null(input$treatment) && input$treatment != "None") {
+    input$treatment
   } else {
-      if(method == "Combat"){
-        combat_res = sva::ComBat(dat=as.matrix(datacor), batch=batch)
-      } else {
-        combat_res = sva::ComBat_seq(counts=as.matrix(datacor), batch=batch)
-      }
+    NULL
   }
-  
-  a <- cbind(idata[rownames(combat_res), 2], combat_res)
-  a[, columns] <- apply(a[, columns], 2, function(x) ifelse(x<0, 0, x))
-  a[, columns] <- apply(a[, columns], 2, function(x) as.integer(x))
-  colnames(a[, 1]) <- colnames(idata[, 1])
-  a[,columns]
+  # B3.32 -- sva::ComBat / ComBat_seq throws on confounded covariates,
+  # singular models, etc. Catch and surface as a friendly notification
+  # instead of letting the observer die and the page freeze.
+  tryCatch(
+    apply_batch_correction(idata, metadata,
+      method = method,
+      batch_col = input$batch, treatment_col = treatment_col
+    ),
+    error = function(e) {
+      de_notify_error(paste0(
+        "Batch correction (", method, ") could not run: ",
+        conditionMessage(e),
+        " -- try a different batch column, drop confounded covariates, ",
+        "or pick a different correction method."
+      ))
+      NULL
+    }
+  )
 }
 
 #' Correct Batch Effect using Harman
@@ -258,20 +338,33 @@ correctCombat <- function (input = NULL, idata = NULL, metadata = NULL, method =
 #' @export
 #'
 #' @examples
-#'     x<-correctHarman ()
-correctHarman <- function (input = NULL, idata = NULL, metadata = NULL) {
-  if (is.null(idata)) return(NULL)
-  if (input$treatment == "None" || input$batch == "None") {
-      showNotification("Please select the batch and treatment fields to use Harman!", type = "error")
-      return(NULL)
+#' x <- correctHarman()
+correctHarman <- function(input = NULL, idata = NULL, metadata = NULL) {
+  if (is.null(idata)) {
+    return(NULL)
   }
-
-  batch.info <- data.frame(metadata[, c(input$treatment, input$batch)])
-  rownames(batch.info) <- rownames(metadata)
-  colnames(batch.info) <- c("treatment", "batch") 
-  
-  harman.res <- harman(idata, expt= batch.info$treatment, batch= batch.info$batch, limit=0.95)
-  harman.corrected <- reconstructData(harman.res)
-  harman.corrected[harman.corrected<0] <- 0
-  harman.corrected
+  if (input$treatment == "None" || input$batch == "None") {
+    de_notify_error(
+      "Harman needs both a batch and a treatment field. Pick one for each in the dropdowns above."
+    )
+    return(NULL)
+  }
+  # B3.32 -- Harman::harman throws on bad batch/treatment configurations
+  # (e.g. only one batch level, or batch perfectly confounds treatment).
+  # Catch and surface as a friendly notification instead of crashing.
+  tryCatch(
+    apply_batch_correction(idata, metadata,
+      method = "Harman",
+      batch_col = input$batch, treatment_col = input$treatment
+    ),
+    error = function(e) {
+      de_notify_error(paste0(
+        "Harman correction could not run: ",
+        conditionMessage(e),
+        " -- verify your batch and treatment fields are valid (more than ",
+        "one level, not perfectly confounded), then try again."
+      ))
+      NULL
+    }
+  )
 }

@@ -17,5 +17,5 @@ the user has first seen the main plots page within DEBrowser.
 \code{getStartPlotsMsg}
 }
 \examples{
-    x <- getStartPlotsMsg()
+x <- getStartPlotsMsg()
 }

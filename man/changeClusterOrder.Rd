@@ -21,5 +21,5 @@ change order of K-means clusters
 \code{changeClusterOrder}
 }
 \examples{
-    x <- changeClusterOrder()
+x <- changeClusterOrder()
 }

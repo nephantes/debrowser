@@ -1,0 +1,173 @@
+test_that("validate_count_upload accepts a well-formed TSV", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "gene\tS1\tS2\tS3",
+    "G1\t10\t20\t30",
+    "G2\t5\t6\t7"
+  ), path)
+  expect_silent(validate_count_upload(path, sep = "\t"))
+})
+
+test_that("validate_count_upload raises bad_separator on single-column read", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  # File is tab-separated but caller passes comma -> read sees 1 column.
+  writeLines(c(
+    "gene\tS1\tS2",
+    "G1\t10\t20"
+  ), path)
+  expect_error(
+    validate_count_upload(path, sep = ","),
+    class = "bad_separator"
+  )
+})
+
+test_that("validate_count_upload raises duplicate_gene_ids and lists offenders", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "gene\tS1\tS2",
+    "G1\t10\t20",
+    "G1\t11\t21",
+    "G2\t5\t6",
+    "G2\t7\t8"
+  ), path)
+  err <- tryCatch(
+    validate_count_upload(path, sep = "\t"),
+    error = identity
+  )
+  expect_s3_class(err, "duplicate_gene_ids")
+  expect_setequal(err$dups, c("G1", "G2"))
+})
+
+test_that("validate_count_upload's $dups is character even for numeric IDs", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "id\tS1\tS2",
+    "1\t10\t20",
+    "1\t11\t21",
+    "2\t5\t6"
+  ), path)
+  err <- tryCatch(
+    validate_count_upload(path, sep = "\t"),
+    error = identity
+  )
+  expect_s3_class(err, "duplicate_gene_ids")
+  expect_type(err$dups, "character")
+  expect_setequal(err$dups, c("1"))
+})
+
+test_that("validate_metadata_upload accepts well-formed metadata", {
+  # 2 columns is the minimum legal width (Sample + at least one annotation).
+  # This implicitly covers the boundary of the `ncol < 2` separator check.
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "Sample\tCondition",
+    "S1\tA",
+    "S2\tA",
+    "S3\tB"
+  ), path)
+  expect_silent(
+    validate_metadata_upload(path, count_cols = c("S1", "S2", "S3"), sep = "\t")
+  )
+})
+
+test_that("validate_metadata_upload raises bad_separator on single-column read", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  # Tab file, but caller passes comma -> 1 column.
+  writeLines(c("Sample\tCondition", "S1\tA"), path)
+  expect_error(
+    validate_metadata_upload(path, count_cols = c("S1"), sep = ","),
+    class = "bad_separator"
+  )
+})
+
+test_that("validate_metadata_upload raises column_mismatch with the unmatched names", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "Sample\tCondition",
+    "S1\tA",
+    "S2\tA"
+  ), path)
+  err <- tryCatch(
+    validate_metadata_upload(path,
+                             count_cols = c("S1", "S2", "S99", "S100"),
+                             sep = "\t"),
+    error = identity
+  )
+  expect_s3_class(err, "column_mismatch")
+  expect_setequal(err$unmatched, c("S99", "S100"))
+})
+
+# ----- Compatibility shim tests: checkCountData / checkMetaData -----
+# These exported helpers wrap the new validators and translate typed
+# conditions back to the legacy "success" / "Error: ..." string format
+# for any external caller.
+
+test_that("checkCountData returns 'success' on a clean file", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "gene\tS1\tS2\tS3",
+    "G1\t10\t20\t30",
+    "G2\t5\t6\t7"
+  ), path)
+  fake_input <- list(countdata = list(datapath = path), countdataSep = "\t")
+  expect_equal(checkCountData(fake_input), "success")
+})
+
+test_that("checkCountData reports the legacy bad-separator string", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c("gene\tS1\tS2", "G1\t10\t20"), path)
+  fake_input <- list(countdata = list(datapath = path), countdataSep = ",")
+  expect_match(
+    checkCountData(fake_input),
+    "Error: Please check if you chose the right separator!",
+    fixed = TRUE
+  )
+})
+
+test_that("checkCountData reports duplicate gene IDs in the legacy format", {
+  path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c(
+    "gene\tS1\tS2",
+    "G1\t10\t20",
+    "G1\t11\t21"
+  ), path)
+  fake_input <- list(countdata = list(datapath = path), countdataSep = "\t")
+  res <- checkCountData(fake_input)
+  # Typo "entried" was corrected to "gene IDs" in B4; comment locks the change.
+  expect_match(res, "Error: There are duplicate gene IDs in the rownames\\.", fixed = FALSE)
+  expect_match(res, "G1", fixed = TRUE)
+})
+
+test_that("checkMetaData returns 'success' on matching count + metadata", {
+  meta_path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(meta_path), add = TRUE)
+  writeLines(c("Sample\tCondition", "S1\tA", "S2\tA", "S3\tB"), meta_path)
+  fake_input <- list(metadata = list(datapath = meta_path), metadataSep = "\t")
+  ct <- data.frame(S1 = 1:3, S2 = 4:6, S3 = 7:9)
+  expect_equal(checkMetaData(fake_input, ct), "success")
+})
+
+test_that("checkMetaData flags count columns missing from metadata (B4 direction)", {
+  # B4 behavioral change: legacy reported `setdiff(meta, count)`; B4 reports
+  # `setdiff(count, meta)`. Pin the new direction. See shim comment for
+  # rationale.
+  meta_path <- tempfile(fileext = ".tsv")
+  on.exit(unlink(meta_path), add = TRUE)
+  writeLines(c("Sample\tCondition", "S1\tA", "S2\tA"), meta_path)
+  fake_input <- list(metadata = list(datapath = meta_path), metadataSep = "\t")
+  ct <- data.frame(S1 = 1:3, S2 = 4:6, S99 = 7:9, S100 = 10:12)
+  res <- checkMetaData(fake_input, ct)
+  expect_match(res, "Colnames doesn't match with the metada table", fixed = TRUE)
+  expect_match(res, "S99", fixed = TRUE)
+  expect_match(res, "S100", fixed = TRUE)
+})

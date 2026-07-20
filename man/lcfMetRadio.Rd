@@ -19,7 +19,7 @@ Radio buttons for low count removal methods
 \code{lcfMetRadio}
 }
 \examples{
-   
-    x <- lcfMetRadio("lcf")
+
+x <- lcfMetRadio("lcf")
 
 }

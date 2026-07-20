@@ -18,6 +18,6 @@ plot
 heatmap selection functionality
 }
 \examples{
-    x <- getSelHeat()
+x <- getSelHeat()
 
 }

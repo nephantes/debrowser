@@ -16,5 +16,5 @@ Generates the Main PLots Left menu to be displayed within the DEBrowser.
 \code{getMainPlotsLeftMenu}
 }
 \examples{
-    x <- getMainPlotsLeftMenu()
+x <- getMainPlotsLeftMenu()
 }

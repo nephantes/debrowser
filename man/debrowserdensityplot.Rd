@@ -4,14 +4,10 @@
 \alias{debrowserdensityplot}
 \title{debrowserdensityplot}
 \usage{
-debrowserdensityplot(input = NULL, output = NULL, session = NULL, data = NULL)
+debrowserdensityplot(id, data = NULL)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{data, }{a matrix that includes expression values}
 }
@@ -19,10 +15,12 @@ debrowserdensityplot(input = NULL, output = NULL, session = NULL, data = NULL)
 density plot
 }
 \description{
-Module for a density plot that can be used in data prep and 
+Module for a density plot that can be used in data prep and
 low count removal modules
 }
 \examples{
-    x <- debrowserdensityplot()
+\donttest{
+x <- debrowserdensityplot("density")
+}
 
 }

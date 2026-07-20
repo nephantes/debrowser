@@ -11,6 +11,10 @@ getCompSelection(name = NULL, count = NULL)
 
 \item{count, }{comparison count}
 }
+\value{
+A `shiny::selectInput` (or NULL when only one comparison
+  exists) listing the available comparison indices.
+}
 \description{
 Gathers the user selected comparison set to be used within the
 DEBrowser.
@@ -19,5 +23,5 @@ DEBrowser.
 \code{getCompSelection}
 }
 \examples{
-    x <- getCompSelection(name="comp", count = 2)
+x <- getCompSelection(name = "comp", count = 2)
 }

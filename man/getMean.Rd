@@ -18,6 +18,6 @@ data
 Gathers the mean for selected condition.
 }
 \examples{
-    x <- getMean()
+x <- getMean()
 
 }

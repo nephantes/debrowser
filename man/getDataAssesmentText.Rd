@@ -15,6 +15,6 @@ getDataAssesmentText
 DataAssesment text
 }
 \examples{
-    x<- getDataAssesmentText()
+x <- getDataAssesmentText()
 
 }

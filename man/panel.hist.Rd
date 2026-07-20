@@ -18,6 +18,6 @@ all2all histogram plots
 Prepares the historgram for the all2all plot.
 }
 \examples{
-    panel.hist(1)
+panel.hist(1)
 
 }

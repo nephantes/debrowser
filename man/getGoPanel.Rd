@@ -17,7 +17,6 @@ display.
 \code{getGoPanel}
 }
 \examples{
- 
-    x <- getGoPanel()
+x <- getGoPanel()
 
 }

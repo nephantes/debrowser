@@ -45,16 +45,22 @@ pca list
 Plots the PCA results for the selected dataset.
 }
 \examples{
-    load(system.file("extdata", "demo", "demodata.Rda",
-            package="debrowser"))
-    metadata<-cbind(colnames(demodata[,1:6]), 
-            colnames(demodata[,1:6]),
-            c(rep("Cond1",3), rep("Cond2",3)))
-    colnames(metadata)<-c("samples", "color", "shape")
-    
-    a <- plot_pca(getNormalizedMatrix(
-            demodata[rowSums(demodata[,1:6])>10,1:6]),
-            metadata = metadata, color = "samples",
-            size = 5, shape = "shape")
+load(system.file("extdata", "demo", "demodata.Rda",
+  package = "debrowser"
+))
+metadata <- cbind(
+  colnames(demodata[, seq_len(6L)]),
+  colnames(demodata[, seq_len(6L)]),
+  c(rep("Cond1", 3), rep("Cond2", 3))
+)
+colnames(metadata) <- c("samples", "color", "shape")
+
+a <- plot_pca(
+  getNormalizedMatrix(
+    demodata[rowSums(demodata[, seq_len(6L)]) > 10, seq_len(6L)]
+  ),
+  metadata = metadata, color = "samples",
+  size = 5, shape = "shape"
+)
 
 }

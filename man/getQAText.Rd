@@ -15,6 +15,6 @@ getQAText
 Some questions and answers
 }
 \examples{
-    x<- getQAText()
+x <- getQAText()
 
 }

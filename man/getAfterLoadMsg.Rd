@@ -17,5 +17,5 @@ within the DEBrowser.
 \code{getAfterLoadMsg}
 }
 \examples{
-    x <- getAfterLoadMsg()
+x <- getAfterLoadMsg()
 }

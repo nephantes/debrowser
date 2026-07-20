@@ -35,6 +35,6 @@ into the ui part;
 uiOutput(ns("dataname"))
 }
 \examples{
-    x <- getTableDetails()
+x <- getTableDetails()
 
 }

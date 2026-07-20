@@ -20,5 +20,5 @@ DEBrowser.
 \code{getQCLeftMenu}
 }
 \examples{
-    x <- getQCLeftMenu()
+x <- getQCLeftMenu()
 }

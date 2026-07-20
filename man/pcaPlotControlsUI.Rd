@@ -19,5 +19,5 @@ Generates the PCA PLots Left menu to be displayed within the DEBrowser.
 \code{pcaPlotControlsUI}
 }
 \examples{
-    x <- pcaPlotControlsUI("pca")
+x <- pcaPlotControlsUI("pca")
 }

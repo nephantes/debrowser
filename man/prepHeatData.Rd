@@ -18,6 +18,6 @@ heatdata
 scales the data
 }
 \examples{
-    x <- prepHeatData()
+x <- prepHeatData()
 
 }

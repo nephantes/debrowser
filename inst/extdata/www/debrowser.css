@@ -1,0 +1,4912 @@
+#university-name {
+    text-align: left;
+}
+
+.a{
+    margin: 12px 12px 12px 12px;
+}
+
+.removebm{
+    margin: 12px 27px 12px 27px !important;
+    display: inline-block;
+}
+
+.bm_id{
+    margin: 12px 27px 12px 27px !important;
+    display: inline-block;
+    width: 150px !important;
+    min-width: 150px !important;
+}
+
+#past_named_bookmarks{
+    margin: 27px 27px 0 27px !important;
+}
+
+#refresh{
+    margin: 15px;
+}
+
+
+#bookmark_saved_output {
+    color: green;
+}
+
+#initialmenu {
+    padding: 15px 15px 0 15px;
+}
+
+
+#demo {
+    margin: 12px 12px 12px 12px;
+}
+
+#loadmessage {
+    position: relative;
+    background: rgb(25, 31, 38);
+}
+
+/* B1.20: wizard step nav uses Bootstrap's list-group classes directly
+   (set on the actionLinks in R/ui.R). No custom styling needed —
+   list-group-item-action gives the right hover/focus/border treatment
+   for the matching bslib BS5 theme. */
+
+/* B2a: wizard progress decoration */
+.de-progress-icon {
+    display: inline-block;
+    margin-left: 0.4em;
+    width: 1em;
+}
+
+.de-progress-icon.done::after {
+    content: "\2713";          /* heavy check mark U+2713 */
+    color: #22c55e;
+    font-weight: 700;
+}
+
+.de-progress-icon.skipped::after {
+    content: "\2713";
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.de-progress-icon.locked::after {
+    content: "";               /* no glyph; the pill itself is greyed */
+}
+
+.de-pill-locked {
+    pointer-events: none;
+    opacity: 0.55;
+}
+
+.de-pill-done {
+    /* No special treatment; the trailing checkmark is enough. */
+}
+
+/* B2b: Quick Start wizard upload cards.
+   Two side-by-side compact drop zones with HTML5 drag-and-drop wiring
+   (see inst/extdata/www/dropzone.js). */
+.de-dropzone .card {
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.de-dropzone .card-header {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+}
+
+.de-dropzone .card-body {
+    padding: 0.5rem 0.75rem;
+}
+
+.de-dropzone .form-text,
+.de-dropzone .help-block {
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.de-dropzone.dragover .card {
+    border-color: #2563eb;
+    background-color: rgba(37, 99, 235, 0.06);
+}
+
+.de-demo-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 1.25rem;
+}
+
+.de-demo-caption {
+    color: var(--bs-secondary-color, #6c757d);
+    font-style: italic;
+    margin-right: 0.25rem;
+}
+
+.de-detect-fail-caption {
+    color: var(--bs-warning-text-emphasis, #997404);
+    font-size: 0.875rem;
+    margin: 0.25rem 0 0.5rem 0.25rem;
+}
+
+/* Comparison Selection (mod_condselect): each logical section of the
+   wizard card is rendered as a bslib sub-card (.de-subcard) with a
+   muted header. Form inputs inside sub-cards are forced to 100% width
+   so the Label / Samples / DE-method boxes actually fill the column
+   they sit in (default Bootstrap leaves them at intrinsic width, which
+   leaves the wide columns looking empty). */
+/* Comparison wizard compaction: previously the Sample-grouping +
+   Treatment + Control + DE-method stack required two scrollbars on a
+   1400-px viewport. Tightened padding, smaller form chrome, fixed
+   selectize pill heights, and Swap button vertically centered with the
+   Sample selectizes. The selectize multi-select boxes now keep a stable
+   height when items are added or removed (no more layout jump when the
+   user clicks a pill). */
+.de-comparison .card-header {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    line-height: 1.1;
+}
+.de-comparison .card-body {
+    padding: 8px 12px !important;
+}
+.de-comparison .form-group,
+.de-comparison .shiny-input-container {
+    margin-bottom: 6px !important;
+}
+.de-comparison label {
+    font-size: 11.5px !important;
+    font-weight: 500;
+    margin-bottom: 2px !important;
+    line-height: 1.2;
+}
+.de-comparison .form-control,
+.de-comparison .form-select,
+.de-comparison .selectize-input {
+    min-height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+}
+.de-comparison .accordion-button {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+}
+.de-comparison .accordion-body {
+    padding: 8px 10px !important;
+}
+/* Selectize multi-selects: keep a stable min-height and let pills wrap
+   inside the box instead of growing the input shell every time a sample
+   is added. flex-wrap + flex-start anchors pills to the top so adding
+   one doesn't push everything down. */
+.de-comparison .selectize-input {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px;
+    min-height: 64px !important;
+    max-height: 140px;
+    overflow-y: auto;
+}
+.de-comparison .selectize-input > .item {
+    margin: 0 !important;
+}
+/* Swap button: vertical center so it lines up with the row of sample
+   pickers either side, regardless of how many pills are showing. */
+.de-comparison .de-swap-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 120px;
+}
+
+.de-comparison .de-subcard {
+    margin-bottom: 8px;
+    box-shadow: none;
+    height: calc(100% - 1rem);
+}
+
+.de-comparison .de-subcard > .card-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color, #6c757d);
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    padding: 0.5rem 0.85rem;
+}
+
+.de-comparison .de-subcard .form-control,
+.de-comparison .de-subcard .form-select,
+.de-comparison .de-subcard .selectize-control {
+    width: 100% !important;
+}
+
+/* bslib cards default to overflow:hidden (for full-screen handling),
+   which clips open selectize dropdowns at the card boundary so the
+   menu disappears under the next sub-card. Allow the dropdown to spill
+   out and lift its z-index above sibling sub-cards. */
+.de-comparison .de-subcard,
+.de-comparison .de-subcard > .card-body {
+    overflow: visible;
+}
+
+.de-comparison .de-subcard .selectize-dropdown {
+    z-index: 2080;
+}
+
+.de-swap-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 12rem;
+}
+
+/* B2c: tighter accordion typography inside sidebars only.
+   Scoped via .bslib-sidebar-layout so main-content accordions
+   keep default sizing. */
+.bslib-sidebar-layout .accordion-button {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    line-height: 1.3;
+}
+
+.bslib-sidebar-layout .accordion-body {
+    padding: 0.5rem 0.75rem;
+}
+
+/* Shiny error / validate(need(...)) messages can get clipped when the
+   output element carries html-fill-item (added by imageOutput,
+   dataTableOutput, etc. inside bslib layouts). The fill class collapses
+   the element to ~0 height in containers without a defined height, so
+   only the top slice of the message text shows. Force natural sizing,
+   readable padding, and visible overflow. Pin colors to fixed values
+   (not theme variables that can resolve to near-invisible on light
+   backgrounds in some Bootswatch presets). */
+.shiny-output-error,
+.shiny-output-error-validation {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0.5rem 0.85rem;
+    line-height: 1.45;
+    font-size: 0.9rem;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.shiny-output-error-validation {
+    color: #495057;
+}
+
+.shiny-output-error:not(.shiny-output-error-validation) {
+    color: #b02a37;
+}
+
+/* Empty-state alert used inside our modals when the user opens a
+   modal that needs a prior selection (e.g. GO/KEGG → Genes). Slight
+   bump in line-height so longer sentences read comfortably. */
+.de-modal-empty {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* showNotification() toasts (bottom-right corner). Defaults are tiny
+   and hard to read for multi-word error messages — bump font/padding
+   slightly and allow normal wrapping so longer messages stay legible
+   without overflowing the viewport. */
+.shiny-notification {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    padding: 0.6rem 0.85rem;
+    max-width: 28rem;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.shiny-notification-message {
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+/* Dark-mode toggle: icon = destination convention.
+   In light mode, show moon (click → dark). In dark mode, show sun (click → light). */
+.de-theme-toggle {
+    background: transparent;
+    border: 0;
+    padding: 0.5rem 0.75rem;
+    line-height: 1;
+    cursor: pointer;
+}
+/* Scope the dark-theme matcher to <html> only — the navbar carries its
+   own data-bs-theme="dark" to keep the menu bar dark on light pages. */
+.de-theme-toggle .de-theme-icon-moon { display: inline-block !important; }
+.de-theme-toggle .de-theme-icon-sun  { display: none !important; }
+html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-moon { display: none !important; }
+html[data-bs-theme="dark"] .de-theme-toggle .de-theme-icon-sun  { display: inline-block !important; }
+/* FA icons in the toggle inherit font-size; an FA <i> needs an explicit size. */
+.de-theme-toggle .de-theme-icon { font-size: 18px; line-height: 1; }
+
+/* ---------------------------------------------------------------------
+   Font Awesome webfont fix. The redesign's Inter font-family was
+   cascading onto Font Awesome glyph elements (<i class="fas fa-...">),
+   so every shiny::icon() rendered as a blank "tofu" box -- Export,
+   Bookmark, download, gear, wizard glyphs, all of them. Re-assert the FA
+   font families with !important so the webfont glyphs actually paint.
+   FA's own per-class font-weight (.fas = 900 / .far = 400) still applies.
+   ------------------------------------------------------------------- */
+.fa, .fas, .far, .fab,
+.fa-solid, .fa-regular, .fa-brands {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+}
+.fab, .fa-brands { font-weight: 400 !important; }
+
+/* Respect users who ask for less motion. Global on purpose: accessibility is
+   not gated on the redesign theme. Near-zero (not 0) so transitionend/
+   animationend handlers still fire. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =====================================================================
+   B3 — DEBrowser redesign layer
+   Comprehensive control restyle inspired by aidrift.geniohub.com and
+   alper.kucukural.com. ADDITIVE: everything above keeps working.
+   Hits every control type (form-control, btn, accordion, nav, card,
+   dataTable, irs, selectize, dropdown, modal, shiny-notification,
+   help-button, plotly modebar, dropzone, wizard pills).
+   Activated by html[data-debrowser-redesign="1"], which de_theme() sets.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] {
+  /* --- Brand accent (FILL-only: buttons, chips, dots, slider bars,
+     underlines, borders). Solid indigo (Clinical Indigo direction).
+     Never use --de-cyan as a text color; use --de-accent-ink instead. --- */
+  --de-cyan:    #6366F1;
+  --de-violet:  #A78BFA;
+  --de-blue:    #60A5FA;
+  --de-mint:    #3CB6A0;
+  --de-pink:    #FF7AA2;
+  --de-grad:    linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+  --de-grad-soft: linear-gradient(135deg, rgba(79,70,229,.12), rgba(99,102,241,.12));
+
+  /* Radii */
+  --de-r-sm:   6px;
+  --de-r-md:   10px;
+  --de-r-lg:   14px;
+  --de-r-pill: 999px;
+
+  /* Spacing scale (4px base) — consumed by 01-grid-system-plan.md */
+  --de-space-1: 4px;
+  --de-space-2: 8px;
+  --de-space-3: 12px;
+  --de-space-4: 16px;
+  --de-space-5: 24px;
+  --de-space-6: 32px;
+
+  /* Motion — consumed by 05-hover-cursor-plan.md */
+  --de-dur:  140ms;
+  --de-ease: cubic-bezier(.2,.6,.2,1);
+  /* Composite transition applied to interactive bases (T4). Named
+     properties only — never `all` — and only compositor/paint-cheap
+     channels (color, background-color, border-color, transform,
+     box-shadow). Neutralized globally by the prefers-reduced-motion
+     block above. */
+  --de-transition:
+    color            var(--de-dur) var(--de-ease),
+    background-color var(--de-dur) var(--de-ease),
+    border-color     var(--de-dur) var(--de-ease),
+    transform        var(--de-dur) var(--de-ease),
+    box-shadow       var(--de-dur) var(--de-ease);
+
+  /* Ink color for text/icons on accent fills (buttons, chips, active page).
+     White, because the Clinical Indigo accent is a dark indigo. */
+  --de-ink-on-accent: #FFFFFF;
+
+  /* Shadows */
+  --de-shadow:    0 6px 24px rgba(0,0,0,.06);
+  --de-shadow-lg: 0 12px 32px rgba(15,21,48,.10);
+}
+
+/* Light theme tokens */
+html[data-debrowser-redesign="1"][data-bs-theme="light"],
+html[data-debrowser-redesign="1"]:not([data-bs-theme="dark"]) {
+  --de-bg-0:    #F7F8FC;
+  --de-bg-1:    #FFFFFF;
+  --de-bg-2:    #FFFFFF;
+  --de-bg-3:    #F1F4FB;
+  --de-border:  rgba(15,21,48,.10);
+  --de-border-strong: rgba(15,21,48,.18);
+  --de-text-1:  #0F1530;
+  --de-text-2:  #475270;
+  --de-text-3:  #556087;   /* was #6E7BA5 (4.17:1 FAIL) -> 6.16:1 on white */
+  --de-accent-ink: #4338CA; /* indigo-700: accent-as-TEXT. ~8:1 on white */
+  --de-grid:    rgba(15,21,48,.04);
+}
+
+/* Dark theme tokens */
+html[data-debrowser-redesign="1"][data-bs-theme="dark"] {
+  --de-bg-0:    #0B1020;
+  --de-bg-1:    #0F1530;
+  --de-bg-2:    #141B3A;
+  --de-bg-3:    #1A2147;
+  --de-border:  rgba(255,255,255,.08);
+  --de-border-strong: rgba(255,255,255,.14);
+  --de-text-1:  #E6ECFF;
+  --de-text-2:  #A8B2D1;
+  --de-text-3:  #808CB8;   /* was #6E7BA5 (4.31:1 FAIL) -> 5.44:1 on #0F1530 */
+  --de-accent-ink: #A5B4FC; /* indigo-300: accent-as-TEXT in dark, bright on navy */
+  --de-grad:    linear-gradient(135deg, #6366F1 0%, #818CF8 100%); /* brighter indigo for dark */
+  --de-grid:    rgba(255,255,255,.04);
+  --de-shadow:    0 6px 24px rgba(0,0,0,.35);
+  --de-shadow-lg: 0 12px 32px rgba(0,0,0,.45);
+}
+
+/* ---------- Page canvas with subtle grid + radial glows ---------- */
+html[data-debrowser-redesign="1"] body {
+  background-color: var(--de-bg-0);
+  color: var(--de-text-1);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-image:
+    radial-gradient(800px 500px at 12% -10%, rgba(99,102,241,.10), transparent 60%),
+    radial-gradient(900px 600px at 110% 110%, rgba(79,70,229,.10), transparent 60%),
+    linear-gradient(var(--de-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--de-grid) 1px, transparent 1px);
+  background-size: auto, auto, 56px 56px, 56px 56px;
+  background-attachment: fixed;
+}
+
+/* ---------- Header / navbar ---------- */
+html[data-debrowser-redesign="1"] .navbar {
+  min-height: 52px;
+  padding: 4px 16px;
+  background-color: #0B1020 !important;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  backdrop-filter: blur(10px);
+}
+html[data-debrowser-redesign="1"] .navbar-brand {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -.01em;
+}
+html[data-debrowser-redesign="1"] .navbar-brand::before {
+  content: ""; display: inline-block;
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--de-grad);
+  margin-right: 8px; vertical-align: -5px;
+  box-shadow: inset 0 0 0 4px #0B1020;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link {
+  color: rgba(230,236,255,.72) !important;
+  font-size: 13px; font-weight: 500;
+  padding: 6px 12px; border-radius: var(--de-r-sm);
+  position: relative;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link:hover {
+  color: #fff !important; background: rgba(255,255,255,.06);
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link.active {
+  color: #fff !important; background: rgba(255,255,255,.08);
+}
+/* Underline ::after superseded by the base-level wipe rule below (T6);
+   this fully-overridden duplicate is removed rather than left dead. */
+
+/* Preset picker + utility items in navbar — flatten BS classic */
+html[data-debrowser-redesign="1"] #de_preset_picker {
+  height: 26px; font-size: 11.5px; padding: 0 8px;
+  border-radius: var(--de-r-sm);
+}
+
+/* ---------- Sidebar (bslib::sidebar 300px) ---------- */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar {
+  background: color-mix(in srgb, var(--de-bg-1) 60%, transparent);
+  border-right: 1px solid var(--de-border);
+  padding: 14px 12px;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar-content > h1,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar-content > h6 {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--de-text-3); margin: 12px 6px 6px; font-weight: 600;
+}
+
+/* ---------- Wizard step list (existing .wizard-step-list) ---------- */
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--de-text-2) !important;
+  font-size: 12.5px;
+  padding: 7px 10px;
+  border-radius: var(--de-r-sm) !important;
+  margin-bottom: 2px;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item:hover {
+  background: var(--de-bg-3) !important; color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item.active,
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item-action[aria-current="true"] {
+  background: var(--de-bg-3) !important; color: var(--de-text-1) !important;
+  border-color: var(--de-border) !important;
+  font-weight: 600;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item::before {
+  content: ""; display: inline-block;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--de-border-strong);
+  margin-right: 10px; vertical-align: 2px;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .de-pill-done::before {
+  background: var(--de-mint);
+  box-shadow: 0 0 0 3px rgba(60,182,160,.18);
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item.active::before {
+  background: var(--de-cyan);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22);
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .de-progress-icon.done::after {
+  color: var(--de-mint) !important;
+}
+
+/* ---------- Cards (bslib::card + de_card + wellPanel + .card-*) ---------- */
+html[data-debrowser-redesign="1"] .card,
+html[data-debrowser-redesign="1"] .bslib-card,
+html[data-debrowser-redesign="1"] .well,
+html[data-debrowser-redesign="1"] .wellPanel,
+html[data-debrowser-redesign="1"] .well-panel {
+  background-color: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border) !important;
+  border-radius: var(--de-r-lg) !important;
+  box-shadow: var(--de-shadow) !important;
+  color: var(--de-text-1);
+}
+html[data-debrowser-redesign="1"] .card-header,
+html[data-debrowser-redesign="1"] .bslib-card > .card-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--de-border) !important;
+  padding: 10px 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: var(--de-text-1);
+}
+html[data-debrowser-redesign="1"] .card-body {
+  padding: 14px !important;
+}
+
+/* Subcards inside Comparison Selection get a clearer separation */
+html[data-debrowser-redesign="1"] .de-comparison .de-subcard > .card-header {
+  background: var(--de-grad-soft) !important;
+  color: var(--de-text-2) !important;
+}
+
+/* ---------- Buttons ---------- */
+html[data-debrowser-redesign="1"] .btn {
+  height: 30px; padding: 0 14px;
+  border-radius: var(--de-r-pill);
+  font-size: 12.5px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--de-border-strong);
+  background-color: var(--de-bg-2);
+  color: var(--de-text-1);
+  box-shadow: none;
+  /* transition consolidated into the interactive-bases block (T4);
+     see `transition: var(--de-transition)` below. */
+}
+html[data-debrowser-redesign="1"] .btn:hover {
+  background-color: var(--de-bg-3);
+  border-color: var(--de-border-strong);
+}
+html[data-debrowser-redesign="1"] .btn-primary,
+html[data-debrowser-redesign="1"] .btn-success {
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(79,70,229,.22);
+}
+html[data-debrowser-redesign="1"] .btn-primary:hover,
+html[data-debrowser-redesign="1"] .btn-success:hover {
+  filter: brightness(1.05);
+  color: var(--de-ink-on-accent) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(79,70,229,.30);   /* deeper than base shadow above */
+}
+html[data-debrowser-redesign="1"] .btn-primary:active,
+html[data-debrowser-redesign="1"] .btn-success:active {
+  transform: translateY(0);
+}
+html[data-debrowser-redesign="1"] .btn-secondary,
+html[data-debrowser-redesign="1"] .btn-outline-secondary {
+  background: transparent !important;
+  color: var(--de-text-2) !important;
+  border-color: var(--de-border) !important;
+}
+html[data-debrowser-redesign="1"] .btn-danger {
+  background: var(--de-pink) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+}
+html[data-debrowser-redesign="1"] .btn-sm {
+  height: 26px; padding: 0 10px; font-size: 12px;
+}
+html[data-debrowser-redesign="1"] .btn-lg {
+  height: 38px; padding: 0 18px; font-size: 13.5px;
+}
+html[data-debrowser-redesign="1"] .btn:focus,
+html[data-debrowser-redesign="1"] .btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--de-cyan) 60%, transparent);
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+/* Keyboard focus for interactive elements that lacked any focus style.
+   :focus-visible so mouse clicks don't paint a ring. .btn and .de-help-btn
+   already have bespoke treatments above/below — this covers the rest. */
+html[data-debrowser-redesign="1"] .navbar .nav-link:focus-visible,
+html[data-debrowser-redesign="1"] .nav-tabs .nav-link:focus-visible,
+html[data-debrowser-redesign="1"] .wiz-step:focus-visible,
+html[data-debrowser-redesign="1"] .de-side-list-item:focus-visible,
+html[data-debrowser-redesign="1"] table.dataTable tbody tr:focus-visible,
+html[data-debrowser-redesign="1"] .table tbody tr:focus-visible,
+html[data-debrowser-redesign="1"] .de-drop:focus-visible,
+html[data-debrowser-redesign="1"] .de-dropzone .card:focus-visible,
+html[data-debrowser-redesign="1"] .modebar-btn:focus-visible,
+html[data-debrowser-redesign="1"] .dropdown-item:focus-visible,
+html[data-debrowser-redesign="1"] .selectize-dropdown .option:focus-visible {
+  outline: 2px solid var(--de-accent-ink);
+  outline-offset: 2px;
+}
+
+/* T8 — cursor affordance for un-actionable controls. Disabled buttons get
+   the standard not-allowed cursor. Locked wizard steps set
+   pointer-events:none (below), so not-allowed on the step itself is
+   forward-looking: it surfaces the moment activation is blocked in the
+   click handler instead of via pointer-events (see
+   docs/design/05-hover-cursor-plan.md T8). */
+html[data-debrowser-redesign="1"] .btn:disabled,
+html[data-debrowser-redesign="1"] .btn.disabled,
+html[data-debrowser-redesign="1"] .btn[disabled] {
+  cursor: not-allowed;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked {
+  cursor: not-allowed;
+}
+
+/* Motion token rollout (T4): one reusable transition for every interactive
+   base, so hover/focus color+shadow+transform changes ramp smoothly instead
+   of snapping. Named-property token only (--de-transition) — never `all`. */
+html[data-debrowser-redesign="1"] .btn,
+html[data-debrowser-redesign="1"] .card,
+html[data-debrowser-redesign="1"] .bslib-card,
+html[data-debrowser-redesign="1"] .de-dropzone .card,
+html[data-debrowser-redesign="1"] .navbar .nav-link,
+html[data-debrowser-redesign="1"] .nav-tabs .nav-link,
+html[data-debrowser-redesign="1"] .wiz-step,
+html[data-debrowser-redesign="1"] .de-side-list-item,
+html[data-debrowser-redesign="1"] table.dataTable tbody tr,
+html[data-debrowser-redesign="1"] .table tbody tr,
+html[data-debrowser-redesign="1"] .dropdown-item,
+html[data-debrowser-redesign="1"] .selectize-dropdown .option {
+  transition: var(--de-transition);
+}
+
+/* Download button gets a download glyph styling */
+html[data-debrowser-redesign="1"] .btn-default[id^="download"],
+html[data-debrowser-redesign="1"] [id^="download"] .btn,
+html[data-debrowser-redesign="1"] .btn[id*="download"] {
+  background: var(--de-bg-2);
+  color: var(--de-text-1);
+  border: 1px solid var(--de-border-strong);
+}
+
+/* shinyWidgets radioGroupButtons */
+html[data-debrowser-redesign="1"] .btn-group .btn,
+html[data-debrowser-redesign="1"] .btn-group-toggle .btn {
+  border-radius: var(--de-r-sm) !important;
+}
+html[data-debrowser-redesign="1"] .btn-group .btn:not(:last-child) {
+  margin-right: 4px;
+}
+html[data-debrowser-redesign="1"] .btn-check:checked + .btn,
+html[data-debrowser-redesign="1"] .btn-group .btn.active {
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border-color: transparent !important;
+}
+
+/* ---------- Form controls ---------- */
+html[data-debrowser-redesign="1"] .form-control,
+html[data-debrowser-redesign="1"] .form-select,
+html[data-debrowser-redesign="1"] textarea.form-control {
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1px solid var(--de-border-strong);
+  background-color: var(--de-bg-1);
+  color: var(--de-text-1);
+  border-radius: var(--de-r-sm);
+  font-size: 12.5px;
+  box-shadow: none;
+  transition: border-color .12s ease, outline-color .12s ease;
+}
+html[data-debrowser-redesign="1"] textarea.form-control {
+  min-height: 80px;
+  padding: 8px 10px;
+}
+html[data-debrowser-redesign="1"] .form-control:focus,
+html[data-debrowser-redesign="1"] .form-select:focus {
+  outline: 2px solid color-mix(in srgb, var(--de-cyan) 60%, transparent);
+  outline-offset: -1px;
+  border-color: var(--de-cyan);
+  box-shadow: none;
+}
+html[data-debrowser-redesign="1"] .form-control::placeholder { color: var(--de-text-3); }
+
+html[data-debrowser-redesign="1"] .form-label,
+html[data-debrowser-redesign="1"] .control-label,
+html[data-debrowser-redesign="1"] .shiny-input-container > label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--de-text-3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+html[data-debrowser-redesign="1"] .form-text,
+html[data-debrowser-redesign="1"] .help-block,
+html[data-debrowser-redesign="1"] .shiny-input-container .help-block {
+  font-size: 11.5px; color: var(--de-text-2);
+}
+
+/* Selectize (used by selectInput) */
+html[data-debrowser-redesign="1"] .selectize-input {
+  min-height: 32px !important;
+  padding: 4px 10px !important;
+  border: 1px solid var(--de-border-strong) !important;
+  background: var(--de-bg-1) !important;
+  color: var(--de-text-1) !important;
+  border-radius: var(--de-r-sm) !important;
+  font-size: 12.5px !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .selectize-input.focus {
+  outline: 2px solid color-mix(in srgb, var(--de-cyan) 60%, transparent) !important;
+  outline-offset: -1px;
+  border-color: var(--de-cyan) !important;
+}
+/* Theme-consistent dropdown: solid on BOTH the outer popup and the inner
+   content div (selectize paints the visible surface on the inner one), so
+   it matches the app theme instead of the old forced-white popup. */
+html[data-debrowser-redesign="1"] .selectize-dropdown,
+html[data-debrowser-redesign="1"] .selectize-dropdown-content {
+  background: var(--de-bg-1) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .selectize-dropdown {
+  border: 1px solid var(--de-border-strong) !important;
+  border-radius: var(--de-r-sm) !important;
+  box-shadow: var(--de-shadow-lg) !important;
+}
+html[data-debrowser-redesign="1"] .selectize-dropdown .option {
+  padding: 6px 10px; font-size: 12.5px;
+}
+html[data-debrowser-redesign="1"] .selectize-dropdown .option.active,
+html[data-debrowser-redesign="1"] .selectize-dropdown .option:hover {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .selectize-input > .item {
+  background: var(--de-bg-3) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  color: var(--de-text-1) !important;
+  border-radius: var(--de-r-sm) !important;
+  padding: 1px 8px !important;
+  font-size: 11.5px;
+  /* Leave room for the remove_button X so the text doesn't crowd it. */
+  padding-right: 22px !important;
+  position: relative;
+}
+
+/* remove_button plugin: explicit X on each multi-select pill.
+   Enabled globally via inst/extdata/www/selectize_init.js. */
+html[data-debrowser-redesign="1"] .selectize-input > .item > .remove {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 18px;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-left: 1px solid var(--de-border-strong) !important;
+  border-radius: 0 var(--de-r-sm) var(--de-r-sm) 0 !important;
+  background: transparent !important;
+  color: var(--de-text-2) !important;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none !important;
+}
+html[data-debrowser-redesign="1"] .selectize-input > .item > .remove:hover {
+  background: var(--de-coral, #ef4444) !important;
+  color: #fff !important;
+  border-left-color: transparent !important;
+}
+
+/* Already-selected option in an open dropdown: tint + checkmark so the
+   user can see at a glance which samples / covariates are already in
+   the pills above. Selectize adds .selected to options that match the
+   current value(s). */
+html[data-debrowser-redesign="1"] .selectize-dropdown .option.selected {
+  background: color-mix(in srgb, var(--de-cyan, #5ee6d6) 14%, transparent) !important;
+  color: var(--de-text-1) !important;
+  font-weight: 600;
+}
+html[data-debrowser-redesign="1"] .selectize-dropdown .option.selected::after {
+  content: "\2713";   /* ✓ */
+  float: right;
+  color: var(--de-accent-ink, #0E7490);
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* ---------------------------------------------------------------------
+   Body-attached selectize dropdowns (dropdownParent = 'body' from
+   selectize_init.js). MINIMAL theme-agnostic fix: just make the popup
+   solid + give it a shadow so it doesn't bleed through whatever's
+   underneath. Deliberately NOT touching width, height, overflow, or
+   padding here -- selectize's own positioning + sizing logic is fine
+   and earlier attempts to constrain those broke the surrounding GSEA
+   panel layout (MSigDB option disappearing, Load button hidden, etc.).
+   ------------------------------------------------------------------- */
+
+/* z-index above cards / accordions / modebar AND above modals so the
+   reparented-to-<body> dropdown stays visible when opened from inside
+   a modal (AI Assistant Provider / Model, condition select, etc.).
+   Our modals sit at 2055 (see further below), so we go to 2080. */
+.selectize-dropdown {
+  z-index: 2080 !important;
+}
+
+/* Checkboxes & radios */
+html[data-debrowser-redesign="1"] .form-check-input {
+  border-color: var(--de-border-strong);
+  background-color: var(--de-bg-1);
+}
+html[data-debrowser-redesign="1"] .form-check-input:checked {
+  background-color: var(--de-cyan);
+  border-color: var(--de-cyan);
+}
+html[data-debrowser-redesign="1"] .form-check-label {
+  font-size: 12.5px; color: var(--de-text-1);
+}
+
+/* ---------- Sliders (ionRangeSlider) ---------- */
+html[data-debrowser-redesign="1"] .irs-bar,
+html[data-debrowser-redesign="1"] .irs-bar-edge {
+  background: var(--de-grad) !important;
+  border: 0 !important; height: 4px !important;
+}
+html[data-debrowser-redesign="1"] .irs-line { background: var(--de-border-strong) !important; height: 4px !important; }
+html[data-debrowser-redesign="1"] .irs-handle {
+  width: 14px !important; height: 14px !important; top: 22px !important;
+  background: var(--de-cyan) !important;
+  border: 2px solid #0B1020 !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+}
+html[data-debrowser-redesign="1"] .irs-from,
+html[data-debrowser-redesign="1"] .irs-to,
+html[data-debrowser-redesign="1"] .irs-single {
+  background: var(--de-cyan) !important;
+  color: var(--de-ink-on-accent) !important;
+  font-weight: 600 !important;
+  border-radius: var(--de-r-sm) !important;
+}
+html[data-debrowser-redesign="1"] .irs-min,
+html[data-debrowser-redesign="1"] .irs-max {
+  background: transparent !important;
+  color: var(--de-text-3) !important;
+}
+html[data-debrowser-redesign="1"] .irs-grid-text { color: var(--de-text-3) !important; }
+
+/* ---------- File input (Browse… input) ---------- */
+html[data-debrowser-redesign="1"] .shiny-input-container input[type="file"] { display: none; }
+html[data-debrowser-redesign="1"] .input-group .btn-file,
+html[data-debrowser-redesign="1"] .btn-file,
+html[data-debrowser-redesign="1"] .input-group-btn .btn {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  border-radius: var(--de-r-sm) !important;
+  font-weight: 500 !important;
+}
+html[data-debrowser-redesign="1"] .input-group input[type="text"] {
+  background: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  color: var(--de-text-1) !important;
+}
+
+/* DEBrowser-specific drop tiles inherit and refine */
+html[data-debrowser-redesign="1"] .de-dropzone .card {
+  border: 1.5px dashed var(--de-border-strong) !important;
+  background: var(--de-grad-soft) !important;
+}
+html[data-debrowser-redesign="1"] .de-dropzone.dragover .card {
+  border-color: var(--de-cyan) !important;
+  background-color: rgba(99,102,241,.12) !important;
+}
+/* Hover lift (T5): these tiles are genuinely clickable drop/launch
+   targets, unlike generic .card panels, so they get the 1px cue. */
+html[data-debrowser-redesign="1"] .de-dropzone .card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--de-shadow-lg) !important;   /* base shadow is var(--de-shadow) */
+}
+html[data-debrowser-redesign="1"] .de-dropzone .card:active {
+  transform: translateY(0);
+}
+html[data-debrowser-redesign="1"] .de-dropzone .card-header {
+  background: transparent !important; color: var(--de-text-1) !important;
+}
+
+/* ---------- Accordion ---------- */
+html[data-debrowser-redesign="1"] .accordion {
+  background: transparent;
+  border-radius: var(--de-r-md);
+  overflow: hidden;
+}
+html[data-debrowser-redesign="1"] .accordion-item {
+  background: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border) !important;
+  border-radius: var(--de-r-md) !important;
+  margin-bottom: 6px;
+}
+html[data-debrowser-redesign="1"] .accordion-button {
+  background: transparent !important;
+  color: var(--de-text-1) !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  padding: 8px 12px !important;
+  border-radius: var(--de-r-md) !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .accordion-button:not(.collapsed) {
+  background: var(--de-grad-soft) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .accordion-button::after {
+  filter: invert(0.5);
+}
+html[data-debrowser-redesign="1"][data-bs-theme="dark"] .accordion-button::after {
+  filter: invert(0.85);
+}
+html[data-debrowser-redesign="1"] .accordion-body {
+  padding: 10px 12px !important;
+}
+
+/* ---------- Tabs / pills / underline ---------- */
+html[data-debrowser-redesign="1"] .nav-pills .nav-link {
+  border-radius: var(--de-r-pill);
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--de-text-2);
+}
+html[data-debrowser-redesign="1"] .nav-pills .nav-link.active {
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+}
+html[data-debrowser-redesign="1"] .nav-tabs .nav-link {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--de-text-2);
+  padding: 6px 12px;
+  font-size: 13px;
+}
+html[data-debrowser-redesign="1"] .nav-tabs .nav-link.active {
+  background: transparent;
+  color: var(--de-text-1);
+  border-bottom-color: var(--de-cyan);
+  font-weight: 600;
+}
+
+/* ---------- DT DataTables ---------- */
+html[data-debrowser-redesign="1"] table.dataTable,
+html[data-debrowser-redesign="1"] .table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  font-size: 12px;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] table.dataTable thead th,
+html[data-debrowser-redesign="1"] .table thead th {
+  font-size: 10.5px !important; font-weight: 600 !important;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--de-text-3) !important;
+  background: color-mix(in srgb, var(--de-bg-2) 80%, transparent) !important;
+  border-bottom: 1px solid var(--de-border) !important;
+  padding: 6px 10px !important;
+}
+html[data-debrowser-redesign="1"] table.dataTable tbody td,
+html[data-debrowser-redesign="1"] .table tbody td {
+  padding: 6px 10px !important;
+  border-bottom: 1px solid var(--de-border) !important;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-feature-settings: "tnum";
+}
+html[data-debrowser-redesign="1"] table.dataTable tbody tr:hover,
+html[data-debrowser-redesign="1"] .table tbody tr:hover {
+  background: var(--de-bg-2) !important;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_filter input,
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_length select {
+  border: 1px solid var(--de-border-strong) !important;
+  border-radius: var(--de-r-sm) !important;
+  background: var(--de-bg-1) !important;
+  color: var(--de-text-1) !important;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_info,
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_length label,
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_filter label {
+  color: var(--de-text-2);
+  font-size: 11.5px;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+  border: 1px solid var(--de-border) !important;
+  border-radius: var(--de-r-sm) !important;
+  background: var(--de-bg-1) !important;
+  color: var(--de-text-2) !important;
+  font-size: 11.5px !important;
+  margin: 0 1px;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border-color: transparent !important;
+}
+
+/* ---------- Modals ---------- */
+html[data-debrowser-redesign="1"] .modal-content {
+  background: var(--de-bg-1);
+  border: 1px solid var(--de-border);
+  border-radius: var(--de-r-lg);
+  box-shadow: var(--de-shadow-lg);
+}
+html[data-debrowser-redesign="1"] .modal-header {
+  border-bottom: 1px solid var(--de-border);
+  padding: 14px 18px;
+}
+html[data-debrowser-redesign="1"] .modal-title {
+  font-size: 14px; font-weight: 600;
+}
+html[data-debrowser-redesign="1"] .modal-body { padding: 16px 18px; }
+html[data-debrowser-redesign="1"] .modal-footer {
+  border-top: 1px solid var(--de-border);
+  padding: 12px 18px;
+}
+
+/* ---------- Dropdown menu ---------- */
+html[data-debrowser-redesign="1"] .dropdown-menu {
+  background: var(--de-bg-1);
+  border: 1px solid var(--de-border);
+  border-radius: var(--de-r-md);
+  box-shadow: var(--de-shadow-lg);
+  font-size: 12.5px;
+  padding: 4px;
+}
+html[data-debrowser-redesign="1"] .dropdown-item {
+  border-radius: var(--de-r-sm);
+  color: var(--de-text-1);
+  padding: 6px 10px;
+}
+html[data-debrowser-redesign="1"] .dropdown-item:hover,
+html[data-debrowser-redesign="1"] .dropdown-item:focus {
+  background: var(--de-bg-3);
+  color: var(--de-text-1);
+  transform: translateX(2px);
+}
+
+/* ---------- Alerts ---------- */
+html[data-debrowser-redesign="1"] .alert {
+  border-radius: var(--de-r-md);
+  border: 1px solid var(--de-border);
+  background: var(--de-bg-1);
+  color: var(--de-text-1);
+  padding: 10px 14px;
+  font-size: 12.5px;
+}
+html[data-debrowser-redesign="1"] .alert-info    { border-left: 3px solid var(--de-cyan); }
+html[data-debrowser-redesign="1"] .alert-success { border-left: 3px solid var(--de-mint); }
+html[data-debrowser-redesign="1"] .alert-warning { border-left: 3px solid #d97706; }
+html[data-debrowser-redesign="1"] .alert-danger  { border-left: 3px solid var(--de-pink); }
+
+/* ---------- Shiny notifications & errors ---------- */
+html[data-debrowser-redesign="1"] .shiny-notification {
+  background: var(--de-bg-1) !important;
+  color: var(--de-text-1) !important;
+  border: 1px solid var(--de-border) !important;
+  border-radius: var(--de-r-md) !important;
+  box-shadow: var(--de-shadow-lg) !important;
+}
+html[data-debrowser-redesign="1"] .shiny-notification-message,
+html[data-debrowser-redesign="1"] .shiny-output-error-validation {
+  color: var(--de-text-1) !important;
+}
+
+/* ---------- Plotly modebar ---------- */
+html[data-debrowser-redesign="1"] .modebar {
+  background: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border) !important;
+  border-radius: var(--de-r-sm) !important;
+  padding: 2px !important;
+}
+html[data-debrowser-redesign="1"] .modebar-btn path { fill: var(--de-text-2) !important; }
+html[data-debrowser-redesign="1"] .modebar-btn:hover { background: var(--de-bg-3) !important; }
+
+/* ---------------------------------------------------------------------
+   Plotly modebar repositioning (works in both themes).
+   Default Plotly draws the modebar inside the upper-right corner of
+   the plot, overlapping legend entries and any data sitting near the
+   axes. Push it ABOVE the plot, anchored just outside the top-right,
+   and reserve a few px of headroom on the containing card so it has
+   room to sit. The R-side `plotly_theme.js` also sets
+   `modebar.orientation: 'h'` so the icons render in a single row.
+   Applies everywhere (light AND dark redesign), since the underlying
+   problem -- icons on top of data -- isn't theme-specific.
+   ------------------------------------------------------------------- */
+.js-plotly-plot .plotly .modebar {
+  /* Hover-only by default so the icons don't clutter the eye, but ALWAYS
+     show on hover of any part of the plot container. */
+  transition: opacity .12s ease-in-out;
+  background: transparent !important;
+}
+/* Reposition: lift above the plot area, anchored to the top-right. */
+.js-plotly-plot .plotly .modebar--hover {
+  top: -2px !important;
+  right: 4px !important;
+}
+/* The container needs a bit of headroom so the floating modebar
+   doesn't overlap a heading or sit half off the card. */
+.shiny-plot-output,
+.plotly.html-widget,
+.js-plotly-plot {
+  padding-top: 20px;
+}
+.js-plotly-plot .plotly .modebar-btn {
+  font-size: 12px !important;
+  padding: 2px 4px !important;
+  margin: 0 1px !important;
+}
+.js-plotly-plot .plotly .modebar-btn svg {
+  width: 16px; height: 16px;
+}
+/* Active state uses the indigo accent in both themes. */
+.js-plotly-plot .plotly .modebar-btn.active path,
+.js-plotly-plot .plotly .modebar-btn:hover path {
+  fill: #6366F1 !important;
+}
+
+/* ---------- Help button (debrowser uses a small ? circle) ---------- */
+html[data-debrowser-redesign="1"] .fa-question-circle,
+html[data-debrowser-redesign="1"] a[href*="readthedocs"] {
+  color: var(--de-accent-ink) !important;
+}
+
+/* ---------- Badges ---------- */
+html[data-debrowser-redesign="1"] .badge {
+  font-size: 10.5px; font-weight: 600;
+  padding: 2px 8px; border-radius: var(--de-r-pill);
+}
+html[data-debrowser-redesign="1"] .badge.bg-secondary {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-2) !important;
+}
+html[data-debrowser-redesign="1"] .badge.bg-primary {
+  background: var(--de-grad) !important; color: var(--de-ink-on-accent) !important;
+}
+
+/* ---------- DEBrowser eyebrow + stat-strip helpers (R helpers below emit these) ---------- */
+html[data-debrowser-redesign="1"] .de-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--de-accent-ink);
+  margin-bottom: 6px;
+}
+html[data-debrowser-redesign="1"] .de-eyebrow .de-eyebrow-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 5px;
+  background: var(--de-grad); color: var(--de-ink-on-accent); font-size: 10px;
+}
+html[data-debrowser-redesign="1"] .de-headline {
+  font-size: 22px; font-weight: 700; letter-spacing: -.01em;
+  margin: 0 0 20px; color: var(--de-text-1);
+}
+html[data-debrowser-redesign="1"] .de-stat-strip {
+  display: inline-flex; flex-wrap: wrap; gap: 16px;
+  padding: 8px 14px;
+  border: 1px solid var(--de-border);
+  background: var(--de-bg-1);
+  border-radius: var(--de-r-pill);
+  font-size: 12px; color: var(--de-text-2);
+  box-shadow: var(--de-shadow);
+}
+html[data-debrowser-redesign="1"] .de-stat-strip b {
+  color: var(--de-text-1); font-weight: 700;
+}
+html[data-debrowser-redesign="1"] .de-stat-strip .de-stat-dot {
+  display: inline-block; width: 7px; height: 7px;
+  border-radius: 50%; margin-right: 6px;
+}
+html[data-debrowser-redesign="1"] .de-workbar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+html[data-debrowser-redesign="1"] .de-workbar .de-crumbs {
+  color: var(--de-text-3); font-size: 12px;
+}
+html[data-debrowser-redesign="1"] .de-workbar .de-crumbs b { color: var(--de-text-1); }
+html[data-debrowser-redesign="1"] .de-workbar .spacer { flex: 1; }
+
+/* Progress bar / busy indicator */
+html[data-debrowser-redesign="1"] .progress {
+  background: var(--de-bg-2);
+  border-radius: var(--de-r-pill);
+  height: 6px;
+}
+html[data-debrowser-redesign="1"] .progress-bar {
+  background: var(--de-grad) !important;
+}
+
+/* Tooltip + popover */
+html[data-debrowser-redesign="1"] .tooltip-inner {
+  background: var(--de-bg-1);
+  color: var(--de-text-1);
+  border: 1px solid var(--de-border);
+  border-radius: var(--de-r-sm);
+  font-size: 11.5px;
+}
+html[data-debrowser-redesign="1"] .popover {
+  background: var(--de-bg-1);
+  border: 1px solid var(--de-border);
+  border-radius: var(--de-r-md);
+  box-shadow: var(--de-shadow-lg);
+}
+
+/* Inputs inside conditionalPanels lose top margin so accordion bodies stay tight */
+html[data-debrowser-redesign="1"] .shiny-input-container { margin-bottom: 10px; }
+html[data-debrowser-redesign="1"] .form-group { margin-bottom: 10px; }
+
+/* Make the AccordionPanel section title rows (B1 spacing) sit right */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout .accordion-button {
+  font-size: 12px !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout .accordion-body {
+  padding: 8px 10px !important;
+}
+
+/* The dark theme makes labels / muted text legible against the navy bg */
+html[data-debrowser-redesign="1"][data-bs-theme="dark"] .text-muted,
+html[data-debrowser-redesign="1"][data-bs-theme="dark"] .muted,
+html[data-debrowser-redesign="1"][data-bs-theme="dark"] small {
+  color: var(--de-text-2) !important;
+}
+
+/* =====================================================================
+   B3.1 — Punch list fixes after first launch (live audit on 3839)
+   * Active nav tab was rendering as a heavy white block — replace with
+     the gradient underline from the mockup.
+   * Bigger, clearer brand mark.
+   * Tighten alert/help cards (QC intro text).
+   * Better dark-mode contrast on tab text.
+   ===================================================================== */
+
+/* Reset bslib's default active tab styling (it injects bg + color via
+   navbar-light-active-color / navbar-dark-active-color) */
+html[data-debrowser-redesign="1"] .navbar .nav-link,
+html[data-debrowser-redesign="1"] .navbar .nav-item .nav-link {
+  background-color: transparent !important;
+  color: rgba(230,236,255,.72) !important;
+  border-radius: 0 !important;
+  padding: 14px 14px !important;
+  font-weight: 500;
+  font-size: 13px;
+  position: relative;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link:hover {
+  color: #fff !important;
+  background-color: rgba(255,255,255,.04) !important;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link.active,
+html[data-debrowser-redesign="1"] .navbar .nav-item .nav-link.active,
+html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"] {
+  color: #fff !important;
+  background-color: transparent !important;
+  font-weight: 600;
+}
+/* Gradient underline wipe (T6): lives on the base so every tab carries a
+   collapsed bar; hover/active/aria-selected expand it via scaleX. The two
+   later geometry overrides below (bottom/left/right/height tweaks) still
+   apply on top for the active/selected state — only the reveal mechanism
+   changed here, not the final active-tab position. */
+html[data-debrowser-redesign="1"] .navbar .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 14px; right: 14px; bottom: 0;
+  height: 2px;
+  background: var(--de-grad);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--de-dur) var(--de-ease);
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link:hover::after,
+html[data-debrowser-redesign="1"] .navbar .nav-link.active::after,
+html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"]::after {
+  transform: scaleX(1);
+}
+
+/* Bigger / clearer brand mark */
+html[data-debrowser-redesign="1"] .navbar-brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 16px;
+  padding: 0 0 0 4px;
+}
+html[data-debrowser-redesign="1"] .navbar-brand::before {
+  content: "";
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--de-grad);
+  box-shadow:
+    inset 0 0 0 5px #0B1020,
+    0 0 0 1px rgba(255,255,255,.08),
+    0 4px 12px rgba(99,102,241,.18);
+  margin-right: 4px;
+}
+
+/* Hide DEBrowser legacy <img> logo if a module ever drops it into the navbar */
+html[data-debrowser-redesign="1"] .navbar img[src*="logo"] { display: none; }
+
+/* Top utility items spacing */
+html[data-debrowser-redesign="1"] .navbar .nav-spacer + .nav-item .nav-link,
+html[data-debrowser-redesign="1"] .navbar .nav-item:nth-last-child(-n+5) .nav-link {
+  font-size: 12px;
+}
+
+/* Bookmark button uses btn-default styling, refine */
+html[data-debrowser-redesign="1"] .navbar #bookmark_share {
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  color: #fff !important;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+html[data-debrowser-redesign="1"] .navbar #bookmark_share:hover {
+  background: rgba(255,255,255,.14) !important;
+}
+
+/* Dark mode toggle button — center it nicely */
+html[data-debrowser-redesign="1"] .navbar .de-theme-toggle {
+  color: rgba(230,236,255,.72) !important;
+  padding: 8px 10px !important;
+}
+html[data-debrowser-redesign="1"] .navbar .de-theme-toggle:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,.06) !important;
+  border-radius: var(--de-r-sm) !important;
+}
+
+/* Preset picker — match navbar height */
+html[data-debrowser-redesign="1"] #de_preset_picker {
+  height: 28px !important;
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  color: #fff !important;
+  font-size: 11.5px !important;
+  border-radius: var(--de-r-sm) !important;
+}
+
+/* UMMS Biocore link – tone down */
+html[data-debrowser-redesign="1"] .navbar .nav-item a.nav-link[href*="umassmed"] {
+  color: rgba(230,236,255,.55) !important;
+  font-size: 11.5px !important;
+}
+
+/* "i" help-info circle button (used in QC intro card) */
+html[data-debrowser-redesign="1"] .btn-info,
+html[data-debrowser-redesign="1"] .help-tooltip {
+  background: var(--de-cyan) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  width: 22px; height: 22px;
+  padding: 0 !important;
+  font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* QC intro help text — render as a soft info alert, not a default well.
+   B3.28 — Style ONLY the outer .well wrapper. The previous selector
+   also targeted the inner .help-block, which sits inside the .well, so
+   both the wrapper AND the inner paragraph got the gradient bg + cyan
+   left border — that produced the doubled/ghosted appearance. */
+html[data-debrowser-redesign="1"] #qcpanel > .well,
+html[data-debrowser-redesign="1"] .alert.alert-info {
+  background: var(--de-grad-soft) !important;
+  border: 1px solid var(--de-border) !important;
+  border-left: 3px solid var(--de-cyan) !important;
+  color: var(--de-text-1) !important;
+  border-radius: var(--de-r-md) !important;
+  padding: 12px 16px;
+}
+/* Inner help-block — strip background/border, just text */
+html[data-debrowser-redesign="1"] #qcpanel > .well .help-block,
+html[data-debrowser-redesign="1"] #qcpanel > .well > .shiny-html-output {
+  background: transparent !important;
+  border: 0 !important;
+  border-left: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Code-like spans inside intro text (monospaced names) */
+html[data-debrowser-redesign="1"] code, html[data-debrowser-redesign="1"] kbd {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--de-bg-3);
+  color: var(--de-accent-ink);
+  border: 1px solid var(--de-border);
+}
+
+/* "Show all options" expandable in upload — make it look like an accordion row */
+html[data-debrowser-redesign="1"] details > summary {
+  cursor: pointer;
+  padding: 8px 12px;
+  border: 1px solid var(--de-border);
+  border-radius: var(--de-r-md);
+  background: var(--de-bg-1);
+  color: var(--de-text-1);
+  font-size: 12.5px;
+  font-weight: 500;
+  list-style: none;
+}
+html[data-debrowser-redesign="1"] details > summary::-webkit-details-marker { display: none; }
+html[data-debrowser-redesign="1"] details > summary::after {
+  content: "▾"; float: right; color: var(--de-text-3);
+}
+html[data-debrowser-redesign="1"] details[open] > summary::after { content: "▴"; }
+
+/* Sidebar links — make the active state pop more */
+html[data-debrowser-redesign="1"] .wizard-step-list a.list-group-item-action {
+  text-decoration: none;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item-action.active {
+  border-left: 2px solid var(--de-cyan) !important;
+  padding-left: 12px;
+}
+
+/* DataTables stripes — gentle row banding in both themes */
+html[data-debrowser-redesign="1"] table.dataTable.stripe tbody tr.odd,
+html[data-debrowser-redesign="1"] table.dataTable.display tbody tr.odd,
+html[data-debrowser-redesign="1"] .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: color-mix(in srgb, var(--de-bg-2) 50%, transparent) !important;
+}
+
+/* Big page-level wellPanels (e.g. the QC intro) — soften the well */
+html[data-debrowser-redesign="1"] .well {
+  background: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border) !important;
+  border-radius: var(--de-r-md) !important;
+  box-shadow: var(--de-shadow) !important;
+  padding: 14px !important;
+}
+
+/* Light mode tweak: navbar slightly lighter than pure black, more like
+   the mockup's dark navy that still feels cohesive on a light page */
+html[data-debrowser-redesign="1"][data-bs-theme="light"] .navbar,
+html[data-debrowser-redesign="1"]:not([data-bs-theme="dark"]) .navbar {
+  background-color: #0F1530 !important;
+}
+
+/* ===== End B3.1 ===== */
+
+
+/* =====================================================================
+   B3.2 — Faithful mockup header (numbered chips, simplified utilities,
+   spacing, footer keyboard hint).
+   Triggered alongside `data-debrowser-redesign="1"`.
+   ===================================================================== */
+
+/* Numbered chip wrapper inside each nav tab title */
+html[data-debrowser-redesign="1"] .de-nav-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+html[data-debrowser-redesign="1"] .de-nav-chip-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: rgba(255,255,255,.10);
+  color: rgba(255,255,255,.65);
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  transition: color var(--de-dur) var(--de-ease),
+              background-color var(--de-dur) var(--de-ease),
+              box-shadow var(--de-dur) var(--de-ease);
+}
+html[data-debrowser-redesign="1"] .de-nav-chip-label {
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: -.005em;
+}
+/* Active tab → cyan/violet gradient chip with dark text */
+html[data-debrowser-redesign="1"] .navbar .nav-link.active .de-nav-chip-num,
+html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"] .de-nav-chip-num {
+  background: var(--de-grad);
+  color: var(--de-ink-on-accent);
+  box-shadow: 0 2px 6px rgba(99,102,241,.30);
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link.active .de-nav-chip-label,
+html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"] .de-nav-chip-label {
+  color: #ffffff;
+  font-weight: 600;
+}
+/* Hover state */
+html[data-debrowser-redesign="1"] .navbar .nav-link:hover .de-nav-chip-num {
+  background: rgba(255,255,255,.16);
+  color: #ffffff;
+}
+
+/* More breathing room between tabs */
+html[data-debrowser-redesign="1"] .navbar .navbar-nav .nav-item {
+  margin-right: 6px;
+}
+html[data-debrowser-redesign="1"] .navbar .navbar-nav .nav-link {
+  padding: 14px 16px !important;
+}
+
+/* Simplified header — hide noise the mockup doesn't have */
+html[data-debrowser-redesign="1"] .navbar #de_preset_picker { display: none !important; }
+html[data-debrowser-redesign="1"] .navbar .nav-item a.nav-link[href*="umassmed"] { display: none !important; }
+
+/* Compact Bookmark + Export look — match mockup */
+html[data-debrowser-redesign="1"] .navbar .dropdown-toggle::after {
+  margin-left: 4px;
+  border-top-color: currentColor;
+  opacity: .6;
+}
+html[data-debrowser-redesign="1"] .navbar #bookmark_share {
+  height: 32px;
+  border-radius: var(--de-r-sm) !important;
+}
+
+/* Bigger, sharper brand mark to anchor the simplified header */
+html[data-debrowser-redesign="1"] .navbar-brand {
+  font-size: 15px;
+  padding-right: 22px;
+  margin-right: 8px;
+  border-right: 1px solid rgba(255,255,255,.06);
+  height: 100%;
+  display: inline-flex; align-items: center;
+}
+html[data-debrowser-redesign="1"] .navbar-brand::before {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+}
+
+/* Brand version subscript styling */
+html[data-debrowser-redesign="1"] .navbar-brand .small,
+html[data-debrowser-redesign="1"] .navbar-brand small {
+  color: rgba(230,236,255,.45) !important;
+  font-weight: 400;
+  font-size: 11px;
+  margin-left: 6px;
+}
+html[data-debrowser-redesign="1"] .navbar-brand .badge {
+  display: none; /* hides the "preset: ..." badge */
+}
+
+/* Theme toggle gets more weight on the right edge */
+html[data-debrowser-redesign="1"] .navbar .de-theme-toggle {
+  margin-left: 6px;
+  border-radius: var(--de-r-sm) !important;
+}
+
+/* Spacing between right-side utility items */
+html[data-debrowser-redesign="1"] .navbar .nav-spacer + .nav-item {
+  margin-left: 0;
+}
+
+/* Active tab underline — make it more visible */
+html[data-debrowser-redesign="1"] .navbar .nav-link.active::after,
+html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"]::after {
+  height: 3px;
+  bottom: 0;
+  left: 12px; right: 12px;
+}
+
+/* Floating keyboard-shortcut hint at bottom-right (matches mockup) */
+html[data-debrowser-redesign="1"] .de-foot-hint {
+  position: fixed;
+  bottom: 14px; right: 14px;
+  background: var(--de-bg-1);
+  border: 1px solid var(--de-border);
+  border-radius: var(--de-r-pill);
+  padding: 6px 12px;
+  font-size: 11.5px;
+  color: var(--de-text-2);
+  box-shadow: var(--de-shadow-lg);
+  z-index: 50;
+  display: flex; align-items: center; gap: 6px;
+}
+html[data-debrowser-redesign="1"] .de-foot-hint .kbd {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--de-border-strong);
+  color: var(--de-text-2);
+  background: var(--de-bg-2);
+}
+
+/* Workbar (breadcrumb + actions) — small refinement */
+html[data-debrowser-redesign="1"] .de-workbar {
+  border-bottom: 1px solid var(--de-border);
+  padding-bottom: 10px;
+}
+
+/* Tighten content gutter under the header */
+html[data-debrowser-redesign="1"] .bslib-page-fill,
+html[data-debrowser-redesign="1"] .container-fluid,
+html[data-debrowser-redesign="1"] .navbar + .bslib-sidebar-layout {
+  padding-top: 6px;
+}
+
+/* Make accordion subsections in sidebar feel tighter, like the mockup */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout .accordion-item {
+  margin-bottom: 4px;
+}
+
+/* Larger gap between cards on the page */
+html[data-debrowser-redesign="1"] .bslib-card + .bslib-card,
+html[data-debrowser-redesign="1"] .card + .card {
+  margin-top: 14px;
+}
+
+/* ---------------------------------------------------------------------
+   Help button (.de-help-btn) — used everywhere getHelpButton() is called
+   ---------------------------------------------------------------------
+   Rendered as a chip: circled "i" icon + the word "Help". The chip
+   shape signals "clickable", the icon signals "info/help", and the
+   label removes any ambiguity. Hover state flips to the cyan accent.
+   Base styles below; redesign-theme tweaks in the [data-debrowser-redesign]
+   block further down. */
+.de-help-btn,
+.de-help-btn:visited {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  margin-left: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none !important;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.de-help-btn:hover,
+.de-help-btn:focus-visible {
+  background: #4F46E5;
+  border-color: #4F46E5;
+  color: #ffffff;
+  text-decoration: none !important;
+  outline: none;
+}
+.de-help-btn .fa-info-circle {
+  font-size: 13px;
+  line-height: 1;
+  color: #4F46E5;
+}
+.de-help-btn:hover .fa-info-circle,
+.de-help-btn:focus-visible .fa-info-circle {
+  color: #ffffff;
+}
+.de-help-btn-label {
+  letter-spacing: 0.02em;
+}
+
+/* Redesign theme: use the design tokens. Slightly darker resting state so
+   the chip reads against the gradient card headers we ship in v1.31. */
+html[data-debrowser-redesign="1"] .de-help-btn,
+html[data-debrowser-redesign="1"] .de-help-btn:visited {
+  background: var(--de-bg-3, #1e293b) !important;
+  border-color: var(--de-border-strong, #334155) !important;
+  color: var(--de-text-1, #e2e8f0) !important;
+}
+html[data-debrowser-redesign="1"] .de-help-btn .fa-info-circle {
+  color: var(--de-accent-ink, #0E7490) !important;
+}
+html[data-debrowser-redesign="1"] .de-help-btn:hover,
+html[data-debrowser-redesign="1"] .de-help-btn:focus-visible {
+  background: var(--de-cyan, #5ee6d6) !important;
+  border-color: var(--de-cyan, #5ee6d6) !important;
+  color: var(--de-ink-on-accent) !important;
+}
+html[data-debrowser-redesign="1"] .de-help-btn:hover .fa-info-circle,
+html[data-debrowser-redesign="1"] .de-help-btn:focus-visible .fa-info-circle {
+  color: var(--de-ink-on-accent) !important;
+}
+
+/* ===== End B3.2 ===== */
+
+
+/* =====================================================================
+   B3.3 — Account dropdown polish.
+   The accountDropdownUI() renders as `<nav-menu>` with a user icon +
+   `@username` label and a dropdown holding "My Bookmarks" / "Sign Out".
+   Pull it into the mockup style so it sits nicely next to the theme
+   toggle and the Bookmark button.
+   ===================================================================== */
+
+/* The dropdown trigger (the @username pill) */
+html[data-debrowser-redesign="1"] .navbar .nav-item.dropdown > .nav-link.dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--de-r-pill) !important;
+  padding: 6px 12px !important;
+  height: 32px;
+  font-size: 12.5px;
+  color: rgba(230,236,255,.85) !important;
+  margin: 0 4px;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-item.dropdown > .nav-link.dropdown-toggle:hover {
+  background: rgba(255,255,255,.10) !important;
+  color: #fff !important;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-item.dropdown > .nav-link.dropdown-toggle .fa-user,
+html[data-debrowser-redesign="1"] .navbar .nav-item.dropdown > .nav-link.dropdown-toggle .fa-circle-user {
+  color: var(--de-cyan);
+  font-size: 13px;
+  margin-right: 2px;
+}
+
+/* Account dropdown menu polish */
+html[data-debrowser-redesign="1"] .de-account-menu {
+  background: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border) !important;
+  border-radius: var(--de-r-md) !important;
+  box-shadow: var(--de-shadow-lg) !important;
+  padding: 6px !important;
+  min-width: 220px !important;
+}
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item {
+  color: var(--de-text-1) !important;
+  font-size: 12.5px;
+  padding: 8px 12px !important;
+  border-radius: var(--de-r-sm) !important;
+  margin-bottom: 2px;
+}
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item:hover,
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item:focus {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item .fa,
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item .fas,
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item svg {
+  color: var(--de-text-2);
+  width: 14px;
+}
+/* Sign-out item: subtle danger tint on hover so it reads as destructive */
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item[id*="sign_out"]:hover,
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item[id*="signout"]:hover {
+  background: rgba(255,122,162,.10) !important;
+  color: var(--de-pink) !important;
+}
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item[id*="sign_out"]:hover .fa,
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item[id*="signout"]:hover .fa {
+  color: var(--de-pink) !important;
+}
+
+/* Settings (AI Settings) dropdown — same pill treatment */
+html[data-debrowser-redesign="1"] .navbar .nav-item.dropdown > .nav-link[id*="ai_settings"] {
+  /* inherits .dropdown-toggle styles above */
+}
+
+/* Spacing so the navbar utilities flow nicely:
+   Export → Bookmark → Settings → @user → theme → (preset hidden) */
+html[data-debrowser-redesign="1"] .navbar > ul:last-child .nav-item,
+html[data-debrowser-redesign="1"] .navbar .navbar-nav.ms-auto .nav-item {
+  margin-left: 2px;
+}
+
+/* ===== End B3.3 ===== */
+
+
+/* =====================================================================
+   B3.4 — Match mockup specs EXACTLY (spacing, fonts, sidebar width,
+   tab geometry). Every value below is copy-paste from
+   outputs/debrowser_redesign.html.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] body,
+html[data-debrowser-redesign="1"] .bslib-page-fill {
+  font-size: 13.5px !important;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* -------- Header geometry (52 px tall, 24 px gutter) -------- */
+html[data-debrowser-redesign="1"] .navbar {
+  min-height: 52px !important;
+  height: 52px;
+  padding: 0 24px !important;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+html[data-debrowser-redesign="1"] .navbar > .container-fluid,
+html[data-debrowser-redesign="1"] .navbar > .container {
+  padding: 0;
+  height: 100%;
+}
+html[data-debrowser-redesign="1"] .navbar .navbar-nav {
+  height: 100%;
+  align-items: center;
+  gap: 0;
+}
+
+/* -------- Brand: 26×26 mark, 10 px gap to text, 32 px gap to first tab */
+html[data-debrowser-redesign="1"] .navbar-brand {
+  font-size: 15px !important;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  gap: 10px;
+  margin: 0 32px 0 0 !important;
+  padding: 0 !important;
+  border-right: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  height: 100%;
+}
+html[data-debrowser-redesign="1"] .navbar-brand::before {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
+  margin-right: 0 !important;
+  box-shadow:
+    inset 0 0 0 5px var(--de-bg-0),
+    0 4px 12px rgba(99,102,241,.18);
+}
+
+/* -------- Nav tabs: 6×12 px padding, 2 px gap, 13 px font -------- */
+html[data-debrowser-redesign="1"] .navbar .navbar-nav.me-auto,
+html[data-debrowser-redesign="1"] .navbar .navbar-nav:first-of-type {
+  gap: 2px !important;
+}
+html[data-debrowser-redesign="1"] .navbar .navbar-nav .nav-item {
+  margin: 0 !important;
+}
+html[data-debrowser-redesign="1"] .navbar .navbar-nav .nav-link {
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  height: auto !important;
+  color: var(--de-text-2) !important;
+}
+html[data-debrowser-redesign="1"] .navbar .navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+  background: rgba(255,255,255,.06) !important;
+}
+html[data-debrowser-redesign="1"] .navbar .navbar-nav .nav-link.active {
+  color: #ffffff !important;
+  background: rgba(255,255,255,.08) !important;
+}
+/* Move the active underline so it sits flush with the bottom of the header */
+html[data-debrowser-redesign="1"] .navbar .nav-link.active::after,
+html[data-debrowser-redesign="1"] .navbar .nav-link[aria-selected="true"]::after {
+  left: 10px !important;
+  right: 10px !important;
+  bottom: -13px !important;
+  height: 2px !important;
+  border-radius: 2px !important;
+}
+
+/* -------- Tab number chip: exact mockup geometry -------- */
+html[data-debrowser-redesign="1"] .de-nav-chip {
+  gap: 6px !important;
+}
+html[data-debrowser-redesign="1"] .de-nav-chip-num {
+  width: 18px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  border-radius: 4px !important;
+  background: rgba(255,255,255,.08) !important;
+  color: rgba(230,236,255,.55) !important;
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+  padding: 0 !important;
+  text-align: center;
+}
+html[data-debrowser-redesign="1"] .de-nav-chip-label {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link.active .de-nav-chip-num {
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-link.active .de-nav-chip-label {
+  font-weight: 600 !important;
+}
+
+/* -------- Right-side utilities: 8 px gap -------- */
+html[data-debrowser-redesign="1"] .navbar .navbar-nav.ms-auto,
+html[data-debrowser-redesign="1"] .navbar .navbar-nav:last-of-type {
+  gap: 8px !important;
+}
+html[data-debrowser-redesign="1"] .navbar .nav-spacer {
+  flex: 1;
+}
+
+/* The Export, Settings dropdowns + Bookmark button + Account pill: all
+   visually equal-height 30 px icon-button looks like the mockup */
+html[data-debrowser-redesign="1"] .navbar .navbar-nav.ms-auto .nav-link,
+html[data-debrowser-redesign="1"] .navbar .navbar-nav:last-of-type .nav-link,
+html[data-debrowser-redesign="1"] .navbar #bookmark_share {
+  height: 30px !important;
+  padding: 0 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: transparent !important;
+  color: rgba(230,236,255,.85) !important;
+  margin: 0 !important;
+}
+html[data-debrowser-redesign="1"] .navbar .navbar-nav.ms-auto .nav-link:hover,
+html[data-debrowser-redesign="1"] .navbar .navbar-nav:last-of-type .nav-link:hover,
+html[data-debrowser-redesign="1"] .navbar #bookmark_share:hover {
+  background: rgba(255,255,255,.10) !important;
+  color: #ffffff !important;
+}
+/* Theme toggle is square 30x30 */
+html[data-debrowser-redesign="1"] .navbar .de-theme-toggle {
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* -------- Sidebar: 240 px wide, 20×16 padding -------- */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout {
+  --_sidebar-width: 240px !important;
+  grid-template-columns: 240px 1fr !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar {
+  width: 240px !important;
+  flex: 0 0 240px !important;
+  padding: 20px 16px !important;
+  background: color-mix(in srgb, var(--de-bg-1) 70%, transparent) !important;
+  border-right: 1px solid var(--de-border) !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar-content {
+  padding: 0 !important;
+}
+
+/* Section headers in sidebar — uppercase eyebrows */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h1,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h2,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h3,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h4,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h5,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6 {
+  font-size: 10px !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+  color: var(--de-text-3) !important;
+  font-weight: 600 !important;
+  margin: 12px 6px 6px !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar hr {
+  border-color: var(--de-border) !important;
+  margin: 8px 0 !important;
+}
+
+/* Wizard step list — compact mockup geometry */
+html[data-debrowser-redesign="1"] .wizard-step-list {
+  border: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 6px 8px !important;
+  font-size: 12.5px !important;
+  border-radius: 6px !important;
+  border: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item:hover {
+  background: var(--de-bg-3) !important;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .list-group-item.active {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+  border-left: 2px solid var(--de-cyan) !important;
+  padding-left: 6px !important;
+}
+
+/* -------- Main content padding 24 px -------- */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .main,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar-content-main {
+  padding: 24px !important;
+}
+
+/* -------- Form controls min-height 30 px (mockup spec) -------- */
+html[data-debrowser-redesign="1"] .form-control,
+html[data-debrowser-redesign="1"] .form-select,
+html[data-debrowser-redesign="1"] .selectize-input,
+html[data-debrowser-redesign="1"] input[type="text"],
+html[data-debrowser-redesign="1"] input[type="number"] {
+  min-height: 30px !important;
+  height: 30px;
+  padding: 0 10px !important;
+  font-size: 12.5px !important;
+  border-radius: 6px !important;
+}
+html[data-debrowser-redesign="1"] textarea.form-control {
+  height: auto;
+  min-height: 70px !important;
+  padding: 6px 10px !important;
+}
+
+/* Tighten form-group margin (Shiny default ~15 px) */
+html[data-debrowser-redesign="1"] .form-group,
+html[data-debrowser-redesign="1"] .shiny-input-container {
+  margin-bottom: 12px !important;
+}
+
+/* Page font everywhere */
+html[data-debrowser-redesign="1"] .navbar,
+html[data-debrowser-redesign="1"] .navbar *,
+html[data-debrowser-redesign="1"] body,
+html[data-debrowser-redesign="1"] body * {
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+html[data-debrowser-redesign="1"] table.dataTable td,
+html[data-debrowser-redesign="1"] .table td,
+html[data-debrowser-redesign="1"] code,
+html[data-debrowser-redesign="1"] kbd,
+html[data-debrowser-redesign="1"] .de-stat-strip b,
+html[data-debrowser-redesign="1"] .wizard-step-list .step,
+html[data-debrowser-redesign="1"] .de-nav-chip-num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+}
+
+/* Footer hint pill sits above any plot toolbar */
+html[data-debrowser-redesign="1"] .de-foot-hint {
+  bottom: 16px !important;
+  right: 16px !important;
+  padding: 6px 12px !important;
+  font-size: 11.5px !important;
+  z-index: 1050 !important;
+}
+
+/* ===== End B3.4 ===== */
+
+
+/* =====================================================================
+   B3.5 — Button width discipline.
+   Shiny's actionButton/downloadButton default to width:100% inside a
+   fluidRow column. That gave us the ridiculous full-width gradient bars
+   on the Filter page ("Show Data", "Batch Effect Correction", "Go to DE
+   Analysis", "Go to QC plots"). Cap them to natural content width and
+   only expand to full-width when the author explicitly opts in via
+   .w-100 / .btn-block.
+   ===================================================================== */
+html[data-debrowser-redesign="1"] .btn,
+html[data-debrowser-redesign="1"] .shiny-download-link,
+html[data-debrowser-redesign="1"] .shiny-bound-input.action-button,
+html[data-debrowser-redesign="1"] [id$="Button"].btn,
+html[data-debrowser-redesign="1"] .shiny-input-container > .btn {
+  width: auto !important;
+  max-width: 100%;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+/* Opt-in for genuinely full-width buttons */
+html[data-debrowser-redesign="1"] .btn.w-100,
+html[data-debrowser-redesign="1"] .btn.btn-block,
+html[data-debrowser-redesign="1"] .btn-full {
+  width: 100% !important;
+}
+
+/* "Show Data" / Batch / Go to DE / Go to QC are the four "next step" CTAs
+   that previously rendered as huge gradient bars. They get a clean pill
+   row instead. ID-based so we don't change anything else. */
+html[data-debrowser-redesign="1"] #goShowData,
+html[data-debrowser-redesign="1"] #goBatchEffect,
+html[data-debrowser-redesign="1"] #goDE,
+html[data-debrowser-redesign="1"] #goDEFromFilter,
+html[data-debrowser-redesign="1"] #goQC,
+html[data-debrowser-redesign="1"] #goQCFromFilter {
+  width: auto !important;
+  min-width: 140px;
+  margin-right: 6px;
+}
+
+/* ---------------------------------------------------------------------
+   Account dropdown menu items (My Bookmarks / Sign out / Sign up).
+   Click handling lives in inst/extdata/www/account_dropdown.js (loaded
+   from ui.R) because Shiny's renderUI insert path uses innerHTML and
+   inline <script> tags don't execute there. Styling moved here from
+   the previous inline block so it survives every renderUI repaint.
+   ------------------------------------------------------------------- */
+.de-account-menu {
+  min-width: 200px;
+  padding: 4px 0;
+  list-style: none;
+  margin: 0;
+}
+.de-account-menu .dropdown-item,
+.de-account-menu .de-account-item {
+  white-space: nowrap;
+  text-decoration: none !important;
+  cursor: pointer;
+  display: block;
+  padding: 6px 16px;
+  color: inherit;
+}
+.de-account-menu .dropdown-item:hover {
+  background: rgba(0, 0, 0, .06);
+}
+html[data-debrowser-redesign="1"] .de-account-menu .dropdown-item:hover {
+  background: var(--de-bg-3, #1A2147);
+  color: var(--de-text-1, #E6ECFF) !important;
+}
+.de-account-menu .dropdown-item .fa,
+.de-account-menu .dropdown-item .fas,
+.de-account-menu .dropdown-item .far,
+.de-account-menu .dropdown-item svg {
+  margin-right: 8px;
+}
+
+/* Navbar dropdowns (account + theme + bookmark) must paint ABOVE the
+   page content. With the redesigned cards (bslib::card with
+   `--de-shadow-lg` + overflow:hidden) some cards create a stacking
+   context whose z-index can outrank Bootstrap's default 1000 on the
+   dropdown menu, hiding it behind the card when the navbar is sticky
+   and the user has scrolled. Bump to 2000 so it sits above everything
+   page-level. Tooltips (1080) and modals (1055) remain higher because
+   they're meant to overlay even the navbar. */
+.navbar .dropdown-menu,
+.navbar-nav .dropdown-menu,
+.bslib-page-navbar .dropdown-menu {
+  z-index: 2000 !important;
+  background: #ffffff !important;
+}
+
+/* Modal z-index bump only -- letting Bootstrap handle display/animation
+   lifecycle natively. The earlier `display: block !important` on
+   `.modal.show` was overriding Bootstrap's hide transition, leaving
+   modals stuck open or causing renderContentAsync to bind into a
+   half-displayed dialog. Lesson learned: don't fight Bootstrap's
+   modal state machine.
+
+   We DO still bump z-index a small amount over the default 1050 to
+   make sure modals paint above the shinymanager login card on the
+   pre-auth screen, but not so high that we create new stacking-
+   context bugs. Default Bootstrap modal z-index is 1055; we go to
+   2055. Modal-backdrop sits one below. */
+.modal { z-index: 2055; }
+.modal-backdrop { z-index: 2054; }
+
+/* DEFENSIVE: every link inside ANY dropdown-menu must be readable.
+   Bare actionLinks emitted into nav_menu items inherit the navbar's
+   white text color, so on the white popup they're invisible. This
+   rule forces dark text regardless of class (`.action-button`,
+   `.dropdown-item`, plain `<a>`, etc.) and overrides anything the
+   redesign-dark theme tried to apply via inheritance. */
+.dropdown-menu a,
+.dropdown-menu .action-button,
+.dropdown-menu .dropdown-item,
+.navbar .dropdown-menu a,
+.navbar .dropdown-menu .action-button,
+.navbar-nav .dropdown-menu a,
+.navbar-nav .dropdown-menu .action-button {
+  color: #0f172a !important;
+  text-decoration: none !important;
+}
+.dropdown-menu a:hover,
+.dropdown-menu .action-button:hover,
+.dropdown-menu .dropdown-item:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+/* Ensure the navbar itself doesn't clip the open dropdown via overflow:
+   hidden — some bslib navbars set overflow on the .navbar-collapse. */
+.navbar,
+.navbar > *,
+.navbar-collapse,
+.bslib-page-navbar > .navbar {
+  overflow: visible !important;
+}
+
+/* ---------------------------------------------------------------------
+   DataTables: compact one-row top controls.
+   Driven by the `.dt_dom_compact` template in R/funcs.R, which emits:
+     <'dt-top row'<'col-auto'B><'col-auto'l><'col text-end'f>>
+     <'row'<'col-12'tr>>
+     <'dt-bot row'<'col-auto'i><'col text-end'p>>
+   The CSS below tightens spacing inside that template so Copy/Download,
+   the length selector, and the search box all sit on one line right
+   above the table.
+   ------------------------------------------------------------------- */
+
+/* All themes: tighten margins around the compact rows. */
+.dataTables_wrapper .dt-top,
+.dataTables_wrapper .dt-bot {
+  --bs-gutter-x: 0.5rem;
+  align-items: center;
+  min-height: 32px;
+}
+.dataTables_wrapper .dt-top { margin: 0 0 6px 0 !important; }
+.dataTables_wrapper .dt-bot { margin: 6px 0 0 0 !important; }
+
+/* Inner control wrappers (buttons, length, filter, info, pagination):
+   no leftover Bootstrap row margins, vertically centered. */
+.dataTables_wrapper .dt-top > [class*="col"],
+.dataTables_wrapper .dt-bot > [class*="col"] {
+  display: flex;
+  align-items: center;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Labels and inputs inside length/filter: inline-flex, no native top/bot
+   margins, narrower input/select. */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_wrapper .dt-buttons {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label {
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: 400;
+}
+.dataTables_wrapper .dataTables_length select {
+  height: 28px !important;
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 64px;
+}
+.dataTables_wrapper .dataTables_filter input {
+  height: 28px !important;
+  padding: 2px 10px !important;
+  font-size: 12px !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 200px;
+}
+
+/* "Copy / Download" button group sits compact next to the length. */
+.dataTables_wrapper .dt-buttons .btn {
+  height: 28px;
+  padding: 2px 12px !important;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 6px;
+}
+
+/* ---------------------------------------------------------------------
+   DataTables pagination — modern compact buttons.
+   Bootstrap-5 mode renders `<ul class="pagination"><li class="page-item">
+   <a class="page-link"></a></li></ul>` (NOT the legacy `.paginate_button`
+   anchor). Style both so we look good in either DT bootstrap mode.
+   ------------------------------------------------------------------- */
+.dataTables_wrapper .pagination {
+  --bs-pagination-padding-y: 0;
+  --bs-pagination-padding-x: 8px;
+  --bs-pagination-font-size: 11.5px;
+  --bs-pagination-border-radius: 6px;
+  margin: 0 !important;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.dataTables_wrapper .pagination .page-item {
+  margin: 0;
+}
+.dataTables_wrapper .pagination .page-link {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  background: #ffffff;
+  font-size: 11.5px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: none !important;
+}
+.dataTables_wrapper .pagination .page-link:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+  z-index: 1;
+}
+.dataTables_wrapper .pagination .page-item.active .page-link {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #ffffff;
+}
+.dataTables_wrapper .pagination .page-item.disabled .page-link {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+.dataTables_wrapper .pagination .page-item.previous .page-link,
+.dataTables_wrapper .pagination .page-item.next .page-link {
+  /* Previous / Next: slightly wider so the word fits. */
+  padding: 0 12px !important;
+  font-weight: 400;
+}
+
+/* Redesign-theme override: use the cyan/grad accent + dark surfaces. */
+html[data-debrowser-redesign="1"] .dataTables_wrapper .pagination .page-link {
+  background: var(--de-bg-1) !important;
+  border-color: var(--de-border) !important;
+  color: var(--de-text-2) !important;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .pagination .page-link:hover {
+  background: var(--de-bg-3) !important;
+  border-color: var(--de-border-strong) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .pagination .page-item.active .page-link {
+  background: var(--de-grad) !important;
+  border-color: transparent !important;
+  color: var(--de-ink-on-accent) !important;
+}
+html[data-debrowser-redesign="1"] .dataTables_wrapper .pagination .page-item.disabled .page-link {
+  background: transparent !important;
+  border-color: var(--de-border) !important;
+  color: var(--de-text-3) !important;
+  opacity: 0.55;
+}
+
+/* Legacy non-Bootstrap pagination chips (kept for completeness). */
+html[data-debrowser-redesign="1"] .dataTables_wrapper .dataTables_paginate .paginate_button,
+html[data-debrowser-redesign="1"] .dataTables_paginate a.paginate_button {
+  height: 26px !important;
+  min-width: 26px;
+  padding: 0 8px !important;
+  font-size: 11.5px !important;
+  border-radius: 6px !important;
+  border: 1px solid var(--de-border) !important;
+  background: var(--de-bg-1) !important;
+  color: var(--de-text-2) !important;
+  margin: 0 1px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+html[data-debrowser-redesign="1"] .dataTables_paginate .paginate_button.current {
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border-color: transparent !important;
+}
+
+/* Download buttons get an icon-button look: 30 px tall, modest width,
+   leading download glyph. The full-width "Download" pill on the Filter
+   page is gone. */
+html[data-debrowser-redesign="1"] .shiny-download-link,
+html[data-debrowser-redesign="1"] a[id*="download"].btn {
+  width: auto !important;
+  min-width: auto !important;
+  padding: 0 12px !important;
+  height: 30px !important;
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+  border: 1px solid var(--de-border-strong) !important;
+}
+
+/* ===== End B3.5 ===== */
+
+
+/* =====================================================================
+   B3.6 — Page 1 (Upload) tightenings to match the mockup.
+   ===================================================================== */
+
+/* Single-row drop tile: card-header (label) and card-body (helper +
+   browse) lay out side-by-side so each tile is ~64 px tall instead of
+   ~180. */
+html[data-debrowser-redesign="1"] .de-dropzone-row > .card {
+  border: 1.5px dashed var(--de-border-strong) !important;
+  background: var(--de-grad-soft) !important;
+  box-shadow: none !important;
+  border-radius: 10px !important;
+}
+html[data-debrowser-redesign="1"] .de-dropzone-row > .card > .card-header {
+  background: transparent !important;
+  border-bottom: 0 !important;
+  padding: 12px 14px !important;
+  display: flex; align-items: center;
+  flex: 0 0 auto;
+}
+html[data-debrowser-redesign="1"] .de-dropzone-row > .card > .card-body {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 8px 14px 12px !important;
+  flex-wrap: wrap;
+}
+html[data-debrowser-redesign="1"] .de-dropzone-row > .card .help-block,
+html[data-debrowser-redesign="1"] .de-dropzone-row > .card .form-text {
+  flex: 1;
+  margin: 0 !important;
+  color: var(--de-text-2) !important;
+  font-size: 12px;
+}
+html[data-debrowser-redesign="1"] .de-dropzone-row > .card .shiny-input-container {
+  margin: 0 !important;
+  flex: 0 0 auto;
+}
+html[data-debrowser-redesign="1"] .de-dropzone-row > .card input[type="file"] + label,
+html[data-debrowser-redesign="1"] .de-dropzone-row > .card .btn-file {
+  height: 30px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  background: var(--de-bg-2) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  color: var(--de-text-1) !important;
+}
+
+/* Stat strip placement — slightly indent so it lines up with cards */
+html[data-debrowser-redesign="1"] #load-statStrip,
+html[data-debrowser-redesign="1"] [id$="-statStrip"] {
+  display: inline-flex;
+}
+
+/* Next-step CTA row: the 3 big gradient bars become a tight pill row. */
+html[data-debrowser-redesign="1"] .de-next-cta-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-top: 4px;
+}
+html[data-debrowser-redesign="1"] .de-next-cta-row .btn {
+  width: auto !important;
+  min-width: 130px;
+  height: 32px !important;
+  padding: 0 14px !important;
+}
+
+/* "or try a demo:" caption sits inline cleanly */
+html[data-debrowser-redesign="1"] .de-action-row .de-demo-caption {
+  font-size: 12px;
+  color: var(--de-text-2);
+}
+
+/* "Show all options" accordion-button consistency on Upload page */
+html[data-debrowser-redesign="1"] [id^="load-advancedOptions"] .accordion-button,
+html[data-debrowser-redesign="1"] [id*="advancedOptions"] .accordion-button {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: .03em;
+}
+
+/* Hide the legacy uploadSummary tableOutput (now folded into stat strip)
+   ONLY for the data-load module. The LCF module reuses the same output
+   id ("uploadSummary") for its "before-filter" summary and we want THAT
+   to keep showing on the left side of the Filter view. */
+html[data-debrowser-redesign="1"] #load-uploadSummary {
+  display: none !important;
+}
+
+/* ===== End B3.6 ===== */
+
+
+/* =====================================================================
+   B3.7 — Mockup-style flat drop tiles + always-show wizard steps.
+   ===================================================================== */
+
+/* .de-drop-grid is a bslib layout_columns(c(6,6)) (see R/dataLoad.R) --
+   it owns its own 12-col grid + responsive collapse, so no
+   grid-template-columns override lives here anymore. Gap is tokenized
+   here (bslib's gap= arg can't take a var()). */
+html[data-debrowser-redesign="1"] .de-drop-grid {
+  gap: var(--de-space-3);
+}
+
+/* Single flat drop tile */
+html[data-debrowser-redesign="1"] .de-drop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--de-border-strong);
+  background: var(--de-grad-soft);
+  min-height: 72px;
+  transition: border-color .15s ease, background .15s ease;
+}
+html[data-debrowser-redesign="1"] .de-drop.dragover,
+html[data-debrowser-redesign="1"] .de-drop:hover {
+  border-color: var(--de-cyan);
+  background: rgba(99,102,241,.10);
+}
+html[data-debrowser-redesign="1"] .de-drop-ic {
+  width: 36px; height: 36px;
+  flex: 0 0 36px;
+  border-radius: 9px;
+  background: var(--de-bg-2);
+  border: 1px solid var(--de-border);
+  display: grid; place-items: center;
+  color: var(--de-accent-ink);
+  font-size: 18px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+html[data-debrowser-redesign="1"] .de-drop-meta {
+  flex: 1; min-width: 0;
+}
+html[data-debrowser-redesign="1"] .de-drop-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--de-text-1);
+  line-height: 1.3;
+}
+html[data-debrowser-redesign="1"] .de-drop-muted {
+  color: var(--de-text-3);
+  font-weight: 400;
+  font-size: 12px;
+}
+html[data-debrowser-redesign="1"] .de-drop-help {
+  font-size: 11.5px;
+  color: var(--de-text-2);
+  margin-top: 2px;
+}
+html[data-debrowser-redesign="1"] .de-drop-input {
+  flex: 0 0 auto;
+  display: flex; align-items: center;
+}
+html[data-debrowser-redesign="1"] .de-drop-input .shiny-input-container {
+  margin: 0 !important;
+}
+/* shiny's fileInput renders <input-group> with Browse btn + filename text.
+   In a drop tile we want just the Browse button visible and we hide the
+   text box (it stays in the DOM so file-upload still functions). */
+html[data-debrowser-redesign="1"] .de-drop-input .input-group {
+  background: transparent;
+  border: 0;
+  width: auto;
+}
+html[data-debrowser-redesign="1"] .de-drop-input .input-group > input[type="text"],
+html[data-debrowser-redesign="1"] .de-drop-input .input-group > .form-control {
+  display: none !important;
+}
+html[data-debrowser-redesign="1"] .de-drop-input .btn-file,
+html[data-debrowser-redesign="1"] .de-drop-input .input-group-btn .btn,
+html[data-debrowser-redesign="1"] .de-drop-input span.btn {
+  height: 32px !important;
+  padding: 0 14px !important;
+  border-radius: 6px !important;
+  background: var(--de-bg-2) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  color: var(--de-text-1) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  margin: 0 !important;
+}
+html[data-debrowser-redesign="1"] .de-drop-input .progress {
+  height: 4px;
+  margin-top: 4px;
+  width: 90px;
+  background: var(--de-bg-3);
+}
+
+/* Filename echo under the title once a file is picked (Shiny shows the
+   filename in .input-group > input — we re-surface it in the help row). */
+html[data-debrowser-redesign="1"] .de-drop.has-file .de-drop-help::before {
+  content: "✓ ";
+  color: var(--de-mint);
+  font-weight: 700;
+}
+
+/* ---------- Always-show wizard step list ---------- */
+/* The R conditionalPanels hide Filter/Batch/CondSelect/DEAnalysis until
+   they become reachable. Use CSS to keep the row visible but dimmed
+   when its conditionalPanel is hidden. That way the sidebar always
+   shows the full pipeline like the mockup. */
+html[data-debrowser-redesign="1"] .wizard-step-list .shiny-html-output:empty,
+html[data-debrowser-redesign="1"] .wizard-step-list .shiny-bound-output:empty {
+  display: none;
+}
+/* Locked-state styling (when DEBrowser's de-pill-locked class is applied) */
+html[data-debrowser-redesign="1"] .wizard-step-list .de-pill-locked {
+  pointer-events: none !important;
+  opacity: 0.4 !important;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list .de-pill-locked::before {
+  background: var(--de-border) !important;
+  box-shadow: none !important;
+}
+
+/* When a step has the .conditionalPanel display:none parent, show the
+   step anyway in a locked appearance. Shiny wraps conditionalPanel
+   children in <div style="display:none"> so they're hidden by inline
+   style. We can't override `style="display:none"` without `!important`
+   on display itself — so leave that alone and instead style the visible
+   actionLink siblings that ARE rendered. */
+
+/* Section headers in sidebar (just below the wizard list) */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar > h6 {
+  font-size: 10px !important;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--de-text-3) !important;
+  margin: 14px 6px 6px !important;
+}
+
+/* "DE Filter" sub-section heading (shown when on DEAnalysis step) */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6 {
+  font-size: 10px !important;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--de-text-3) !important;
+}
+
+/* ===== End B3.7 ===== */
+
+
+/* =====================================================================
+   B3.8 — Wizard step list rebuilt to match the mockup row-by-row:
+   [step number 01..06]  [dot]  [label]
+   State conveyed by dot color only — no trailing checkmark glyph.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .wizard-step-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  margin: 4px 0 12px !important;
+  border: 0 !important;
+}
+
+html[data-debrowser-redesign="1"] .wiz-step {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 7px 10px !important;
+  border-radius: 6px !important;
+  font-size: 12.5px;
+  color: var(--de-text-2) !important;
+  text-decoration: none !important;
+  cursor: pointer;
+  position: relative;
+}
+html[data-debrowser-redesign="1"] .wiz-step:hover {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active,
+html[data-debrowser-redesign="1"] .wiz-step:active {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+}
+
+/* Numeric "01" column — monospace, muted */
+html[data-debrowser-redesign="1"] .wiz-step-num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--de-text-3);
+  width: 18px;
+  flex: 0 0 18px;
+}
+
+/* Status dot — color is the indicator */
+html[data-debrowser-redesign="1"] .wiz-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--de-border-strong);
+  flex: 0 0 8px;
+  /* T4: token-based explicit list (was the all-properties shorthand); a dot never moves */
+  transition: background-color var(--de-dur) var(--de-ease),
+              box-shadow var(--de-dur) var(--de-ease),
+              opacity var(--de-dur) var(--de-ease);
+}
+html[data-debrowser-redesign="1"] .wiz-step-label {
+  flex: 1; min-width: 0;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Done = mint dot with halo */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-dot {
+  background: var(--de-mint) !important;
+  box-shadow: 0 0 0 3px rgba(60,182,160,.20);
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-label {
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-num {
+  color: var(--de-text-2);
+}
+
+/* Active step = cyan dot with halo */
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
+  background: var(--de-cyan) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22);
+}
+
+/* Locked = dim, no clicks */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked {
+  pointer-events: none !important;
+  opacity: 0.45 !important;
+}
+
+/* Hide the legacy ✓ glyph (de-progress-icon) inside wiz-steps — the dot
+   itself is now the indicator. */
+html[data-debrowser-redesign="1"] .wiz-step .de-progress-icon {
+  display: none !important;
+}
+
+/* Make the "DE Filter" subsection header (uiOutput in sidebar) crisp */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar #cutOffUI label,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar #cutOffUI .accordion-button {
+  font-size: 11px !important;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--de-text-3) !important;
+}
+
+/* Strict / Standard cutoff pills — keep them on one line */
+html[data-debrowser-redesign="1"] #cutoff_preset.btn-group .btn,
+html[data-debrowser-redesign="1"] [id$="cutoff_preset"] .btn {
+  white-space: nowrap;
+  padding: 0 12px !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  height: 30px !important;
+  flex: 1;
+}
+
+/* Sidebar section divider */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar hr {
+  margin: 12px 0 !important;
+  border-color: var(--de-border) !important;
+}
+
+/* ===== End B3.8 ===== */
+
+
+/* =====================================================================
+   B3.9 — Polish after the live screenshot:
+   * Make the wiz-step dots clearly visible (currently rendering as
+     slivers because the bg color is too faint on the light sidebar)
+   * Keep the two drop tiles side-by-side until 640 px instead of 880 px
+   * Section divider between PIPELINE and DE FILTER subsections
+   * Demo & Settings sections in the sidebar (mockup parity)
+   ===================================================================== */
+
+/* Dots — explicit dimensions, bolder color, halo */
+html[data-debrowser-redesign="1"] .wiz-step-dot {
+  display: inline-block !important;
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px;
+  min-height: 10px;
+  border-radius: 50% !important;
+  background: #C8CFE0 !important;
+  border: 1px solid rgba(15,21,48,.18);
+  flex: 0 0 10px !important;
+  margin: 0 !important;
+}
+html[data-debrowser-redesign="1"][data-bs-theme="dark"] .wiz-step-dot {
+  background: rgba(255,255,255,.18) !important;
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+/* Done — mint with strong halo */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-dot {
+  background: var(--de-mint) !important;
+  border-color: var(--de-mint) !important;
+  box-shadow: 0 0 0 4px rgba(60,182,160,.22) !important;
+}
+
+/* Active step (server can add .active class) — cyan + halo */
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot,
+html[data-debrowser-redesign="1"] .wiz-step[aria-current="true"] .wiz-step-dot {
+  background: var(--de-cyan) !important;
+  border-color: var(--de-cyan) !important;
+  box-shadow: 0 0 0 4px rgba(99,102,241,.30) !important;
+}
+
+/* Make sure each tile shrinks to fit its half without overflowing */
+html[data-debrowser-redesign="1"] .de-drop {
+  min-width: 0 !important;
+  flex-wrap: wrap;
+}
+html[data-debrowser-redesign="1"] .de-drop-meta {
+  min-width: 0 !important;
+}
+html[data-debrowser-redesign="1"] .de-drop-help {
+  overflow-wrap: anywhere;
+}
+
+/* Slight visual nudge: number column is the same fixed width across all
+   steps so dots and labels line up perfectly */
+html[data-debrowser-redesign="1"] .wiz-step-num {
+  text-align: center;
+}
+
+/* "Show all options" accordion-button needs to look like a tidy row */
+html[data-debrowser-redesign="1"] .accordion-button {
+  display: flex;
+  align-items: center;
+}
+
+/* Filter accordion header uppercase eyebrow */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6 + .accordion .accordion-button {
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--de-text-3) !important;
+}
+
+/* Demo + settings sections in sidebar — neat list rows */
+html[data-debrowser-redesign="1"] .de-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+html[data-debrowser-redesign="1"] .de-side-list a,
+html[data-debrowser-redesign="1"] .de-side-list .side-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--de-text-2) !important;
+  font-size: 12.5px;
+  text-decoration: none;
+}
+html[data-debrowser-redesign="1"] .de-side-list a:hover {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .de-side-list .side-prefix {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--de-text-3);
+  width: 18px; text-align: center;
+}
+
+/* ===== End B3.9 ===== */
+
+
+/* =====================================================================
+   B3.10 — Wizard FEEL: vertical timeline connector, stronger active
+   highlight, clear progression. Brings back the "you are here" + flow.
+   ===================================================================== */
+
+/* Vertical timeline behind the dots */
+html[data-debrowser-redesign="1"] .wizard-step-list {
+  position: relative;
+  padding-left: 0;
+}
+html[data-debrowser-redesign="1"] .wizard-step-list::before {
+  content: "";
+  position: absolute;
+  left: 39px;                /* center of the dot column */
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--de-border-strong) 0%,
+    var(--de-border-strong) 60%,
+    var(--de-border) 100%
+  );
+  z-index: 0;
+}
+
+/* Filled portion of the timeline above current step — applied by
+   coloring all done-state dots' connecting segment via the .done
+   class on the step (handled via JS). For now: each done step adds a
+   mint segment above itself. */
+html[data-debrowser-redesign="1"] .wiz-step {
+  position: relative;
+  z-index: 1;
+}
+html[data-debrowser-redesign="1"] .wiz-step + .wiz-step::before {
+  content: "";
+  position: absolute;
+  left: 39px;
+  top: -2px;
+  width: 1px; height: 4px;
+  background: var(--de-border);
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done + .wiz-step::before,
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done + .wiz-step.de-pill-done::before {
+  background: var(--de-mint);
+}
+
+/* Stronger active state — bold label, cyan dot with glow, soft gradient bg */
+html[data-debrowser-redesign="1"] .wiz-step.active {
+  background: linear-gradient(90deg,
+    rgba(99,102,241,.10) 0%,
+    rgba(99,102,241,.04) 70%,
+    transparent 100%) !important;
+  box-shadow: inset 2px 0 0 0 var(--de-cyan);
+  border-radius: 8px !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
+  background: var(--de-cyan) !important;
+  border-color: var(--de-cyan) !important;
+  box-shadow: 0 0 0 5px rgba(99,102,241,.28),
+              0 0 14px rgba(99,102,241,.40) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-label {
+  color: var(--de-text-1) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.005em;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-num {
+  color: var(--de-accent-ink) !important;
+  font-weight: 700;
+}
+
+/* Done-state visual tweaks (cleaner) */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-label {
+  color: var(--de-text-2) !important;
+  font-weight: 500;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-num {
+  color: var(--de-mint) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done::after {
+  content: "✓";
+  position: absolute;
+  right: 12px;
+  top: 50%; transform: translateY(-50%);
+  color: var(--de-mint);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* Locked-state: extra dim + lock glyph */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked {
+  opacity: 0.40 !important;
+  pointer-events: none !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px;
+  background: var(--de-text-3);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M11 7V5a3 3 0 0 0-6 0v2H4v8h8V7zm-5 0V5a2 2 0 0 1 4 0v2H6z' fill='black'/></svg>") center/contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M11 7V5a3 3 0 0 0-6 0v2H4v8h8V7zm-5 0V5a2 2 0 0 1 4 0v2H6z' fill='black'/></svg>") center/contain no-repeat;
+}
+
+/* Hover for non-locked steps */
+html[data-debrowser-redesign="1"] .wiz-step:not(.de-pill-locked):not(.active):hover {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step:not(.de-pill-locked):not(.active):hover .wiz-step-label {
+  color: var(--de-text-1) !important;
+}
+
+/* Tighten step spacing slightly so the timeline reads as one continuous line */
+html[data-debrowser-redesign="1"] .wizard-step-list .wiz-step {
+  padding: 8px 12px !important;
+  margin: 0 !important;
+}
+
+/* ===== End B3.10 ===== */
+
+
+/* =====================================================================
+   B3.11 — Pixel-match the mockup sidebar.
+   Strips: vertical timeline line, ::after checkmark, ::after lock icon.
+   Keeps: clean row with [number] [colored dot] [label], state via dot
+   color only. Adds DEMOS and SETTINGS sections per mockup.
+   ===================================================================== */
+
+/* Reset previous extras */
+html[data-debrowser-redesign="1"] .wizard-step-list::before { content: none !important; }
+html[data-debrowser-redesign="1"] .wiz-step + .wiz-step::before { content: none !important; }
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done::after { content: none !important; }
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked::after { content: none !important; }
+
+/* Step row: 8px·12px padding, 6px corner radius, three-column flex */
+html[data-debrowser-redesign="1"] .wiz-step {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 9px 14px !important;
+  border-radius: 8px !important;
+  font-size: 13.5px;
+  color: var(--de-text-2) !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Number column — monospaced, muted */
+html[data-debrowser-redesign="1"] .wiz-step-num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: var(--de-text-3) !important;
+  width: 20px !important;
+  flex: 0 0 20px !important;
+  text-align: left !important;
+  letter-spacing: 0;
+}
+
+/* Dot — fixed 8×8, gray pending */
+html[data-debrowser-redesign="1"] .wiz-step-dot {
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px;
+  min-height: 8px;
+  border-radius: 50% !important;
+  background: var(--de-text-3) !important;
+  opacity: .45;
+  border: 0 !important;
+  flex: 0 0 8px !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  transition: background .15s ease, box-shadow .2s ease, opacity .15s ease;
+}
+
+/* Done — MINT/GREEN dot (per user request) */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-dot {
+  background: var(--de-mint) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 0 3px rgba(60,182,160,.18) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done {
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-num {
+  color: var(--de-text-3) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-label {
+  color: var(--de-text-1) !important;
+  font-weight: 500;
+}
+
+/* Active — CYAN dot + soft halo + faint bg behind row */
+html[data-debrowser-redesign="1"] .wiz-step.active {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
+  background: var(--de-cyan) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-num {
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-label {
+  color: var(--de-text-1) !important;
+  font-weight: 600;
+}
+
+/* Locked / pending: simple dim, no glyph */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked {
+  opacity: .55 !important;
+  pointer-events: none !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked::after { content: none !important; }
+
+/* Label */
+html[data-debrowser-redesign="1"] .wiz-step-label {
+  flex: 1 1 auto;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -.005em;
+}
+
+/* Hover (non-active) */
+html[data-debrowser-redesign="1"] .wiz-step:not(.active):not(.de-pill-locked):hover {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-1) !important;
+}
+
+/* Section headers — match mockup PIPELINE / DEMOS / SETTINGS */
+html[data-debrowser-redesign="1"] .side-title,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6.side-title {
+  font-size: 10.5px !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+  color: var(--de-text-3) !important;
+  font-weight: 600 !important;
+  margin: 16px 14px 10px !important;
+}
+
+/* DEMOS + SETTINGS lists (rendered by the new R helper) */
+html[data-debrowser-redesign="1"] .de-side-list {
+  display: flex; flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+html[data-debrowser-redesign="1"] .de-side-list-item {
+  display: flex; align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--de-text-2);
+  text-decoration: none;
+  cursor: pointer;
+}
+html[data-debrowser-redesign="1"] .de-side-list-item:hover {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .de-side-list-prefix {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--de-text-3);
+  width: 20px; flex: 0 0 20px;
+  text-align: left;
+}
+
+/* ===== End B3.11 ===== */
+
+
+/* =====================================================================
+   B3.12 — Tighter sidebar: kill top gap, hug the left edge, compress
+   the inter-section space. Matches the mockup density exactly.
+   ===================================================================== */
+
+/* Sidebar wrapper: no top padding, tight horizontal */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar {
+  padding: 6px 10px !important;
+  background: color-mix(in srgb, var(--de-bg-1) 70%, transparent) !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar > .sidebar-content,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .sidebar-content {
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+/* The internal bslib sidebar uses display:flex + gap that adds extra
+   vertical space between successive elements. Reset to natural flow. */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar > * {
+  margin-top: 0 !important;
+}
+
+/* PIPELINE / DEMOS / SETTINGS headers — tight margins */
+html[data-debrowser-redesign="1"] .side-title,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6.side-title {
+  margin: 10px 8px 4px !important;
+  padding: 0 !important;
+}
+html[data-debrowser-redesign="1"] .side-title:first-child,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6.side-title:first-of-type {
+  margin-top: 6px !important;
+}
+
+/* Wizard list itself: no extra margin */
+html[data-debrowser-redesign="1"] .wizard-step-list {
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+/* Each step row: pull left so the number column starts near the sidebar
+   edge instead of inset by 14 px. Numbers ~8 px from edge. */
+html[data-debrowser-redesign="1"] .wiz-step {
+  padding: 8px 10px !important;
+  margin: 0 !important;
+  gap: 12px !important;
+}
+
+/* Number column: a touch narrower so the dot + label sit closer */
+html[data-debrowser-redesign="1"] .wiz-step-num {
+  width: 18px !important;
+  flex: 0 0 18px !important;
+}
+
+/* Demos / Settings lists: same left-hugging treatment */
+html[data-debrowser-redesign="1"] .de-side-list {
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+html[data-debrowser-redesign="1"] .de-side-list-item {
+  padding: 7px 10px !important;
+  gap: 12px !important;
+}
+html[data-debrowser-redesign="1"] .de-side-list-prefix {
+  width: 18px !important;
+  flex: 0 0 18px !important;
+}
+
+/* Collapse arrow (the `<` chevron at the top): tighten its space */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout .collapse-toggle {
+  position: absolute !important;
+  top: 8px !important;
+  right: 6px !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* Specifically remove any padding from the toggle's container */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar > .collapse-toggle-container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* If bslib emits a "Toggle sidebar" button before content, swallow its
+   top margin so the first .side-title is flush with the top. */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar button[aria-label*="idebar"] + *,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar button[aria-label*="idebar"] + h6 {
+  margin-top: 6px !important;
+}
+
+/* Force first child of sidebar to start at the top */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar > :first-child {
+  margin-top: 0 !important;
+}
+
+/* ===== End B3.12 ===== */
+
+
+/* =====================================================================
+   B3.13 — Compact ALL sidebars. Pipeline, plot-controls, QC accordion,
+   table column selector — every sidebar variant gets the same dense
+   mockup-style rhythm.
+   ===================================================================== */
+
+/* ---------- Pipeline rows: tighter, narrower, no margin ---------- */
+html[data-debrowser-redesign="1"] .wiz-step {
+  padding: 5px 8px !important;
+  gap: 10px !important;
+  font-size: 13px;
+}
+html[data-debrowser-redesign="1"] .wiz-step-num {
+  font-size: 10.5px !important;
+  width: 16px !important;
+  flex: 0 0 16px !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step-label {
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+/* Sidebar wrapper: less L/R padding too */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar {
+  padding: 4px 6px !important;
+}
+
+/* Section headers — pull margin down hard */
+html[data-debrowser-redesign="1"] .side-title,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6.side-title {
+  margin: 8px 6px 2px !important;
+  font-size: 9.5px !important;
+}
+html[data-debrowser-redesign="1"] .side-title:first-child,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6.side-title:first-of-type {
+  margin-top: 2px !important;
+}
+
+/* Demos / Settings rows */
+html[data-debrowser-redesign="1"] .de-side-list-item {
+  padding: 5px 8px !important;
+  gap: 10px !important;
+  font-size: 13px;
+}
+html[data-debrowser-redesign="1"] .de-side-list-prefix {
+  width: 16px !important;
+  flex: 0 0 16px !important;
+  font-size: 12px;
+}
+
+/* Collapse arrow tucked to the very corner, doesn't push content */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout .collapse-toggle,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout button[aria-label*="idebar"] {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  width: 20px !important;
+  height: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  z-index: 5;
+}
+
+/* Sidebar needs position:relative for absolute toggle */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar {
+  position: relative !important;
+}
+
+/* ---------- Plot-tab sidebars (Main Plots / QC / Tables) ---------- */
+
+/* The wellPanel around plot-type radioButtons in QC/Main/etc. */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .well,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .wellPanel {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 4px 6px !important;
+  margin: 0 !important;
+}
+
+/* Accordion items in sidebar — flatten and tighten */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-item {
+  border: 0 !important;
+  background: transparent !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--de-border) !important;
+  border-radius: 0 !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-item:last-child {
+  border-bottom: 0 !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-button {
+  background: transparent !important;
+  padding: 8px 6px !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .12em !important;
+  color: var(--de-text-3) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-button:not(.collapsed) {
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-button::after {
+  width: 12px; height: 12px;
+  background-size: 12px;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-body {
+  padding: 4px 6px 10px !important;
+}
+
+/* RadioButtons in sidebar — tight stack of choices */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .shiny-input-radiogroup {
+  margin: 0 !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .radio,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .shiny-options-group .radio {
+  margin: 0 !important;
+  padding: 3px 4px !important;
+  border-radius: 4px;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .radio:hover {
+  background: var(--de-bg-3);
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .radio label {
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: var(--de-text-2) !important;
+  letter-spacing: 0;
+  text-transform: none !important;
+  margin: 0 !important;
+  padding-left: 22px !important;
+  position: relative;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .radio input[type="radio"] {
+  position: absolute;
+  left: 2px; top: 2px;
+  width: 14px; height: 14px;
+  margin: 0;
+}
+/* Group header label (the "QC Plots:" / "Choose dataset:" line) */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .shiny-options-group label[for] {
+  font-size: 9.5px !important;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--de-text-3) !important;
+  margin: 0 0 4px !important;
+  padding: 0 !important;
+}
+
+/* Inputs (numeric/select/text) inside sidebar — slim */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .form-control,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .form-select,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .selectize-input {
+  height: 28px !important;
+  font-size: 12px !important;
+  padding: 0 8px !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .shiny-input-container {
+  margin: 0 0 8px !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar label.control-label,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .shiny-input-container > label {
+  font-size: 9.5px !important;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--de-text-3) !important;
+  margin-bottom: 3px !important;
+}
+
+/* actionButton / downloadButton inside sidebar — compact pill */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .btn {
+  height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  margin: 4px 0 !important;
+  width: auto !important;
+}
+
+/* Plot size margin UI rows — collapse paddings */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar [id*="plotSize"] {
+  margin: 0 !important;
+}
+
+/* The "DE Filter" h6 below pipeline */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6 {
+  font-size: 9.5px !important;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--de-text-3) !important;
+  margin: 10px 6px 4px !important;
+  font-weight: 600 !important;
+}
+
+/* hr separators — tighter */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar hr {
+  margin: 6px 0 !important;
+  border-color: var(--de-border) !important;
+  opacity: .5;
+}
+
+/* checkboxes inside sidebar (e.g. Select Columns checkbox group) */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .checkbox,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .form-check {
+  margin: 0 !important;
+  padding: 2px 4px !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .checkbox label,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .form-check-label {
+  font-size: 12px !important;
+  color: var(--de-text-2) !important;
+  font-weight: 500;
+}
+
+/* ===== End B3.13 ===== */
+
+
+/* =====================================================================
+   B3.14 — Strict grid alignment across all sidebar rows.
+   Three columns, FIXED widths, identical on every row regardless of
+   which section (PIPELINE / DEMOS / SETTINGS).
+     col 1: number "01"..."06" OR icon (▸ / ⚙ / ⌘)   — 22 px, monospace
+     col 2: dot (8 px, centered)                       — 14 px slot
+     col 3: label                                      — flex 1
+   ===================================================================== */
+
+:root {
+  --de-side-col-1: 22px;    /* number / icon column width */
+  --de-side-col-2: 14px;    /* dot slot width            */
+  --de-side-gap:   10px;    /* gap between columns       */
+}
+
+html[data-debrowser-redesign="1"] .wiz-step,
+html[data-debrowser-redesign="1"] .de-side-list-item {
+  display: grid !important;
+  grid-template-columns:
+    var(--de-side-col-1)
+    var(--de-side-col-2)
+    1fr !important;
+  align-items: center !important;
+  column-gap: var(--de-side-gap) !important;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  text-decoration: none !important;
+  color: var(--de-text-2) !important;
+  font-size: 13px !important;
+  background: transparent !important;
+}
+
+/* Column 1: number (pipeline) and icon (demos/settings) */
+html[data-debrowser-redesign="1"] .wiz-step-num,
+html[data-debrowser-redesign="1"] .de-side-list-prefix {
+  grid-column: 1 !important;
+  width: var(--de-side-col-1) !important;
+  margin: 0 !important;
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+  font-size: 10.5px !important;
+  font-weight: 500 !important;
+  color: var(--de-text-3) !important;
+  text-align: center !important;
+  line-height: 1;
+}
+
+/* Column 2: dot slot. For wiz-steps the dot lives here; for demos/
+   settings we render an invisible spacer so the label still lands in
+   column 3, perfectly under the pipeline labels. */
+html[data-debrowser-redesign="1"] .wiz-step-dot {
+  grid-column: 2 !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: var(--de-text-3) !important;
+  opacity: .45;
+  margin: 0 auto !important;
+  flex: none !important;
+  display: block !important;
+}
+html[data-debrowser-redesign="1"] .de-side-list-spacer {
+  grid-column: 2 !important;
+  width: var(--de-side-col-2);
+  height: 8px;
+  display: block;
+}
+
+/* Column 3: label, left-aligned, fills remaining space */
+html[data-debrowser-redesign="1"] .wiz-step-label,
+html[data-debrowser-redesign="1"] .de-side-list-label {
+  grid-column: 3 !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  color: inherit !important;
+  line-height: 1.25;
+  letter-spacing: -.005em;
+  text-align: left !important;
+  overflow-wrap: anywhere;
+}
+
+/* State-driven dot colors / glow (re-affirmed under the grid scope) */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-dot {
+  background: var(--de-mint) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 0 3px rgba(60,182,160,.18) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
+  background: var(--de-cyan) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-label,
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-num {
+  color: var(--de-text-1) !important;
+  font-weight: 600 !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-label {
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked {
+  opacity: .50 !important;
+  pointer-events: none !important;
+}
+
+/* Hover on demo/setting rows */
+html[data-debrowser-redesign="1"] .de-side-list-item:hover {
+  background: var(--de-bg-3) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .de-side-list-item:hover .de-side-list-label {
+  color: var(--de-text-1) !important;
+}
+
+/* Sidebar wrapper: keep tight padding so column 1 starts near edge */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar {
+  padding: 4px 6px !important;
+}
+
+/* Section headers align so they read above the icon column */
+html[data-debrowser-redesign="1"] .side-title,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6.side-title {
+  margin: 10px 10px 4px !important;
+  padding: 0 !important;
+  font-size: 9.5px !important;
+}
+
+/* ===== End B3.14 ===== */
+
+
+/* =====================================================================
+   B3.15 — Direct port of mockup .side-link rules. Flex (not grid),
+   fixed-width children, mockup-exact spacing.
+   ===================================================================== */
+
+/* Sidebar — exactly the mockup */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar {
+  padding: 20px 16px !important;
+  position: relative;
+}
+
+/* Section title — exact mockup */
+html[data-debrowser-redesign="1"] .side-title,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar h6.side-title {
+  font-size: 10px !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+  color: var(--de-text-3) !important;
+  margin: 12px 6px 6px !important;
+  padding: 0 !important;
+  font-weight: 600 !important;
+}
+
+/* List wrappers — exact mockup */
+html[data-debrowser-redesign="1"] .wizard-step-list,
+html[data-debrowser-redesign="1"] .de-side-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+/* Each row — exact mockup .side-link */
+html[data-debrowser-redesign="1"] .wiz-step,
+html[data-debrowser-redesign="1"] .de-side-list-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 6px 8px !important;
+  border-radius: 6px !important;
+  color: var(--de-text-2) !important;
+  font-size: 12.5px !important;
+  cursor: pointer;
+  text-decoration: none !important;
+  background: transparent !important;
+  white-space: nowrap;
+}
+
+/* Number/icon — exact mockup .step */
+html[data-debrowser-redesign="1"] .wiz-step-num,
+html[data-debrowser-redesign="1"] .de-side-list-prefix {
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+  font-size: 10px !important;
+  color: var(--de-text-3) !important;
+  width: 16px !important;
+  flex: 0 0 16px !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+/* Dot — exact mockup .dot, 6 px */
+html[data-debrowser-redesign="1"] .wiz-step-dot {
+  width: 6px !important;
+  height: 6px !important;
+  flex: 0 0 6px !important;
+  border-radius: 50% !important;
+  background: var(--de-border-strong) !important;
+  display: inline-block !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+}
+
+/* State variants — exact mockup */
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-dot {
+  background: var(--de-mint) !important;
+  box-shadow: 0 0 0 3px rgba(60,182,160,.18) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-dot {
+  background: var(--de-cyan) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active,
+html[data-debrowser-redesign="1"] .wiz-step.active:hover {
+  color: var(--de-text-1) !important;
+  background: var(--de-bg-2) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step:hover,
+html[data-debrowser-redesign="1"] .de-side-list-item:hover {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-locked {
+  opacity: .45 !important;
+  pointer-events: none !important;
+}
+
+/* Label (pipeline has explicit span; demos have a text node — both flex 1) */
+html[data-debrowser-redesign="1"] .wiz-step-label {
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: inherit !important;
+  flex: 1 1 auto !important;
+  min-width: 0;
+}
+
+/* Active/done labels heavier */
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-label,
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-num {
+  color: var(--de-text-1) !important;
+  font-weight: 600 !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-label {
+  color: var(--de-text-1) !important;
+}
+
+/* Collapse arrow tucked away — doesn't push content down */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout button[aria-label*="idebar"],
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout .collapse-toggle {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  width: 20px !important;
+  height: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 5;
+}
+
+/* ===== End B3.15 ===== */
+
+
+/* =====================================================================
+   B3.16 — Final override. Computed style on .wiz-step shows
+   justify-content: center (leaking from Shiny's .action-button or one
+   of my earlier B3.x rules). Force left-justified flex, identical
+   padding to .de-side-list-item, no surprises.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .wiz-step,
+html[data-debrowser-redesign="1"] a.wiz-step,
+html[data-debrowser-redesign="1"] .wizard-step-list a.wiz-step,
+html[data-debrowser-redesign="1"] .action-button.wiz-step {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;   /* <— the fix */
+  gap: 10px !important;
+  padding: 6px 8px !important;
+  margin: 0 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  font-size: 12.5px !important;
+  line-height: 1.3 !important;
+  color: var(--de-text-2) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+html[data-debrowser-redesign="1"] .de-side-list-item,
+html[data-debrowser-redesign="1"] a.de-side-list-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  padding: 6px 8px !important;
+  margin: 0 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  font-size: 12.5px !important;
+  line-height: 1.3 !important;
+  color: var(--de-text-2) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* All earlier ::after / ::before remnants are off again */
+html[data-debrowser-redesign="1"] .wiz-step::before,
+html[data-debrowser-redesign="1"] .wiz-step::after,
+html[data-debrowser-redesign="1"] .wizard-step-list::before,
+html[data-debrowser-redesign="1"] .wizard-step-list::after,
+html[data-debrowser-redesign="1"] .wiz-step + .wiz-step::before {
+  content: none !important;
+}
+
+/* Active state — minimal: faint bg + cyan dot only */
+html[data-debrowser-redesign="1"] .wiz-step.active {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-num {
+  color: var(--de-text-1) !important;
+  font-weight: 600 !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active .wiz-step-label {
+  font-weight: 600 !important;
+}
+
+/* ===== End B3.16 ===== */
+
+
+/* =====================================================================
+   B3.17 — Skipped step state. Batch Effect (optional) defaults to
+   skipped; previously rendered as DONE (green dot) which falsely
+   implied the user had completed it. Now: skipped = dim gray dot,
+   clickable (unlike locked), label slightly muted.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-skipped .wiz-step-dot {
+  background: var(--de-border-strong) !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-skipped {
+  opacity: 0.85 !important;          /* slightly dim but readable */
+  pointer-events: auto !important;    /* still clickable, unlike locked */
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-skipped .wiz-step-label {
+  color: var(--de-text-2) !important;
+  font-weight: 500;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-skipped .wiz-step-num {
+  color: var(--de-text-3) !important;
+}
+
+/* "Optional" caption shown only on the Batch Effect step when skipped */
+html[data-debrowser-redesign="1"] .wiz-step[data-progress-pill="batch"].de-pill-skipped .wiz-step-label::after {
+  content: " · optional";
+  color: var(--de-text-3);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* When user actually runs batch correction (state="done") the green
+   dot kicks in — already handled by the existing .de-pill-done rule. */
+
+/* ===== End B3.17 ===== */
+
+
+/* =====================================================================
+   B3.18 — Strict / Standard cutoff buttons were being UPPERCASED by
+   the generic ".shiny-input-container > label" rule (since
+   radioGroupButtons renders each choice as a <label class="btn">).
+   Plus the buttons were overflowing — kill the uppercase, drop the
+   font, drop the padding so "Standard (0.05)" fits.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .btn-group label.btn,
+html[data-debrowser-redesign="1"] .btn-group-toggle label.btn,
+html[data-debrowser-redesign="1"] [id$="cutoff_preset"] label.btn,
+html[data-debrowser-redesign="1"] .radioGroupButtons label.btn {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 0 6px !important;
+  height: 28px !important;
+  white-space: nowrap;
+  overflow: visible;
+  /* Tabular numerals keep the "(0.01)" / "(0.05)" the same width */
+  font-variant-numeric: tabular-nums;
+}
+
+/* The group itself: equal-width row, no extra gutter */
+html[data-debrowser-redesign="1"] [id$="cutoff_preset"] .btn-group,
+html[data-debrowser-redesign="1"] [id$="cutoff_preset"] .btn-group-justified {
+  display: flex !important;
+  width: 100% !important;
+  gap: 4px;
+}
+html[data-debrowser-redesign="1"] [id$="cutoff_preset"] .btn-group label.btn {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+/* Also restrict the uppercase generic rule so it never hits .btn labels.
+   This prevents a recurrence on any other radioGroupButtons we add. */
+html[data-debrowser-redesign="1"] .shiny-input-container > label.btn,
+html[data-debrowser-redesign="1"] .shiny-input-container label.btn {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 11px !important;
+  color: inherit !important;
+}
+
+/* ===== End B3.18 ===== */
+
+
+/* =====================================================================
+   B3.20 — DONE ALWAYS WINS.
+   Earlier B3.x observer JS sometimes leaves both de-pill-done AND
+   de-pill-locked on a completed step (the old `data-requires` JS keeps
+   adding locked back). Instead of fighting JS, make CSS guarantee:
+   if .de-pill-done is set, the step renders as DONE no matter what else
+   is on it. Source order + extra specificity ensure this rule trumps
+   any earlier .de-pill-locked / .de-pill-skipped declarations.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done,
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done.de-pill-locked,
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done.de-pill-skipped {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-dot,
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done.de-pill-locked .wiz-step-dot,
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done.de-pill-skipped .wiz-step-dot {
+  background: var(--de-mint) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 0 3px rgba(60,182,160,.22) !important;
+  border: 0 !important;
+}
+
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-label {
+  color: var(--de-text-1) !important;
+  font-weight: 500 !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.de-pill-done .wiz-step-num {
+  color: var(--de-mint) !important;
+}
+
+/* Active state still wins (cyan) when both done and active are present —
+   we're actively visiting a previously-completed step. */
+html[data-debrowser-redesign="1"] .wiz-step.active.de-pill-done .wiz-step-dot {
+  background: var(--de-cyan) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.22) !important;
+}
+html[data-debrowser-redesign="1"] .wiz-step.active.de-pill-done {
+  background: var(--de-bg-2) !important;
+}
+
+/* ===== End B3.20 ===== */
+
+
+/* =====================================================================
+   B3.22 — Filter page next-step CTAs.
+   Match the "Filter" button geometry exactly (compact pill, gradient
+   primary), arrange the three step-forward buttons in a tight row,
+   pulled a touch below the filter card. Same treatment for the
+   Download + Show Data pair under each preview table.
+   ===================================================================== */
+
+/* The wrapped row .de-lcf-cta-row gets a flex layout. Each button
+   inside renders as a compact pill identical to the Filter button. */
+html[data-debrowser-redesign="1"] .de-lcf-cta-row {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  margin-top: 18px !important;
+  padding: 0 4px;
+}
+html[data-debrowser-redesign="1"] .de-lcf-cta-row .btn,
+html[data-debrowser-redesign="1"] .de-lcf-cta-row .btn-primary,
+html[data-debrowser-redesign="1"] .de-lcf-cta-row .action-button,
+html[data-debrowser-redesign="1"] #Batch,
+html[data-debrowser-redesign="1"] #goDEFromFilter,
+html[data-debrowser-redesign="1"] #goQCplotsFromFilter {
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  padding: 0 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+html[data-debrowser-redesign="1"] .de-lcf-cta-row .btn:hover,
+html[data-debrowser-redesign="1"] #Batch:hover,
+html[data-debrowser-redesign="1"] #goDEFromFilter:hover,
+html[data-debrowser-redesign="1"] #goQCplotsFromFilter:hover {
+  filter: brightness(1.05);
+}
+
+/* Show Data + Download pair under each preview table */
+html[data-debrowser-redesign="1"] a[id*="Download"].btn,
+html[data-debrowser-redesign="1"] [id*="show"].action-button.btn-primary,
+html[data-debrowser-redesign="1"] [id$="-showloadedtable"],
+html[data-debrowser-redesign="1"] [id$="-showfilteredtable"] {
+  width: auto !important;
+  height: 30px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  border-radius: 6px !important;
+  margin: 4px 6px 4px 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+}
+html[data-debrowser-redesign="1"] a[id*="Download"].btn {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] [id*="show"].action-button.btn-primary {
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
+}
+
+/* The container that holds Download + Show Data — make it a tight row */
+html[data-debrowser-redesign="1"] [id$="-loadedtable"],
+html[data-debrowser-redesign="1"] [id$="-filteredtable"] {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* ===== End B3.22 ===== */
+
+
+/* =====================================================================
+   B3.23 — Next-step CTAs INSIDE the Filtering Methods card.
+   Card body becomes a flex column. Form sits at top. CTA stack sits
+   below with auto-margin pushing it to the bottom. All buttons in the
+   stack are full-width of the card so they line up exactly with the
+   Filter button (which we also force to 100% width inside the card).
+   ===================================================================== */
+
+/* The Filtering Methods card itself — full height of its column so the
+   stack-bottom alignment works. Targets the bslib::card created by
+   de_card("Filtering Methods", ...). */
+html[data-debrowser-redesign="1"] .bslib-card:has(.de-lcf-card-content),
+html[data-debrowser-redesign="1"] .card:has(.de-lcf-card-content) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+html[data-debrowser-redesign="1"] .bslib-card:has(.de-lcf-card-content) > .card-body,
+html[data-debrowser-redesign="1"] .card:has(.de-lcf-card-content) > .card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Inner wrapper inside the card body */
+html[data-debrowser-redesign="1"] .de-lcf-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+  gap: 12px;
+}
+
+/* Top: the form (radios + cutoff + Filter button) */
+html[data-debrowser-redesign="1"] .de-lcf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Filter button itself — full width of the card so it matches the
+   stacked CTAs below */
+html[data-debrowser-redesign="1"] .de-lcf-form .btn,
+html[data-debrowser-redesign="1"] [id$="-submitLCF"].btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 36px !important;
+  border-radius: 999px !important;
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  font-weight: 600 !important;
+  margin-top: 4px !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
+}
+
+/* Bottom: the CTA stack — pushed to the bottom via margin-top:auto.
+   The LAST CTA sits flush at the card bottom (margin-bottom:0). */
+html[data-debrowser-redesign="1"] .de-lcf-cta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto !important;   /* pushes the stack to bottom of card */
+  padding-top: 16px;             /* breathing room above the first CTA */
+}
+
+/* Each CTA — same width as Filter button, same pill geometry */
+html[data-debrowser-redesign="1"] .de-lcf-cta-stack .btn,
+html[data-debrowser-redesign="1"] .de-lcf-cta-stack #Batch,
+html[data-debrowser-redesign="1"] .de-lcf-cta-stack #goDEFromFilter,
+html[data-debrowser-redesign="1"] .de-lcf-cta-stack #goQCplotsFromFilter,
+html[data-debrowser-redesign="1"] #Batch,
+html[data-debrowser-redesign="1"] #goDEFromFilter,
+html[data-debrowser-redesign="1"] #goQCplotsFromFilter {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 36px !important;
+  padding: 0 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  margin: 0 !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
+  white-space: nowrap;
+}
+
+/* Hover: subtle brighten on all CTA pills */
+html[data-debrowser-redesign="1"] .de-lcf-cta-stack .btn:hover,
+html[data-debrowser-redesign="1"] [id$="-submitLCF"]:hover {
+  filter: brightness(1.05);
+}
+
+/* Defensively kill any margin the deprecated .de-lcf-cta-row would have
+   added (we removed the row in R but old DOM might persist) */
+html[data-debrowser-redesign="1"] .de-lcf-cta-row {
+  display: none !important;
+}
+
+/* ===== End B3.23 ===== */
+
+
+/* =====================================================================
+   B3.24 — Upload-page workbar with prominent "Continue → Filter" CTA
+   on the right; compact preview & sample-design tables.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .de-data-workbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--de-bg-1) 90%, transparent);
+  border: 1px solid var(--de-border);
+  border-radius: 12px;
+  box-shadow: var(--de-shadow);
+  margin-bottom: 14px;
+  position: sticky;
+  top: 60px;       /* below the fixed app navbar */
+  z-index: 30;
+  backdrop-filter: blur(8px);
+}
+
+/* Stat strip inside the workbar — strip its own border/bg, let the
+   workbar carry the visual */
+html[data-debrowser-redesign="1"] .de-data-workbar .de-stat-strip {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0;
+}
+
+/* Right-side primary CTA (the Filter button rendered by output$nextButton) */
+html[data-debrowser-redesign="1"] .de-data-workbar-actions .btn,
+html[data-debrowser-redesign="1"] .de-data-workbar-actions #Filter,
+html[data-debrowser-redesign="1"] .de-data-workbar-actions .action-button {
+  width: auto !important;
+  min-width: 160px;
+  height: 36px !important;
+  padding: 0 18px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.22) !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+html[data-debrowser-redesign="1"] .de-data-workbar-actions .btn:hover {
+  filter: brightness(1.05);
+}
+/* Visual cue: prepend an arrow glyph so it reads as "Continue →" */
+html[data-debrowser-redesign="1"] .de-data-workbar-actions .btn::after {
+  content: " →";
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+/* Compact tables — smaller font, tighter padding */
+html[data-debrowser-redesign="1"] .de-compact-table table,
+html[data-debrowser-redesign="1"] .de-compact-table .dataTable {
+  font-size: 11.5px !important;
+}
+html[data-debrowser-redesign="1"] .de-compact-table thead th,
+html[data-debrowser-redesign="1"] .de-compact-table .dataTable thead th {
+  padding: 5px 8px !important;
+  font-size: 9.5px !important;
+}
+html[data-debrowser-redesign="1"] .de-compact-table tbody td,
+html[data-debrowser-redesign="1"] .de-compact-table .dataTable tbody td {
+  padding: 4px 8px !important;
+  font-size: 11.5px !important;
+  line-height: 1.35;
+}
+
+/* Tighten card body padding for these compact cards */
+html[data-debrowser-redesign="1"] .de-compact-table {
+  padding: 0 !important;
+}
+
+/* Compact pagination + search row inside the sample-design table */
+html[data-debrowser-redesign="1"] .de-compact-table .dataTables_wrapper .dataTables_filter input,
+html[data-debrowser-redesign="1"] .de-compact-table .dataTables_wrapper .dataTables_length select {
+  height: 26px !important;
+  font-size: 11.5px !important;
+}
+
+/* ===== End B3.24 ===== */
+
+
+/* =====================================================================
+   B3.25 — Comparison Selection page: sticky workbar with Start DE
+   prominently on the right, compact subcards (no min-height, less
+   padding, tighter Sample Grouping & DE Method blocks).
+   ===================================================================== */
+
+/* Sticky workbar at the top */
+html[data-debrowser-redesign="1"] .de-cs-workbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--de-bg-1) 92%, transparent);
+  border: 1px solid var(--de-border);
+  border-radius: 12px;
+  box-shadow: var(--de-shadow);
+  margin-bottom: 12px;
+  position: sticky;
+  top: 60px;
+  z-index: 30;
+  backdrop-filter: blur(8px);
+}
+html[data-debrowser-redesign="1"] .de-cs-workbar-hint {
+  color: var(--de-text-2);
+  font-size: 12.5px;
+}
+html[data-debrowser-redesign="1"] .de-cs-workbar-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Workbar buttons */
+html[data-debrowser-redesign="1"] .de-cs-workbar-actions .btn,
+html[data-debrowser-redesign="1"] .de-cs-workbar-actions .action-button,
+html[data-debrowser-redesign="1"] [id$="-rm_btn"],
+html[data-debrowser-redesign="1"] [id$="-add_btn"],
+html[data-debrowser-redesign="1"] [id$="-startDE"] {
+  width: auto !important;
+  height: 32px !important;
+  padding: 0 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  margin: 0 !important;
+}
+
+/* Secondary buttons (Add / Remove) — ghost pill */
+html[data-debrowser-redesign="1"] .de-cs-workbar-actions [id$="-add_btn"],
+html[data-debrowser-redesign="1"] .de-cs-workbar-actions [id$="-rm_btn"] {
+  background: var(--de-bg-2) !important;
+  color: var(--de-text-1) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .de-cs-workbar-actions [id$="-rm_btn"] {
+  color: var(--de-text-3) !important;
+}
+
+/* Primary CTA (Start DE) — gradient pill, bigger */
+html[data-debrowser-redesign="1"] .de-cs-workbar-actions [id$="-startDE"] {
+  height: 36px !important;
+  padding: 0 18px !important;
+  font-size: 13px !important;
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.22) !important;
+  margin-left: 4px !important;
+}
+html[data-debrowser-redesign="1"] .de-cs-workbar-actions [id$="-startDE"]::after {
+  content: " →";
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+/* Bottom-row actions — keep tiny, just the help icon */
+html[data-debrowser-redesign="1"] .de-cs-bottom-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* ---- Compact the comparison subcards ---- */
+
+/* The outer "Comparison Selection" card body — less padding */
+html[data-debrowser-redesign="1"] .de-comparison .card-body,
+html[data-debrowser-redesign="1"] [class*="de-comparison"] .card-body {
+  padding: 10px !important;
+}
+
+/* The "Comparison N: Treatment vs Control" inner card — slim header */
+html[data-debrowser-redesign="1"] .de-comparison-card > .card-header,
+html[data-debrowser-redesign="1"] .de-comparison .card > .card-header {
+  padding: 8px 12px !important;
+  font-size: 12.5px !important;
+}
+
+/* The de-subcard sections (Sample Grouping / Treatment / Control / DE Model) */
+html[data-debrowser-redesign="1"] .de-comparison .de-subcard {
+  margin-bottom: 8px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .de-comparison .de-subcard > .card-header {
+  padding: 6px 12px !important;
+  font-size: 10px !important;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  background: var(--de-grad-soft) !important;
+}
+html[data-debrowser-redesign="1"] .de-comparison .de-subcard > .card-body {
+  padding: 8px 12px !important;
+}
+
+/* Form labels inside subcards: smaller eyebrow */
+html[data-debrowser-redesign="1"] .de-comparison .de-subcard label.control-label,
+html[data-debrowser-redesign="1"] .de-comparison .de-subcard .shiny-input-container > label {
+  font-size: 9.5px !important;
+  margin-bottom: 3px !important;
+}
+
+/* Selectize / inputs in subcards: tighter */
+html[data-debrowser-redesign="1"] .de-comparison .de-subcard .selectize-input,
+html[data-debrowser-redesign="1"] .de-comparison .de-subcard .form-control {
+  height: 28px !important;
+  font-size: 12px !important;
+  padding: 0 8px !important;
+}
+
+/* The Swap button between Treatment / Control cards: keep it neat */
+html[data-debrowser-redesign="1"] .de-swap-wrap {
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+html[data-debrowser-redesign="1"] .de-swap-wrap .btn,
+html[data-debrowser-redesign="1"] [id*="swap_btn"] {
+  width: auto !important;
+  height: 30px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+}
+
+/* Sample-pill list inside Samples row — compact */
+html[data-debrowser-redesign="1"] .de-comparison .selectize-input > .item {
+  padding: 1px 8px !important;
+  font-size: 11px !important;
+  margin: 1px 2px !important;
+}
+
+/* Tighter spacing between comparison cards */
+html[data-debrowser-redesign="1"] .de-comparison-card,
+html[data-debrowser-redesign="1"] .de-comparison .card {
+  margin-bottom: 10px !important;
+}
+
+/* Advanced model settings — keep it as a slim accordion */
+html[data-debrowser-redesign="1"] .de-comparison .accordion-button {
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  background: transparent !important;
+}
+
+/* ===== End B3.25 ===== */
+
+
+/* =====================================================================
+   B3.26 — Comparison Selection: tabbed comparisons.
+   When the user clicks "Add comparison" we render each comparison as
+   its own tab in a navset_underline. Style the tabs to match the rest
+   of the redesign (cyan/violet underline, 13 px font, tight padding).
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .de-comparison-tabs.nav-underline,
+html[data-debrowser-redesign="1"] [class*="de-comparison-tabs"] .nav-underline,
+html[data-debrowser-redesign="1"] .nav.nav-underline:has(~ .tab-content .de-comparison) {
+  border-bottom: 1px solid var(--de-border);
+  margin-bottom: 12px;
+  padding: 0 4px;
+  gap: 4px;
+}
+
+html[data-debrowser-redesign="1"] .de-comparison-tabs .nav-link,
+html[data-debrowser-redesign="1"] .de-comparison-tabs.nav-underline .nav-link {
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--de-text-2) !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+html[data-debrowser-redesign="1"] .de-comparison-tabs .nav-link:hover {
+  color: var(--de-text-1) !important;
+  background: var(--de-bg-3) !important;
+}
+html[data-debrowser-redesign="1"] .de-comparison-tabs .nav-link.active {
+  color: var(--de-text-1) !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+  border-image: var(--de-grad) 1 !important;
+  border-bottom: 2px solid var(--de-cyan) !important;
+}
+/* The cyan underline alone — better cross-browser than border-image */
+html[data-debrowser-redesign="1"] .de-comparison-tabs .nav-link.active {
+  position: relative;
+}
+html[data-debrowser-redesign="1"] .de-comparison-tabs .nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 8px; right: 8px; bottom: -1px;
+  height: 2px;
+  background: var(--de-grad);
+  border-radius: 2px;
+}
+
+/* The tab content panel — strip the default tab-content top padding */
+html[data-debrowser-redesign="1"] .de-comparison-tabs + .tab-content,
+html[data-debrowser-redesign="1"] .tab-content:has(.de-comparison) {
+  padding-top: 4px !important;
+}
+
+/* When a comparison is inside a tab, drop the redundant outer card
+   header (the tab title already names it "Comparison 1") */
+html[data-debrowser-redesign="1"] .de-comparison-tabs ~ .tab-content .de-comparison > .card-header,
+html[data-debrowser-redesign="1"] .tab-content .de-comparison > .card-header {
+  display: none !important;
+}
+html[data-debrowser-redesign="1"] .de-comparison-tabs ~ .tab-content .de-comparison,
+html[data-debrowser-redesign="1"] .tab-content .de-comparison {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+html[data-debrowser-redesign="1"] .tab-content .de-comparison > .card-body {
+  padding: 6px 0 !important;
+}
+
+/* ===== End B3.26 ===== */
+
+
+/* =====================================================================
+   B3.28 — Selectize dropdown clipping fix.
+   Inside the sidebar accordion (PLOT TYPE / FILTER / etc.), selectize
+   dropdowns were being clipped by the next accordion-item because the
+   default overflow:hidden on accordion bodies cuts the dropdown
+   menu off. Allow overflow + lift the dropdown z-index.
+   ===================================================================== */
+
+/* Allow overflow on accordion items + bodies so dropdowns can spill */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-item,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-body,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .accordion-collapse,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .well,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .shiny-input-container {
+  overflow: visible !important;
+}
+
+/* Lift selectize dropdown above sibling accordion items.
+   CRITICAL: must stay > 2055 (modal z-index) so selectInputs INSIDE
+   modals (AI Assistant Provider, condition selectors, etc.) aren't
+   clipped behind the modal. */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .selectize-dropdown,
+html[data-debrowser-redesign="1"] .selectize-dropdown {
+  z-index: 2080 !important;
+  background: var(--de-bg-1) !important;
+  border: 1px solid var(--de-border-strong) !important;
+  border-radius: var(--de-r-sm) !important;
+  box-shadow: var(--de-shadow-lg) !important;
+}
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .selectize-dropdown .option {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* The selectize-control's parent needs overflow:visible too */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .selectize-control {
+  overflow: visible !important;
+}
+
+/* Same fix for any card-body that might clip dropdowns */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .card,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .card-body {
+  overflow: visible !important;
+}
+
+/* ===== End B3.28 ===== */
+
+
+/* =====================================================================
+   B3.29 — Long sidebar labels (e.g. "foldChange.Treatment.vs.Control")
+   were wrapping to 2 lines and pushing the rest of the column list
+   below the fold. Force single-line with end ellipsis as a CSS
+   safety net; the JS in ui.R upgrades long labels to MIDDLE
+   ellipsis (e.g. "foldChange.Tr...vs.Control") with hover tooltip.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .checkbox label,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .form-check label,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .form-check-label,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .shiny-options-group label[for] {
+  display: inline-block !important;
+  max-width: calc(100% - 26px);    /* leave room for the checkbox itself */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  vertical-align: middle;
+}
+
+/* The wrapping checkbox row should clip cleanly with the label */
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .checkbox,
+html[data-debrowser-redesign="1"] .bslib-sidebar-layout > .sidebar .form-check {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* JS-applied middle ellipsis classes: ensure they don't get
+   re-wrapped by anything */
+html[data-debrowser-redesign="1"] .de-mid-ellipsis {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+/* ===== End B3.29 ===== */
+
+
+/* =====================================================================
+   B3.31 — Batch Effect Options card: same in-card CTA stack treatment
+   as the Filter step. Form on top, CTAs anchored at card bottom, all
+   buttons full width matching the Submit pill.
+   ===================================================================== */
+
+html[data-debrowser-redesign="1"] .bslib-card:has(.de-batch-card-content),
+html[data-debrowser-redesign="1"] .card:has(.de-batch-card-content) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+html[data-debrowser-redesign="1"] .bslib-card:has(.de-batch-card-content) > .card-body,
+html[data-debrowser-redesign="1"] .card:has(.de-batch-card-content) > .card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-debrowser-redesign="1"] .de-batch-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+  gap: 12px;
+}
+
+html[data-debrowser-redesign="1"] .de-batch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+html[data-debrowser-redesign="1"] .de-batch-form .btn,
+html[data-debrowser-redesign="1"] [id$="-submitBatchEffect"].btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 36px !important;
+  border-radius: 999px !important;
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  font-weight: 600 !important;
+  margin-top: 4px !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
+}
+
+html[data-debrowser-redesign="1"] .de-batch-cta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto !important;
+  padding-top: 16px;
+}
+
+html[data-debrowser-redesign="1"] .de-batch-cta-stack .btn,
+html[data-debrowser-redesign="1"] .de-batch-cta-stack #goDE,
+html[data-debrowser-redesign="1"] .de-batch-cta-stack #goQCplots {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 36px !important;
+  padding: 0 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  background: var(--de-grad) !important;
+  color: var(--de-ink-on-accent) !important;
+  border: 0 !important;
+  margin: 0 !important;
+  box-shadow: 0 4px 14px rgba(99,102,241,.18) !important;
+  white-space: nowrap;
+}
+
+html[data-debrowser-redesign="1"] .de-batch-cta-stack .btn:hover,
+html[data-debrowser-redesign="1"] [id$="-submitBatchEffect"]:hover {
+  filter: brightness(1.05);
+}
+
+/* ===== End B3.31 ===== */
+
+/* =====================================================================
+   B3.32 -- Navbar dropdown z-index over cards / plots / sidebar.
+   bslib `card` containers set position:relative and (for plot wrappers)
+   create new stacking contexts via `transform` or `will-change`. Those
+   stacking contexts trap any descendant z-index AT MOST at the parent
+   stack level, so the navbar dropdown menu (z-index:1000 default) can
+   render BEHIND a sibling card that happens to come later in the DOM.
+   Fix: bump the navbar dropdown to a higher tier than cards/plots, and
+   make sure the navbar itself participates in the topmost stack.
+   Applies in both classic and redesign mode (no html[...] scope).
+   ===================================================================== */
+
+/* Navbar sits above cards, panels, plots, accordions, etc. */
+.navbar {
+  position: relative;
+  z-index: 1050;        /* > .card, .accordion, .plotly */
+}
+
+/* The navbar's dropdown menus (account, settings, export) must float
+   above EVERY card / sub-card / plot in the main content area, even
+   when those create their own stacking contexts. 1090 beats:
+     - .card (no z-index)
+     - .selectize-dropdown (we use 1080)
+     - .plotly .modebar (none)
+   while staying below Bootstrap's modal (1055) so an open modal
+   still wins. */
+.navbar .dropdown-menu,
+.navbar .de-account-menu,
+.bslib-page-navbar .navbar .dropdown-menu {
+  z-index: 1090 !important;
+  position: absolute;
+}
+
+/* Some bslib navbar layouts wrap the menu in a <ul.dropdown-menu> that
+   itself is `position: static`; the .show toggle promotes it. Make
+   sure the .show state never collapses below cards. */
+.navbar .dropdown-menu.show,
+.navbar .de-account-menu.show {
+  z-index: 1090 !important;
+}
+
+/* Cards normally clip overflow (for full-screen handling). That clip
+   doesn't matter for navbar dropdowns (they're outside the card), but
+   when a dropdown opens INSIDE a card we want it to spill. */
+.card,
+.bslib-card,
+.bslib-card > .card-body {
+  /* leave card's own overflow alone, but its z-index must not exceed
+     the navbar dropdown */
+}
+
+/* ===== End B3.32 ===== */
+
+/* =====================================================================
+   B3.33 -- Export / Settings / Account dropdown polish.
+   Two issues addressed:
+     1) bslib's nav_menu wraps our `<ul class="de-account-menu">` inside
+        another `<ul class="dropdown-menu">`. The outer ul has its own
+        background + padding, which peeks out as a white strip ABOVE the
+        first row before our inner ul starts.
+     2) Inside the Export menu, `<a class="shiny-download-link">`
+        inherits the global button-like styling from rule blocks above
+        (display:inline-flex, button border, etc.), making the 4
+        download rows look boxed while the 2 actionLink rows look flat.
+   Fix: when the outer dropdown-menu contains a `.de-account-menu`,
+   strip its decorations so our inner menu is the only visible chrome.
+   And neutralize the button styling for shiny-download-links that live
+   inside the menu so they render as flat dropdown rows.
+   ===================================================================== */
+
+/* Outer wrapper provided by bslib::nav_menu: when it contains our
+   custom menu, drop ALL of its own paint so only the inner ul shows. */
+.dropdown-menu:has(> .nav-item > .de-account-menu),
+.dropdown-menu:has(> .de-account-menu) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* The wrapping <li class="nav-item"> from bslib::nav_item() must not
+   contribute any spacing either. */
+.dropdown-menu > .nav-item:has(> .de-account-menu) {
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none;
+}
+
+/* Some bslib versions don't render the nav_item wrapper, so target the
+   de-account-menu directly too. */
+.de-account-menu {
+  list-style: none !important;
+  margin: 0 !important;
+}
+.de-account-menu > li {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Flat dropdown rows for shiny-download-link inside our menu. Override
+   the global .shiny-download-link button styling: no flex centering,
+   no border, full-width left-aligned text just like the actionLink
+   siblings. */
+.de-account-menu .shiny-download-link,
+.de-account-menu .shiny-download-link.dropdown-item,
+html[data-debrowser-redesign="1"] .de-account-menu .shiny-download-link {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 8px 12px !important;
+  color: var(--de-text-1, #0f172a) !important;
+  border-radius: var(--de-r-sm, 6px) !important;
+  margin: 0 0 2px 0 !important;
+}
+.de-account-menu .shiny-download-link:hover,
+html[data-debrowser-redesign="1"] .de-account-menu .shiny-download-link:hover {
+  background: var(--de-bg-3, rgba(0,0,0,.06)) !important;
+  color: var(--de-text-1, #0f172a) !important;
+}
+
+/* ===== End B3.33 ===== */
+
+/* =====================================================================
+   B3.34 -- Stacking-context guarantees for floating UI surfaces.
+
+   The modal layer sits at z-index 2055 (backdrop 2054). Any floating
+   element that can appear OVER OR FROM-WITHIN a modal must beat that.
+   Without this block, things like a selectize dropdown inside the AI
+   Assistant modal, a tooltip on a button inside any modal, a Shiny
+   notification popped while a modal is open, or a date picker / color
+   picker inside a modal would all render BEHIND the modal and look
+   "missing" to the user. Below: every well-known popup class gets
+   bumped above 2055.
+
+   Tier table (top to bottom):
+     2090   Shiny notifications, tooltips, popovers
+     2080   Selectize, Bootstrap, jQuery UI date/color pickers,
+            shinyWidgets pickerInput, DT column filter overlays
+     2055   .modal
+     2054   .modal-backdrop
+     1090   .navbar .dropdown-menu (covered by B3.32 above)
+     1050   .navbar root
+     1000   default Bootstrap dropdown
+   ===================================================================== */
+
+/* --- Popups that can paint INSIDE or ON-TOP-OF a modal --- */
+.selectize-dropdown,
+.bootstrap-select .dropdown-menu,
+.selectize-control .dropdown-menu,
+.bsdatepicker,
+.datepicker,
+.daterangepicker,
+.ui-datepicker,
+.colorpicker,
+.picker__holder,
+.picker__frame,
+.bootstrap-datetimepicker-widget,
+table.dataTable .dropdown-menu {
+  z-index: 2080 !important;
+}
+
+/* Tooltips, popovers and notifications go ABOVE the popups so a
+   button hover-tip inside a modal isn't itself trapped by an open
+   selectize dropdown. */
+.tooltip,
+.bs-tooltip-auto,
+.bs-tooltip-top,
+.bs-tooltip-bottom,
+.bs-tooltip-left,
+.bs-tooltip-right,
+.popover,
+.bs-popover-auto,
+.bs-popover-top,
+.bs-popover-bottom,
+.bs-popover-left,
+.bs-popover-right,
+.shiny-notification-panel,
+.shiny-notification {
+  z-index: 2090 !important;
+}
+
+/* Notification panel position: keep at top-right of viewport regardless
+   of stacking context; the !important above just ensures visibility. */
+
+/* DT column-filter dropdowns (datatables) inherit from .dropdown-menu
+   but DT may also use inline-positioned divs we need to lift. */
+.dataTable .dt-button-collection,
+.dataTable .dt-button-background {
+  z-index: 2080 !important;
+}
+
+/* ===== End B3.34 ===== */
+

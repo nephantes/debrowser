@@ -18,6 +18,6 @@ heatmapply/heatmap.2 plot area
 returns plot area either for heatmaply or heatmap.2
 }
 \examples{
-    x <- getPlotArea()
+x <- getPlotArea()
 
 }

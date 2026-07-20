@@ -22,6 +22,6 @@ panel
 get sample details
 }
 \examples{
-    x <- getSampleDetails()
+x <- getSampleDetails()
 
 }

@@ -15,6 +15,6 @@ getDataPreparationText
 DataPreparation text
 }
 \examples{
-    x<- getDataPreparationText()
+x <- getDataPreparationText()
 
 }

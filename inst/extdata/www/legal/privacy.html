@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DEBrowser · Privacy Policy</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    :root { --de-cyan:#5EE6D6; --de-violet:#A78BFA; --de-grad:linear-gradient(135deg,#5EE6D6 0%,#A78BFA 100%); --de-bg-0:#0B1020; --de-bg-1:#0F1530; --de-border:rgba(255,255,255,.08); --de-border-strong:rgba(255,255,255,.14); --de-text-1:#E6ECFF; --de-text-2:#A8B2D1; --de-text-3:#6E7BA5; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin:0; padding:0; background: var(--de-bg-0); color: var(--de-text-1); font-family: "Inter", system-ui, sans-serif; font-size: 14.5px; line-height: 1.65; }
+    body { background-image: radial-gradient(800px 500px at 12% -10%, rgba(94,230,214,.10), transparent 60%), radial-gradient(900px 600px at 110% 110%, rgba(167,139,250,.12), transparent 60%); background-attachment: fixed; min-height: 100vh; }
+    main { max-width: 760px; margin: 0 auto; padding: 64px 28px 80px; }
+    h1 { font-size: 30px; font-weight: 800; letter-spacing: -.01em; margin: 0 0 4px; background: var(--de-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: .14em; color: var(--de-cyan); margin-bottom: 10px; text-transform: uppercase; }
+    .eyebrow .chip { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; background: var(--de-grad); color: #0B1020; font-size: 10px; font-weight: 700; font-family: "JetBrains Mono", monospace; }
+    .meta { color: var(--de-text-3); font-size: 12px; margin: 0 0 32px; }
+    h2 { font-size: 18px; font-weight: 700; margin: 36px 0 10px; color: var(--de-text-1); border-top: 1px solid var(--de-border); padding-top: 28px; }
+    h2:first-of-type { border-top: 0; padding-top: 0; }
+    p, ul, ol { color: var(--de-text-2); }
+    ul, ol { padding-left: 22px; }
+    a { color: var(--de-cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .back { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--de-border-strong); border-radius: 8px; background: var(--de-bg-1); color: var(--de-text-2); font-size: 12px; font-weight: 500; margin-bottom: 32px; }
+    .back:hover { text-decoration: none; color: var(--de-text-1); border-color: var(--de-cyan); }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="javascript:history.length>1?history.back():window.close()">&larr; Back</a>
+  <div class="eyebrow"><span class="chip">§</span>Legal</div>
+  <h1>DEBrowser Privacy Policy</h1>
+  <p class="meta">Last updated: May 12, 2026</p>
+
+  <p>This Privacy Policy explains how DEBrowser collects and uses information when you use the Service.</p>
+
+  <h2>1. Information we collect</h2>
+  <p>We may collect:</p>
+  <ul>
+    <li><strong>Account details</strong> &mdash; your username, email address, and a hashed password (we never store passwords in plaintext).</li>
+    <li><strong>Usage and diagnostic data</strong> &mdash; which pages you visit inside the app, error logs, and last-login timestamp.</li>
+    <li><strong>Analysis content</strong> &mdash; count matrices, metadata tables, and analysis settings you upload or configure. This data is required to run differential expression analyses on your behalf.</li>
+    <li><strong>Integration metadata</strong> &mdash; when you enable optional AI-assistant features, the prompts and selected context you submit are sent to the AI provider you configure.</li>
+  </ul>
+
+  <h2>2. How we use information</h2>
+  <p>We use information to provide, secure, maintain, and improve the Service, including troubleshooting, analytics, and abuse prevention.</p>
+
+  <h2>3. AI and third-party providers</h2>
+  <p>When you enable optional AI-provider features (such as result-interpretation assistants), your prompts, selected analysis context, and outputs may be processed by the provider you select (e.g. OpenAI, Anthropic). Provider data-handling is governed by the provider's own terms and privacy policy.</p>
+
+  <h2>4. Data retention</h2>
+  <p>We retain account data and uploaded analyses for as long as your account exists or as needed to meet legal and operational requirements. You may delete your account at any time, which deletes your uploaded data and bookmarks.</p>
+
+  <h2>5. Security</h2>
+  <p>We use reasonable safeguards (password hashing via libsodium argon2id, HTTPS in production deployments, scoped session tokens). No method of storage or transmission is completely secure.</p>
+
+  <h2>6. Your responsibilities</h2>
+  <p>You are responsible for ensuring you have rights to the data you submit, for de-identifying human-subject data where applicable, and for maintaining backups of important results.</p>
+
+  <h2>7. Changes</h2>
+  <p>We may update this Privacy Policy from time to time. Continued use of the Service after updates means acceptance.</p>
+
+  <h2>8. Contact</h2>
+  <p>For privacy questions, open an issue at <a href="https://github.com/UMMS-Biocore/debrowser/issues">github.com/UMMS-Biocore/debrowser/issues</a>.</p>
+</main>
+</body>
+</html>

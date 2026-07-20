@@ -19,5 +19,5 @@ Generates the left menu for for plots within the DEBrowser.
 \code{getLeftMenu}
 }
 \examples{
-    x <- getLeftMenu()
+x <- getLeftMenu()
 }

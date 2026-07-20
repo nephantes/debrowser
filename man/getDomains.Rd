@@ -16,5 +16,5 @@ domains
 Get domains for the main plots.
 }
 \examples{
-    x<-getDomains()
+x <- getDomains()
 }

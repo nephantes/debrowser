@@ -1,124 +1,781 @@
 #' deUI
 #'
 #' Creates a shinyUI to be able to run DEBrowser interactively.
+#' B1 shell: bslib::page_navbar with 5 nav panels (Data Prep / Main Plots /
+#' QC Plots / GO Term / Tables), Slate + OK-blue theme, light/dark toggle.
 #'
+#' Accepts a Shiny `request` argument so that the theme can be swapped at
+#' runtime via the `?preset=NAME` query parameter (e.g. `?preset=zephyr`).
+#' Unknown or missing `preset` keeps the default theme.
+#'
+#' @param req Shiny request object (auto-supplied by Shiny when `deUI` is
+#'   used as the `ui` argument to `shinyApp()`).
 #' @note \code{deUI}
-#' @return the panel for main plots;
+#' @return the page tagList for DEBrowser
 #'
 #' @examples
-#'     x<-deUI()
+#' \donttest{
+#'   shiny::shinyApp(ui = deUI, server = deServer)
+#' }
 #'
 #' @export
-#'
+deUI <- function(req = NULL) {
+  addResourcePath(
+    prefix = "www",
+    directoryPath = system.file("extdata", "www", package = "debrowser")
+  )
 
-deUI <- function() {
-    dbHeader <- shinydashboard::dashboardHeader(titleWidth = 250)
-    dbHeader$children[[2]]$children <- tags$a(style='color: white;',
-         id="top_logo" , paste0("DEBrowser v",getNamespaceVersion("debrowser")))
-    addResourcePath(prefix = "www", directoryPath = system.file("extdata",
-        "www", package = "debrowser"))
-    library("debrowser")
-    debrowser <- (fluidPage(
-        shinyjs::useShinyjs(),
-        shinyjs::inlineCSS("
+  version_label <- getNamespaceVersion("debrowser")
+
+  # Theme playground: ?preset=NAME swaps the bslib preset at runtime.
+  # Precedence: explicit URL ?preset= wins, then `debrowser_preset` cookie,
+  # then default. Unknown values \u2192 default Slate theme via de_theme().
+  preset <- if (!is.null(req)) {
+    p <- shiny::parseQueryString(req$QUERY_STRING)[["preset"]]
+    if (is.null(p) || !nzchar(p)) p <- parse_preset_cookie(req$HTTP_COOKIE)
+    p
+  } else {
+    NULL
+  }
+
+  # Visible badge so the active preset is obvious at a glance.
+  preset_badge <- if (!is.null(preset)) {
+    paste0(" <span class='badge bg-secondary ms-2 small'>preset: ",
+           htmltools::htmlEscape(preset), "</span>")
+  } else {
+    ""
+  }
+
+  # Navbar coloring strategy (no non-standard classes):
+  #  * Default mode: keep the original dark Slate (#0f172a) inline bg so
+  #    nothing changes for users not using the playground.
+  #  * Preset mode:  drop the inline bg and let a tiny <style> override
+  #    paint the navbar with `var(--bs-primary)`, the standard Bootstrap 5
+  #    CSS variable that bootswatch sets per preset. Result: the navbar
+  #    bg automatically tracks whichever preset is active. `inverse=TRUE`
+  #    is kept so bslib emits the standard `navbar-dark` class -- light
+  #    text on the colored bar.
+  navbar_bg <- if (is.null(preset)) "#0f172a" else NULL
+
+  bslib::page_navbar(
+    id      = "methodtabs",
+    title   = HTML(paste0(
+      "DEBrowser <span class='text-light opacity-50 small ms-1'>v",
+      version_label, "</span>", preset_badge
+    )),
+    window_title = paste0("DEBrowser v", version_label),
+    theme    = de_theme(preset = preset),
+    bg       = navbar_bg,
+    inverse  = TRUE,
+    fillable = FALSE,
+
+    header = tagList(
+      shinyjs::useShinyjs(),
+      # Phase E3.B: Shiny custom-message handler used by the Export menu
+      # "View HTML in tab" item. exportMenuServer renders a report to a
+      # tempdir served via addResourcePath, then sends this message with
+      # the relative URL. Window.open in a new tab; ignored if the
+      # browser blocks pop-ups (user can use Download HTML instead).
+      tags$head(tags$script(HTML(
+        "Shiny.addCustomMessageHandler('debrowser_open_tab', function(msg) {
+           window.open(msg.url, '_blank');
+         });"
+      ))),
+      # Modern boot screen: dark-navy canvas with the brand cyan->violet
+      # gradient, a lightweight CSS conic-gradient spinner (replaces the
+      # 1.1 MB initial_loading.gif), the brand mark + version, and a
+      # reduced-motion fallback. Dismissed by shinyjs::hide() on dataready.
+      shinyjs::inlineCSS("
         #loading-debrowser {
-        position: absolute;
-        background: #000000;
-        opacity: 0.9;
-        z-index: 100;
-        left: 0;
-        right: 0;
-        height: 100%;
-        text-align: center;
-        color: #EFEFEF;
-    }"),
-    # Loading message
-    tags$div(h4(paste0("Loading DEBrowser v",getNamespaceVersion("debrowser"))), id = "loading-debrowser",
-        tags$img(src = "www/images/initial_loading.gif")),
-    tags$head(tags$title(paste0("DEBrowser v",getNamespaceVersion("debrowser"))),
-        tags$link(rel = "stylesheet", type = "text/css",
-        href = "www/shinydashboard_additional.css")
-    ),
-    dashboardPage(
-        dbHeader,
-        dashboardSidebar(
-            width = 250,
-            debrowser::getJSLine(),
-                uiOutput("loading"),
-                tabsetPanel(id = "menutabs", type = "tabs",
-                tabPanel(title = "Data Prep", value = "dataprep", id="dataprep",
-                sidebarMenu(id="DataPrep",
-                    menuItem("Quick Start Guide", icon = icon("user"),
-                             menuSubItem("Introduction", tabName = "Intro"),
-                             menuSubItem("Data Assesment", tabName = "assesment"),
-                             menuSubItem("Data Preparation", tabName = "preparation"),
-                             menuSubItem("DE Anaylsis", tabName = "deanalysis"),
-                             menuSubItem("FAQ", tabName ="FAQ")
-                    ),
-                    menuItem("Upload", icon = icon("upload"), tabName = "Upload"),
-                    menuItem("Filter", icon = icon("filter"), tabName = "Filter"),
-                    menuItem("BatchEffect",  icon = icon("align-left"), tabName = "BatchEffect"),
-                    menuItem("CondSelect",  icon = icon("bars"), tabName = "CondSelect"),
-                    menuItem("DEAnalysis", icon = icon("adjust"), tabName = "DEAnalysis"),
-                    menuItem("DEFilter",  icon = icon("code"), tabName = "DEAnalysis",  startExpanded = TRUE,
-                             uiOutput("cutOffUI"),
-                             uiOutput("compselectUI"))
-                ),helpText("Developed by ", a("UMMS Biocore.", 
-                href="https://www.umassmed.edu/biocore/", target = "_blank"))),
-                tabPanel(title = "Discover", value = "discover", id="discover",
-                conditionalPanel(condition = "(output.dataready)",
-                    conditionalPanel( (condition <- "input.methodtabs=='panel1'"),
-                    debrowser::mainPlotControlsUI("main")),
-                    uiOutput("downloadSection"),
-                    uiOutput('cutoffSelection'),
-                    uiOutput("leftMenu"))
-                 ))
+          position: fixed; inset: 0; z-index: 100000;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 20px;
+          background: #0B1020;
+          background-image:
+            radial-gradient(620px 420px at 18% 8%, rgba(94,230,214,.10), transparent 60%),
+            radial-gradient(720px 520px at 100% 100%, rgba(167,139,250,.13), transparent 60%);
+          color: #E6ECFF;
+          font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+        #loading-debrowser .de-load-mark {
+          width: 54px; height: 54px; border-radius: 15px;
+          background: linear-gradient(135deg, #5EE6D6 0%, #A78BFA 100%);
+          box-shadow: inset 0 0 0 9px #0B1020, 0 10px 30px rgba(94,230,214,.26);
+        }
+        #loading-debrowser .de-load-title {
+          font-size: 20px; font-weight: 700; letter-spacing: -.01em;
+        }
+        #loading-debrowser .de-load-title small {
+          font-size: 12px; font-weight: 500; color: #6E7BA5; margin-left: 8px;
+        }
+        #loading-debrowser .de-load-ring {
+          width: 34px; height: 34px; border-radius: 50%;
+          background: conic-gradient(from 0deg, #5EE6D6, #A78BFA, #5EE6D6);
+          -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+                  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+          animation: de-load-spin .9s linear infinite;
+        }
+        #loading-debrowser .de-load-sub {
+          font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: #5EE6D6;
+        }
+        @keyframes de-load-spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) {
+          #loading-debrowser .de-load-ring { animation-duration: 2.6s; }
+        }"),
+      tags$div(
+        id = "loading-debrowser",
+        tags$div(class = "de-load-mark"),
+        tags$div(class = "de-load-title", "DEBrowser",
+                 tags$small(paste0("v", version_label))),
+        tags$div(class = "de-load-ring"),
+        tags$div(class = "de-load-sub", "Preparing workspace")
+      ),
+      tags$head(
+        # Bootswatch CDN preset (when ?preset=NAME is set). Each preset
+        # gets a unique CDN URL so multiple browser tabs comparing presets
+        # don't collide on a single shared bslib-compiled bootstrap.min.css.
+        # Loaded BEFORE debrowser.css so our overrides still win.
+        de_bootswatch_link(preset),
+        # Preset mode: paint the navbar with the preset's --bs-primary so
+        # the menu bar adapts. Uses standard Bootstrap CSS variables only
+        # (no custom classes). Includes nav-link colors so contrast holds.
+        if (!is.null(preset)) tags$style(htmltools::HTML(
+          paste(
+            ".navbar { background-color: var(--bs-primary) !important; }",
+            ".navbar .navbar-brand, .navbar .nav-link { color: rgba(255,255,255,.85) !important; }",
+            ".navbar .nav-link:hover, .navbar .nav-link.active, .navbar .navbar-brand:hover { color: #fff !important; }",
+            ".navbar .badge.bg-secondary { background-color: rgba(0,0,0,.25) !important; }",
+            sep = "\n"
+          )
+        )),
+        tags$link(
+          rel = "stylesheet", type = "text/css",
+          href = paste0(
+            "www/debrowser.css?v=",
+            tryCatch(
+              as.integer(file.info(system.file(
+                "extdata", "www", "debrowser.css", package = "debrowser"
+              ))$mtime),
+              error = function(e) version_label
+            )
+          )
         ),
-    dashboardBody(
-        mainPanel(
-            width = 12,
-            tags$head(
-                tags$style(type = "text/css",
-                        "#methodtabs.nav-tabs {font-size: 14px} ")),
-                tabsetPanel(id = "methodtabs", type = "tabs",
-                    tabPanel(title = "Data Prep", value = "panel0", id="panel0",
-                             tabItems(
-                                 tabItem(tabName="Intro", debrowser::getIntroText()),
-                                 tabItem(tabName="assesment", debrowser::getDataAssesmentText()),
-                                 tabItem(tabName="preparation", debrowser::getDataPreparationText()),
-                                 tabItem(tabName="deanalysis", debrowser::getDEAnalysisText()),
-                                 tabItem(tabName="FAQ",  debrowser::getQAText()),
-                                 tabItem(tabName="Upload", debrowser::dataLoadUI("load")),
-                                 tabItem(tabName="Filter",
-                                         conditionalPanel(
-                                             (condition <- "input.Filter"),
-                                         debrowser::dataLCFUI("lcf"))),
-                                 tabItem(tabName="BatchEffect", 
-                                         conditionalPanel(
-                                             (condition <- "input.Batch"),
-                                         debrowser::batchEffectUI("batcheffect"))),
-                                 tabItem(tabName="CondSelect", 
-                                         conditionalPanel(
-                                             (condition <- "input.goDE || input.goDEFromFilter"),
-                                        debrowser::condSelectUI())),
-                                 tabItem(tabName="DEAnalysis", 
-                                         conditionalPanel(
-                                             (condition <- "input.goDE || input.goDEFromFilter"),
-                                         uiOutput("deresUI")))
-                             )),
-                    tabPanel(title = "Main Plots", value = "panel1", id="panel1",
-                            uiOutput("mainmsgs"),
-                            uiOutput("mainpanel")),
-                    tabPanel(title = "QC Plots", value = "panel2", id="panel2",
-                            uiOutput("qcpanel")),
-                    tabPanel(title = "GO Term", value = "panel3", id="panel3",
-                            uiOutput("gopanel")),
-                    tabPanel(title = "Tables", value = "panel4", id="panel4",
-                            DT::dataTableOutput("tables")))
+        tags$link(rel = "icon", type = "image/x-icon", href = "www/favicon.ico"),
+        tags$script(src = "www/dropzone.js"),
+        # Global selectize defaults: adds the remove_button plugin (so every
+        # multi-select pill has an X) and reparents every dropdown to <body>
+        # so card / accordion overflow:hidden can't clip the menu. See
+        # inst/extdata/www/selectize_init.js for the full rationale.
+        tags$script(src = "www/selectize_init.js"),
+        # Persistent-login bridge: captures shinymanager's URL token into
+        # a long-lived `debrowser_remember` cookie (only when the user has
+        # accepted cookies). On a bare-URL revisit, the saved token is
+        # replayed so the login screen is skipped. See
+        # inst/extdata/www/remember_me.js for the full rationale.
+        tags$script(src = "www/remember_me.js"),
+        # Plotly theme + modebar overlap fix. Re-styles every Plotly
+        # graph on render to match the dark/light theme, and lifts the
+        # modebar above the plot area so its icons don't sit on top of
+        # data. See inst/extdata/www/plotly_theme.js for the full
+        # rationale.
+        tags$script(src = "www/plotly_theme.js"),
+        # Click delegate for the navbar account dropdown (Sign out /
+        # My Bookmarks / Sign up). MUST live in a static file rather
+        # than an inline tags$script inside the renderUI, because
+        # Shiny replaces uiOutput content with innerHTML, which does
+        # NOT execute embedded <script> tags. See the file for the
+        # full rationale.
+        tags$script(src = "www/account_dropdown.js"),
+        # Belt-and-suspenders fix for shinymanager rendering the
+        # `shinymanager_language` input twice. The duplicate aborts
+        # Shiny's modal-bind step, which is what's been silently killing
+        # every navbar dropdown click (signup, My Bookmarks, Sign out,
+        # Settings, AI Assistant). This script strips the duplicate from
+        # the DOM before Shiny's binder sees it. See dedup_shinymanager.js
+        # for the full rationale.
+        tags$script(src = "www/dedup_shinymanager.js"),
+        # Belt-and-suspenders: same fix INLINED, so it runs even if
+        # the external script file is cached, blocked, or missed. The
+        # external file remains as the primary path but if anything
+        # interferes (Shiny static-file cache, www/ path mis-resolve,
+        # CSP, etc.), this inline copy still executes.
+        tags$script(htmltools::HTML("
+          (function(){
+            var TARGET = 'shinymanager_language';
+            var renamed = 0;
+            function dedup(){
+              try {
+                var byId = document.querySelectorAll('[id=\"'+TARGET+'\"]');
+                for (var i = 1; i < byId.length; i++) {
+                  byId[i].id = TARGET + '_dup' + (++renamed);
+                  if (byId[i].getAttribute('name') === TARGET)
+                    byId[i].setAttribute('name', byId[i].id);
+                }
+                var byName = document.querySelectorAll('[name=\"'+TARGET+'\"]');
+                for (var j = 1; j < byName.length; j++) {
+                  if (byName[j].id && byName[j].id.indexOf('_dup') >= 0) continue;
+                  byName[j].setAttribute('name', TARGET + '_dup' + (++renamed));
+                }
+              } catch (e) {}
+            }
+            function patchWarn(){
+              if (!window.Shiny) return false;
+              var attempts = [
+                window.Shiny,
+                window.Shiny.shinyapp,
+                window.Shiny.ShinyApp && window.Shiny.ShinyApp.prototype
+              ].filter(Boolean);
+              attempts.forEach(function(obj){
+                if (obj && typeof obj.showShinyClientMessage === 'function' &&
+                    !obj.__debrowserPatched) {
+                  var orig = obj.showShinyClientMessage;
+                  obj.showShinyClientMessage = function(m){
+                    try {
+                      var msg = (m && (m.message || m)) || '';
+                      if (typeof msg === 'string' &&
+                          msg.indexOf('Duplicate input ID') >= 0 &&
+                          msg.indexOf('shinymanager_language') >= 0) {
+                        return; // swallow
+                      }
+                    } catch(e){}
+                    return orig.apply(this, arguments);
+                  };
+                  obj.__debrowserPatched = true;
+                }
+              });
+              return true;
+            }
+            dedup(); patchWarn();
+            [0, 50, 100, 250, 500, 1000, 2000].forEach(function(t){
+              setTimeout(function(){ dedup(); patchWarn(); }, t);
+            });
+            if (window.MutationObserver) {
+              new MutationObserver(function(){ dedup(); }).observe(
+                document.documentElement || document,
+                { childList: true, subtree: true,
+                  attributes: true, attributeFilter: ['id','name'] }
+              );
+            }
+            document.addEventListener('shiny:connected', function(){
+              dedup(); patchWarn();
+            });
+            console.log('[debrowser] inline dedup+patch installed');
+          })();
+        ")),
+        # B3: redesign layer is opt-in via `data-debrowser-redesign` on <html>.
+        # The CSS file ships with everything dormant until this attribute is
+        # set, so existing users see no change. We turn it on by default
+        # here (can be disabled with ?redesign=0 in the URL).
+        tags$script(htmltools::HTML(
+          "(function(){
+             var u = new URL(window.location.href);
+             if (u.searchParams.get('redesign') !== '0') {
+               document.documentElement.setAttribute('data-debrowser-redesign','1');
+             }
+           })();"
+        )),
+        # B3: Inter is loaded by bslib; JetBrains Mono is added for tables.
+        tags$link(rel = "stylesheet",
+                  href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"),
+        # Wires the navbar preset picker \u2192 cookie + reload (see de_theme.R).
+        de_preset_js(),
+        # Dark-mode toggle: flips data-bs-theme on <html> on click.
+        # Plus B3.2: keyboard shortcuts 1-6 (switch tabs), T (toggle theme).
+        tags$script(htmltools::HTML(
+          "document.addEventListener('click', function(e) {
+             var btn = e.target.closest && e.target.closest('#dark_mode_toggle');
+             if (!btn) return;
+             var html = document.documentElement;
+             var current = html.getAttribute('data-bs-theme');
+             html.setAttribute('data-bs-theme', current === 'dark' ? 'light' : 'dark');
+           });
+
+           // Keyboard shortcuts -- ignore when focus is in an input/select/textarea
+           document.addEventListener('keydown', function(e) {
+             var t = e.target;
+             if (!t) return;
+             var tag = (t.tagName || '').toUpperCase();
+             if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+             if (t.isContentEditable) return;
+             if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+             // Number keys \u2192 switch top-level tabs (panel0..panel5)
+             var n = parseInt(e.key, 10);
+             if (n >= 1 && n <= 6) {
+               var panels = ['panel0','panel1','panel2','panel_cc','panel3','panel4'];
+               var target = panels[n - 1];
+               if (target) {
+                 var sel = document.querySelector(\"a[data-value='\" + target + \"']\");
+                 if (sel) sel.click();
+               }
+             }
+             // T toggles theme
+             if (e.key === 't' || e.key === 'T') {
+               var html = document.documentElement;
+               var cur = html.getAttribute('data-bs-theme');
+               html.setAttribute('data-bs-theme', cur === 'dark' ? 'light' : 'dark');
+             }
+           });"
+        )),
+        # Footer keyboard-shortcut hint pill (matches mockup's bottom-right)
+        tags$div(
+          class = "de-foot-hint",
+          tags$span(class = "kbd", "T"),
+          " light/dark \u00b7 ",
+          tags$span(class = "kbd", "1\u20136"),
+          " tabs"
         ),
-        debrowser::getTabUpdateJS()
+        # B3.29 -- Middle-truncate long sidebar checkbox / radio labels so
+        # they fit on one line. Stores original text in data-de-orig and
+        # mirrors it into title= so hover shows the full string.
+        tags$script(htmltools::HTML(
+          "(function(){
+             function midTrunc(s, n){
+               if (s.length <= n) return s;
+               var k1 = Math.ceil((n - 3) / 2);
+               var k2 = Math.floor((n - 3) / 2);
+               return s.slice(0, k1) + '...' + s.slice(-k2);
+             }
+             function processLabels(){
+               // Sidebar checkboxes / radios: each option label has a child span
+               var sel = '.bslib-sidebar-layout .checkbox label > span,' +
+                         '.bslib-sidebar-layout .radio label > span,' +
+                         '.bslib-sidebar-layout .form-check-label';
+               document.querySelectorAll(sel).forEach(function(span){
+                 // Skip group-header labels (they don't carry an input sibling)
+                 var orig = span.dataset.deOrig || span.textContent.trim();
+                 if (!orig) return;
+                 // Estimate available width: sidebar is ~240 px minus checkbox+padding (~46 px)
+                 // ~22 chars at 12 px Inter ~ fits in 200 px. Use 24 as the threshold.
+                 var maxLen = 24;
+                 if (orig.length <= maxLen) return;
+                 if (!span.dataset.deOrig) span.dataset.deOrig = orig;
+                 var truncated = midTrunc(orig, maxLen);
+                 if (span.textContent !== truncated) {
+                   span.textContent = truncated;
+                   span.title = orig;
+                 }
+               });
+             }
+             $(document).on('shiny:value shiny:bound shiny:inputchanged',
+                            function(){ setTimeout(processLabels, 50); });
+             setTimeout(processLabels, 500);
+             setTimeout(processLabels, 1500);
+           })();"
         ))
+      ),
+      debrowser::getJSLine(),
+      debrowser::getTabUpdateJS()
+    ),
+
+    sidebar = bslib::sidebar(
+      id = "shared_sidebar",
+      width = 300, open = "open",
+
+      # Data Prep tab -- wizard nav lives in the sidebar (was nested in
+      # navset_pill_list inside the panel content prior to B1.16). DE
+      # Filter (cutoff + comparison-selector) docks below the wizard nav
+      # when on the DEAnalysis step (matches pre-B1 sidebar location;
+      # B1.2 had moved it into the DEAnalysis panel content but the user
+      # asked for the sidebar location).
+      conditionalPanel(
+        condition = "input.methodtabs == 'panel0'",
+        # B3.11 -- wizard pipeline + DEMOS + SETTINGS sections, matching
+        # the mockup pixel-by-pixel. Each step = [num] [dot] [label].
+        # State on dot only (mint=done, cyan=active, gray=pending).
+        tags$h6("Pipeline", class = "side-title"),
+        tags$div(
+          class = "wizard-step-list",
+          local({
+            mk_step <- function(input_id, num, label, pill = NULL, requires = NULL,
+                                locked = FALSE) {
+              attrs <- list(
+                inputId = input_id,
+                class   = paste("wiz-step",
+                                if (locked) "de-pill-locked" else NULL),
+                `data-progress-pill` = pill,
+                `data-requires`      = requires,
+                `data-step`          = num
+              )
+              content <- htmltools::tagList(
+                htmltools::tags$span(class = "wiz-step-num", num),
+                htmltools::tags$span(class = "wiz-step-dot"),
+                htmltools::tags$span(class = "wiz-step-label", label)
+              )
+              do.call(actionLink, c(list(label = content), attrs))
+            }
+            htmltools::tagList(
+              mk_step("nav_DataPrep_Intro",       "01", "Quick start"),
+              mk_step("nav_DataPrep_Upload",      "02", "Upload data",
+                      pill = "upload"),
+              mk_step("nav_DataPrep_Filter",      "03", "Filter & normalize",
+                      pill = "filter",     locked = TRUE,
+                      requires = "input.Filter"),
+              mk_step("nav_DataPrep_BatchEffect", "04", "Batch effect",
+                      pill = "batch",      locked = TRUE,
+                      requires = "input.Batch"),
+              mk_step("nav_DataPrep_CondSelect",  "05", "Comparison",
+                      pill = "condselect", locked = TRUE,
+                      requires = "input.goDE || input.goDEFromFilter"),
+              mk_step("nav_DataPrep_DEAnalysis",  "06", "DE analysis",
+                      pill = "de",         locked = TRUE,
+                      requires = "input.startDE || input['cs-startDE']")
+            )
+          })
+        ),
+
+        # DEMOS -- simple two-column row (prefix + label).
+        tags$h6("Demos", class = "side-title"),
+        tags$div(class = "de-side-list",
+          tags$a(class = "de-side-list-item", href = "#",
+                 onclick = "document.querySelector('#load-demo')?.click(); return false;",
+                 tags$span(class = "de-side-list-prefix", "\u25b8"),
+                 "Vernia et al."),
+          tags$a(class = "de-side-list-item", href = "#",
+                 onclick = "document.querySelector('#load-demo2')?.click(); return false;",
+                 tags$span(class = "de-side-list-prefix", "\u25b8"),
+                 "Donnard et al.")
+        ),
+
+        # SETTINGS -- simple two-column row
+        tags$h6("Settings", class = "side-title"),
+        tags$div(class = "de-side-list",
+          tags$a(class = "de-side-list-item", href = "#",
+                 onclick = "document.querySelector('#dark_mode_toggle')?.click(); return false;",
+                 tags$span(class = "de-side-list-prefix", "\u2699"),
+                 "Theme & layout"),
+          tags$a(class = "de-side-list-item", href = "#",
+                 onclick = "alert('Shortcuts:\\n1-6 \u2192 switch tabs\\nT \u2192 toggle theme'); return false;",
+                 tags$span(class = "de-side-list-prefix", "\u2318"),
+                 "Keyboard shortcuts")
+        ),
+
+        # B3.21 -- Permanent safety net for green-dot persistence.
+        # The Shiny addCustomMessageHandler pathway was unreliable in our
+        # observed sessions (the registered handler didn't run for every
+        # 'debrowser-progress' broadcast). This direct WebSocket listener
+        # intercepts the same messages and applies de-pill-done / -locked
+        # / -skipped to the matching wiz-step. Once de-pill-done is set on
+        # a step it is never demoted except by an explicit 'locked' state
+        # (the re-upload reset path).
+        tags$script(htmltools::HTML(
+          "$(document).on('shiny:connected', function(){
+             try {
+               var ws = Shiny.shinyapp.$socket;
+               if (ws && !ws._deWsListener) {
+                 ws.addEventListener('message', function(ev){
+                   try {
+                     var d = JSON.parse(ev.data);
+                     if (!d.custom || !d.custom['debrowser-progress']) return;
+                     var m = d.custom['debrowser-progress'];
+                     // Defer so we run AFTER whatever Shiny's own handler does
+                     setTimeout(function(){
+                       var el = document.querySelector('a[data-progress-pill=\"' + m.key + '\"]');
+                       if (!el) return;
+                       var wasDone = el.classList.contains('de-pill-done');
+                       if (m.state === 'done') {
+                         el.classList.remove('de-pill-locked','de-pill-skipped');
+                         el.classList.add('de-pill-done');
+                       } else if (m.state === 'locked') {
+                         // Locked is the re-upload reset path: clear done.
+                         el.classList.remove('de-pill-done','de-pill-skipped');
+                         el.classList.add('de-pill-locked');
+                       } else if (m.state === 'skipped') {
+                         if (!wasDone) {
+                           el.classList.remove('de-pill-locked');
+                           el.classList.add('de-pill-skipped');
+                         }
+                       } else {
+                         // pending / blank -- leave done alone
+                         if (!wasDone) {
+                           el.classList.remove('de-pill-locked','de-pill-skipped');
+                         }
+                       }
+                     }, 60);
+                   } catch(e){}
+                 });
+                 ws._deWsListener = true;
+               }
+             } catch(e){}
+           });"
+        )),
+
+        # Active-step observer: read input.DataPrep (current navset_hidden
+        # value) and add .active to the matching wiz-step.
+        # B3.19 -- Also enforces the locking rule: once a step is .de-pill-done
+        # it stays unlockable even if its data-requires input briefly goes
+        # falsy. Previously every shiny:inputchanged fire would re-add
+        # .de-pill-locked to completed steps, dimming them under the green dot.
+        tags$script(htmltools::HTML(
+          "function deUpdateActiveStep(){
+             try {
+               var v = Shiny.shinyapp ? Shiny.shinyapp.$inputValues : {};
+               var map = {
+                 'Intro':       '#nav_DataPrep_Intro',
+                 'Upload':      '#nav_DataPrep_Upload',
+                 'Filter':      '#nav_DataPrep_Filter',
+                 'BatchEffect': '#nav_DataPrep_BatchEffect',
+                 'CondSelect':  '#nav_DataPrep_CondSelect',
+                 'DEAnalysis':  '#nav_DataPrep_DEAnalysis'
+               };
+               $('.wiz-step').removeClass('active');
+               var key = v && v.DataPrep;
+               if (key && map[key]) $(map[key]).addClass('active');
+
+               // Re-evaluate locked state for gated steps, but NEVER
+               // re-lock a step that has already been completed.
+               $('.wiz-step[data-requires]').each(function(){
+                 var $el = $(this);
+                 if ($el.hasClass('de-pill-done')) {
+                   $el.removeClass('de-pill-locked');
+                   return;
+                 }
+                 try {
+                   var expr = $el.attr('data-requires');
+                   var ok = false;
+                   if (expr === 'input.Filter')             ok = !!v.Filter;
+                   else if (expr === 'input.Batch')         ok = !!v.Batch;
+                   else if (expr.indexOf('goDE')   >= 0)    ok = !!v.goDE || !!v.goDEFromFilter;
+                   else if (expr.indexOf('startDE')>= 0)    ok = !!v.startDE || !!v['cs-startDE'];
+                   if (ok) $el.removeClass('de-pill-locked');
+                   else    $el.addClass('de-pill-locked');
+                 } catch(err){}
+               });
+             } catch(e){}
+           }
+           $(document).on('shiny:inputchanged shiny:value shiny:connected',
+                          deUpdateActiveStep);
+           setTimeout(deUpdateActiveStep, 200);
+           setTimeout(deUpdateActiveStep, 800);"
+        )),
+        # JS to unlock steps as their gating inputs become truthy
+        tags$script(htmltools::HTML(
+          "$(document).on('shiny:inputchanged shiny:value', function(e){
+             $('.wizard-step-list [data-requires]').each(function(){
+               try {
+                 var expr = $(this).data('requires');
+                 // Map the inputs by name (Shiny.shinyapp.$inputValues uses
+                 // bracketed access). Evaluating arbitrary expressions
+                 // safely is tricky, so we hard-code the supported keys.
+                 var v  = Shiny.shinyapp.$inputValues;
+                 var ok = false;
+                 if (expr === 'input.Filter')            ok = !!v.Filter;
+                 else if (expr === 'input.Batch')        ok = !!v.Batch;
+                 else if (expr.indexOf('goDE') >= 0)     ok = !!v.goDE || !!v.goDEFromFilter;
+                 else if (expr.indexOf('startDE') >= 0)  ok = !!v.startDE || !!v['cs-startDE'];
+                 if (ok) {
+                   $(this).removeClass('de-pill-locked');
+                 } else {
+                   $(this).addClass('de-pill-locked');
+                 }
+               } catch(err) {}
+             });
+           });"
+        )),
+        conditionalPanel(
+          condition = "input.DataPrep == 'DEAnalysis'",
+          tags$hr(),
+          tags$h6("DE Filter", style = "font-weight: 600; margin-top: 8px;"),
+          uiOutput("cutOffUI"),
+          uiOutput("compselectUI")
+        )
+      ),
+
+      # Plot/table tabs -- existing left-menu content
+      conditionalPanel(
+        condition = "input.methodtabs != 'panel0'",
+        conditionalPanel(
+          condition = "(output.dataready)",
+          conditionalPanel(
+            condition = "input.methodtabs == 'panel1'",
+            debrowser::mainPlotControlsUI("main")
+          ),
+          uiOutput("downloadSection"),
+          uiOutput("cutoffSelection"),
+          uiOutput("leftMenu")
+        )
+      )
+    ),
+
+    bslib::nav_panel(
+      title = de_nav_chip(1, "Data Prep", progress_pill = "data_prep"), value = "panel0",
+      # B3: per-step eyebrow + headline. Each sub-step shows its own pair via
+      # conditionalPanel so the user always knows where they are.
+      conditionalPanel(
+        condition = "input.DataPrep == 'Intro'",
+        de_eyebrow(1, "Quick Start Guide"),
+        de_headline("Welcome to DEBrowser.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'Upload'",
+        de_eyebrow(1, "Upload & configure"),
+        de_headline("Bring your counts & metadata in.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'Filter'",
+        de_eyebrow(2, "Filter & normalize"),
+        de_headline("Trim the noise before you model.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'BatchEffect'",
+        de_eyebrow(3, "Batch effect"),
+        de_headline("Correct for technical confounders.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'CondSelect'",
+        de_eyebrow(4, "Comparison selection"),
+        de_headline("Pick the contrast you care about.")
+      ),
+      conditionalPanel(
+        condition = "input.DataPrep == 'DEAnalysis'",
+        de_eyebrow(5, "Differential expression"),
+        de_headline("Pick a contrast, see what moves.")
+      ),
+      bslib::navset_hidden(
+        id = "DataPrep",
+        bslib::nav_panel(
+          title = "Quick Start Guide", value = "Intro",
+          bslib::navset_pill(
+            bslib::nav_panel("Introduction",       debrowser::getIntroText()),
+            bslib::nav_panel("Data Assesment",     debrowser::getDataAssesmentText()),
+            bslib::nav_panel("Data Preparation",   debrowser::getDataPreparationText()),
+            bslib::nav_panel("DE Analysis",        debrowser::getDEAnalysisText()),
+            bslib::nav_panel("FAQ",                debrowser::getQAText())
+          )
+        ),
+        bslib::nav_panel(
+          title = "Upload", value = "Upload",
+          debrowser::dataLoadUI("load")
+        ),
+        bslib::nav_panel(
+          title = "Filter", value = "Filter",
+          conditionalPanel(
+            condition = "input.Filter",
+            debrowser::dataLCFUI("lcf")
+          )
+        ),
+        bslib::nav_panel(
+          title = "BatchEffect", value = "BatchEffect",
+          conditionalPanel(
+            condition = "input.Batch",
+            debrowser::batchEffectUI("batcheffect")
+          )
+        ),
+        bslib::nav_panel(
+          title = "CondSelect", value = "CondSelect",
+          conditionalPanel(
+            condition = "input.goDE || input.goDEFromFilter",
+            debrowser::condSelectUI("cs")
+          )
+        ),
+        bslib::nav_panel(
+          title = "DE Analysis", value = "DEAnalysis",
+          conditionalPanel(
+            condition = "input.goDE || input.goDEFromFilter",
+            uiOutput("deresUI")
+          )
+        )
+      )
+    ),
+
+    bslib::nav_panel(
+      title = de_nav_chip(2, "Main Plots"), value = "panel1",
+      de_eyebrow(2, "Main plots"),
+      de_headline("Volcano, MA, scatter -- at a glance."),
+      uiOutput("mainmsgs"),
+      uiOutput("mainpanel")
+    ),
+
+    bslib::nav_panel(
+      title = de_nav_chip(3, "QC Plots"), value = "panel2",
+      de_eyebrow(3, "Quality control"),
+      de_headline("Are your samples behaving themselves?"),
+      uiOutput("qcpanel")
+    ),
+
+    # E11 (post-redirect): Comparison Concordance -- top-level tab
+    # between QC Plots and Enrichment. Hidden at startup; shown by an
+    # observer in R/server.R when length(de_results_list()) >= 2.
+    bslib::nav_panel(
+      title = de_nav_chip(4, "Concordance"), value = "panel_cc",
+      de_eyebrow(4, "Cross-contrast"),
+      de_headline("Where do the two stories agree?"),
+      debrowser::comparisonConcordanceUI("comparison_concordance")
+    ),
+
+    bslib::nav_panel(
+      title = de_nav_chip(5, "Enrichment"), value = "panel3",
+      de_eyebrow(5, "Pathways & signatures"),
+      de_headline("What story is the list telling?"),
+      uiOutput("gopanel")
+    ),
+
+    bslib::nav_panel(
+      title = de_nav_chip(6, "Tables"), value = "panel4",
+      de_eyebrow(6, "Browse & export"),
+      de_headline("All your results, one compact table."),
+      DT::dataTableOutput("tables")
+    ),
+
+    bslib::nav_spacer(),
+
+    # NOTE (B3.34): In hosted mode the Export items render INSIDE the
+    # account (@user) dropdown -- see accountDropdownServer's
+    # renderUI. We only show the standalone Export nav_menu in
+    # non-hosted mode (no account dropdown exists to host it).
+    if (!hosted_mode()) debrowser::exportMenuUI("export"),
+
+    bslib::nav_item(
+      shiny::actionButton("bookmark_share", "Bookmark",
+                          icon = shiny::icon("bookmark"))
+    ),
+
+    # NOTE: Settings nav_menu removed -- "AI Assistant" now lives inside
+    # the account dropdown (after "My Bookmarks") so the navbar has one
+    # fewer dropdown. The aiSettingsServer is still mounted in server.R
+    # and listens on input `ai_settings-open_ai_modal`, which the
+    # account dropdown's AI Assistant row fires directly via
+    # `data-debrowser-input="ai_settings-open_ai_modal"`.
+
+    # D2.5: account dropdown only surfaces in hosted mode (the only
+    # mode where signup/signin/signout are meaningful). Non-hosted
+    # desktop launches don't have real users to manage. Returning
+    # `if (FALSE) X` => NULL is filtered by bslib::page_navbar's
+    # do.call(..., list_drop_nulls).
+    if (hosted_mode()) debrowser::accountDropdownUI("account"),
+
+    bslib::nav_item(
+      tags$button(
+        id = "dark_mode_toggle",
+        type = "button",
+        class = "nav-link de-theme-toggle",
+        `aria-label` = "Toggle dark mode",
+        title = "Toggle dark mode",
+        # Shown in light mode; clicking switches to dark. Force the SOLID
+        # FA style (fa-solid): the app ships only the solid webfont face, so
+        # the default regular (far) sun/moon render as empty/muddy glyphs.
+        htmltools::tags$i(
+          class = "fa-solid fa-moon de-theme-icon de-theme-icon-moon",
+          `aria-hidden` = "true"),
+        # Shown in dark mode; clicking switches to light.
+        htmltools::tags$i(
+          class = "fa-solid fa-sun de-theme-icon de-theme-icon-sun",
+          `aria-hidden` = "true")
+      )
+    ),
+
+    # Theme preset picker. Persists choice in `debrowser_preset` cookie via
+    # de_preset_js(). Reload-driven so the chosen preset's CSS is loaded
+    # cleanly (bslib doesn't support hot-swapping themes mid-session).
+    bslib::nav_item(de_preset_picker(current = preset)),
+
+    bslib::nav_item(
+      tags$a(
+        href = "https://www.umassmed.edu/biocore/",
+        target = "_blank",
+        class = "nav-link",
+        "UMMS Biocore"
+      )
     )
-    )
-    debrowser
+  )
 }

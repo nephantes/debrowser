@@ -9,6 +9,10 @@ getLegendSelect(id = "pca")
 \arguments{
 \item{id, }{namespace id}
 }
+\value{
+A `shiny::selectInput` letting the user pick whether the PCA
+  plot's legend tracks the color or shape mapping.
+}
 \description{
 select legend
 }
@@ -16,5 +20,5 @@ select legend
 \code{getLegendSelect}
 }
 \examples{
-    x <- getLegendSelect("pca")
+x <- getLegendSelect("pca")
 }

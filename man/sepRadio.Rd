@@ -21,7 +21,7 @@ Radio button for separators
 \code{sepRadio}
 }
 \examples{
-   
-    x <- sepRadio("meta", "metadata")
+
+x <- sepRadio("meta", "metadata")
 
 }

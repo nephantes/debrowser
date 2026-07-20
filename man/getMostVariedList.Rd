@@ -21,6 +21,6 @@ Calculates the most varied genes to be used for specific plots
 within the DEBrowser.
 }
 \examples{
-    x <- getMostVariedList()
+x <- getMostVariedList()
 
 }

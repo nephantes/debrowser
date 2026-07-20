@@ -38,6 +38,6 @@ getDataForTables
 get data to fill up tables tab
 }
 \examples{
-    x <- getDataForTables()
+x <- getDataForTables()
 
 }

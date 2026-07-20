@@ -19,5 +19,5 @@ Generates the left menu to be used for main plots
 \code{mainPlotControlsUI}
 }
 \examples{
-    x <- mainPlotControlsUI("main")
+x <- mainPlotControlsUI("main")
 }

@@ -19,6 +19,6 @@ main Box plots UI.
 \code{getBoxMainPlotUI}
 }
 \examples{
-    x <- getBoxMainPlotUI("box")
+x <- getBoxMainPlotUI("box")
 
 }

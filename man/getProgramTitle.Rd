@@ -20,5 +20,5 @@ If it is called in a program, the program title will be hidden
 \code{getProgramTitle}
 }
 \examples{
-    title<-getProgramTitle()
+title <- getProgramTitle()
 }

@@ -22,6 +22,6 @@ data
 prepare group table
 }
 \examples{
-    x <- prepGroup()
+x <- prepGroup()
 
 }

@@ -22,5 +22,5 @@ GO Term plots.
 \code{getEnrichDO}
 }
 \examples{
-    x <- getEnrichDO()
+x <- getEnrichDO()
 }

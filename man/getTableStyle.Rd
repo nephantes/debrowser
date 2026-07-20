@@ -23,6 +23,10 @@ getTableStyle(
 
 \item{DEsection, }{if it is in DESection or not}
 }
+\value{
+A `DT::datatable` HTML widget with row colouring driven by
+  the supplied padj / log2FoldChange thresholds.
+}
 \description{
 User defined selection that selects the style of table to display
 within the DEBrowser.
@@ -31,5 +35,5 @@ within the DEBrowser.
 \code{getTableStyle}
 }
 \examples{
-    x <- getTableStyle()
+x <- getTableStyle()
 }

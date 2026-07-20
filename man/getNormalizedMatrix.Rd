@@ -22,6 +22,6 @@ within DEBrowser.  Requires edgeR package
 \code{getNormalizedMatrix}
 }
 \examples{
-    x <- getNormalizedMatrix(mtcars)
+x <- getNormalizedMatrix(mtcars)
 
 }

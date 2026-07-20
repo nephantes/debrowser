@@ -25,5 +25,5 @@ Generates hierarchially clustered K-means clusters
 \code{niceKmeans}
 }
 \examples{
-    x <- niceKmeans()
+x <- niceKmeans()
 }

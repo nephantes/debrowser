@@ -31,5 +31,5 @@ Size and margins module for plotly plots
 \code{plotSizeMarginsUI}
 }
 \examples{
-    x <- plotSizeMarginsUI("heatmap")
+x <- plotSizeMarginsUI("heatmap")
 }

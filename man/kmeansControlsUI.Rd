@@ -19,5 +19,5 @@ get kmeans controls
 \code{kmeansControlsUI}
 }
 \examples{
-    x <- kmeansControlsUI("heatmap")
+x <- kmeansControlsUI("heatmap")
 }

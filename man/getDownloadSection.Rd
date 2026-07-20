@@ -20,6 +20,6 @@ menu for user to download selected data.
 \code{getDownloadSection}
 }
 \examples{
-    x<- getDownloadSection()
+x <- getDownloadSection()
 
 }

@@ -10,13 +10,13 @@ getMainPanel()
 the panel for main plots;
 }
 \description{
-main panel for volcano, scatter and maplot.  
+main panel for volcano, scatter and maplot.
 Barplot and box plots are in this page as well.
 }
 \note{
 \code{getMainPanel}
 }
 \examples{
-    x <- getMainPanel()
+x <- getMainPanel()
 
 }

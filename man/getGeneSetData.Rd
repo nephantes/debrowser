@@ -19,6 +19,6 @@ Gathers the specified gene set list to be used within the
 DEBrowser.
 }
 \examples{
-    x <- getGeneSetData()
+x <- getGeneSetData()
 
 }

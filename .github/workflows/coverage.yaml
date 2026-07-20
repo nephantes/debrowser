@@ -1,0 +1,29 @@
+name: coverage
+
+on:
+  push:
+    branches: [devel, modernize]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker:devel
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          install.packages("remotes")
+          remotes::install_deps(dependencies = TRUE,
+                                repos = BiocManager::repositories())
+          install.packages(c("covr", "xml2"))
+        shell: Rscript {0}
+      - name: Run coverage
+        run: |
+          cov <- covr::package_coverage(quiet = FALSE, clean = FALSE)
+          covr::to_cobertura(cov, "coverage.xml")
+        shell: Rscript {0}
+      - uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false

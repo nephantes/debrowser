@@ -16,6 +16,6 @@ testData
 This generates a test data that is suitable to main plots in debrowser
 }
 \examples{
-    x <- generateTestData()
+x <- generateTestData()
 
 }

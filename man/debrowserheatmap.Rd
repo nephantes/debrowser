@@ -4,14 +4,10 @@
 \alias{debrowserheatmap}
 \title{debrowserheatmap}
 \usage{
-debrowserheatmap(input, output, session, expdata = NULL)
+debrowserheatmap(id, expdata = NULL)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{expdata, }{a matrix that includes expression values}
 }
@@ -23,6 +19,8 @@ Heatmap module to create interactive heatmaps and get selected list from
 a heatmap
 }
 \examples{
-    x <- debrowserheatmap()
+\donttest{
+x <- debrowserheatmap("heatmap")
+}
 
 }

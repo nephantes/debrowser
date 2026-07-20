@@ -20,6 +20,6 @@ heatmapply plot
 Creates a heatmap based on the user selected parameters within shiny
 }
 \examples{
-    x <- runHeatmap()
+x <- runHeatmap()
 
 }

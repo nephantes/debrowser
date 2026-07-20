@@ -23,7 +23,7 @@ Creates the main scatter, volcano or MA plot to be displayed within the main
 panel.
 }
 \examples{
-    
-    x <- mainScatterNew()
+
+x <- mainScatterNew()
 
 }

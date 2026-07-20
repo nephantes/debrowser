@@ -19,5 +19,5 @@ Plot download type
 \code{plotTypeUI}
 }
 \examples{
-    x <- plotTypeUI("heatmap")
+x <- plotTypeUI("heatmap")
 }

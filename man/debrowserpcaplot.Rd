@@ -4,20 +4,10 @@
 \alias{debrowserpcaplot}
 \title{debrowserpcaplot}
 \usage{
-debrowserpcaplot(
-  input = NULL,
-  output = NULL,
-  session = NULL,
-  pcadata = NULL,
-  metadata = NULL
-)
+debrowserpcaplot(id, pcadata = NULL, metadata = NULL)
 }
 \arguments{
-\item{input, }{input variables}
-
-\item{output, }{output objects}
-
-\item{session, }{session}
+\item{id, }{namespace id}
 
 \item{pcadata, }{a matrix that includes expression values}
 
@@ -29,10 +19,12 @@ main plot
 panel
 }
 \description{
-Module for a pca plot with its loadings 
+Module for a pca plot with its loadings
 as a mainplot in debrowser
 }
 \examples{
-    x <- debrowserpcaplot()
+\donttest{
+x <- debrowserpcaplot("pca")
+}
 
 }

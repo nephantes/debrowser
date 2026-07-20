@@ -29,10 +29,13 @@ getBarMainPlot(
 
 \item{input, }{input}
 }
+\value{
+A `plotly` bar plot for the selected gene/region across samples.
+}
 \description{
 Makes Density plots
 }
 \examples{
-    getBarMainPlot()
+getBarMainPlot()
 
 }

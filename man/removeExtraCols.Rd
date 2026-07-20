@@ -9,11 +9,14 @@ removeExtraCols(dat = NULL)
 \arguments{
 \item{dat, }{selected data}
 }
+\value{
+`dat` with QC-extraneous columns (padj/foldChange/Legend/etc.)
+  stripped, leaving only sample columns suitable for plotting.
+}
 \description{
 remove extra columns for QC plots
 }
 \examples{
-    removeExtraCols()
-
+removeExtraCols()
 
 }

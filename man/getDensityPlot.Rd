@@ -13,10 +13,14 @@ getDensityPlot(data = NULL, input = NULL, title = "")
 
 \item{title, }{title}
 }
+\value{
+A `plotly` density plot showing the per-sample distributions
+  of the input count matrix (one density curve per sample).
+}
 \description{
 Makes Density plots
 }
 \examples{
-    getDensityPlot()
+getDensityPlot()
 
 }

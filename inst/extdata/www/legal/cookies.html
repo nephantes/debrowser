@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DEBrowser · Cookie Policy</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    :root { --de-cyan:#5EE6D6; --de-violet:#A78BFA; --de-grad:linear-gradient(135deg,#5EE6D6 0%,#A78BFA 100%); --de-bg-0:#0B1020; --de-bg-1:#0F1530; --de-bg-3:#1A2147; --de-border:rgba(255,255,255,.08); --de-border-strong:rgba(255,255,255,.14); --de-text-1:#E6ECFF; --de-text-2:#A8B2D1; --de-text-3:#6E7BA5; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin:0; padding:0; background: var(--de-bg-0); color: var(--de-text-1); font-family: "Inter", system-ui, sans-serif; font-size: 14.5px; line-height: 1.65; }
+    body { background-image: radial-gradient(800px 500px at 12% -10%, rgba(94,230,214,.10), transparent 60%), radial-gradient(900px 600px at 110% 110%, rgba(167,139,250,.12), transparent 60%); background-attachment: fixed; min-height: 100vh; }
+    main { max-width: 760px; margin: 0 auto; padding: 64px 28px 80px; }
+    h1 { font-size: 30px; font-weight: 800; letter-spacing: -.01em; margin: 0 0 4px; background: var(--de-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: .14em; color: var(--de-cyan); margin-bottom: 10px; text-transform: uppercase; }
+    .eyebrow .chip { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; background: var(--de-grad); color: #0B1020; font-size: 10px; font-weight: 700; font-family: "JetBrains Mono", monospace; }
+    .meta { color: var(--de-text-3); font-size: 12px; margin: 0 0 32px; }
+    h2 { font-size: 18px; font-weight: 700; margin: 36px 0 10px; color: var(--de-text-1); border-top: 1px solid var(--de-border); padding-top: 28px; }
+    h2:first-of-type { border-top: 0; padding-top: 0; }
+    p, ul, ol { color: var(--de-text-2); }
+    ul, ol { padding-left: 22px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0 22px; }
+    th, td { border: 1px solid var(--de-border); padding: 8px 12px; text-align: left; color: var(--de-text-2); }
+    th { background: var(--de-bg-3); color: var(--de-text-1); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    a { color: var(--de-cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .back { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--de-border-strong); border-radius: 8px; background: var(--de-bg-1); color: var(--de-text-2); font-size: 12px; font-weight: 500; margin-bottom: 32px; }
+    .back:hover { text-decoration: none; color: var(--de-text-1); border-color: var(--de-cyan); }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="javascript:history.length>1?history.back():window.close()">&larr; Back</a>
+  <div class="eyebrow"><span class="chip">§</span>Legal</div>
+  <h1>DEBrowser Cookie Policy</h1>
+  <p class="meta">Last updated: May 12, 2026</p>
+
+  <p>This Cookie Policy explains how DEBrowser uses cookies and similar technologies (collectively, "cookies") when you use the hosted Service.</p>
+
+  <h2>1. What are cookies?</h2>
+  <p>Cookies are small text files stored in your browser. We use them to keep you signed in across visits, remember your interface preferences, and protect against abuse. We do not use advertising cookies and do not sell your data.</p>
+
+  <h2>2. Cookies we use</h2>
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Purpose</th><th>Type</th><th>Lifetime</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>debrowser_session</code></td>
+        <td>Authenticated session token issued after login. Required to keep you signed in across page reloads.</td>
+        <td>Essential</td>
+        <td>Session</td>
+      </tr>
+      <tr>
+        <td><code>debrowser_remember</code></td>
+        <td>Optional persistent-login token. Lets you stay signed in for up to 30 days without re-entering your password.</td>
+        <td>Functional</td>
+        <td>30 days</td>
+      </tr>
+      <tr>
+        <td><code>debrowser_consent</code></td>
+        <td>Records that you accepted this Cookie Policy, so we don't ask again.</td>
+        <td>Essential</td>
+        <td>1 year</td>
+      </tr>
+      <tr>
+        <td><code>debrowser_theme</code></td>
+        <td>Stores your light/dark theme preference.</td>
+        <td>Functional</td>
+        <td>1 year</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Essential vs. functional</h2>
+  <ul>
+    <li><strong>Essential</strong> cookies are required for the Service to function. Disabling them will sign you out and prevent the app from working correctly.</li>
+    <li><strong>Functional</strong> cookies improve your experience (persistent login, theme) but are not strictly required. You may decline functional cookies at signup.</li>
+  </ul>
+
+  <h2>4. Managing cookies</h2>
+  <p>You can delete cookies at any time through your browser settings. Doing so will sign you out and reset your preferences.</p>
+
+  <h2>5. Third-party cookies</h2>
+  <p>DEBrowser does not set third-party advertising or tracking cookies. If you embed DEBrowser inside another service via Shiny modules, that host service may set its own cookies under its own privacy policy.</p>
+
+  <h2>6. Changes</h2>
+  <p>We may update this Cookie Policy from time to time. Continued use of the Service after updates means acceptance.</p>
+
+  <h2>7. Contact</h2>
+  <p>For questions, open an issue at <a href="https://github.com/UMMS-Biocore/debrowser/issues">github.com/UMMS-Biocore/debrowser/issues</a>.</p>
+</main>
+</body>
+</html>

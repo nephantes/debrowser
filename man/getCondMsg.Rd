@@ -26,5 +26,5 @@ within the DEBrowser.
 \code{getCondMsg}
 }
 \examples{
-    x <- getCondMsg()
+x <- getCondMsg()
 }

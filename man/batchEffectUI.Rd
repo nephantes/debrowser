@@ -18,6 +18,6 @@ batchEffectUI
 Creates a panel to coorect batch effect
 }
 \examples{
-    x <- batchEffectUI("batcheffect")
+x <- batchEffectUI("batcheffect")
 
 }

@@ -18,6 +18,6 @@ getUpDown
 get up+down regulated data
 }
 \examples{
-    x <- getUpDown()
+x <- getUpDown()
 
 }

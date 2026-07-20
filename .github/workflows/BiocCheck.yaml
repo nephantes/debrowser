@@ -1,0 +1,63 @@
+name: BiocCheck
+
+on:
+  push:
+    branches: [devel, modernize]
+  pull_request:
+    branches: [devel, modernize]
+
+jobs:
+  bioccheck:
+    runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker:devel
+    timeout-minutes: 60
+    env:
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/lib/R/site-library
+          key: ${{ runner.os }}-bioc-devel-${{ hashFiles('DESCRIPTION') }}
+          restore-keys: ${{ runner.os }}-bioc-devel-
+
+      - name: Install dependencies
+        # Match the pattern used by R-CMD-check.yaml: install remotes
+        # explicitly first so the install_deps() call below resolves.
+        # The bioconductor_docker image ships R + system libs but not
+        # the r-lib remote-helpers by default.
+        run: |
+          install.packages("remotes")
+          BiocManager::install(c("BiocCheck"), update = FALSE, ask = FALSE)
+          remotes::install_deps(dependencies = TRUE,
+                                repos = BiocManager::repositories())
+        shell: Rscript {0}
+
+      - name: Build tarball
+        run: R CMD build --no-build-vignettes .
+
+      - name: Run BiocCheck (informational; does not fail on warnings)
+        run: |
+          tarball <- list.files(pattern = "^debrowser_.*\\.tar\\.gz$")[1]
+          # quit-with-status = FALSE: collect issues but exit 0 so the
+          # job stays green for warnings/notes. Promote to TRUE once
+          # the remaining devel-branch carryovers (odd y version,
+          # vignette eval chunks) are addressed.
+          BiocCheck::BiocCheck(
+            tarball,
+            `quit-with-status` = FALSE,
+            `no-check-formatting` = TRUE
+          )
+        shell: Rscript {0}
+
+      - name: Upload BiocCheck output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BiocCheck-log
+          path: debrowser.BiocCheck/
+          if-no-files-found: warn
