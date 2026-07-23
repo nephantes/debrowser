@@ -2,7 +2,32 @@
 
 For releases prior to 1.31, see the legacy `NEWS` file.
 
-## debrowser 1.41.1 (in development)
+## debrowser 1.41.2 (in development)
+
+### Bug fixes
+
+* **Dropped the `sodium` dependency**, which broke `R CMD check` on the
+  Bioconductor Linux builder (nebbiolo2 has no libsodium, so the check failed
+  with "Package suggested but not available: 'sodium'" before running any other
+  stage). Auth crypto now uses `scrypt` and `openssl` — both already `Imports:`
+  of `shinymanager`, and both present on every Bioconductor builder.
+  - Password hashing moved from libsodium argon2id to `scrypt::hashPassword()`,
+    the same primitive shinymanager itself stores.
+  - Per-user AI key encryption moved from libsodium secretbox to AES-256-GCM
+    with an explicit encrypt-then-MAC HMAC-SHA256 tag. R's `openssl` package
+    neither emits nor verifies a GCM tag, so authentication is applied
+    explicitly; encryption and MAC subkeys are domain-separated.
+  - Existing password hashes and stored AI keys are **not** readable across this
+    change — see the migration note below.
+
+### Migration
+
+* Password hashes and encrypted per-user AI keys written by 1.41.1 or earlier
+  use libsodium formats and cannot be read by 1.41.2. Any user database created
+  during D2 development must be re-created: users need to reset their passwords
+  and re-enter their AI provider keys.
+
+## debrowser 1.41.1
 
 ### Documentation overhaul
 

@@ -160,7 +160,7 @@ resend_verification_email <- function(user_id, base_url = NULL) {
 #' until you have an account.
 #'
 #' @param user_id Username for login.
-#' @param password Plaintext password (will be hashed via libsodium argon2id).
+#' @param password Plaintext password (will be hashed via scrypt).
 #' @param email Optional email. Default \code{NA_character_}.
 #' @return The created user_id, invisibly.
 #' @examples

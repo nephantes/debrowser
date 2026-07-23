@@ -1,8 +1,8 @@
 Package: debrowser
 Type: Package
 Title: Interactive Differential Expresion Analysis Browser
-Version: 1.41.1
-Date: 2026-07-19
+Version: 1.41.2
+Date: 2026-07-23
 Authors@R: c(
     person("Alper", "Kucukural",
            email = "alper.kucukural@umassmed.edu",
@@ -84,11 +84,11 @@ Suggests: testthat (>= 3.2.0),
     mockery,
     msigdbr,
     openssl,
+    scrypt,
     UpSetR,
     DOSE,
     ellmer (>= 0.1.0),
     keyring,
-    sodium (>= 1.2),
     whisker,
     withr,
     xml2

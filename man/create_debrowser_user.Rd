@@ -9,7 +9,7 @@ create_debrowser_user(user_id, password, email = NA_character_)
 \arguments{
 \item{user_id}{Username for login.}
 
-\item{password}{Plaintext password (will be hashed via libsodium argon2id).}
+\item{password}{Plaintext password (will be hashed via scrypt).}
 
 \item{email}{Optional email. Default \code{NA_character_}.}
 }

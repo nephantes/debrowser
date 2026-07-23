@@ -365,7 +365,7 @@ user_db_can_open <- function(con, state_id, user_id) {
 #' verbatim -- the caller controls whether to clear or preserve fields.
 #' Use [user_db_ai_settings_clear()] to delete the row entirely.
 #'
-#' @param api_key_enc raw vector of sodium-encrypted bytes, or NULL.
+#' @param api_key_enc raw vector of AES-GCM-encrypted bytes, or NULL.
 #' @keywords internal
 #' @noRd
 user_db_ai_settings_upsert <- function(con, user_id,
@@ -510,8 +510,8 @@ load_or_init_master_key <- function() {
   if (file.exists(p)) {
     return(readBin(p, what = "raw", n = 32L))
   }
-  require_pkg("sodium", feature = "per-user AI key encryption")
-  k <- sodium::random(32L)
+  require_pkg("openssl", feature = "per-user AI key encryption")
+  k <- openssl::rand_bytes(32L)
   writeBin(k, p)
   if (.Platform$OS.type == "unix") {
     Sys.chmod(p, mode = "0600")
@@ -521,15 +521,29 @@ load_or_init_master_key <- function() {
 
 #' Derive a per-user 32-byte key from the master secret + user_id.
 #'
-#' BLAKE2b keyed hash; 32-byte output. Deterministic for the same
-#' (master, user_id), distinct across user_ids.
+#' HMAC-SHA256; 32-byte output, sized for AES-256. Deterministic for the
+#' same (master, user_id, purpose), distinct across user_ids. `purpose`
+#' domain-separates the confidentiality key from the authentication key
+#' so the same bytes are never used for both.
 #'
+#' @param purpose "enc" (AES-256-GCM) or "mac" (HMAC-SHA256).
 #' @keywords internal
 #' @noRd
-derive_user_key <- function(master_key, user_id) {
-  require_pkg("sodium", feature = "per-user AI key encryption")
-  sodium::data_tag(charToRaw(as.character(user_id)),
-                   key = master_key)
+derive_user_key <- function(master_key, user_id, purpose = "enc") {
+  require_pkg("openssl", feature = "per-user AI key encryption")
+  # Drop openssl's "hash" class so the result is a plain raw vector.
+  as.raw(openssl::sha256(
+    charToRaw(paste0(purpose, ":", as.character(user_id))),
+    key = master_key
+  ))
+}
+
+#' Length-safe, non-short-circuiting raw comparison for MAC checking.
+#' @keywords internal
+#' @noRd
+raw_identical_ct <- function(a, b) {
+  if (length(a) != length(b)) return(FALSE)
+  sum(bitwXor(as.integer(a), as.integer(b))) == 0L
 }
 
 #' Encrypt a plaintext string for a user. Returns NULL when input is NULL
@@ -540,11 +554,21 @@ encrypt_for_user <- function(user_id, plaintext) {
   if (is.null(plaintext) || (length(plaintext) == 1L && is.na(plaintext))) {
     return(NULL)
   }
-  require_pkg("sodium", feature = "per-user AI key encryption")
-  k <- derive_user_key(load_or_init_master_key(), user_id)
-  nonce <- sodium::random(24L)
-  ct <- sodium::data_encrypt(charToRaw(plaintext), key = k, nonce = nonce)
-  c(nonce, ct)  # nonce || ciphertext, both raw
+  require_pkg("openssl", feature = "per-user AI key encryption")
+  master <- load_or_init_master_key()
+  iv <- openssl::rand_bytes(12L)
+  ct <- as.raw(openssl::aes_gcm_encrypt(
+    charToRaw(plaintext),
+    key = derive_user_key(master, user_id, "enc"),
+    iv  = iv
+  ))
+  # openssl's aes_gcm_* does not emit or verify a GCM tag, so authenticate
+  # explicitly (encrypt-then-MAC over iv || ciphertext).
+  tag <- as.raw(openssl::sha256(
+    c(iv, ct),
+    key = derive_user_key(master, user_id, "mac")
+  ))
+  c(iv, ct, tag)
 }
 
 #' Decrypt a blob produced by [encrypt_for_user()] for the same user.
@@ -556,10 +580,27 @@ decrypt_for_user <- function(user_id, blob) {
   if (length(blob) == 1L && is.raw(blob) && all(blob == as.raw(0))) {
     return(NA_character_)
   }
-  if (length(blob) < 25L) return(NA_character_)
-  require_pkg("sodium", feature = "per-user AI key encryption")
-  k <- derive_user_key(load_or_init_master_key(), user_id)
-  nonce <- blob[seq_len(24L)]
-  ct    <- blob[-seq_len(24L)]
-  rawToChar(sodium::data_decrypt(ct, key = k, nonce = nonce))
+  # Shortest possible real blob: 12-byte IV + >=1 ciphertext byte +
+  # 32-byte HMAC tag.
+  if (length(blob) < 45L) return(NA_character_)
+  require_pkg("openssl", feature = "per-user AI key encryption")
+  master <- load_or_init_master_key()
+  iv   <- blob[seq_len(12L)]
+  ct   <- blob[seq(13L, length(blob) - 32L)]
+  tag  <- blob[seq(length(blob) - 31L, length(blob))]
+  want <- as.raw(openssl::sha256(
+    c(iv, ct),
+    key = derive_user_key(master, user_id, "mac")
+  ))
+  # Verify before decrypting: a wrong user or a modified blob must fail
+  # loudly rather than yield garbage.
+  if (!raw_identical_ct(tag, want)) {
+    de_error("Stored API key failed authentication.",
+             class = "api_key_auth_failure")
+  }
+  rawToChar(openssl::aes_gcm_decrypt(
+    ct,
+    key = derive_user_key(master, user_id, "enc"),
+    iv  = iv
+  ))
 }

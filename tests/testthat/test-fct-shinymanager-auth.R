@@ -39,7 +39,7 @@ test_that("shinymanager_auth_provider: wrap_app callable", {
 })
 
 test_that("shinymanager_check_credentials_fn: valid creds => result=TRUE", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("scrypt")
   with_test_data_dir({
     ensure_data_dir()
     con <- user_db_connect()
@@ -55,7 +55,7 @@ test_that("shinymanager_check_credentials_fn: valid creds => result=TRUE", {
 })
 
 test_that("shinymanager_check_credentials_fn: wrong password => result=FALSE", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("scrypt")
   with_test_data_dir({
     ensure_data_dir()
     con <- user_db_connect()
@@ -69,7 +69,7 @@ test_that("shinymanager_check_credentials_fn: wrong password => result=FALSE", {
 })
 
 test_that("shinymanager_check_credentials_fn: unknown user => result=FALSE", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("scrypt")
   with_test_data_dir({
     ensure_data_dir()
     f <- shinymanager_check_credentials_fn()
@@ -78,7 +78,7 @@ test_that("shinymanager_check_credentials_fn: unknown user => result=FALSE", {
 })
 
 test_that("shinymanager_check_credentials_fn: rejects non-shinymanager kind", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("scrypt")
   with_test_data_dir({
     ensure_data_dir()
     con <- user_db_connect()

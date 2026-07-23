@@ -250,7 +250,7 @@ test_that("upload_refs: inc / dec / orphans / cascade", {
 })
 
 test_that("master_key_path / load_or_init_master_key: 32 bytes, 0600, idempotent", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("openssl")
   with_test_data_dir({
     ensure_data_dir()
     expect_equal(
@@ -272,7 +272,7 @@ test_that("master_key_path / load_or_init_master_key: 32 bytes, 0600, idempotent
 })
 
 test_that("derive_user_key: deterministic per (master, user_id)", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("openssl")
   with_test_data_dir({
     ensure_data_dir()
     m <- load_or_init_master_key()
@@ -286,7 +286,7 @@ test_that("derive_user_key: deterministic per (master, user_id)", {
 })
 
 test_that("encrypt_for_user / decrypt_for_user round-trip", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("openssl")
   with_test_data_dir({
     ensure_data_dir()
     plain <- "sk-fake-1234567890"
@@ -298,8 +298,60 @@ test_that("encrypt_for_user / decrypt_for_user round-trip", {
   })
 })
 
+test_that("encrypt_for_user: blob is iv(12) || ciphertext || hmac(32)", {
+  skip_if_not_installed("openssl")
+  with_test_data_dir({
+    ensure_data_dir()
+    plain <- "sk-fake-1234567890"
+    blob <- encrypt_for_user("alice", plain)
+    # 12-byte IV + ciphertext (GCM is a stream mode, so == plaintext
+    # length) + 32-byte HMAC-SHA256 tag
+    expect_length(blob, 12L + nchar(plain) + 32L)
+    k <- derive_user_key(load_or_init_master_key(), "alice", "enc")
+    body <- blob[seq(13L, length(blob) - 32L)]
+    expect_identical(
+      rawToChar(openssl::aes_gcm_decrypt(body, key = k,
+                                         iv = blob[seq_len(12L)])),
+      plain
+    )
+  })
+})
+
+test_that("derive_user_key: purpose separates the enc and mac subkeys", {
+  skip_if_not_installed("openssl")
+  with_test_data_dir({
+    ensure_data_dir()
+    m <- load_or_init_master_key()
+    expect_false(identical(derive_user_key(m, "alice", "enc"),
+                           derive_user_key(m, "alice", "mac")))
+  })
+})
+
+test_that("decrypt_for_user: tampering any blob region fails authentication", {
+  skip_if_not_installed("openssl")
+  with_test_data_dir({
+    ensure_data_dir()
+    plain <- "sk-fake-1234567890"
+    # One byte in the IV, the ciphertext, and the tag respectively
+    for (i in c(1L, 20L, 62L)) {
+      blob <- encrypt_for_user("alice", plain)
+      blob[i] <- as.raw(bitwXor(as.integer(blob[i]), 1L))
+      expect_error(decrypt_for_user("alice", blob), "authenticat")
+    }
+  })
+})
+
+test_that("decrypt_for_user: truncated blob returns NA, never a partial key", {
+  skip_if_not_installed("openssl")
+  with_test_data_dir({
+    ensure_data_dir()
+    blob <- encrypt_for_user("alice", "sk-fake-1234567890")
+    expect_true(is.na(decrypt_for_user("alice", head(blob, 44L))))
+  })
+})
+
 test_that("encrypt_for_user: NULL plaintext => NULL blob; decrypt(NULL) => NA", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("openssl")
   with_test_data_dir({
     ensure_data_dir()
     expect_null(encrypt_for_user("alice", NULL))

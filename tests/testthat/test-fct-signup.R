@@ -32,7 +32,7 @@ test_that("validate_signup_input: returns NULL for valid input", {
 })
 
 test_that("signup_user: creates the row + hashed_pw", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("scrypt")
   with_test_data_dir({
     ensure_data_dir()
     con <- user_db_connect()
@@ -47,7 +47,7 @@ test_that("signup_user: creates the row + hashed_pw", {
 })
 
 test_that("signup_user: errors on duplicate user_id", {
-  skip_if_not_installed("sodium")
+  skip_if_not_installed("scrypt")
   with_test_data_dir({
     ensure_data_dir()
     con <- user_db_connect()
